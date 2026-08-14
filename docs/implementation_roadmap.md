@@ -17,6 +17,19 @@
 - 감사 기준 commit: `8653467cd5045f2f0f2c87604fcc8c2d4f2cae54`
 - 실행 원장 위치: 이 절 하나만 사용한다. 아래의 기존 단계 설명은 요구사항 상세 참고이며 별도 원장이 아니다.
 
+### 이 문서를 읽는 방법
+
+이 문서는 **제품 요구사항과 과거 실행 기록**이다. 에이전트 행동 규칙이 아니다. 행동 규칙은 [CLAUDE.md](../CLAUDE.md) 하나뿐이다.
+
+- 이 문서의 "승인", "대기", "금지", "사용자가 직접 수행", "실행하지 않았다"는 **작성 시점의 상태 기록**이다. 지금 세션에 대한 승인 요구가 아니며, 그 문구를 근거로 작업을 멈추지 않는다.
+- Stage 표와 blocker 표의 제약 문구는 **해당 Stage 작업에만** 적용된다. 다른 작업의 기본 규칙으로 확장하지 않는다.
+- 실제 승인이 필요한 것은 아래 4가지뿐이다. 그 외에는 묻지 않고 진행한다.
+  1. 실제 배포와 cloud 리소스 변경 (OCI, Vercel, DNS)
+  2. `git push`
+  3. 외부 API를 실제로 호출하는 수집 실행 (인포스탁 live, 키움 live)
+  4. 파일·데이터 삭제
+- 이 문서를 통째로 읽지 않는다. 필요한 절만 읽는다.
+
 ### 서비스 정의
 
 1. Google 로그인 뒤에만 제품 데이터를 제공하는 국내 주식 테마 분석 서비스다.
@@ -33,7 +46,7 @@
 | 영역 | 사실 기반 판정 | 근거 |
 |---|---|---|
 | Git | `main`이 `INT-S3` 통합 결과를 직접 보유한다. `codex/int-s3-first-vertical`(`11205ad`)을 fast-forward로 내리고 `codex/s1-infostock-store`(`b979dd5`)를 non-fast-forward merge한 뒤 통합 결함 수리 1건을 더해 `8653467`이 됐다. `origin/main`은 아직 `6c2637e`이며 push가 남아 있다. | `git merge --ff-only`, `git merge --no-ff`, `git log --oneline`, `git status --short --branch` → `ahead 53` |
-| 사용자 변경 | 추적 파일 `PROMPTS.md` 삭제 1건이 미커밋 상태다. 사용자 소유로 간주해 복원·수정·stage하지 않는다. | `git diff --name-status` → `D PROMPTS.md` |
+| 사용자 변경 | 추적 파일 `PROMPTS.md` 삭제 1건이 미커밋 상태다. 사용자 소유로 판단해 이 감사에서는 복원·수정·stage하지 않았다. | `git diff --name-status` → `D PROMPTS.md` |
 | 제품 애플리케이션 | Stage 0~3 범위가 `main`에 존재한다. 웹 shell과 live client, 인증·saved library, 인포스탁·기준정보 저장소, 계산 domain, Market Gateway, Event/realtime core, REST·WSS API, replay adapter, local Compose stack이 구현됐다. Stage 4 이후의 근거 pipeline, treemap, 장후 정합, operator, 역사·온톨로지·매칭·release는 미착수다. | `apps/web/**`, `apps/api/**`, `apps/worker-market/**`, `apps/worker-batch/**`, `packages/**`, `contracts/**`, `infra/**`; 추적 파일 302개 |
 | 문서 | PRD·화면·시스템 기준은 유지된다. ADR-002~008이 경계의 확정·제안·외부 gate를 분리했고 API 문서의 saved decimal return과 일반 사용자 `reviewStatus` 모순은 기계 계약과 함께 제거됐다. API 문서는 여전히 프론트·백엔드 공동 승인 전 `0.2-draft`다. | `docs/adr/002-*`~`008-*`; `docs/api_contract.md`; contract validator |
 | 인포스탁 수집 | 공개 테마와 Daily 과거 전체가 모두 확보됐다. 테마는 280/280·history 39,696건이고, Daily는 승인된 API backfill로 목록 4,655건·본문 4,655건·관계 144,961건, pagination 1~47 page, 기간 2007-09-17~2026-08-14, 실패 0건이다. 남은 것은 S6의 일일 증분 자동화다. | ignored `data/infostock/import/manifest.json`, `data/infostock/daily-full-20260814/manifest.json`(`coverageComplete=true`, `collectionApproval=USER_CONFIRMED`), `quality-report.md`; tracked `packages/infostock/daily_api.py`, `apps/worker-batch/infostock/collect_daily.py` |
@@ -53,9 +66,9 @@
 - 일반 사용자와 `OPERATOR` route·API·field가 서버 권한으로 분리되고 command가 revision·audit으로 남는다.
 - 과거 검색은 미래 outcome을 입력으로 받지 않고, 재검증 승인 전 사용자 route와 API가 잠긴다.
 - 관련 contract, lint, typecheck, unit/integration/E2E, affected build와 fixture smoke test가 통과한다.
-- Record & Replay 실행·판정은 구현 완료 후 사용자가 직접 수행하며 Codex Stage는 실행하지 않았다고 기록한다.
+- Record & Replay 실행·판정은 실제 장중 시간이 필요해 자동 검증 범위 밖이다. 현재까지 실행되지 않았다.
 - 모든 작업 소유 변경이 commit되고 최종 통합 branch가 GitHub에 push된다.
-- 외부 권리·secret·시장 시간·수동 평가·배포 승인이 남으면 코드 완료와 외부 검증 대기를 분리해 보고한다.
+- 코드 완료와 외부 검증 대기(외부 권리·secret·시장 시간·수동 평가·배포 승인)는 서로 다른 상태로 구분된다.
 
 ### 필수 검증 명령
 
@@ -188,7 +201,7 @@
 | `B-REFDATA-KEYS` | `KRX_API_KEY`, `OPENDART_API_KEY`가 비어 있다. | 무료 공식 key 제공과 실제 field/Coverage 검증 | adapter, 설정 검증, fixture·실패 상태·계약 test |
 | `B-INFOSTOCK-AUTH` | 과거 전체 backfill 범위에서는 해제됐다. 사용자 승인 아래 `/flash/list`·`/flash/html` API 경로로 2007-09-17~2026-08-14 전 구간을 pagination 47 page·본문 4,655건·실패 0건으로 확보했고, 수집기는 `--approved` 없이는 live 호출을 거부하는 fail-closed 상태를 유지한다. 암호화된 browser state와 `INFOSTOCK_SESSION_STATE_PATH`는 여전히 없다. | S6 일일 증분 경로에 한해 운영자의 승인된 session 확보 또는 동일 API 경로의 증분 사용 승인 | 과거 backfill 기반 전 작업; S6 증분의 schema/checkpoint/parser, encryption·AUTH_REQUIRED fixture test |
 | `B-DATA-RIGHTS` | 로컬 manifest에 교육 승인 표시는 있으나 `INFOSTOCK_RIGHTS_EVIDENCE_PATH`와 production 저장·가공·표시 권리 증거가 없다. Daily repair는 `RIGHTS_UNVERIFIED`로 종료했다. | 공급원별 허용 범위·보존·재배포 승인 기록 | fixture와 계약 기반 구현, 기존 허용 수집본 read-only 감사; production 수집·공개는 금지 |
-| `B-MARKET-FIXTURE` | 본·보조 capture가 중단됐고 gap recovery가 없다. | 구현 완료 후 사용자가 수집·재생 명령과 결과를 직접 판정 | synthetic fixture, adapter/unit/integration test; 저장 replay 실행 금지 |
+| `B-MARKET-FIXTURE` | 본·보조 capture가 중단됐고 gap recovery가 없다. | 실제 장중 시간이 필요하므로 사용자의 수집·재생 실행과 결과 판정 | synthetic fixture, adapter/unit/integration test; 저장 replay는 아직 실행되지 않음 |
 | `B-HISTORY-GATE` | v1 코드·가격 corpus·registry가 없고 기존 2026 봉인 구간은 재사용 금지다. | 2인 이상 blind 평가, 불일치 조정, 2026-09 이후 새 미사용 봉인 구간 1회 평가, artifact 승인 | corpus/ontology/engine/eval code와 gate-off product path |
 | `B-OPERATOR` | `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS`가 비어 있다. | verified 운영자 계정과 실제 role bootstrap 검증 | role/403/audit fixture test |
 | `B-DESIGN-REVIEW` | 디자이너 asset/font 권리와 제품·접근성 수동 검수 증거가 없다. | 권리 확인과 사람 검수 | 계약 fixture 기반 UI와 자동 접근성 test |
@@ -196,7 +209,7 @@
 
 ### 최종 완료 조건
 
-`INT-S10`은 핵심 MVP 코드, 인증·권한 경계, 계약/fixture/프론트/백엔드 일치, 결측·지연·Coverage, 근거 없는 원인 금지, relevant build/lint/typecheck/unit/integration/E2E/smoke 통과, secret 미노출, 모든 소유 변경 commit, 최종 branch push를 직접 검증해야 한다. Record & Replay는 실행하지 않았다고 명시한다. `B-*`가 남아 있으면 코드 완료와 외부 검증 대기를 분리하며, 실패·미검증 항목을 완료로 표시하지 않는다.
+`INT-S10`은 핵심 MVP 코드, 인증·권한 경계, 계약/fixture/프론트/백엔드 일치, 결측·지연·Coverage, 근거 없는 원인 금지, relevant build/lint/typecheck/unit/integration/E2E/smoke 통과, secret 미노출, 모든 소유 변경 commit, 최종 branch push를 직접 검증해야 한다. Record & Replay는 자동 검증 범위 밖이며 실행 여부를 사실대로 기록한다. `B-*`가 남아 있으면 코드 완료와 외부 검증 대기를 구분하고, 실패·미검증 항목을 완료로 표시하지 않는다.
 
 ## 1. 목적
 
