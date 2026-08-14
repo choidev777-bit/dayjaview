@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "variables": [
+    {
+      "name": "APPLICATION_ENCRYPTION_KEY",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "APP_BASE_URL",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "DATABASE_URL",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "INFOSTOCK_RIGHTS_EVIDENCE_PATH",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "INFOSTOCK_SESSION_STATE_PATH",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "KRX_API_KEY",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "OPENDART_API_KEY",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "REDIS_URL",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
+      "name": "SESSION_SIGNING_SECRET",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    }
+  ]
+}
