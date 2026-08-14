@@ -32,6 +32,7 @@ import type {
   ThemeDetailResponse,
   TreemapResponse,
 } from '../domain/contracts';
+import { RepositoryError } from '../domain/repositoryErrors';
 
 export type RankingFixture = 'live' | 'delayed' | 'degraded' | 'closed' | 'empty' | 'unavailable';
 export type TreemapFixture = 'live' | 'excluded';
@@ -84,11 +85,14 @@ const evidence: Record<EvidenceFixture, EvidenceResponse> = {
 const libraryResponse = savedLibrary as unknown as SavedResponse;
 const unavailableResponse = savedUnavailable as unknown as SavedResponse;
 
-class ContractFixtureError extends Error {
-  readonly code = unavailableError.error.code;
-
+class ContractFixtureError extends RepositoryError {
   constructor() {
-    super(unavailableError.error.message);
+    super({
+      kind: 'unavailable',
+      message: unavailableError.error.message,
+      code: unavailableError.error.code,
+      retryable: unavailableError.error.retryable,
+    });
   }
 }
 
@@ -98,8 +102,24 @@ function clone<T>(value: T): T {
 
 export function createFixtureRepository(options: FixtureRepositoryOptions = {}): ProductRepository {
   let authenticated = options.authenticated ?? true;
-  const removed = new Set<string>();
   const failures = new Set(options.failures ?? []);
+  const listeners = new Map<string, Set<() => void>>();
+  const savedItems = new Map<string, SavedItem>();
+
+  function savedKey(item: Pick<SavedItem, 'savedType' | 'targetId'>): string {
+    return `${item.savedType}:${item.targetId}`;
+  }
+
+  function emit(resource: string) {
+    listeners.get(resource)?.forEach((listener) => listener());
+  }
+
+  const mode = options.saved ?? 'mixed';
+  const initialItems = [
+    ...(mode === 'unavailable' ? [] : libraryResponse.data.items),
+    ...(mode === 'library' ? [] : unavailableResponse.data.items),
+  ];
+  initialItems.forEach((item) => savedItems.set(savedKey(item), clone(item)));
 
   async function resolveFixture<T>(resource: FixtureResource, value: T): Promise<T> {
     if (options.latencyMs) {
@@ -112,21 +132,30 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
   }
 
   function selectedSavedItems(): SavedItem[] {
-    const mode = options.saved ?? 'mixed';
-    const availableItems = mode === 'unavailable' ? [] : libraryResponse.data.items;
-    const unavailableItems = mode === 'library' ? [] : unavailableResponse.data.items;
-    return [...availableItems, ...unavailableItems].filter((item) => !removed.has(item.targetId));
+    return [...savedItems.values()].sort((left, right) => {
+      const bySavedAt = right.savedAt.localeCompare(left.savedAt);
+      return bySavedAt || left.targetId.localeCompare(right.targetId);
+    });
   }
 
   return {
+    subscribe(resource, listener) {
+      const resourceListeners = listeners.get(resource) ?? new Set<() => void>();
+      resourceListeners.add(listener);
+      listeners.set(resource, resourceListeners);
+      return () => resourceListeners.delete(listener);
+    },
     getSession: async () => resolveFixture<AuthSession>('historical', { authenticated }),
     async startGoogleLogin() {
       authenticated = true;
-      return resolveFixture<AuthSession>('historical', { authenticated });
+      const session = await resolveFixture<AuthSession>('historical', { authenticated });
+      emit('session');
+      return session;
     },
     async logout() {
       authenticated = false;
       await Promise.resolve();
+      emit('session');
     },
     getRankings: () => resolveFixture('rankings', rankings[options.ranking ?? 'live']),
     getTreemap: () => resolveFixture('treemap', treemaps[options.treemap ?? 'live']),
@@ -141,10 +170,28 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       };
       return resolveFixture('saved', response);
     },
+    async saveSaved(item) {
+      if (failures.has('saved')) throw new ContractFixtureError();
+      const key = savedKey(item);
+      if (!savedItems.has(key)) {
+        savedItems.set(key, {
+          savedType: item.savedType,
+          targetId: item.targetId,
+          displayName: item.displayName ?? item.targetId,
+          savedAt: libraryResponse.meta.generatedAt,
+          availability: 'AVAILABLE',
+          unavailableReason: null,
+          currentState: item.currentState ?? null,
+        });
+      }
+      await Promise.resolve();
+      emit('saved');
+    },
     async removeSaved(item) {
       if (failures.has('saved')) throw new ContractFixtureError();
-      removed.add(item.targetId);
+      savedItems.delete(savedKey(item));
       await Promise.resolve();
+      emit('saved');
     },
     async getHistoricalAccess(eventId) {
       const response: HistoricalAccessResponse = {
@@ -154,7 +201,8 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         },
         meta: similarGated.meta,
       };
-      return resolveFixture('historical', response);
+      const resolved = await resolveFixture('historical', response);
+      return resolved.data;
     },
   } satisfies ProductRepository;
 }

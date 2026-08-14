@@ -193,6 +193,23 @@ export interface SavedResponse {
   meta: ResponseMeta;
 }
 
+export interface SavedMutationResponse {
+  data: {
+    savedType: SavedType;
+    targetId: string;
+    saved: boolean;
+    savedAt: string | null;
+  };
+  meta: ResponseMeta;
+}
+
+export interface SavedTarget {
+  savedType: SavedType;
+  targetId: string;
+  displayName?: string;
+  currentState?: SavedItem['currentState'];
+}
+
 export interface HistoricalAccessResponse {
   data: {
     eventId: string;
@@ -205,7 +222,84 @@ export interface AuthSession {
   authenticated: boolean;
 }
 
+export interface SessionResponse {
+  data: {
+    authenticated: boolean;
+    user: { displayName: string } | null;
+    roles: Array<'USER' | 'HISTORICAL_PILOT' | 'OPERATOR'>;
+  };
+  meta: ResponseMeta;
+}
+
+export interface RealtimeTicketResponse {
+  data: {
+    ticket: string;
+    expiresAt: string;
+  };
+  meta: ResponseMeta;
+}
+
+export type RealtimeTopic =
+  | 'theme_rank_snapshot'
+  | 'theme_treemap_snapshot'
+  | 'event_state_changed';
+
+interface RealtimeSnapshotBase {
+  type: RealtimeTopic;
+  schemaVersion: string;
+  subscriptionId: string;
+  streamId: string;
+  topic: RealtimeTopic;
+  sequence: number;
+  generatedAt: string;
+  asOf: string;
+  marketDate: string;
+  dataStatus: DataStatus;
+  qualityFlags: string[];
+}
+
+export interface RealtimeRankingSnapshot extends RealtimeSnapshotBase {
+  type: 'theme_rank_snapshot';
+  topic: 'theme_rank_snapshot';
+  payload: {
+    snapshotId: string;
+    items: RankingItem[];
+  };
+}
+
+export interface RealtimeTreemapSnapshot extends RealtimeSnapshotBase {
+  type: 'theme_treemap_snapshot';
+  topic: 'theme_treemap_snapshot';
+  payload: {
+    snapshotId: string;
+    items: TreemapItem[];
+  };
+}
+
+export interface RealtimeEventSnapshot extends RealtimeSnapshotBase {
+  type: 'event_state_changed';
+  topic: 'event_state_changed';
+  payload: {
+    eventId: string;
+  } & Record<string, unknown>;
+}
+
+export type RealtimeSnapshot =
+  | RealtimeRankingSnapshot
+  | RealtimeTreemapSnapshot
+  | RealtimeEventSnapshot;
+
+export type RepositoryResource =
+  | 'session'
+  | 'rankings'
+  | 'treemap'
+  | 'detail'
+  | 'evidence'
+  | 'saved'
+  | 'historical';
+
 export interface ProductRepository {
+  subscribe(resource: RepositoryResource, listener: () => void): () => void;
   getSession(): Promise<AuthSession>;
   startGoogleLogin(returnTo: string): Promise<AuthSession>;
   logout(): Promise<void>;
@@ -214,6 +308,7 @@ export interface ProductRepository {
   getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse>;
   getEvidence(eventId: string): Promise<EvidenceResponse>;
   getSaved(type: SavedType | 'ALL'): Promise<SavedResponse>;
+  saveSaved(item: SavedTarget): Promise<void>;
   removeSaved(item: Pick<SavedItem, 'savedType' | 'targetId'>): Promise<void>;
-  getHistoricalAccess(eventId: string): Promise<HistoricalAccessResponse>;
+  getHistoricalAccess(eventId: string): Promise<HistoricalAccessResponse['data']>;
 }

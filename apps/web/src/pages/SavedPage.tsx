@@ -4,7 +4,7 @@ import { useRepository } from '../app/RepositoryContext';
 import type { SavedItem, SavedType } from '../domain/contracts';
 import { dataStatusLabel, eventStatusLabel, formatDate, formatReturn, formatTime } from '../domain/formatting';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
-import { useAsyncResource } from '../shared/useAsyncResource';
+import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const filters = [
   ['ALL', '전체'],
@@ -81,7 +81,12 @@ export function SavedPage() {
   const requestedFilter = searchParams.get('type');
   const filter = isFilter(requestedFilter) ? requestedFilter : 'ALL';
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const resource = useAsyncResource(() => repository.getSaved(filter), [repository, filter]);
+  const resource = useRepositoryResource(
+    repository,
+    'saved',
+    () => repository.getSaved(filter),
+    [repository, filter],
+  );
 
   function selectFilter(nextFilter: Filter, focus = false) {
     setSearchParams(nextFilter === 'ALL' ? {} : { type: nextFilter });
@@ -134,7 +139,7 @@ export function SavedPage() {
       </div>
       <div role="tabpanel" aria-label={`${filters.find(([value]) => value === filter)?.[1]} 관심 목록`}>
         {resource.status === 'loading' ? <LoadingState label="관심 목록을 불러오는 중입니다" /> : null}
-        {resource.status === 'error' ? <ErrorState retry={resource.retry} /> : null}
+        {resource.status === 'error' ? <ErrorState error={resource.error} retry={resource.retry} /> : null}
         {resource.status === 'success' && !resource.data.data.items.length ? (
           <EmptyState
             title="저장한 항목이 없습니다"

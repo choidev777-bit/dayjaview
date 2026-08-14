@@ -75,6 +75,22 @@ describe('인증과 route shell', () => {
 });
 
 describe('관심 route shell', () => {
+  it('테마 상세에서 저장을 추가하고 같은 fixture 저장 상태로 동기화한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <App
+        repository={createFixtureRepository({ saved: 'library' })}
+        initialEntries={['/themes/thm_nuclear/events/evt_current']}
+      />,
+    );
+
+    await user.click(await screen.findByRole('button', { name: '관심에 저장' }));
+    expect(await screen.findByRole('button', { name: '관심에서 저장 해제' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
   it('계약 fixture의 저장 목록과 접근 제한 항목을 함께 구분한다', async () => {
     render(<App repository={createFixtureRepository({ saved: 'mixed' })} initialEntries={['/saved']} />);
 

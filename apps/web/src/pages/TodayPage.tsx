@@ -6,7 +6,7 @@ import { useRepository } from '../app/RepositoryContext';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
-import { useAsyncResource } from '../shared/useAsyncResource';
+import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 function cardBadge(item: RankingItem): string | null {
   if (item.badges.includes('RISING_FAST')) return '급부상';
@@ -83,10 +83,15 @@ function ThemeRankCard({ item }: { item: RankingItem }) {
 
 export function TodayPage() {
   const repository = useRepository();
-  const resource = useAsyncResource(() => repository.getRankings(), [repository]);
+  const resource = useRepositoryResource(
+    repository,
+    'rankings',
+    () => repository.getRankings(),
+    [repository],
+  );
 
   if (resource.status === 'loading') return <LoadingState label="오늘의 테마를 불러오는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
 
   const { data, meta } = resource.data;
   const context = meta.marketContext;

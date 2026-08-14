@@ -3,14 +3,19 @@ import { useRepository } from '../app/RepositoryContext';
 import { formatReturn } from '../domain/formatting';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
-import { useAsyncResource } from '../shared/useAsyncResource';
+import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 export function InsightsPage() {
   const repository = useRepository();
-  const resource = useAsyncResource(() => repository.getTreemap(), [repository]);
+  const resource = useRepositoryResource(
+    repository,
+    'treemap',
+    () => repository.getTreemap(),
+    [repository],
+  );
 
   if (resource.status === 'loading') return <LoadingState label="실시간 테마 맵을 준비하는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
 
   const { data, meta } = resource.data;
 
