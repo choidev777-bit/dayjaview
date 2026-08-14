@@ -1,0 +1,66 @@
+{
+  "fixtureVersion": "2026-08-14.1",
+  "source": "OPENDART",
+  "dataset": "OPENDART_LARGEST_SHAREHOLDER",
+  "endpoint": "https://opendart.fss.or.kr/api/hyslrSttus.json",
+  "sourceKey": "00000001:2026:11012",
+  "asOf": "2026-06-30T23:59:59+09:00",
+  "collectedAt": "2026-08-14T08:01:00+09:00",
+  "parserVersion": "reference-source-2026.08.1",
+  "revision": 1,
+  "lineage": ["fixture:opendart:largest-shareholder:00000001:2026:11012"],
+  "sourceDocumentIds": ["20260814000001"],
+  "liveValidationStatus": "UNVERIFIED",
+  "rawHash": "c0b218d88fd408be1a0138b1dd0189c97364ab19f0fc147adbfce8b9ba9cf6aa",
+  "rawResponse": {
+    "status": "000",
+    "message": "정상",
+    "list": [
+      {
+        "rcept_no": "20260814000001",
+        "corp_cls": "Y",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "nm": "예시홀딩스",
+        "relate": "본인",
+        "stock_knd": "보통주",
+        "bsis_posesn_stock_co": "24,000,000",
+        "bsis_posesn_stock_qota_rt": "24.00",
+        "trmend_posesn_stock_co": "25,000,000",
+        "trmend_posesn_stock_qota_rt": "25.00",
+        "rm": "",
+        "stlm_dt": "2026-06-30"
+      },
+      {
+        "rcept_no": "20260814000001",
+        "corp_cls": "Y",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "nm": "예시인",
+        "relate": "특수관계인",
+        "stock_knd": "보통주",
+        "bsis_posesn_stock_co": "5,000,000",
+        "bsis_posesn_stock_qota_rt": "5.00",
+        "trmend_posesn_stock_co": "5,000,000",
+        "trmend_posesn_stock_qota_rt": "5.00",
+        "rm": "",
+        "stlm_dt": "2026-06-30"
+      },
+      {
+        "rcept_no": "20260814000001",
+        "corp_cls": "Y",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "nm": "전략투자자",
+        "relate": "전략적 보유",
+        "stock_knd": "보통주",
+        "bsis_posesn_stock_co": "5,000,000",
+        "bsis_posesn_stock_qota_rt": "5.00",
+        "trmend_posesn_stock_co": "5,000,000",
+        "trmend_posesn_stock_qota_rt": "5.00",
+        "rm": "보호예수 확인",
+        "stlm_dt": "2026-06-30"
+      }
+    ]
+  }
+}

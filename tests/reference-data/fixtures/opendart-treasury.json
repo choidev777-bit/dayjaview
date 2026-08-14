@@ -1,0 +1,38 @@
+{
+  "fixtureVersion": "2026-08-14.1",
+  "source": "OPENDART",
+  "dataset": "OPENDART_TREASURY_STATUS",
+  "endpoint": "https://opendart.fss.or.kr/api/tesstkAcqsDspsSttus.json",
+  "sourceKey": "00000001:2026:11012",
+  "asOf": "2026-06-30T23:59:59+09:00",
+  "collectedAt": "2026-08-14T08:02:00+09:00",
+  "parserVersion": "reference-source-2026.08.1",
+  "revision": 1,
+  "lineage": ["fixture:opendart:treasury:00000001:2026:11012"],
+  "sourceDocumentIds": ["20260814000001"],
+  "liveValidationStatus": "UNVERIFIED",
+  "rawHash": "cf35082894e469b01cbfb5d084e5952884de703980e3a58db0d47394d797e929",
+  "rawResponse": {
+    "status": "000",
+    "message": "정상",
+    "list": [
+      {
+        "rcept_no": "20260814000001",
+        "corp_cls": "Y",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "acqs_mth1": "총계",
+        "acqs_mth2": "총계",
+        "acqs_mth3": "총계",
+        "stock_knd": "보통주",
+        "bsis_qy": "9,000,000",
+        "change_qy_acqs": "1,000,000",
+        "change_qy_dsps": "0",
+        "change_qy_incnr": "0",
+        "trmend_qy": "10,000,000",
+        "rm": "",
+        "stlm_dt": "2026-06-30"
+      }
+    ]
+  }
+}

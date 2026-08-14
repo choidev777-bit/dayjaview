@@ -1,0 +1,36 @@
+{
+  "fixtureVersion": "2026-08-14.1",
+  "source": "KRX_OPEN_API",
+  "dataset": "KRX_STOCK_DAILY",
+  "endpoint": "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd",
+  "sourceKey": "KOSPI:2026-08-13",
+  "asOf": "2026-08-13T15:30:00+09:00",
+  "collectedAt": "2026-08-13T18:00:00+09:00",
+  "parserVersion": "reference-source-2026.08.1",
+  "revision": 1,
+  "lineage": ["fixture:krx-stock-daily:2026-08-13"],
+  "sourceDocumentIds": [],
+  "liveValidationStatus": "UNVERIFIED",
+  "rawHash": "d3b493116532caacc856a14881c1fc0683388aa5f841b9106fa88ee4d0e8efdd",
+  "rawResponse": {
+    "OutBlock_1": [
+      {
+        "BAS_DD": "20260813",
+        "ISU_CD": "A00001",
+        "ISU_NM": "예시전자",
+        "MKT_NM": "KOSPI",
+        "SECT_TP_NM": "주권",
+        "TDD_CLSPRC": "51,000",
+        "CMPPREVDD_PRC": "1,000",
+        "FLUC_RT": "2.00",
+        "TDD_OPNPRC": "50,100",
+        "TDD_HGPRC": "52,000",
+        "TDD_LWPRC": "49,900",
+        "ACC_TRDVOL": "1,000,000",
+        "ACC_TRDVAL": "51,000,000,000",
+        "MKTCAP": "5,100,000,000,000",
+        "LIST_SHRS": "100,000,000"
+      }
+    ]
+  }
+}
