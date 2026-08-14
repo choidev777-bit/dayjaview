@@ -1,0 +1,222 @@
+name: dayjaview-ci-fixture
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/images/runtime.Dockerfile
+
+x-app-security: &app-security
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  init: true
+  restart: "no"
+  networks:
+    - fixture
+
+x-fixture-environment: &fixture-environment
+  DAYJAVIEW_FIXTURE_MODE: "1"
+  DAYJAVIEW_LOCALE: ko-KR
+
+services:
+  postgres:
+    image: postgres:16.15-bookworm
+    platform: linux/arm64
+    environment:
+      POSTGRES_DB: dayjaview_fixture
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8
+      POSTGRES_USER: postgres
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -h 127.0.0.1 -U postgres -d dayjaview_fixture]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    tmpfs:
+      - /var/lib/postgresql/data:rw,noexec,nosuid,size=768m
+      - /var/run/postgresql:rw,nosuid,size=16m
+    restart: "no"
+    networks:
+      - fixture
+
+  redis:
+    image: redis:7.4.5-bookworm
+    platform: linux/arm64
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --protected-mode
+      - "no"
+      - --ignore-warnings
+      - ARM64-COW-BUG
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 3s
+    tmpfs:
+      - /data:rw,noexec,nosuid,size=128m
+    restart: "no"
+    networks:
+      - fixture
+
+  migrate:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: migrations
+    environment:
+      <<: *fixture-environment
+      PGDATABASE: dayjaview_fixture
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migration-idempotency:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: migrations
+    environment:
+      <<: *fixture-environment
+      PGDATABASE: dayjaview_fixture
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  worker-market-fixture:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    command:
+      - python
+      - apps/worker-market/fixture_worker.py
+      - --fixture
+      - tests/market-gateway/fixtures/kiwoom-market-v1.json
+    environment:
+      <<: *fixture-environment
+    depends_on:
+      migration-idempotency:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  worker-reference-fixture:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    command:
+      - python
+      - apps/worker-batch/reference-data/import_fixture.py
+      - tests/reference-data/fixtures/krx-stock-daily.json
+    environment:
+      <<: *fixture-environment
+    depends_on:
+      migration-idempotency:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  worker-infostock-fixture:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    command:
+      - python
+      - apps/worker-batch/infostock/import_fixture.py
+      - --fixture
+      - tests/infostock/fixtures/infostock-280.synthetic.json
+      - --audit-only
+    environment:
+      <<: *fixture-environment
+    depends_on:
+      migration-idempotency:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  api:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: api
+    environment:
+      <<: *fixture-environment
+      FIXTURE_API_HOST: 0.0.0.0
+      FIXTURE_API_PORT: "8000"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - infra/operations/local_stack.py
+        - probe
+        - --url
+        - http://127.0.0.1:8000/api/health
+      interval: 5s
+      timeout: 10s
+      retries: 12
+      start_period: 10s
+    depends_on:
+      migration-idempotency:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      worker-infostock-fixture:
+        condition: service_completed_successfully
+      worker-market-fixture:
+        condition: service_completed_successfully
+      worker-reference-fixture:
+        condition: service_completed_successfully
+
+  health-smoke:
+    <<: *app-security
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    command:
+      - python
+      - infra/operations/local_stack.py
+      - probe
+      - --url
+      - http://api:8000/api/health
+    environment:
+      <<: *fixture-environment
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  fixture:
+    internal: true
