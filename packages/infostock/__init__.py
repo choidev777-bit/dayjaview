@@ -8,6 +8,12 @@ from .daily import (
     DailyBrowserSource,
     collect_daily_browser_backfill,
     parse_daily_body,
+    parse_daily_html_body,
+)
+from .daily_api import (
+    DailyApiObservation,
+    collect_daily_api_backfill,
+    load_daily_api_backfill,
 )
 from .errors import (
     DataRightsBlockedError,
@@ -33,6 +39,7 @@ from .postgres import PostgresInfostockStore
 
 __all__ = [
     "CommittedFixturePolicy",
+    "DailyApiObservation",
     "DailyBackfillCursor",
     "DailyBrowserBatch",
     "DailyBrowserDetail",
@@ -48,12 +55,15 @@ __all__ = [
     "PostgresInfostockStore",
     "SnapshotConflictError",
     "TemporalConflictError",
+    "collect_daily_api_backfill",
     "collect_daily_browser_backfill",
     "human_quality_report",
     "import_bundle",
     "load_committed_fixture",
+    "load_daily_api_backfill",
     "load_existing_collection",
     "machine_quality_report",
     "parse_daily_body",
+    "parse_daily_html_body",
     "parse_fixture_payload",
 ]

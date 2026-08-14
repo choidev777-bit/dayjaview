@@ -11,6 +11,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
+from html.parser import HTMLParser
 from typing import Any, Protocol
 
 from .errors import FixtureValidationError
@@ -139,6 +140,194 @@ def parse_daily_body(raw_body: str) -> tuple[tuple[DailyRelation, ...], str]:
 
     status = "PARSE_PARTIAL" if saw_unstructured_narrative else "OK"
     return tuple(relations), status
+
+
+@dataclass(frozen=True, slots=True)
+class _HtmlCell:
+    text: str
+    links: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _HtmlRow:
+    table_number: int
+    cells: tuple[_HtmlCell, ...]
+
+
+class _DailyHtmlParser(HTMLParser):
+    """Extract readable text and table link lineage from one source HTML fragment."""
+
+    _BLOCK_TAGS = frozenset(
+        {"div", "h1", "h2", "h3", "h4", "li", "p", "section", "table", "tr"}
+    )
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.text_parts: list[str] = []
+        self.rows: list[_HtmlRow] = []
+        self.table_number = 0
+        self.in_row = False
+        self.in_cell = False
+        self.cell_parts: list[str] = []
+        self.cell_links: list[tuple[str, str]] = []
+        self.row_cells: list[_HtmlCell] = []
+        self.active_href: str | None = None
+        self.active_link_parts: list[str] = []
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        name = tag.lower()
+        if name == "br" or name in self._BLOCK_TAGS:
+            self.text_parts.append("\n")
+        if name == "table":
+            self.table_number += 1
+        elif name == "tr":
+            self.in_row = True
+            self.row_cells = []
+        elif name in {"td", "th"} and self.in_row:
+            self.in_cell = True
+            self.cell_parts = []
+            self.cell_links = []
+        elif name == "a" and self.in_cell:
+            self.active_href = dict(attrs).get("href") or ""
+            self.active_link_parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        name = tag.lower()
+        if name == "a" and self.in_cell and self.active_href is not None:
+            self.cell_links.append(
+                (self.active_href, self._clean("".join(self.active_link_parts)))
+            )
+            self.active_href = None
+            self.active_link_parts = []
+        elif name in {"td", "th"} and self.in_cell:
+            self.row_cells.append(
+                _HtmlCell(
+                    text=self._clean("".join(self.cell_parts)),
+                    links=tuple(self.cell_links),
+                )
+            )
+            self.in_cell = False
+            self.cell_parts = []
+            self.cell_links = []
+        elif name == "tr" and self.in_row:
+            if self.row_cells:
+                self.rows.append(_HtmlRow(self.table_number, tuple(self.row_cells)))
+            self.in_row = False
+            self.row_cells = []
+        if name in self._BLOCK_TAGS:
+            self.text_parts.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        self.text_parts.append(data)
+        if self.in_cell:
+            self.cell_parts.append(data)
+        if self.active_href is not None:
+            self.active_link_parts.append(data)
+
+    @staticmethod
+    def _clean(value: str) -> str:
+        return re.sub(r"\s+", " ", value.replace("\xa0", " ")).strip()
+
+    def text_lines(self) -> tuple[str, ...]:
+        lines = [self._clean(value) for value in "".join(self.text_parts).splitlines()]
+        return tuple(value for value in lines if value)
+
+
+_THEME_LINK_RE = re.compile(r"/Theme/ThemeDB/(\d+)(?:[/?#]|$)", re.IGNORECASE)
+_STOCK_LINK_RE = re.compile(r"[?&]code=([0-9A-Z]{6})(?:[&#]|$)", re.IGNORECASE)
+
+
+def parse_daily_html_body(raw_html: str) -> tuple[tuple[DailyRelation, ...], str]:
+    """Project Daily HTML without dropping source text or guessing stock codes."""
+
+    if not raw_html.strip():
+        return (), "MISSING"
+    parser = _DailyHtmlParser()
+    try:
+        parser.feed(raw_html)
+        parser.close()
+    except (AssertionError, ValueError):
+        return (), "PARSE_FAILED"
+
+    descriptions: dict[str, str] = {}
+    section_name: str | None = None
+    for line in parser.text_lines():
+        section = _SECTION_RE.fullmatch(line)
+        if section:
+            section_name = section.group(1).strip()
+            continue
+        if (
+            section_name
+            and section_name != "테마시황"
+            and section_name not in descriptions
+            and line not in {"테마명", "종목명"}
+        ):
+            descriptions[section_name] = line
+
+    relations: list[DailyRelation] = []
+    for theme_name, description in descriptions.items():
+        relations.append(
+            DailyRelation(
+                source_order=len(relations),
+                relation_type="DESCRIPTION",
+                source_theme_name=theme_name,
+                source_stock_name=None,
+                source_stock_code=None,
+                description=description,
+                raw_text=description,
+                quality_status="OK",
+            )
+        )
+
+    current_table = -1
+    current_theme: str | None = None
+    for row in parser.rows:
+        if row.table_number != current_table:
+            current_table = row.table_number
+            current_theme = None
+        row_text = "\t".join(cell.text for cell in row.cells if cell.text)
+        if not row_text or "종목명" in row_text:
+            continue
+        stock_name: str | None = None
+        stock_code: str | None = None
+        for cell in row.cells:
+            for href, link_text in cell.links:
+                if _THEME_LINK_RE.search(href) and link_text:
+                    current_theme = link_text
+                code_match = _STOCK_LINK_RE.search(href)
+                if code_match and link_text:
+                    stock_code = code_match.group(1).upper()
+                    stock_name = link_text
+        if stock_name is None:
+            continue
+        description = ""
+        if current_theme:
+            description = descriptions.get(current_theme, "")
+            if not description:
+                description = next(
+                    (
+                        value
+                        for name, value in descriptions.items()
+                        if current_theme in name or name in current_theme
+                    ),
+                    "",
+                )
+        relations.append(
+            DailyRelation(
+                source_order=len(relations),
+                relation_type="THEME_STOCK",
+                source_theme_name=current_theme,
+                source_stock_name=stock_name,
+                source_stock_code=stock_code,
+                description=description,
+                raw_text=row_text,
+                quality_status="OK" if stock_code else "SOURCE_CODE_MISSING",
+            )
+        )
+
+    return tuple(relations), "OK" if relations else "PARSE_PARTIAL"
 
 
 def parse_legacy_daily_payload(

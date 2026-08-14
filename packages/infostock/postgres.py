@@ -231,6 +231,7 @@ class _PostgresImportTransaction:
         self, run_id: int, bundle: ImportBundle, snapshot: RawSnapshot
     ) -> int:
         blob_id = self._record_blob(bundle, snapshot)
+        parser_version = snapshot.parser_version or bundle.parser_version
         self._cursor.execute(
             """
             INSERT INTO ingest.infostock_source_snapshots (
@@ -251,7 +252,7 @@ class _PostgresImportTransaction:
                 snapshot.source_url,
                 snapshot.collected_at,
                 snapshot.as_of,
-                bundle.parser_version,
+                parser_version,
                 snapshot.is_complete,
                 snapshot.quality_status,
             ),
@@ -280,7 +281,7 @@ class _PostgresImportTransaction:
                 int(existing[1]) != blob_id
                 or str(existing[2]) != snapshot.source_url
                 or cast(datetime, existing[3]) != snapshot.as_of
-                or str(existing[4]) != bundle.parser_version
+                or str(existing[4]) != parser_version
                 or bool(existing[5]) is not snapshot.is_complete
                 or str(existing[6]) != snapshot.quality_status
             ):

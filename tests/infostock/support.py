@@ -73,6 +73,7 @@ class _ReferenceTransaction:
     def record_snapshot(
         self, run_id: int, bundle: ImportBundle, snapshot: RawSnapshot
     ) -> int:
+        parser_version = snapshot.parser_version or bundle.parser_version
         blob_key = (bundle.source_provider, snapshot.raw_hash)
         existing_blob = self.state.blobs.setdefault(
             blob_key, snapshot.raw_payload_text
@@ -90,7 +91,7 @@ class _ReferenceTransaction:
             if (
                 existing["raw_hash"] != snapshot.raw_hash
                 or existing["source_url"] != snapshot.source_url
-                or existing["parser_version"] != bundle.parser_version
+                or existing["parser_version"] != parser_version
             ):
                 raise SnapshotConflictError("reference snapshot conflict")
             snapshot_id = int(existing["snapshot_id"])
@@ -101,7 +102,7 @@ class _ReferenceTransaction:
                 "snapshot_id": snapshot_id,
                 "raw_hash": snapshot.raw_hash,
                 "source_url": snapshot.source_url,
-                "parser_version": bundle.parser_version,
+                "parser_version": parser_version,
             }
         self.state.run_snapshots.add((run_id, snapshot_id))
         return snapshot_id

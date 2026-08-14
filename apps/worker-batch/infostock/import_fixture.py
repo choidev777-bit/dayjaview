@@ -44,6 +44,11 @@ def _arguments(argv: list[str] | None) -> argparse.Namespace:
         help="명시적으로 지정한 기존 collector output 디렉터리(기본값 없음)",
     )
     parser.add_argument(
+        "--daily-backfill-dir",
+        type=Path,
+        help="collect_daily.py가 만든 Daily 전체 backfill 디렉터리",
+    )
+    parser.add_argument(
         "--audit-only",
         action="store_true",
         help="DB를 변경하지 않고 machine-readable 품질 보고만 출력합니다.",
@@ -77,12 +82,16 @@ def _load_psycopg() -> _PsycopgModule:
 def _load_bundle(args: argparse.Namespace) -> ImportBundle:
     infostock = importlib.import_module("packages.infostock")
     if args.fixture is not None:
+        if args.daily_backfill_dir is not None:
+            raise ValueError("--daily-backfill-dir은 --collection-dir과 함께 사용하세요.")
         policy = infostock.CommittedFixturePolicy(REPOSITORY_ROOT)
         return cast("ImportBundle", infostock.load_committed_fixture(args.fixture, policy))
     return cast(
         "ImportBundle",
         infostock.load_existing_collection(
-            args.collection_dir, infostock.ExistingCollectionPolicy()
+            args.collection_dir,
+            infostock.ExistingCollectionPolicy(),
+            daily_backfill_directory=args.daily_backfill_dir,
         ),
     )
 

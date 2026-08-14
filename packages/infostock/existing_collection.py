@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Never, cast
 
 from .daily import parse_legacy_daily_payload
+from .daily_api import load_daily_api_backfill
 from .errors import FixtureValidationError
 from .hashing import sha256_bytes, sha256_json
 from .models import (
@@ -226,6 +227,8 @@ def _empty_daily() -> DailyBackfill:
 def load_existing_collection(
     directory: Path,
     policy: ExistingCollectionPolicy | None = None,
+    *,
+    daily_backfill_directory: Path | None = None,
 ) -> ImportBundle:
     """Validate and load all 280 details plus any permitted existing Daily capture."""
 
@@ -780,7 +783,12 @@ def load_existing_collection(
     )
 
     daily_path = root / "daily-featured-theme-page-1.json"
-    if daily_path.is_file() and not daily_path.is_symlink():
+    if daily_backfill_directory is not None:
+        daily, daily_file_hashes = load_daily_api_backfill(
+            daily_backfill_directory
+        )
+        file_hashes.update(daily_file_hashes)
+    elif daily_path.is_file() and not daily_path.is_symlink():
         daily_bytes, daily_text, daily_payload = _read_json(daily_path, "$.daily.page1")
         file_hashes[daily_path.name] = sha256_bytes(daily_bytes)
         daily = parse_legacy_daily_payload(
@@ -875,6 +883,37 @@ def human_quality_report(bundle: ImportBundle) -> str:
     report = machine_quality_report(bundle)
     daily = cast(dict[str, object], cast(dict[str, object], report["components"])["dailyFeaturedTheme"])
     quality = bundle.quality_summary
+    if bundle.daily.component_status == "COMPLETE":
+        daily_lines = (
+            f"- DailyFeaturedTheme: {daily['status']}",
+            f"  - 확보 목록: {len(bundle.daily.entries):,}건, 본문: {bundle.daily.body_count:,}건, 관계: {bundle.daily.relation_count:,}건",
+            f"  - pagination: {bundle.daily.first_page}~{bundle.daily.last_page} page, 전체 기간 완료",
+            f"  - 기간: {bundle.daily.earliest_date}~{bundle.daily.latest_date}",
+            "",
+            "Daily 실제 전체 backfill과 Theme DB 적재가 모두 완료됐습니다.",
+            "",
+        )
+    else:
+        blocker_text = ", ".join(bundle.daily.blockers) or "없음(누락·수집·파싱 오류 확인 필요)"
+        if bundle.daily.first_page == bundle.daily.last_page:
+            pagination_text = (
+                f"  - pagination: {bundle.daily.first_page}페이지만 확보, "
+                f"next={bundle.daily.next_page}, 전체 기간 미완료"
+            )
+        else:
+            pagination_text = (
+                f"  - pagination: {bundle.daily.first_page}~{bundle.daily.last_page} page, "
+                f"next={bundle.daily.next_page}, 전체 기간 미완료"
+            )
+        daily_lines = (
+            f"- DailyFeaturedTheme: {daily['status']}",
+            f"  - 확보 목록: {len(bundle.daily.entries):,}건, 본문: {bundle.daily.body_count:,}건, 관계: {bundle.daily.relation_count:,}건",
+            pagination_text,
+            f"  - blocker: {blocker_text}",
+            "",
+            "Daily 실제 전체 backfill이 완료되지 않았으므로 S1 전체 DB 상태는 PARTIAL입니다.",
+            "",
+        )
     return "\n".join(
         (
             "# Infostock 기존 수집본 품질 보고",
@@ -892,12 +931,6 @@ def human_quality_report(bundle: ImportBundle) -> str:
             f"  - leader code 누락: {quality.missing_leader_code_count:,}건(보존)",
             f"  - historical membership code 누락: {quality.missing_historical_membership_code_count:,}건(보존)",
             f"  - legacy history의 memberStocks field 누락: {quality.missing_historical_membership_field_count:,}건",
-            f"- DailyFeaturedTheme: {daily['status']}",
-            f"  - 확보 목록: {len(bundle.daily.entries):,}건, 본문: {bundle.daily.body_count:,}건, 관계: {bundle.daily.relation_count:,}건",
-            f"  - pagination: {bundle.daily.first_page}페이지만 확보, next={bundle.daily.next_page}, 전체 기간 미완료",
-            "  - blocker: B-INFOSTOCK-AUTH, B-DATA-RIGHTS",
-            "",
-            "Daily 실제 전체 backfill이 완료되지 않았으므로 S1 전체 DB 상태는 PARTIAL입니다.",
-            "",
+            *daily_lines,
         )
     )

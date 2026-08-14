@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS ingest.infostock_source_snapshots (
     page_type text NOT NULL CHECK (
         page_type IN (
             'IMPORT_MANIFEST', 'THEME_LIST', 'THEME_DETAIL',
-            'DAILY_LIST', 'DAILY_DETAIL'
+            'DAILY_MANIFEST', 'DAILY_LIST', 'DAILY_DETAIL'
         )
     ),
     source_entity_id text,

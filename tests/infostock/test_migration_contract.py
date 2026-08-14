@@ -41,7 +41,7 @@ def test_postgresql_migration_exposes_full_model_and_writer_boundaries() -> None
     assert "PRODUCTION_APPROVED" not in sql
     assert "raw_payload_text text NOT NULL" in sql
     assert "source_content_hash" in sql
-    assert "DAILY_LIST" in sql and "DAILY_DETAIL" in sql
+    assert all(value in sql for value in ("DAILY_MANIFEST", "DAILY_LIST", "DAILY_DETAIL"))
     assert "dayjaview_infostock_writer" in sql
     assert "REVOKE ALL ON ALL TABLES" in sql
     assert "GRANT SELECT, INSERT, UPDATE" in sql
