@@ -3,6 +3,7 @@ set -eu
 
 manifest_path="${MIGRATION_MANIFEST_PATH:-/migration-order.sha256}"
 migration_root="${MIGRATION_ROOT:-/migrations}"
+carriage_return=$(printf '\r')
 
 fail() {
     printf '마이그레이션 fixture 실패: %s\n' "$1" >&2
@@ -25,6 +26,7 @@ SQL
 while IFS='  ' read -r expected_sha migration_name; do
     [ -n "$expected_sha" ] || continue
     migration_name=$(printf '%s' "$migration_name" | sed 's/^ *//')
+    migration_name=${migration_name%"$carriage_return"}
     case "$migration_name" in
         *[!A-Za-z0-9._-]*) fail "허용되지 않은 migration 파일명입니다: $migration_name" ;;
     esac
