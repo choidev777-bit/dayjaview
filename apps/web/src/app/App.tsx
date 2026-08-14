@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import {
   BrowserRouter,
   MemoryRouter,
@@ -18,7 +18,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { SavedPage } from '../pages/SavedPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
 import { TodayPage } from '../pages/TodayPage';
-import { LoadingState } from '../shared/StatePanel';
+import { ErrorState, LoadingState } from '../shared/StatePanel';
 import { useAsyncResource } from '../shared/useAsyncResource';
 import { RepositoryProvider, useRepository } from './RepositoryContext';
 
@@ -94,8 +94,12 @@ function AuthGate() {
   const repository = useRepository();
   const location = useLocation();
   const navigate = useNavigate();
-  const [sessionOverride, setSessionOverride] = useState<boolean | null>(null);
   const session = useAsyncResource(() => repository.getSession(), [repository]);
+
+  useEffect(
+    () => repository.subscribe('session', session.retry),
+    [repository, session.retry],
+  );
 
   if (session.status === 'loading') {
     return (
@@ -105,7 +109,15 @@ function AuthGate() {
     );
   }
 
-  const authenticated = sessionOverride ?? (session.status === 'success' && session.data.authenticated);
+  if (session.status === 'error') {
+    return (
+      <main className="login-page">
+        <ErrorState error={session.error} retry={session.retry} />
+      </main>
+    );
+  }
+
+  const authenticated = session.data.authenticated;
 
   if (!authenticated) {
     const returnTo = safeReturnTo(`${location.pathname}${location.search}${location.hash}`);
@@ -113,8 +125,10 @@ function AuthGate() {
       <LoginPage
         onLogin={async () => {
           const next = await repository.startGoogleLogin(returnTo);
-          setSessionOverride(next.authenticated);
-          if (next.authenticated) navigate(returnTo, { replace: true });
+          if (next.authenticated) {
+            session.retry();
+            navigate(returnTo, { replace: true });
+          }
         }}
       />
     );
@@ -124,7 +138,7 @@ function AuthGate() {
     <AuthenticatedRoutes
       onLogout={async () => {
         await repository.logout();
-        setSessionOverride(false);
+        session.retry();
       }}
     />
   );

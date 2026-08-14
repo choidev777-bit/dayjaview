@@ -11,14 +11,74 @@ import {
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
-import { useAsyncResource } from '../shared/useAsyncResource';
+import { useRepositoryResource } from '../shared/useRepositoryResource';
+
+function SavedThemeControl({ themeId, displayName }: { themeId: string; displayName: string }) {
+  const repository = useRepository();
+  const [mutating, setMutating] = useState(false);
+  const [mutationFailed, setMutationFailed] = useState(false);
+  const resource = useRepositoryResource(
+    repository,
+    'saved',
+    () => repository.getSaved('THEME'),
+    [repository],
+  );
+
+  if (resource.status === 'loading') {
+    return <p className="save-control" role="status">저장 상태를 확인하는 중입니다</p>;
+  }
+  if (resource.status === 'error') {
+    return <p className="save-control" role="alert">저장 상태를 확인하지 못했습니다.</p>;
+  }
+
+  const saved = resource.data.data.items.some(
+    (item) => item.savedType === 'THEME' && item.targetId === themeId,
+  );
+
+  async function toggleSaved() {
+    setMutating(true);
+    setMutationFailed(false);
+    try {
+      if (saved) {
+        await repository.removeSaved({ savedType: 'THEME', targetId: themeId });
+      } else {
+        await repository.saveSaved({ savedType: 'THEME', targetId: themeId, displayName });
+      }
+      resource.retry();
+    } catch {
+      setMutationFailed(true);
+    } finally {
+      setMutating(false);
+    }
+  }
+
+  return (
+    <div className="save-control">
+      <button
+        className="button button--secondary"
+        type="button"
+        onClick={toggleSaved}
+        disabled={mutating}
+        aria-pressed={saved}
+      >
+        {mutating ? '관심 동기화 중' : saved ? '관심에서 저장 해제' : '관심에 저장'}
+      </button>
+      {mutationFailed ? <p role="alert">저장 상태를 동기화하지 못했습니다. 다시 시도해 주세요.</p> : null}
+    </div>
+  );
+}
 
 function EvidenceSection({ eventId }: { eventId: string }) {
   const repository = useRepository();
-  const resource = useAsyncResource<EvidenceResponse>(() => repository.getEvidence(eventId), [repository, eventId]);
+  const resource = useRepositoryResource<EvidenceResponse>(
+    repository,
+    'evidence',
+    () => repository.getEvidence(eventId),
+    [repository, eventId],
+  );
 
   if (resource.status === 'loading') return <LoadingState label="기사 근거를 확인하는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
 
   const { evidenceStatus, items } = resource.data.data;
 
@@ -67,7 +127,9 @@ export function ThemeDetailPage() {
   const calculationTriggerRef = useRef<HTMLButtonElement>(null);
   const calculationCloseRef = useRef<HTMLButtonElement>(null);
   const calculationWasOpenRef = useRef(false);
-  const resource = useAsyncResource(
+  const resource = useRepositoryResource(
+    repository,
+    'detail',
     () => repository.getThemeDetail(themeId, eventId),
     [repository, themeId, eventId],
   );
@@ -96,7 +158,7 @@ export function ThemeDetailPage() {
   }, [calculationOpen, closeCalculation]);
 
   if (resource.status === 'loading') return <LoadingState label="테마 상세를 불러오는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
 
   const detail = resource.data.data;
   const reaction = detail.currentReaction;
@@ -130,6 +192,11 @@ export function ThemeDetailPage() {
           </span>
         </div>
       </header>
+
+      <SavedThemeControl
+        themeId={detail.classification.themeId}
+        displayName={detail.classification.displayName}
+      />
 
       <CoverageIndicator coverage={detail.coverage} />
 

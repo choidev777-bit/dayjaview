@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from '../app/App';
 import { createFixtureRepository, type RankingFixture } from '../adapters/fixtureRepository';
+import { RepositoryError } from '../domain/repositoryErrors';
 
 describe('시장 데이터 상태 matrix', () => {
   it.each<[RankingFixture, string]>([
@@ -22,6 +23,23 @@ describe('시장 데이터 상태 matrix', () => {
     expect(screen.getByText('현재 0 / 0종목 반영')).toBeInTheDocument();
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.queryByText('0.0%')).not.toBeInTheDocument();
+  });
+
+  it('서버의 실제 0은 null과 구분해 0.0%로 표시한다', async () => {
+    const fixture = createFixtureRepository();
+    const repository = {
+      ...fixture,
+      async getRankings() {
+        const response = await fixture.getRankings();
+        const actualZero = structuredClone(response);
+        actualZero.data.items[0].weightedReturn = 0;
+        return actualZero;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/today']} />);
+
+    expect(await screen.findByText('0.0%')).toBeInTheDocument();
+    expect(screen.queryByText('—')).not.toBeInTheDocument();
   });
 
   it('오늘 empty 상태를 한국어 다음 행동 문구로 표현한다', async () => {
@@ -107,6 +125,25 @@ describe('근거 상태 matrix', () => {
 });
 
 describe('인사이트와 권한 상태', () => {
+  it('403 권한 거부를 일반 데이터 오류와 구분해 한국어로 안내한다', async () => {
+    const fixture = createFixtureRepository();
+    const repository = {
+      ...fixture,
+      async getSaved() {
+        throw new RepositoryError({
+          kind: 'permission',
+          status: 403,
+          code: 'FEATURE_NOT_ENTITLED',
+          message: '권한이 없습니다.',
+        });
+      },
+    };
+    render(<App repository={repository} initialEntries={['/saved']} />);
+
+    expect(await screen.findByText('접근 권한이 없습니다')).toBeInTheDocument();
+    expect(screen.getByText('현재 계정으로는 이 데이터에 접근할 수 없습니다.')).toBeInTheDocument();
+  });
+
   it('Coverage 미달 테마는 0% 타일 없이 empty 상태로 표시한다', async () => {
     render(
       <App

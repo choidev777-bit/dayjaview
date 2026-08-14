@@ -354,6 +354,20 @@ a:focus-visible,
   background: var(--color-warning-soft);
 }
 
+.save-control {
+  display: grid;
+  width: fit-content;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.save-control p {
+  margin: 0;
+  color: var(--color-danger);
+}
+
 .state-panel {
   display: grid;
   justify-items: start;
@@ -857,6 +871,7 @@ a:focus-visible,
   .page--detail > .back-button,
   .page--detail > .detail-hero,
   .page--detail > .coverage,
+  .page--detail > .save-control,
   .page--detail > .detail-grid,
   .page--detail > .gate-notice,
   .page--detail > .text-button {

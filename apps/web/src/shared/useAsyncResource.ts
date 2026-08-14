@@ -1,28 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type AsyncResource<T> =
-  | { status: 'loading'; data: null; error: null; retry: () => void }
-  | { status: 'success'; data: T; error: null; retry: () => void }
-  | { status: 'error'; data: null; error: Error; retry: () => void };
+  | { status: 'loading'; data: null; error: null; retry: () => void; refresh: () => void }
+  | { status: 'success'; data: T; error: null; retry: () => void; refresh: () => void }
+  | { status: 'error'; data: null; error: Error; retry: () => void; refresh: () => void };
 
 export function useAsyncResource<T>(loader: () => Promise<T>, dependencies: readonly unknown[]): AsyncResource<T> {
   const [attempt, setAttempt] = useState(0);
-  const [state, setState] = useState<Omit<AsyncResource<T>, 'retry'>>({
+  const preserveNextRef = useRef(false);
+  const [state, setState] = useState<Omit<AsyncResource<T>, 'retry' | 'refresh'>>({
     status: 'loading',
     data: null,
     error: null,
   });
 
   const retry = useCallback(() => {
+    preserveNextRef.current = false;
     setState({ status: 'loading', data: null, error: null });
+    setAttempt((value) => value + 1);
+  }, []);
+
+  const refresh = useCallback(() => {
+    preserveNextRef.current = true;
     setAttempt((value) => value + 1);
   }, []);
 
   useEffect(() => {
     let active = true;
+    const preserve = preserveNextRef.current;
+    preserveNextRef.current = false;
     Promise.resolve()
       .then(() => {
-        if (active) setState({ status: 'loading', data: null, error: null });
+        if (active && !preserve) setState({ status: 'loading', data: null, error: null });
         return loader();
       })
       .then(
@@ -46,5 +55,5 @@ export function useAsyncResource<T>(loader: () => Promise<T>, dependencies: read
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...dependencies, attempt]);
 
-  return { ...state, retry } as AsyncResource<T>;
+  return { ...state, retry, refresh } as AsyncResource<T>;
 }
