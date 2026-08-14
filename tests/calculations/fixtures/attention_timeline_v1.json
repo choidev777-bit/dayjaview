@@ -1,0 +1,52 @@
+{
+  "fixtureVersion": "attention-timeline-fixture-2026.08.1",
+  "policy": {
+    "version": "attention-interval-2026.08.1",
+    "maturity": "BACKTEST_PENDING",
+    "turnoverMultipleThreshold": "2.0",
+    "stockMultipleThreshold": "2.0",
+    "spreadRatioThreshold": "0.30",
+    "minimumHighInterestStocks": 2,
+    "weightedReturnThreshold": "0.01",
+    "minimumValidMembers": 3,
+    "closeAfterAbsentTradingDays": 10
+  },
+  "tradingDays": [
+    "2026-07-20",
+    "2026-07-21",
+    "2026-07-22",
+    "2026-07-23",
+    "2026-07-24",
+    "2026-07-27",
+    "2026-07-28",
+    "2026-07-29",
+    "2026-07-30",
+    "2026-07-31",
+    "2026-08-03",
+    "2026-08-04",
+    "2026-08-05"
+  ],
+  "signals": [
+    {"marketDate": "2026-07-20", "isAttention": true, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-21", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-22", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-23", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-24", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-27", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-28", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-29", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-30", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-07-31", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-08-03", "isAttention": false, "membershipVersion": "membership-v1"},
+    {"marketDate": "2026-08-04", "isAttention": true, "membershipVersion": "membership-v2"},
+    {"marketDate": "2026-08-05", "isAttention": true, "membershipVersion": "membership-v2"}
+  ],
+  "expected": {
+    "intervalCount": 2,
+    "firstClosedConfirmationDate": "2026-08-03",
+    "currentFirstAttentionDate": "2026-08-04",
+    "currentLastAttentionDate": "2026-08-05",
+    "currentGapTradingDays": 10,
+    "currentMembershipVersions": ["membership-v2"]
+  }
+}
