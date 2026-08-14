@@ -1,0 +1,54 @@
+{
+  "fixtureVersion": "theme-metrics-fixture-2026.08.1",
+  "policy": {
+    "version": "theme-metrics-2026.08.1",
+    "maturity": "BACKTEST_PENDING",
+    "maximumConstituentWeight": "0.30",
+    "sufficientCoreWeightRatio": "0.80",
+    "sufficientRelatedCountRatio": "0.70",
+    "minimumCoreObservations": 2,
+    "minimumTotalObservations": 3
+  },
+  "input": {
+    "themeId": "thm_fixture",
+    "marketDate": "2026-08-14",
+    "asOf": "2026-08-14T01:30:00+00:00",
+    "membership": {
+      "version": "membership-fixture-2026-08-14",
+      "effectiveFrom": "2026-08-14",
+      "knownAt": "2026-08-14T00:00:00+00:00",
+      "members": [
+        {"stockId": "A", "role": "CORE"},
+        {"stockId": "B", "role": "CORE"},
+        {"stockId": "C", "role": "CORE"},
+        {"stockId": "D", "role": "CORE"},
+        {"stockId": "E", "role": "RELATED"},
+        {"stockId": "F", "role": "RELATED"}
+      ]
+    },
+    "stocks": [
+      {"stockId": "A", "previousAdjustedClose": "10", "listedShares": 70, "freeFloatRatio": "1", "currentPrice": "11.0"},
+      {"stockId": "B", "previousAdjustedClose": "10", "listedShares": 20, "freeFloatRatio": "1", "currentPrice": "10.2"},
+      {"stockId": "C", "previousAdjustedClose": "10", "listedShares": 5, "freeFloatRatio": "1", "currentPrice": "9.9"},
+      {"stockId": "D", "previousAdjustedClose": "10", "listedShares": 5, "freeFloatRatio": "1", "currentPrice": "10.0"},
+      {"stockId": "E", "previousAdjustedClose": "10", "listedShares": null, "freeFloatRatio": null, "currentPrice": "10.3"},
+      {"stockId": "F", "previousAdjustedClose": "10", "listedShares": null, "freeFloatRatio": null, "currentPrice": "9.8"}
+    ]
+  },
+  "expected": {
+    "weightedReturn": "0.034",
+    "medianReturn": "0.01",
+    "advancingCount": 3,
+    "validCount": 6,
+    "advancingRatio": "0.5",
+    "coverageStatus": "SUFFICIENT",
+    "coreObservedWeightRatio": "1",
+    "weights": {
+      "A": "0.30",
+      "B": "0.30",
+      "C": "0.20",
+      "D": "0.20"
+    },
+    "qualityFlags": []
+  }
+}
