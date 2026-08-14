@@ -1,7 +1,7 @@
 # DAYJAVIEW API 의미 계약
 
-- 문서 버전: `0.1-draft`
-- 문서 상태: 구현 전 초안 — OpenAPI·AsyncAPI 생성 및 프론트·백엔드 공동 승인 필요
+- 문서 버전: `0.2-draft`
+- 문서 상태: 기계 계약·로컬 검증 완료 — 프론트·백엔드 공동 승인 필요
 - 최종 수정일: 2026-08-14
 - 제품 기준: [PRD.md](./PRD.md)
 - 시스템 기준: [system_architecture.md](./system_architecture.md)
@@ -22,15 +22,16 @@
 - 오늘·인사이트·테마 상세의 실시간 snapshot
 - 온톨로지 재검증 후 열리는 유사사례 read API
 - 프론트 fixture와 backend contract test의 공통 의미
+- OpenAPI·AsyncAPI·JSON Schema와 공통 fixture의 기계 계약
 
 비대상:
 
 - 공급원별 수집 API
 - 키움·인포스탁·뉴스 adapter 내부 계약
-- 운영자 command API 전체
+- 운영자 console의 runtime 구현
 - 인증 제품 요구사항 전체
 - v2 방향 예측 API
-- OpenAPI·AsyncAPI의 완전한 기계 schema
+- backend·frontend runtime 구현
 
 ### 0.1 내부 토폴로지와 독립
 
@@ -855,7 +856,6 @@ REST 최초 snapshot과 WebSocket 첫 snapshot의 `streamId`가 같을 때만 se
     "marketDate": "2026-08-14",
     "lifecycleStatus": "ACTIVE",
     "reconciliationStatus": "PENDING",
-    "reviewStatus": null,
     "classification": {
       "classificationVersion": 1,
       "themeId": "thm_01K2B5Y7J6D8G2M4R7T9V1X3Z5",
@@ -991,7 +991,7 @@ DELETE /v1/me
   "currentState": {
     "eventId": "evt_01K2B62FQ4D1P8E9N7A3C5M6RT",
     "eventState": "ACTIVE",
-    "weightedReturn": 3.42,
+    "weightedReturn": 0.0342,
     "dataStatus": "LIVE",
     "asOf": "2026-08-14T02:11:20.000Z"
   }
@@ -1256,9 +1256,9 @@ client 규칙:
 |---|---|---|
 | `theme_rank_snapshot` | 오늘 ranking 전체 노출 집합 | full snapshot |
 | `theme_treemap_snapshot` | treemap 전체 노출 집합 | full snapshot |
-| `event_state_changed` | 구독 Event의 최신 요약 상태 | event별 full summary 또는 REST refetch signal |
+| `event_state_changed` | 구독 Event의 최신 요약 상태 | event별 full summary |
 
-`event_state_changed` payload 모양은 AsyncAPI에서 둘 중 하나로 확정한다. 불완전한 delta를 임의 병합하지 않는다.
+`event_state_changed` payload는 Event별 전체 공개 요약으로 확정한다. refetch 신호나 불완전한 delta를 보내지 않는다.
 
 ### 12.6 snapshot 주기와 coalescing
 
@@ -1439,6 +1439,15 @@ errors/
 
 ## 16. Contract test
 
+기계 계약은 저장소 루트에서 다음 두 명령으로 검증한다.
+
+```text
+uv run python scripts/validate_contracts.py
+uv run pytest tests/contracts -q
+```
+
+검증기는 외부 서비스나 secret 없이 OpenAPI, AsyncAPI 3.0 profile, JSON Schema reference, 모든 fixture, 이 문서의 JSON 예시와 시간·Coverage·Event ID·classification revision·sequence·권한 경계 invariant를 결정적으로 확인한다.
+
 ### 16.1 schema
 
 - 모든 REST success·error example 검증
@@ -1473,21 +1482,14 @@ outcome이 검색 후보 선택 입력에 존재하지 않음
 
 ---
 
-## 17. 미결정 사항
+## 17. 계속 미결정인 사항
 
 | 항목 | 결정 주체 | 결정 시점 |
 |---|---|---|
-| endpoint 최종 경로·복수형 naming | 프론트·백엔드 | OpenAPI 초안 |
-| REST default·max limit | 백엔드·프론트 | OpenAPI 초안 |
-| WebSocket 인증 방식 | 백엔드·보안 | AsyncAPI 초안 |
-| `event_state_changed` full payload vs refetch signal | 프론트·백엔드 | AsyncAPI 초안 |
 | heartbeat·timeout·reconnect 최대값 | 프론트·백엔드·인프라 | 부하 시험 전 |
-| classification enum 최종 naming | 데이터·백엔드·프론트 | schema 검토 |
-| treemap 기본 item 수 | 제품·프론트·백엔드 | UX·성능 시험 |
 | 과거 조회 cache 기간 | 백엔드·인프라 | 운영 준비 |
 | deprecation 최소 기간 | 제품·개발 | 첫 release policy |
 | similarity score 공개 여부 | 연구·제품 | 단계 7 검수 |
-| 역사 상세 endpoint와 context 표현 | 프론트·백엔드 | OpenAPI 초안 |
 | 큰 금액 decimal 표현 | 백엔드·프론트 | schema 검토 |
 
 미결정 항목은 server·client 한쪽에서 먼저 사실상 표준으로 만들지 않는다.
@@ -1525,10 +1527,12 @@ outcome이 검색 후보 선택 입력에 존재하지 않음
 - [ ] 연구 담당이 유사사례 leakage 방지 계약을 검토했다.
 - [ ] 운영·보안 담당이 인증·권한·오류 노출을 검토했다.
 - [ ] 미결정 항목에 소유자와 기한을 지정했다.
-- [ ] `contracts/openapi.yaml`을 작성·검증했다.
-- [ ] `contracts/asyncapi.yaml`을 작성·검증했다.
-- [ ] `contracts/schemas/`를 작성했다.
-- [ ] `contracts/fixtures/`를 작성했다.
+- [x] `contracts/openapi.yaml`을 작성·검증했다.
+- [x] `contracts/asyncapi.yaml`을 작성·검증했다.
+- [x] `contracts/schemas/`를 작성했다.
+- [x] `contracts/fixtures/`를 작성했다.
+- [x] 로컬 validator와 focused contract test를 작성했다.
+- [x] secret·외부 서비스 없는 contract CI를 작성했다.
 - [ ] 프론트 mock과 backend contract test가 같은 schema를 사용한다.
 - [ ] 문서 상태를 `승인`으로 변경했다.
 

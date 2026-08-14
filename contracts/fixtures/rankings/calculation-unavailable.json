@@ -1,0 +1,71 @@
+{
+  "data": {
+    "snapshotId": "snap_rank_unavailable",
+    "streamId": "stream_market_20260814",
+    "sequence": 121,
+    "items": [
+      {
+        "eventId": "evt_unavailable",
+        "lifecycleStatus": "ACTIVE",
+        "reconciliationStatus": "PENDING",
+        "classification": {
+          "classificationVersion": 1,
+          "themeId": "thm_unavailable",
+          "displayName": "계산 대기 테마",
+          "kind": "INFOSTOCK_THEME",
+          "certainty": "PROVISIONAL",
+          "source": "LIVE_ENGINE",
+          "changedAt": "2026-08-14T00:04:00.000Z"
+        },
+        "rank": 3,
+        "rankChange60s": null,
+        "badges": [],
+        "weightedReturn": null,
+        "weightMethod": "FREE_FLOAT_CAPPED",
+        "advancingCount": null,
+        "validCount": null,
+        "leader": null,
+        "evidence": {
+          "evidenceStatus": "SEARCHING",
+          "summary": null,
+          "publishedAt": null
+        },
+        "coverage": {
+          "status": "INSUFFICIENT",
+          "core": {
+            "observedCount": 0,
+            "totalCount": 0,
+            "countRatio": null,
+            "observedWeightRatio": null
+          },
+          "related": {
+            "observedCount": 0,
+            "totalCount": 0,
+            "countRatio": null
+          }
+        },
+        "qualityFlags": ["INSUFFICIENT_COVERAGE", "FREE_FLOAT_UNAVAILABLE"]
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_rank_unavailable",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T00:05:02.100Z",
+    "marketContext": {
+      "market": "KRX",
+      "timeZone": "Asia/Seoul",
+      "marketDate": "2026-08-14",
+      "asOf": "2026-08-14T00:05:02.000Z",
+      "dataStatus": "DEGRADED",
+      "lastHealthyAt": null,
+      "qualityFlags": ["INSUFFICIENT_COVERAGE", "FREE_FLOAT_UNAVAILABLE"]
+    },
+    "versions": {
+      "calculationVersion": "theme-metrics-2026.08.1",
+      "rankingModelVersion": "theme-rank-2026.08.1",
+      "membershipVersion": "membership-2026-08-14T00:10:00Z"
+    }
+  }
+}

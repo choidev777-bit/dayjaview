@@ -1,0 +1,10 @@
+{
+  "type": "subscribed",
+  "requestId": "client_001",
+  "subscriptionId": "sub_001",
+  "topics": [
+    "theme_rank_snapshot",
+    "theme_treemap_snapshot",
+    "event_state_changed"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "decisionAt": "2026-08-14T01:18:22.410Z",
+    "availability": "AVAILABLE",
+    "summary": [
+      {
+        "horizonTradingDays": 20,
+        "eligibleCount": 4,
+        "observedCount": 2,
+        "positiveCount": 1,
+        "medianReturn": 0.004
+      }
+    ],
+    "items": [
+      {
+        "matchedEventId": "evt_partial_history",
+        "marketDate": "2025-08-20",
+        "displayNameAtEvent": "과거 예시 테마",
+        "normalizedCatalystSummary": "과거 확인 소재",
+        "similarityReasons": ["유사 소재 유형"],
+        "outcomes": [
+          {
+            "horizonTradingDays": 20,
+            "return": null,
+            "status": "UNAVAILABLE",
+            "unavailableReason": "PRICE_MISSING"
+          }
+        ]
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_similar_partial",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": "ontology-2026.08.1",
+      "retrievalArtifactVersion": "retrieval-2026.08.1",
+      "tradingCalendarVersion": "krx-calendar-2026.08.1",
+      "outcomeVersion": "leader-ew-v1-2026.08.1"
+    }
+  }
+}

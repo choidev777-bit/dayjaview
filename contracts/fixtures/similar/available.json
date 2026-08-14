@@ -1,0 +1,70 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "decisionAt": "2026-08-14T01:18:22.410Z",
+    "availability": "AVAILABLE",
+    "summary": [
+      {
+        "horizonTradingDays": 1,
+        "eligibleCount": 14,
+        "observedCount": 14,
+        "positiveCount": 10,
+        "medianReturn": 0.031
+      },
+      {
+        "horizonTradingDays": 5,
+        "eligibleCount": 14,
+        "observedCount": 14,
+        "positiveCount": 9,
+        "medianReturn": 0.082
+      },
+      {
+        "horizonTradingDays": 20,
+        "eligibleCount": 14,
+        "observedCount": 12,
+        "positiveCount": 6,
+        "medianReturn": 0.041
+      }
+    ],
+    "items": [
+      {
+        "matchedEventId": "evt_historical",
+        "marketDate": "2024-11-18",
+        "displayNameAtEvent": "LED",
+        "normalizedCatalystSummary": "마이크로 LED 양산 발표",
+        "similarityReasons": ["유사 소재 유형", "관련 종목군 중첩"],
+        "outcomes": [
+          {
+            "horizonTradingDays": 1,
+            "return": -0.003,
+            "status": "OBSERVED",
+            "unavailableReason": null
+          },
+          {
+            "horizonTradingDays": 20,
+            "return": 0.011,
+            "status": "OBSERVED",
+            "unavailableReason": null
+          }
+        ]
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_similar_available",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": "ontology-2026.08.1",
+      "retrievalArtifactVersion": "retrieval-2026.08.1",
+      "tradingCalendarVersion": "krx-calendar-2026.08.1",
+      "outcomeVersion": "leader-ew-v1-2026.08.1"
+    }
+  }
+}

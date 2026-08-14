@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "DATA_TEMPORARILY_UNAVAILABLE",
+    "message": "신뢰할 수 있는 결과를 현재 제공할 수 없습니다.",
+    "retryable": true,
+    "details": {}
+  },
+  "meta": {
+    "requestId": "req_error_unavailable",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z"
+  }
+}

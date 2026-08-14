@@ -1,0 +1,41 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "evidenceStatus": "MULTI_SOURCE_CONFIRMED",
+    "items": [
+      {
+        "newsId": "news_1",
+        "sourceName": "예시 언론사",
+        "title": "체코 신규 원전 관련 보도",
+        "publishedAt": "2026-08-14T01:17:00.000Z",
+        "receivedAt": "2026-08-14T01:17:08.201Z",
+        "originalUrl": "https://example.com/news/123",
+        "matchBasis": ["THEME", "STOCK", "TIME"],
+        "summary": "기사에서 확인된 범위의 자체 요약",
+        "qualityFlags": []
+      },
+      {
+        "newsId": "news_2",
+        "sourceName": "두번째 예시 언론사",
+        "title": "신규 원전 협상 진전 보도",
+        "publishedAt": "2026-08-14T01:20:00.000Z",
+        "receivedAt": "2026-08-14T01:20:05.000Z",
+        "originalUrl": "https://example.org/news/456",
+        "matchBasis": ["THEME", "TIME"],
+        "summary": "복수 근거 확인을 위한 두번째 자체 요약",
+        "qualityFlags": []
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_evidence_multi",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:20:08.000Z"
+  }
+}

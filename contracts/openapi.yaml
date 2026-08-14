@@ -1,0 +1,871 @@
+openapi: 3.1.0
+info:
+  title: DAYJAVIEW Stage 0 HTTP API
+  version: 1.0.0
+  description: |
+    확정된 MVP surface의 기계 판독 HTTP 계약이다. 제품 데이터 operation은
+    Secure HttpOnly session cookie를 요구한다. Historical operation은 승인된
+    artifact gate와 entitlement를 추가로 요구하며, operator operation은 내부
+    OPERATOR role을 추가로 요구한다.
+servers:
+  - url: https://dayjaview.vercel.app/api
+    description: browser가 접근하는 Vercel rewrite
+tags:
+  - name: Auth
+  - name: Market
+  - name: Themes
+  - name: Evidence
+  - name: Saved
+  - name: Historical
+  - name: Operator
+security:
+  - sessionCookie: []
+paths:
+  /auth/google:
+    get:
+      tags: [Auth]
+      operationId: startGoogleLogin
+      summary: Google OAuth 로그인을 시작한다
+      security: []
+      parameters:
+        - name: returnTo
+          in: query
+          required: false
+          description: APP_BASE_URL 기준 내부 경로이며 잘못된 값은 오늘 화면으로 이동한다.
+          schema:
+            type: string
+            maxLength: 2048
+      responses:
+        "302":
+          description: Google OAuth로 이동한다
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: uri
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      operationId: completeGoogleLogin
+      summary: Google OAuth 로그인을 완료한다
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "302":
+          description: server session을 만들고 안전한 내부 경로로 이동한다
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+            Set-Cookie:
+              required: true
+              description: Domain 속성이 없는 Secure, HttpOnly, SameSite session cookie다.
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /auth/session:
+    get:
+      tags: [Auth]
+      operationId: getSession
+      summary: 현재 로그인 session을 조회한다
+      security: []
+      responses:
+        "200":
+          description: session 상태이며 비로그인 상태에는 제품 데이터가 없다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/SessionResponse"
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: 현재 session을 폐기하고 cookie를 만료한다
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          description: logout은 idempotent하다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/LogoutResponse"
+  /v1/auth/realtime-ticket:
+    post:
+      tags: [Auth]
+      operationId: issueRealtimeTicket
+      summary: 30초 유효한 1회용 WebSocket ticket을 발급한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          description: WebSocket 첫 message로 제출할 opaque ticket이다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/RealtimeTicketResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/market/session:
+    get:
+      tags: [Market]
+      operationId: getMarketSession
+      summary: 현재 KRX session과 freshness를 조회한다
+      x-stage0-fixtures:
+        - market/session.preopen.json
+        - market/session.live.json
+        - market/session.closed.json
+      responses:
+        "200":
+          description: 현재 KRX session
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/MarketSessionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/themes/rankings:
+    get:
+      tags: [Themes]
+      operationId: getThemeRankings
+      summary: 일반 사용자 theme ranking의 제한된 full snapshot을 조회한다
+      parameters:
+        - $ref: "#/components/parameters/RankingLimit"
+        - name: marketDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      x-stage0-fixtures:
+        - rankings/live.json
+        - rankings/delayed.json
+        - rankings/degraded-partial-coverage.json
+        - rankings/closed-pending-reconciliation.json
+        - rankings/empty.json
+        - rankings/calculation-unavailable.json
+      responses:
+        "200":
+          description: ranking full snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/RankingResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "422":
+          description: 지원하지 않는 거래일이다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/insights/treemap:
+    get:
+      tags: [Themes]
+      operationId: getThemeTreemap
+      summary: 양수·Coverage 충분 조건의 상위 12개 treemap snapshot을 조회한다
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+            default: 12
+      x-stage0-fixtures:
+        - treemap/live.json
+        - treemap/insufficient-coverage-excluded.json
+      responses:
+        "200":
+          description: treemap full snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/TreemapResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/themes/{themeId}/events/{eventId}:
+    get:
+      tags: [Themes]
+      operationId: getThemeEventDetail
+      summary: 일반 사용자 theme 상세 projection을 조회한다
+      description: operator 전용 review field는 의도적으로 포함하지 않는다.
+      parameters:
+        - $ref: "#/components/parameters/ThemeId"
+        - $ref: "#/components/parameters/EventId"
+      x-stage0-fixtures:
+        - event/searching-evidence.json
+        - event/single-source.json
+        - event/multi-source.json
+        - event/after-close-confirmed.json
+        - event/unmatched.json
+      responses:
+        "200":
+          description: 일반 사용자 theme Event 상세
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/ThemeDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/events/{eventId}/evidence:
+    get:
+      tags: [Evidence]
+      operationId: getEventEvidence
+      summary: 제한된 기사 본문 없이 source가 연결된 근거를 조회한다
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      x-stage0-fixtures:
+        - evidence/none-searching.json
+        - evidence/single-source.json
+        - evidence/multi-source.json
+        - evidence/no-new-catalyst.json
+        - evidence/source-degraded.json
+      responses:
+        "200":
+          description: 근거 상태와 page
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/EvidenceListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "503":
+          $ref: "#/components/responses/Unavailable"
+  /v1/me/saved:
+    get:
+      tags: [Saved]
+      operationId: listSavedItems
+      summary: 현재 session 사용자의 saved library를 조회한다
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ALL, THEME, STOCK, EVENT]
+            default: ALL
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      x-stage0-fixtures:
+        - saved/library.json
+        - saved/unavailable.json
+      responses:
+        "200":
+          description: savedAt 내림차순, targetId 동률 기준으로 정렬된 saved item
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/SavedListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /v1/me/saved/themes/{themeId}:
+    parameters:
+      - $ref: "#/components/parameters/ThemeId"
+    put:
+      tags: [Saved]
+      operationId: saveTheme
+      summary: theme를 idempotent하게 저장한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Saved]
+      operationId: unsaveTheme
+      summary: 저장한 theme를 idempotent하게 해제한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /v1/me/saved/stocks/{stockId}:
+    parameters:
+      - $ref: "#/components/parameters/StockId"
+    put:
+      tags: [Saved]
+      operationId: saveStock
+      summary: stock을 idempotent하게 저장한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Saved]
+      operationId: unsaveStock
+      summary: 저장한 stock을 idempotent하게 해제한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /v1/me/saved/events/{eventId}:
+    parameters:
+      - $ref: "#/components/parameters/EventId"
+    put:
+      tags: [Saved]
+      operationId: saveEvent
+      summary: 접근 가능한 Event를 idempotent하게 저장한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Saved]
+      operationId: unsaveEvent
+      summary: 저장한 Event를 idempotent하게 해제한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "200":
+          $ref: "#/components/responses/SavedMutation"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /v1/me:
+    delete:
+      tags: [Saved]
+      operationId: deleteAccount
+      summary: 모든 session을 폐기하고 최소 profile·saved data 삭제를 시작한다
+      parameters:
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "202":
+          description: 삭제 요청을 접수했다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/AccountDeletionResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          description: 최근 인증이 필요하다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+  /v1/events/{eventId}/similar-events:
+    get:
+      tags: [Historical]
+      operationId: getSimilarEvents
+      summary: leakage-safe한 유사 과거 Event를 조회한다
+      description: 승인된 immutable retrieval artifact와 entitlement가 생기기 전에는 비활성화한다.
+      x-feature-gate: ONTOLOGY_VALIDATION_REQUIRED
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: horizonTradingDays
+          in: query
+          required: false
+          schema:
+            type: integer
+            enum: [1, 5, 20]
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [relevance, eventDate]
+            default: relevance
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      x-stage0-fixtures:
+        - similar/gated.json
+        - similar/available.json
+        - similar/empty.json
+        - similar/partial-outcomes.json
+      responses:
+        "200":
+          description: 유사 Event 요약과 안정적인 relevance·eventDate page
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/SimilarEventsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/events/{eventId}:
+    get:
+      tags: [Historical]
+      operationId: getHistoricalEvent
+      summary: 과거 Event와 선택적인 현재 Event 비교를 조회한다
+      x-feature-gate: ONTOLOGY_VALIDATION_REQUIRED
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: contextEventId
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+      x-stage0-fixtures:
+        - similar/event-detail.json
+      responses:
+        "200":
+          description: 과거 Event 상세
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/HistoricalEventResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/operator/status:
+    get:
+      tags: [Operator]
+      operationId: getOperatorStatus
+      summary: redaction된 배포·service health를 조회한다
+      x-required-role: OPERATOR
+      x-stage0-fixtures:
+        - operator/status.json
+      responses:
+        "200":
+          description: redaction된 operator 상태
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorStatusResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/operator/jobs:
+    get:
+      tags: [Operator]
+      operationId: listOperatorJobs
+      summary: redaction된 batch·ingestion run을 조회한다
+      x-required-role: OPERATOR
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [RUNNING, SUCCEEDED, PARTIAL, RATE_LIMITED, AUTH_REQUIRED, FAILED]
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: operator job 목록
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorJobListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/operator/jobs/{runId}:
+    parameters:
+      - $ref: "#/components/parameters/RunId"
+    get:
+      tags: [Operator]
+      operationId: getOperatorJob
+      summary: redaction된 단일 run을 조회한다
+      x-required-role: OPERATOR
+      responses:
+        "200":
+          description: operator job
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorJobResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/operator/jobs/{runId}/retry:
+    post:
+      tags: [Operator]
+      operationId: retryOperatorJob
+      summary: 재시도 가능한 실패 run을 audit command로 재시도한다
+      x-required-role: OPERATOR
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        $ref: "#/components/requestBodies/OperatorCommand"
+      responses:
+        "200":
+          $ref: "#/components/responses/OperatorCommand"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/operator/jobs/{runId}/resume:
+    post:
+      tags: [Operator]
+      operationId: resumeOperatorJob
+      summary: 재개 가능한 중단 run을 audit command로 재개한다
+      x-required-role: OPERATOR
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        $ref: "#/components/requestBodies/OperatorCommand"
+      responses:
+        "200":
+          $ref: "#/components/responses/OperatorCommand"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/operator/reviews:
+    get:
+      tags: [Operator]
+      operationId: listOperatorReviews
+      summary: 내부 pending review를 조회한다
+      x-required-role: OPERATOR
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^[A-Z][A-Z0-9_]*$"
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            const: PENDING
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      x-stage0-fixtures:
+        - operator/reviews.pending.json
+      responses:
+        "200":
+          description: 내부 review queue
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorReviewListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/operator/reviews/{reviewId}:
+    get:
+      tags: [Operator]
+      operationId: getOperatorReview
+      summary: 내부 review 하나를 조회한다
+      x-required-role: OPERATOR
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+      responses:
+        "200":
+          description: 내부 review
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorReviewResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/operator/reviews/{reviewId}/resolve:
+    post:
+      tags: [Operator]
+      operationId: resolveOperatorReview
+      summary: audit 가능한 revision을 생성해 review를 해결한다
+      x-required-role: OPERATOR
+      parameters:
+        - $ref: "#/components/parameters/ReviewId"
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/stage0.schema.json#/$defs/OperatorResolveRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/OperatorCommand"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /v1/operator/audit:
+    get:
+      tags: [Operator]
+      operationId: listOperatorAudit
+      summary: immutable operator audit entry를 조회한다
+      x-required-role: OPERATOR
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: audit page
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/OperatorAuditListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /v1/operator/infostock/auth-status:
+    get:
+      tags: [Operator]
+      operationId: getInfostockAuthStatus
+      summary: redaction된 인포스탁 인증 준비 상태를 조회한다
+      x-required-role: OPERATOR
+      responses:
+        "200":
+          description: cookie나 session-state 원문을 반환하지 않는다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/InfostockAuthStatusResponse"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: __Host-dayjaview_session
+      description: Secure, HttpOnly, host-only server session cookie다.
+  parameters:
+    ThemeId:
+      name: themeId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    StockId:
+      name: stockId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    RunId:
+      name: runId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 1
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    RankingLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 10
+    Origin:
+      name: Origin
+      in: header
+      required: true
+      schema:
+        type: string
+        const: https://dayjaview.vercel.app
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: cookie 기반 상태 변경 요청의 CSRF token이다.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 512
+  requestBodies:
+    OperatorCommand:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/OperatorCommandRequest"
+  responses:
+    BadRequest:
+      description: 잘못된 요청이다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    Unauthenticated:
+      description: 인증이 필요하며 제품 데이터를 포함하지 않는다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    Forbidden:
+      description: feature entitlement 또는 OPERATOR role이 필요하다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    NotFound:
+      description: resource가 없거나 현재 사용자에게 보이지 않는다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    Conflict:
+      description: identifier 불일치, 완료된 command 또는 stale expected version이다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    Unavailable:
+      description: 현재 신뢰할 수 있는 결과가 없다
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+    SavedMutation:
+      description: 최종 idempotent saved 상태
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/SavedMutationResponse"
+    OperatorCommand:
+      description: audit된 command 결과
+      content:
+        application/json:
+          schema:
+            $ref: "./schemas/stage0.schema.json#/$defs/OperatorCommandResponse"

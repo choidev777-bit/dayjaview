@@ -1,0 +1,58 @@
+{
+  "data": {
+    "eventId": "evt_unmatched",
+    "marketDate": "2026-08-14",
+    "lifecycleStatus": "CLOSED",
+    "reconciliationStatus": "UNMATCHED",
+    "classification": {
+      "classificationVersion": 1,
+      "themeId": "thm_temporary",
+      "displayName": "장중 임시 분류",
+      "kind": "TEMPORARY_THEME",
+      "certainty": "PROVISIONAL",
+      "source": "LIVE_ENGINE",
+      "changedAt": "2026-08-14T01:00:00.000Z"
+    },
+    "currentReaction": {
+      "weightedReturn": 0.014,
+      "weightMethod": "FREE_FLOAT_CAPPED",
+      "advancingCount": 5,
+      "validCount": 8,
+      "turnoverMultiple": 1.7,
+      "attentionGapTradingDays": null
+    },
+    "coverage": {
+      "status": "PARTIAL",
+      "core": {
+        "observedCount": 5,
+        "totalCount": 8,
+        "countRatio": 0.625,
+        "observedWeightRatio": 0.71
+      },
+      "related": {
+        "observedCount": 7,
+        "totalCount": 12,
+        "countRatio": 0.5833
+      }
+    },
+    "evidenceSummary": {
+      "evidenceStatus": "SINGLE_SOURCE",
+      "summary": "장중 단일 기사 근거",
+      "sourceCount": 1,
+      "latestPublishedAt": "2026-08-14T01:02:00.000Z"
+    },
+    "leaders": [],
+    "historicalAccess": {
+      "status": "UNAVAILABLE",
+      "reason": "RECONCILIATION_UNMATCHED"
+    },
+    "canonicalPath": "/v1/themes/thm_temporary/events/evt_unmatched",
+    "qualityFlags": ["PARTIAL_COVERAGE"]
+  },
+  "meta": {
+    "requestId": "req_event_unmatched",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T07:15:00.000Z"
+  }
+}

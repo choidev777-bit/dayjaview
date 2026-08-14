@@ -1,0 +1,18 @@
+{
+  "data": {
+    "eventId": "evt_no_new",
+    "evidenceStatus": "NO_NEW_CATALYST",
+    "items": [],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_evidence_none",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T02:00:00.000Z"
+  }
+}

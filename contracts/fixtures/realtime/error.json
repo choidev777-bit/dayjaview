@@ -1,0 +1,7 @@
+{
+  "type": "error",
+  "requestId": "client_001",
+  "code": "INVALID_SUBSCRIPTION",
+  "message": "지원하지 않는 topic 또는 parameter입니다.",
+  "retryable": false
+}

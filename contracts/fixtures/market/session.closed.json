@@ -1,0 +1,26 @@
+{
+  "data": {
+    "market": "KRX",
+    "timeZone": "Asia/Seoul",
+    "marketDate": "2026-08-14",
+    "sessionPhase": "CLOSED",
+    "sessionOpenedAt": "2026-08-14T00:00:00.000Z",
+    "sessionClosesAt": "2026-08-14T06:30:00.000Z",
+    "nextTransitionAt": null
+  },
+  "meta": {
+    "requestId": "req_market_closed",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T06:31:00.100Z",
+    "marketContext": {
+      "market": "KRX",
+      "timeZone": "Asia/Seoul",
+      "marketDate": "2026-08-14",
+      "asOf": "2026-08-14T06:30:00.000Z",
+      "dataStatus": "CLOSED",
+      "lastHealthyAt": "2026-08-14T06:30:00.000Z",
+      "qualityFlags": []
+    }
+  }
+}

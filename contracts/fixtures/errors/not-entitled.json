@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "FEATURE_NOT_ENTITLED",
+    "message": "이 기능에 접근할 수 없습니다.",
+    "retryable": false,
+    "details": {}
+  },
+  "meta": {
+    "requestId": "req_error_forbidden",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z"
+  }
+}

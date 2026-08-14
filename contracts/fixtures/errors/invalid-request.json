@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "요청 형식을 확인해 주세요.",
+    "retryable": false,
+    "details": {"field": "limit"}
+  },
+  "meta": {
+    "requestId": "req_error_invalid",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z"
+  }
+}

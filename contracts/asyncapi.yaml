@@ -1,0 +1,144 @@
+asyncapi: 3.0.0
+info:
+  title: DAYJAVIEW Stage 0 Realtime API
+  version: 1.0.0
+  description: |
+    인증된 full snapshot WebSocket 계약이다. 30초 유효한 1회용 ticket을 연결 후
+    5초 안에 첫 AUTH message로 보낸다. ticket 소비가 성공하기 전에는 제품
+    데이터를 보내지 않는다. Sequence 범위는 streamId, topic, normalized
+    subscription parameter 조합이다.
+servers:
+  production:
+    host: api.dayjaview.duckdns.org
+    protocol: wss
+    pathname: /v1/realtime
+    description: app Origin을 엄격히 검증하는 OCI direct WebSocket endpoint
+channels:
+  realtime:
+    address: /v1/realtime
+    messages:
+      auth:
+        $ref: "#/components/messages/Auth"
+      subscribe:
+        $ref: "#/components/messages/Subscribe"
+      pong:
+        $ref: "#/components/messages/Pong"
+      subscribed:
+        $ref: "#/components/messages/Subscribed"
+      themeRankSnapshot:
+        $ref: "#/components/messages/ThemeRankSnapshot"
+      themeTreemapSnapshot:
+        $ref: "#/components/messages/ThemeTreemapSnapshot"
+      eventStateChanged:
+        $ref: "#/components/messages/EventStateChanged"
+      ping:
+        $ref: "#/components/messages/Ping"
+      error:
+        $ref: "#/components/messages/Error"
+operations:
+  receiveClientMessages:
+    action: receive
+    summary: AUTH를 먼저 받고 이후 subscription과 heartbeat 응답을 받는다
+    channel:
+      $ref: "#/channels/realtime"
+    messages:
+      - $ref: "#/channels/realtime/messages/auth"
+      - $ref: "#/channels/realtime/messages/subscribe"
+      - $ref: "#/channels/realtime/messages/pong"
+  sendServerMessages:
+    action: send
+    summary: 확인 응답, full snapshot, heartbeat와 안전한 오류를 보낸다
+    channel:
+      $ref: "#/channels/realtime"
+    messages:
+      - $ref: "#/channels/realtime/messages/subscribed"
+      - $ref: "#/channels/realtime/messages/themeRankSnapshot"
+      - $ref: "#/channels/realtime/messages/themeTreemapSnapshot"
+      - $ref: "#/channels/realtime/messages/eventStateChanged"
+      - $ref: "#/channels/realtime/messages/ping"
+      - $ref: "#/channels/realtime/messages/error"
+components:
+  messages:
+    Auth:
+      name: auth
+      title: 1회용 realtime ticket 소비
+      summary: 첫 message여야 하며 연결 후 5초 안에 도착해야 한다
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsAuth"
+      x-stage0-fixtures:
+        - realtime/auth.json
+    Subscribe:
+      name: subscribe
+      title: normalized realtime topic 구독
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsSubscribe"
+      x-stage0-fixtures:
+        - realtime/subscribe.json
+    Pong:
+      name: pong
+      title: application heartbeat 응답
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsPong"
+      x-stage0-fixtures:
+        - realtime/pong.json
+    Subscribed:
+      name: subscribed
+      title: 승인된 normalized subscription
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsSubscribed"
+      x-stage0-fixtures:
+        - realtime/subscribed.json
+    ThemeRankSnapshot:
+      name: theme_rank_snapshot
+      title: 현재 ranking 전체 노출 집합
+      summary: 중간 snapshot은 coalesce할 수 있지만 전달되는 payload는 항상 완전하다
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsRankingSnapshot"
+      x-stage0-fixtures:
+        - realtime/ranking-snapshot.json
+        - realtime/reconnect-full-snapshot.json
+    ThemeTreemapSnapshot:
+      name: theme_treemap_snapshot
+      title: 양수·Coverage 충분 조건의 상위 12개 treemap 전체 노출 집합
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsTreemapSnapshot"
+      x-stage0-fixtures:
+        - realtime/treemap-snapshot.json
+    EventStateChanged:
+      name: event_state_changed
+      title: 구독 Event 하나의 최신 전체 공개 요약
+      summary: Stage 0 계약은 partial delta가 아닌 full summary로 확정한다
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsEventStateChanged"
+      x-stage0-fixtures:
+        - realtime/event-state-changed.json
+    Ping:
+      name: ping
+      title: application heartbeat
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsPing"
+      x-stage0-fixtures:
+        - realtime/ping.json
+    Error:
+      name: error
+      title: 안전한 application 오류
+      payload:
+        $ref: "./schemas/stage0.schema.json#/$defs/WsError"
+      x-stage0-fixtures:
+        - realtime/error.json
+x-sequence-contract:
+  scope:
+    - streamId
+    - topic
+    - normalizedSubscriptionParams
+  rules:
+    - 같은 범위에서 마지막 적용값보다 작거나 같은 sequence는 무시한다.
+    - 새 streamId의 첫 full snapshot은 이전 sequence와 비교하지 않고 수용한다.
+    - 재연결 후 첫 full snapshot으로 local 상태를 전체 교체한다.
+    - delta message는 Stage 0 계약에 포함하지 않는다.
+x-authentication-contract:
+  ticketTtlSeconds: 30
+  authMessageDeadlineSeconds: 5
+  singleUse: true
+  ticketInUrl: false
+  allowedOrigin: https://dayjaview.vercel.app
