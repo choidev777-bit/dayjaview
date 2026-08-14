@@ -1,3 +1,4 @@
+import evidenceSingleFixture from '../../../../contracts/fixtures/evidence/single-source.json';
 import rankingUnavailableFixture from '../../../../contracts/fixtures/rankings/calculation-unavailable.json';
 import rankingLiveFixture from '../../../../contracts/fixtures/rankings/live.json';
 import treemapLiveFixture from '../../../../contracts/fixtures/treemap/live.json';
@@ -9,6 +10,7 @@ import {
 } from '../adapters/productionRepository';
 import type {
   RankingResponse,
+  EvidenceResponse,
   RealtimeRankingSnapshot,
   RealtimeTreemapSnapshot,
   ResponseMeta,
@@ -23,6 +25,7 @@ import { RepositoryError } from '../domain/repositoryErrors';
 const rankingLive = rankingLiveFixture as unknown as RankingResponse;
 const rankingUnavailable = rankingUnavailableFixture as unknown as RankingResponse;
 const treemapLive = treemapLiveFixture as unknown as TreemapResponse;
+const evidenceSingle = evidenceSingleFixture as unknown as EvidenceResponse;
 
 const meta: ResponseMeta = {
   requestId: 'req_test',
@@ -152,6 +155,22 @@ function treemapSnapshot(
 }
 
 describe('live REST adapter 인증·cache 경계', () => {
+  it('fixture와 live REST가 pagination을 포함한 동일 evidence shape를 투영한다', async () => {
+    const fixture = createFixtureRepository({ evidence: 'single' });
+    const live = createProductionRepository({
+      webSocketFactory: null,
+      fetcher: async (input) => {
+        expect(String(input)).toBe('/api/v1/events/evt_current/evidence?limit=20');
+        return jsonResponse(evidenceSingle);
+      },
+    });
+
+    const fixtureResponse = await fixture.getEvidence('evt_current');
+    const liveResponse = await live.getEvidence('evt_current');
+    expect(liveResponse).toEqual(fixtureResponse);
+    expect(liveResponse.data.page).toEqual({ nextCursor: null, hasMore: false, limit: 20 });
+  });
+
   it('fixture와 같은 계약 응답을 그대로 소비하고 null·실제 0·Coverage를 추정하지 않는다', async () => {
     const fixture = createFixtureRepository({ ranking: 'unavailable' });
     const live = createProductionRepository({
@@ -218,6 +237,35 @@ describe('live REST adapter 인증·cache 경계', () => {
     expect((await repository.getRankings()).data.snapshotId).toBe('snap_2');
     expect(rankingReads).toBe(2);
     expect(sessionReads).toBe(2);
+  });
+
+  it('401 뒤 evidence cache도 폐기해 재로그인 후 같은 Event를 다시 조회한다', async () => {
+    let evidenceReads = 0;
+    const repository = createProductionRepository({
+      webSocketFactory: null,
+      fetcher: async (input) => {
+        const path = String(input);
+        if (path === '/api/auth/session') return jsonResponse(authenticatedSession);
+        if (path.startsWith('/api/v1/events/evt_current/evidence')) {
+          evidenceReads += 1;
+          const response = structuredClone(evidenceSingle);
+          response.meta.requestId = `req_evidence_${evidenceReads}`;
+          return jsonResponse(response);
+        }
+        if (path.startsWith('/api/v1/me/saved')) {
+          return errorResponse(401, 'AUTHENTICATION_REQUIRED');
+        }
+        throw new Error(`예상하지 못한 요청: ${path}`);
+      },
+    });
+
+    await repository.getSession();
+    expect((await repository.getEvidence('evt_current')).meta.requestId).toBe('req_evidence_1');
+    expect((await repository.getEvidence('evt_current')).meta.requestId).toBe('req_evidence_1');
+    await expect(repository.getSaved('ALL')).rejects.toMatchObject({ kind: 'authentication' });
+    await repository.getSession();
+    expect((await repository.getEvidence('evt_current')).meta.requestId).toBe('req_evidence_2');
+    expect(evidenceReads).toBe(2);
   });
 
   it('403을 session 만료와 구분하고 권한 오류로 유지한다', async () => {
@@ -364,6 +412,54 @@ describe('live saved adapter 동기화·IDOR 경계', () => {
 });
 
 describe('live WebSocket full snapshot·sequence·reconnect', () => {
+  it('event_state_changed full event가 detail과 evidence cache를 함께 무효화한다', async () => {
+    const sockets: FakeSocket[] = [];
+    let evidenceReads = 0;
+    const repository = createProductionRepository({
+      readCsrfToken: () => 'csrf_test',
+      webSocketFactory: () => {
+        const socket = new FakeSocket();
+        sockets.push(socket);
+        return socket;
+      },
+      fetcher: async (input) => {
+        const path = String(input);
+        if (path === '/api/auth/session') return jsonResponse(authenticatedSession);
+        if (path.startsWith('/api/v1/themes/rankings')) return jsonResponse(rankingLive);
+        if (path.startsWith('/api/v1/events/evt_current/evidence')) {
+          evidenceReads += 1;
+          return jsonResponse(evidenceSingle);
+        }
+        if (path === '/api/v1/auth/realtime-ticket') return jsonResponse(realtimeTicket());
+        throw new Error(`예상하지 못한 요청: ${path}`);
+      },
+    });
+
+    await repository.getSession();
+    await repository.getRankings();
+    expect((await repository.getEvidence('evt_current')).data.eventId).toBe('evt_current');
+    expect(evidenceReads).toBe(1);
+    await vi.waitFor(() => expect(sockets).toHaveLength(1));
+    sockets[0].serverOpen();
+    sockets[0].serverMessage({
+      type: 'event_state_changed',
+      schemaVersion: meta.schemaVersion,
+      subscriptionId: 'sub_test',
+      streamId: 'stream_event_20260814',
+      topic: 'event_state_changed',
+      sequence: 1,
+      generatedAt: meta.generatedAt,
+      asOf: meta.generatedAt,
+      marketDate: '2026-08-14',
+      dataStatus: 'LIVE',
+      qualityFlags: [],
+      payload: { eventId: 'evt_current' },
+    });
+
+    await repository.getEvidence('evt_current');
+    expect(evidenceReads).toBe(2);
+  });
+
   it.each([
     {
       caseName: 'same stream older buffered snapshot',

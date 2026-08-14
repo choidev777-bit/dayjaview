@@ -36,8 +36,23 @@ import { RepositoryError } from '../domain/repositoryErrors';
 
 export type RankingFixture = 'live' | 'delayed' | 'degraded' | 'closed' | 'empty' | 'unavailable';
 export type TreemapFixture = 'live' | 'excluded';
-export type DetailFixture = 'searching' | 'single' | 'multi' | 'closed' | 'unmatched';
-export type EvidenceFixture = 'searching' | 'single' | 'multi' | 'none' | 'degraded';
+export type DetailFixture =
+  | 'searching'
+  | 'single'
+  | 'multi'
+  | 'none'
+  | 'reemergence'
+  | 'closed'
+  | 'unmatched';
+export type EvidenceFixture =
+  | 'searching'
+  | 'single'
+  | 'multi'
+  | 'none'
+  | 'reemergence'
+  | 'afterClose'
+  | 'delayed'
+  | 'degraded';
 export type SavedFixture = 'library' | 'unavailable' | 'mixed';
 export type FixtureResource = 'rankings' | 'treemap' | 'detail' | 'evidence' | 'saved' | 'historical';
 
@@ -50,6 +65,7 @@ export interface FixtureRepositoryOptions {
   evidence?: EvidenceFixture;
   saved?: SavedFixture;
   failures?: FixtureResource[];
+  permissions?: FixtureResource[];
 }
 
 const rankings: Record<RankingFixture, RankingResponse> = {
@@ -66,7 +82,7 @@ const treemaps: Record<TreemapFixture, TreemapResponse> = {
   excluded: treemapExcluded as unknown as TreemapResponse,
 };
 
-const details: Record<DetailFixture, ThemeDetailResponse> = {
+const details: Record<Exclude<DetailFixture, 'none' | 'reemergence'>, ThemeDetailResponse> = {
   searching: detailSearching as unknown as ThemeDetailResponse,
   single: detailSingleSource as unknown as ThemeDetailResponse,
   multi: detailMultiSource as unknown as ThemeDetailResponse,
@@ -74,7 +90,7 @@ const details: Record<DetailFixture, ThemeDetailResponse> = {
   unmatched: detailUnmatched as unknown as ThemeDetailResponse,
 };
 
-const evidence: Record<EvidenceFixture, EvidenceResponse> = {
+const evidence: Record<Exclude<EvidenceFixture, 'reemergence' | 'afterClose' | 'delayed'>, EvidenceResponse> = {
   searching: evidenceSearching as unknown as EvidenceResponse,
   single: evidenceSingleSource as unknown as EvidenceResponse,
   multi: evidenceMultiSource as unknown as EvidenceResponse,
@@ -100,9 +116,56 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
+function selectedDetail(fixture: DetailFixture): ThemeDetailResponse {
+  if (fixture === 'none') {
+    const response = clone(details.searching);
+    response.data.evidenceSummary.evidenceStatus = 'NO_NEW_CATALYST';
+    return response;
+  }
+  if (fixture === 'reemergence') {
+    const response = clone(details.single);
+    response.data.evidenceSummary.evidenceStatus = 'REEMERGENCE';
+    return response;
+  }
+  return details[fixture];
+}
+
+function defaultEvidenceFixture(detail: DetailFixture): EvidenceFixture {
+  return {
+    searching: 'searching',
+    single: 'single',
+    multi: 'multi',
+    none: 'none',
+    reemergence: 'reemergence',
+    closed: 'afterClose',
+    unmatched: 'single',
+  }[detail] as EvidenceFixture;
+}
+
+function selectedEvidence(fixture: EvidenceFixture): EvidenceResponse {
+  if (fixture === 'delayed') {
+    const response = clone(evidence.single);
+    response.meta.marketContext = clone(rankings.delayed.meta.marketContext);
+    return response;
+  }
+  if (fixture === 'reemergence') {
+    const response = clone(evidence.single);
+    response.data.evidenceStatus = 'REEMERGENCE';
+    return response;
+  }
+  if (fixture === 'afterClose') {
+    const response = clone(evidence.multi);
+    response.data.evidenceStatus = 'AFTER_CLOSE_CONFIRMED';
+    response.meta = clone(details.closed.meta);
+    return response;
+  }
+  return evidence[fixture];
+}
+
 export function createFixtureRepository(options: FixtureRepositoryOptions = {}): ProductRepository {
   let authenticated = options.authenticated ?? true;
   const failures = new Set(options.failures ?? []);
+  const permissions = new Set(options.permissions ?? []);
   const listeners = new Map<string, Set<() => void>>();
   const savedItems = new Map<string, SavedItem>();
 
@@ -126,6 +189,14 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       await new Promise((resolve) => window.setTimeout(resolve, options.latencyMs));
     } else {
       await Promise.resolve();
+    }
+    if (permissions.has(resource)) {
+      throw new RepositoryError({
+        kind: 'permission',
+        status: 403,
+        code: 'FEATURE_NOT_ENTITLED',
+        message: '현재 계정으로는 이 데이터에 접근할 수 없습니다.',
+      });
     }
     if (failures.has(resource)) throw new ContractFixtureError();
     return clone(value);
@@ -159,8 +230,12 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
     },
     getRankings: () => resolveFixture('rankings', rankings[options.ranking ?? 'live']),
     getTreemap: () => resolveFixture('treemap', treemaps[options.treemap ?? 'live']),
-    getThemeDetail: () => resolveFixture('detail', details[options.detail ?? 'single']),
-    getEvidence: () => resolveFixture('evidence', evidence[options.evidence ?? 'single']),
+    getThemeDetail: () => resolveFixture('detail', selectedDetail(options.detail ?? 'single')),
+    getEvidence: () =>
+      resolveFixture(
+        'evidence',
+        selectedEvidence(options.evidence ?? defaultEvidenceFixture(options.detail ?? 'single')),
+      ),
     async getSaved(type: SavedType | 'ALL') {
       const response: SavedResponse = {
         data: {

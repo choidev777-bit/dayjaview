@@ -166,6 +166,11 @@ export interface EvidenceResponse {
     eventId: string;
     evidenceStatus: EvidenceStatus;
     items: EvidenceItem[];
+    page: {
+      nextCursor: string | null;
+      hasMore: boolean;
+      limit: number;
+    };
   };
   meta: ResponseMeta;
 }

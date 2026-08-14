@@ -16,4 +16,13 @@ describe('production fixture 경계', () => {
     expect(productionHtml).not.toContain('main.fixture');
     expect(fixtureHtml).toContain('/src/main.fixture.tsx');
   });
+
+  it('production 산출물 검사에 evidence fixture marker가 포함된다', async () => {
+    const boundaryScript = await readFile(
+      resolve(process.cwd(), 'scripts/assert-production-boundary.mjs'),
+      'utf8',
+    );
+    expect(boundaryScript).toContain('req_evidence_single');
+    expect(boundaryScript).toContain('req_evidence_degraded');
+  });
 });

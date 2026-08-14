@@ -6,6 +6,8 @@ const forbiddenMarkers = [
   'contracts/fixtures',
   'snap_rank_live',
   'req_event_single',
+  'req_evidence_single',
+  'req_evidence_degraded',
   'evt_historical',
   'FixtureRepository',
 ];

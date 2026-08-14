@@ -32,6 +32,10 @@ export function formatTime(value: string | null): string {
   return value ? timeFormatter.format(new Date(value)) : '—';
 }
 
+export function formatDateTime(value: string | null): string {
+  return value ? `${formatDate(value)} ${formatTime(value)}` : '—';
+}
+
 export function dataStatusLabel(status: DataStatus): string {
   return {
     PREOPEN: '장 시작 전',
@@ -43,14 +47,32 @@ export function dataStatusLabel(status: DataStatus): string {
 }
 
 export function evidenceStatusLabel(status: EvidenceStatus): string {
-  return {
-    SEARCHING: '상승 이유 확인 중',
-    SINGLE_SOURCE: '뉴스 기반 추정',
-    MULTI_SOURCE_CONFIRMED: '복수 뉴스 확인',
-    NO_NEW_CATALYST: '확인된 신규 소재 없음',
-    REEMERGENCE: '기존 소재 재부각',
-    AFTER_CLOSE_CONFIRMED: '인포스탁 기준 확정',
-  }[status];
+  switch (status) {
+    case 'SEARCHING':
+      return '상승 이유 확인 중';
+    case 'SINGLE_SOURCE':
+      return '뉴스 기반 추정';
+    case 'MULTI_SOURCE_CONFIRMED':
+      return '복수 뉴스 확인';
+    case 'NO_NEW_CATALYST':
+      return '확인된 신규 소재 없음';
+    case 'REEMERGENCE':
+      return '기존 소재 재부각';
+    case 'AFTER_CLOSE_CONFIRMED':
+      return '인포스탁 기준 확정';
+    default:
+      return '상태 확인 중';
+  }
+}
+
+export function safeOriginalSourceUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 export function eventStatusLabel(

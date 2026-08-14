@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
-import type { EvidenceResponse } from '../domain/contracts';
 import {
   evidenceStatusLabel,
   eventStatusLabel,
   formatDate,
+  formatDateTime,
   formatReturn,
   formatTime,
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
+import { EvidenceSection } from '../shared/EvidenceSection';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
@@ -68,56 +69,6 @@ function SavedThemeControl({ themeId, displayName }: { themeId: string; displayN
   );
 }
 
-function EvidenceSection({ eventId }: { eventId: string }) {
-  const repository = useRepository();
-  const resource = useRepositoryResource<EvidenceResponse>(
-    repository,
-    'evidence',
-    () => repository.getEvidence(eventId),
-    [repository, eventId],
-  );
-
-  if (resource.status === 'loading') return <LoadingState label="기사 근거를 확인하는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
-
-  const { evidenceStatus, items } = resource.data.data;
-
-  return (
-    <section className="detail-section" aria-labelledby="evidence-title">
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">근거 상태</p>
-          <h2 id="evidence-title">확인된 기사 근거</h2>
-        </div>
-        <span className="status-chip">{evidenceStatusLabel(evidenceStatus)}</span>
-      </div>
-      {items.length ? (
-        <ul className="evidence-list">
-          {items.map((item) => (
-            <li key={item.newsId}>
-              <a href={item.originalUrl} target="_blank" rel="noreferrer">
-                <strong>{item.title}</strong>
-                <span>
-                  {item.sourceName} · {formatTime(item.publishedAt)} · 새 창에서 원문 보기
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <EmptyState
-          title={evidenceStatusLabel(evidenceStatus)}
-          description={
-            evidenceStatus === 'NO_NEW_CATALYST'
-              ? '현재까지 확인된 기사 범위에서 새 소재를 찾지 못했습니다.'
-              : '확인된 근거가 생기기 전에는 상승 이유를 만들지 않습니다.'
-          }
-        />
-      )}
-    </section>
-  );
-}
-
 export function ThemeDetailPage() {
   const repository = useRepository();
   const navigate = useNavigate();
@@ -163,6 +114,10 @@ export function ThemeDetailPage() {
   const detail = resource.data.data;
   const reaction = detail.currentReaction;
   const from = (location.state as { from?: string } | null)?.from;
+  const evidenceSummary =
+    detail.evidenceSummary.sourceCount > 0 && detail.evidenceSummary.summary
+      ? detail.evidenceSummary.summary
+      : evidenceStatusLabel(detail.evidenceSummary.evidenceStatus);
 
   return (
     <div className="page page--detail">
@@ -181,6 +136,10 @@ export function ThemeDetailPage() {
           <span className="status-chip">
             {eventStatusLabel(detail.lifecycleStatus, detail.reconciliationStatus)}
           </span>
+          <p className="classification-meta">
+            분류 revision {detail.classification.classificationVersion.toLocaleString('ko-KR')} · 변경{' '}
+            {formatDateTime(detail.classification.changedAt)}
+          </p>
         </div>
         <div className="detail-hero__metric">
           <span>테마 수익률</span>
@@ -203,9 +162,7 @@ export function ThemeDetailPage() {
       <section className="detail-section" aria-labelledby="reason-title">
         <p className="eyebrow">현재 → 근거</p>
         <h2 id="reason-title">오늘 부각된 이유</h2>
-        <p className="reason-summary">
-          {detail.evidenceSummary.summary ?? evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
-        </p>
+        <p className="reason-summary">{evidenceSummary}</p>
         <p className="section-note">
           {evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
           {detail.evidenceSummary.latestPublishedAt
