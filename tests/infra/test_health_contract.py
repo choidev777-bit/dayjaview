@@ -26,6 +26,7 @@ def test_health_payload_is_deterministic_fixture_only(monkeypatch) -> None:
         "B-MARKET-FIXTURE",
         "B-INFOSTOCK-AUTH",
         "B-DATA-RIGHTS",
+        "B-OPERATOR",
         "B-DEPLOY",
     ]
     json.dumps(first, ensure_ascii=False, sort_keys=True)

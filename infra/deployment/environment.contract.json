@@ -83,6 +83,15 @@
       }
     },
     {
+      "name": "OPERATOR_BOOTSTRAP_GOOGLE_EMAILS",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": true,
+        "production": true
+      }
+    },
+    {
       "name": "REDIS_URL",
       "required": {
         "localFixture": false,
