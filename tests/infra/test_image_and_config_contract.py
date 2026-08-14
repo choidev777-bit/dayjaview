@@ -53,6 +53,21 @@ def test_environment_contract_only_documents_names_and_required_state() -> None:
         assert variable["required"]["ciFixture"] is False
         assert all(isinstance(value, bool) for value in variable["required"].values())
 
+    operator_bootstrap = next(
+        variable
+        for variable in variables
+        if variable["name"] == "OPERATOR_BOOTSTRAP_GOOGLE_EMAILS"
+    )
+    assert operator_bootstrap == {
+        "name": "OPERATOR_BOOTSTRAP_GOOGLE_EMAILS",
+        "required": {
+            "localFixture": False,
+            "ciFixture": False,
+            "staging": True,
+            "production": True,
+        },
+    }
+
 
 def test_fixture_api_fails_closed_with_korean_diagnostic_without_fixture_mode() -> None:
     result = subprocess.run(

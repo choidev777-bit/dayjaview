@@ -7,7 +7,6 @@ import argparse
 import json
 import os
 import socket
-import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import NoReturn
 from urllib.error import HTTPError, URLError
@@ -69,6 +68,7 @@ def _health_payload() -> dict[str, object]:
             "B-MARKET-FIXTURE",
             "B-INFOSTOCK-AUTH",
             "B-DATA-RIGHTS",
+            "B-OPERATOR",
             "B-DEPLOY",
         ],
     }
@@ -77,7 +77,7 @@ def _health_payload() -> dict[str, object]:
 class _HealthHandler(BaseHTTPRequestHandler):
     server_version = "DAYJAVIEWFixture/1"
 
-    def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler API
+    def do_GET(self) -> None:
         if self.path != _HEALTH_PATH:
             self._write_json(
                 404,
@@ -156,7 +156,7 @@ def _api() -> int:
 
 def _probe(url: str) -> int:
     try:
-        with urlopen(url, timeout=3.0) as response:  # noqa: S310 - fixed fixture URL
+        with urlopen(url, timeout=3.0) as response:
             payload = json.load(response)
     except (HTTPError, URLError, OSError, ValueError) as exc:
         _fail(f"health endpoint 호출 실패: {exc}")
