@@ -10,6 +10,7 @@ PageType = Literal[
     "IMPORT_MANIFEST",
     "THEME_LIST",
     "THEME_DETAIL",
+    "DAILY_MANIFEST",
     "DAILY_LIST",
     "DAILY_DETAIL",
 ]
@@ -43,6 +44,7 @@ class RawSnapshot:
     raw_format: RawFormat
     is_complete: bool
     quality_status: str = "OK"
+    parser_version: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
