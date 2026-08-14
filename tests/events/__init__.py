@@ -1,0 +1,1 @@
+"""Canonical Event foundation tests."""
