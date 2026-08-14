@@ -1,0 +1,24 @@
+import { useParams } from 'react-router-dom';
+import { useRepository } from '../app/RepositoryContext';
+import { ErrorState, LoadingState, PermissionState } from '../shared/StatePanel';
+import { useAsyncResource } from '../shared/useAsyncResource';
+
+export function HistoricalGatePage() {
+  const repository = useRepository();
+  const params = useParams();
+  const eventId = params.eventId ?? params.matchedEventId ?? '';
+  const resource = useAsyncResource(() => repository.getHistoricalAccess(eventId), [repository, eventId]);
+
+  if (resource.status === 'loading') return <LoadingState label="접근 가능 여부를 확인하는 중입니다" />;
+  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+
+  return (
+    <div className="page page--gate">
+      <header className="page-header">
+        <p className="eyebrow">과거 관측</p>
+        <h1>유사사례</h1>
+      </header>
+      <PermissionState />
+    </div>
+  );
+}
