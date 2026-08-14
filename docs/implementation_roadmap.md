@@ -11,6 +11,133 @@
 
 ---
 
+## 실행 원장
+
+- 감사 기준 시각: `2026-08-14 12:27 KST`
+- 감사 기준 commit: `91bd3b0ce764e4b8a3783de9be2eb3229f80d4eb`
+- 실행 원장 위치: 이 절 하나만 사용한다. 아래의 기존 단계 설명은 요구사항 상세 참고이며 별도 원장이 아니다.
+
+### 서비스 정의
+
+1. Google 로그인 뒤에만 제품 데이터를 제공하는 국내 주식 테마 분석 서비스다.
+2. 키움 후보 탐색과 선택 종목 체결로 장중 강해지는 기존 테마를 수초 단위로 찾는다.
+3. 테마 수익률·확산·주도주·Coverage·freshness를 서로 다른 의미로 정확히 표시한다.
+4. 상승 이유는 저장된 기사 근거가 확인된 범위에서만 제시하고 근거가 없으면 생성하지 않는다.
+5. 장중 Event를 장후 인포스탁 확정·revision과 같은 `eventId`로 연결한다.
+6. 과거 유사사례는 온톨로지 재검증을 통과한 artifact만 관련성 순서와 실제 관측 결과로 제공한다.
+7. 관심 테마·종목·이벤트는 계정에 저장하되 공용 시장 계산에는 영향을 주지 않는다.
+8. 매수·매도 추천, 자동매매, 미래 확률·예상 수익률, 제품 analytics는 범위 밖이다.
+
+### 현재 구현 상태와 근거
+
+| 영역 | 사실 기반 판정 | 근거 |
+|---|---|---|
+| Git | `main`과 `origin/main`은 감사 기준 commit에서 일치하며 원격은 접근 가능하다. ADR-010의 “원격 생성 필요” 문구는 현재 상태보다 오래됐다. | `git status --short --branch`, `git ls-remote --symref origin HEAD` |
+| 사용자 변경 | 추적 파일 `PROMPTS.md` 삭제 1건이 미커밋 상태다. 사용자 소유로 간주해 복원·수정·stage하지 않는다. | `git diff --name-status` → `D PROMPTS.md` |
+| 제품 애플리케이션 | 프론트엔드, API, worker 서비스, DB migration, 배포 코드, 기계 계약, package/환경 lock, CI가 없다. 제품 기능은 구현되지 않았다. | `git ls-files`, `rg --files`; `apps/`, `contracts/`, `infra/`, package manifest 부재 |
+| 문서 | PRD와 화면 기준은 현재 기준이지만 시스템·UI·API 문서는 구현 전 초안이다. API 계약에는 decimal return 규칙과 다른 saved fixture 예시, 일반 사용자 projection에 금지된 `reviewStatus` 예시가 있다. | 문서 metadata, `docs/api_contract.md` 4.1·5.2·10.4·10.6·18절 |
+| 인포스탁 API 수집 | 로컬 import는 280/280 테마, 히스토리 39,696건, 실패 0건으로 완료됐지만 PostgreSQL 원천 DB·revision·Daily browser worker는 없다. | ignored `data/infostock/import/manifest.json`; tracked `scripts/collect_infostock.py` |
+| 시장 capture | 본 capture와 보조 capture가 약 10:40 KST에 각각 `INTERRUPTED`; gap recovery는 시작되지 않았다. 최종 replay fixture가 아니다. | `scripts/check_market_capture.ps1` read-only 결과 |
+| 기존 코드 | 추적 구현은 Infostock API collector와 2026-08-14 capture/replay 도구뿐이다. 모델 카드가 가리키는 `backend/app/engine/**`와 연구 artifact는 저장소에 없다. | `scripts/**`, `tests/**`, `git ls-files` |
+| 자동 검증 | offline 단위 테스트 24개 중 23개 통과, gap-recovery 분 경계 재구성 1개 실패다. | `python -m pytest -q` |
+| 외부 설정 | 값 노출 없이 존재 여부만 확인했다. 키움·NAVER API HUB·OpenAI·Google OAuth secret은 설정돼 있고 KRX·OpenDART key, operator bootstrap email, 암호화된 Infostock browser state는 없다. | `.env.local` key presence 검사, state path 존재 검사 |
+
+### 핵심 MVP 완료 조건
+
+- 비로그인 REST·WebSocket은 제품 데이터 없이 거부되고, Google 로그인·logout·session 만료·안전한 `returnTo`가 검증된다.
+- 사용자별 관심 저장·해제·기기 간 동기화·IDOR 차단·계정 삭제가 검증된다.
+- 실제 또는 승인된 adapter 입력으로 현재 테마 수익률·확산·주도주·Coverage·지연 상태가 결정적으로 계산된다.
+- `ACTIVE/WEAKENING/CLOSED`, sequence, 재연결 full snapshot과 동일 `eventId`의 장후 revision이 검증된다.
+- 뉴스 근거가 없을 때 LLM을 호출하거나 상승 이유를 생성하지 않으며 모든 요약에 source metadata가 연결된다.
+- 오늘·테마 상세·관심·인사이트가 같은 계약과 fixture를 사용하고 모바일·데스크톱·키보드 기본 검증을 통과한다.
+- 일반 사용자와 `OPERATOR` route·API·field가 서버 권한으로 분리되고 command가 revision·audit으로 남는다.
+- 과거 검색은 미래 outcome을 입력으로 받지 않고, 재검증 승인 전 사용자 route와 API가 잠긴다.
+- 관련 contract, lint, typecheck, unit/integration/E2E, affected build와 fixture smoke test가 통과한다.
+- Record & Replay 실행·판정은 구현 완료 후 사용자가 직접 수행하며 Codex Stage는 실행하지 않았다고 기록한다.
+- 모든 작업 소유 변경이 commit되고 최종 통합 branch가 GitHub에 push된다.
+- 외부 권리·secret·시장 시간·수동 평가·배포 승인이 남으면 코드 완료와 외부 검증 대기를 분리해 보고한다.
+
+### 필수 검증 명령
+
+| 코드 | 명령 |
+|---|---|
+| `V-DIFF` | `git diff --check`와 작업 소유 경로의 `git diff --cached --name-status` |
+| `V-CONTRACT` | `uv run python scripts/validate_contracts.py` 및 `uv run pytest tests/contracts -q` |
+| `V-PY` | `uv run ruff check <owned-paths>`; `uv run mypy <owned-paths>`; `uv run pytest <targeted-paths> -q` |
+| `V-WEB` | `pnpm --dir apps/web lint`; `pnpm --dir apps/web typecheck`; `pnpm --dir apps/web test --run`; `pnpm --dir apps/web build` |
+| `V-STACK` | `docker compose -f infra/deployment/compose.local.yml config`와 fixture 기반 health smoke test |
+| `V-ALL` | `V-CONTRACT`, 전체 Python test/lint/typecheck, `V-WEB`, `V-STACK`, 핵심 fixture E2E; 저장 market replay는 제외 |
+
+각 작업은 위 명령 중 관련 명령과 더 좁은 targeted test를 모두 실행한다. 명령이 아직 없는 첫 기반 작업은 그 명령을 함께 만들고 같은 commit에서 통과시킨다.
+
+### 작업 원장
+
+| ID | Stage | 단 하나의 목표와 검증 가능한 종료 조건 | 선행 의존성 | 소유 파일·디렉터리 | 병렬 | 모델 | 필수 검증 | branch | 상태·blocker |
+|---|---:|---|---|---|---|---|---|---|---|
+| `S0-ADR` | 0 | 기존 확정 의미를 바꾸지 않고 ADR-002~008과 기존 ADR의 현재 증거를 정리한다. 각 ADR에 상태·결정·대안·결과·검증이 있고 상위 문서와 충돌하지 않으면 종료한다. | 이 원장 commit | `docs/adr/**` | `S0-CONTRACT`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / max` | `V-DIFF`, ADR 상태·링크 점검 | `codex/s0-adr-boundaries` | 준비 |
+| `S0-CONTRACT` | 0 | API 의미 계약을 OpenAPI·AsyncAPI·JSON Schema·공통 fixture·CI로 실행 가능하게 만든다. 모든 fixture와 예시가 schema/invariant를 통과하고 현재 문서의 두 모순이 제거되면 종료한다. | 이 원장 commit | `contracts/**`, `docs/api_contract.md`, `scripts/validate_contracts.py`, `tests/contracts/**`, `pyproject.toml`, `uv.lock`, `.github/workflows/contracts.yml` | `S0-ADR`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / xhigh` | `V-CONTRACT`, `V-DIFF` | `codex/s0-machine-contracts` | 준비 |
+| `S0-REPLAY-UNIT` | 0 | gap-recovery의 분 경계 candidate TTL 의미를 명세와 일치시켜 현재 실패 1건만 수술적으로 고친다. 전체 offline unit test가 통과하고 실제 replay·ignored data를 실행/변경하지 않으면 종료한다. | 이 원장 commit | `scripts/collect_market_gap_recovery.py`, `tests/test_market_replay.py` | `S0-ADR`, `S0-CONTRACT`와 가능 | `gpt-5.6-sol / xhigh` | `python -m pytest tests/test_market_replay.py -q`, `python -m pytest -q`, `V-DIFF` | `codex/s0-replay-minute-boundary` | 준비; 현재 1 failure |
+| `S1-WEB` | 1 | 계약 fixture로 로그인·오늘·테마 상세·관심·인사이트의 route/state shell을 구축한다. gate off 유사사례와 operator 비노출, 반응형·키보드 상태 test와 build가 통과하면 종료한다. | `INT-S0` | `apps/web/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, `V-CONTRACT`, `V-DIFF` | `codex/s1-web-fixture-shell` | 계획 |
+| `S1-IDENTITY` | 1 | Google OAuth server session, 사용자/saved library, 계정 삭제, operator 역할 경계를 fixture 환경에서 구현한다. 인증·CSRF·open redirect·IDOR·role test가 통과하면 종료한다. | `INT-S0` | `apps/api/**`, `packages/identity/**`, `infra/migrations/*identity*`, `tests/identity/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, auth contract test, `V-DIFF` | `codex/s1-identity-library` | 계획; live operator email 없음 |
+| `S1-INFOSTOCK` | 1 | 기존 280-theme import를 원본·revision·현재 membership·과거 leader가 분리된 PostgreSQL 모델로 idempotent 적재한다. 280/280 fixture import, lineage, 재실행·무결성 test가 통과하면 종료한다. | `INT-S0` | `packages/infostock/**`, `apps/worker-batch/infostock/**`, `infra/migrations/*infostock*`, `tests/infostock/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, fixture DB integration, `V-DIFF` | `codex/s1-infostock-store` | 계획; Daily 인증은 S6 |
+| `S1-CALC` | 1 | 순수 domain에서 유동시총 상한 가중, 중앙값, 확산, 관심 배수·공백, Coverage와 상태 전이를 결정적으로 구현한다. 경계·결측·property test와 versioned fixture가 통과하면 종료한다. | `INT-S0` | `packages/domain/**`, `packages/calculations/**`, `tests/domain/**`, `tests/calculations/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s1-domain-calculations` | 계획 |
+| `S2-REFDATA` | 2 | KRX Open API·OpenDART 무료 원천 adapter와 point-in-time 유동주식비율·거래일·조정가격 기준정보를 구현한다. fixture 계약·충돌/결측/중복차감 test가 통과하고 live 미검증이 분리되면 종료한다. | `INT-S1` | `packages/reference-data/**`, `apps/worker-batch/reference-data/**`, `infra/migrations/*reference*`, `tests/reference-data/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, source contract fixtures, `V-DIFF` | `codex/s2-reference-data` | 계획; KRX/OpenDART key 없음 |
+| `S2-MARKET` | 2 | 키움 read-only Market Gateway와 후보·구독 180/200 slot·재연결·스냅샷 보완을 canonical event로 구현한다. fixture/adapter contract·slot churn·old input test가 통과하면 종료한다. | `INT-S1` | `apps/worker-market/**`, `packages/adapters/kiwoom/**`, `tests/market-gateway/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, adapter contract, `V-DIFF` | `codex/s2-market-gateway` | 계획; 실제 장중 검증 대기 가능 |
+| `S2-REALTIME` | 2 | 단일 Event writer, hot state, dirty-theme 집계, hysteresis, outbox, versioned read snapshot을 구현한다. lifecycle/idempotency/recovery/Coverage test가 통과하면 종료한다. | `INT-S1` | `packages/realtime/**`, `packages/events/**`, `infra/migrations/*event*`, `tests/realtime/**`, `tests/events/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s2-realtime-events` | 계획 |
+| `S3-API` | 3 | 인증된 핵심 REST와 realtime-ticket WebSocket을 기계 계약 위에 구현한다. 비로그인 데이터 0건, 1회용 ticket, sequence/full snapshot, saved/operator 분리 contract test가 통과하면 종료한다. | `INT-S2` | `apps/api/**`, `tests/api/**`, `tests/realtime-api/**` | Stage 3 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, API/WSS smoke, `V-DIFF` | `codex/s3-api-realtime` | 계획 |
+| `S3-WEB-LIVE` | 3 | fixture adapter와 동일 컴포넌트에 실제 REST/WSS client, cache purge, sequence/reconnect, saved flow를 연결한다. mock/staging contract parity와 `V-WEB`가 통과하면 종료한다. | `INT-S2` | `apps/web/**` | Stage 3 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, `V-CONTRACT`, client integration, `V-DIFF` | `codex/s3-web-live-adapter` | 계획 |
+| `S3-REPLAY-ADAPTER` | 3 | 저장 capture를 제품 canonical market event 입력으로 바꾸는 bounded adapter와 fixture test를 구현한다. ordering/hash/clock/failure test만 통과시키고 capture 또는 replay 실행은 하지 않으면 종료한다. | `INT-S2` | `packages/adapters/market-replay/**`, `tests/market-replay-adapter/**` | Stage 3 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-PY`, synthetic fixture only, `V-DIFF` | `codex/s3-replay-adapter` | 계획; 실제 replay 금지 |
+| `S3-INFRA-LOCAL` | 3 | API·worker·PostgreSQL·Redis의 local/CI Compose와 ARM64-compatible image 골격을 만든다. config 검증, local fixture health, secret 미포함 검사가 통과하면 종료한다. | `INT-S2` | `infra/deployment/**`, `infra/images/**`, `infra/operations/local*`, `tests/infra/**` | Stage 3 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-STACK`, image/config scan, `V-DIFF` | `codex/s3-local-stack` | 계획; 배포하지 않음 |
+| `S4-EVIDENCE-BE` | 4 | 허용 공급원 수집·중복제거·양방향 매칭·grounded LLM·근거 revision을 한 backend pipeline으로 구현한다. 근거 없음=no call/no cause, PIT와 source metadata test가 통과하면 종료한다. | `INT-S3` | `apps/worker-news/**`, `packages/news/**`, `packages/catalyst/**`, `packages/llm/**`, `infra/migrations/*news*`, `tests/evidence/**` | `S4-EVIDENCE-WEB`과 가능 | `gpt-5.6-sol / max` | `V-PY`, mocked provider contracts, `V-CONTRACT`, `V-DIFF` | `codex/s4-grounded-evidence` | 계획; 공급원 권리 확인 대기 |
+| `S4-EVIDENCE-WEB` | 4 | SEARCHING부터 AFTER_CLOSE_CONFIRMED까지 근거 상태와 출처 UI를 구현한다. 원인 미생성·원문 link·지연/장애 상태 component test와 build가 통과하면 종료한다. | `INT-S3` | `apps/web/**` | `S4-EVIDENCE-BE`와 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, evidence fixtures, `V-DIFF` | `codex/s4-evidence-ui` | 계획 |
+| `S5-TREEMAP-BE` | 5 | Coverage를 통과한 양수 ACTIVE/WEAKENING 상위 12개 full snapshot topic을 구현한다. 동일 `weightedReturn`, sequence/coalescing/closed test가 통과하면 종료한다. | `INT-S4` | `packages/realtime/treemap/**`, `apps/api/realtime/treemap*`, `tests/treemap-server/**` | `S5-TREEMAP-WEB`과 가능 | `gpt-5.6-sol / xhigh` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s5-treemap-server` | 계획 |
+| `S5-TREEMAP-WEB` | 5 | 실제 값만으로 움직이는 접근 가능한 treemap을 구현한다. 12-tile, no-toggle, stale/reduced-motion/keyboard/layout-throttle test와 build가 통과하면 종료한다. | `INT-S4` | `apps/web/**` | `S5-TREEMAP-BE`와 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, treemap fixtures, `V-DIFF` | `codex/s5-treemap-ui` | 계획 |
+| `S6-RECONCILE` | 6 | 암호화 session state의 Daily browser worker와 장후 같은-event reconciliation을 구현한다. atomic state, AUTH_REQUIRED, revision, UNMATCHED, retry/idempotency test가 통과하면 종료한다. | `INT-S5` | `apps/worker-batch/infostock-daily/**`, `packages/infostock/reconciliation/**`, `packages/events/reconciliation/**`, `tests/reconciliation/**` | `S6-OPERATOR`와 가능 | `gpt-5.6-sol / max` | `V-PY`, browser fixture contract, `V-DIFF` | `codex/s6-after-close-reconcile` | 계획; 수동 login state 없음 |
+| `S6-OPERATOR` | 6 | 일반 사용자와 분리된 operator status/job/review/audit API와 화면을 구현한다. USER 403, secret redaction, CSRF/idempotency/stale-version/revision test와 build가 통과하면 종료한다. | `INT-S5` | `apps/api/operator/**`, `apps/web/src/operator/**`, `packages/operator/**`, `tests/operator/**` | `S6-RECONCILE`와 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-WEB`, security contracts, `V-DIFF` | `codex/s6-operator-console` | 계획; live operator bootstrap 대기 |
+| `S7-HISTORY-DATA` | 7 | point-in-time 역사 corpus, 당시 leader 동일가중 outcome, 거래일·기업행위·결측 lineage를 재현 가능하게 구축한다. 데이터 감사와 leakage/outcome test가 통과하면 종료한다. | `INT-S6` | `research/data/**`, `packages/historical-data/**`, `tests/historical-data/**`, `docs/research/data_*` | `S7-ONTOLOGY`와 가능 | `gpt-5.6-sol / max` | `V-PY`, PIT/leakage test, `V-DIFF` | `codex/s7-historical-corpus` | 계획; 가격 corpus/artifact 부재 |
+| `S7-ONTOLOGY` | 7 | versioned 사건 온톨로지와 point-in-time transform·annotation 계약을 구현한다. 통제어휘, unknown/복합 사건, deterministic transform test가 통과하면 종료한다. | `INT-S6` | `research/ontology/**`, `packages/ontology/**`, `tests/ontology/**`, `docs/research/event_ontology.md` | `S7-HISTORY-DATA`와 가능 | `gpt-5.6-sol / max` | `V-PY`, schema/invariant test, `V-DIFF` | `codex/s7-event-ontology` | 계획 |
+| `S8-MATCHING` | 8 | M-TXT v1을 재현하고 ontology/hybrid 후보를 같은 fold에서 비교하는 leakage-safe engine·blind review package·registry를 구현한다. 자동 평가와 artifact reproducibility가 통과하면 종료한다. | `INT-S7` | `research/matching/**`, `packages/historical-matching/**`, `tests/historical-matching/**`, `docs/research/matching_*` | 불가; 단일 연구 책임 | `gpt-5.6-sol / max` | `V-PY`, PIT·retrieval·registry test, `V-DIFF` | `codex/s8-matching-validation` | 계획; 2인 평가와 새 봉인 구간은 외부 gate |
+| `S9-HISTORY-BE` | 9 | 승인된 immutable 검색 artifact만 유사사례 API에 서빙하고 outcome은 선택 후 결합한다. gate/entitlement/분모/정렬/leakage contract test가 통과하면 종료한다. | `INT-S8` + 외부 연구 gate | `apps/api/historical/**`, `packages/historical-serving/**`, `tests/historical-api/**` | `S9-HISTORY-WEB`과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, leakage test, `V-DIFF` | `codex/s9-historical-serving` | gate 전 생성 금지 |
+| `S9-HISTORY-WEB` | 9 | 승인 후에만 유사사례 집계·목록·과거 Event 상세를 노출한다. 기간별 분모·중앙값·누락·비예측 문구와 gate-off test가 통과하면 종료한다. | `INT-S8` + 외부 연구 gate | `apps/web/**` | `S9-HISTORY-BE`와 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, historical fixtures, `V-DIFF` | `codex/s9-historical-ui` | gate 전 생성 금지 |
+| `S10-SECURITY` | 10 | auth/권한/secret/입력/의존성 경계를 감사하고 재현 test·finding만 남긴다. 차단 finding 0건 또는 독립 repair Goal이 생성되면 종료한다. | `INT-S9` | `tests/security/**`, `docs/release/security_audit.md` | Stage 10 다른 감사와 가능 | `gpt-5.6-sol / max` | security test, secret scan, dependency audit, `V-DIFF` | `codex/s10-security-audit` | 계획; 제품 파일 직접 수리 금지 |
+| `S10-QA` | 10 | replay를 제외한 계약·unit/integration/E2E·접근성·성능 검증을 실행하고 증거를 남긴다. 차단 실패 0건 또는 독립 repair Goal이 생성되면 종료한다. | `INT-S9` | `tests/e2e/**`, `tests/performance/**`, `docs/release/qa_report.md` | Stage 10 다른 감사와 가능 | `gpt-5.6-sol / xhigh` | `V-ALL`, replay 미실행 명시, `V-DIFF` | `codex/s10-release-qa` | 계획; 제품 파일 직접 수리 금지 |
+| `S10-OPS` | 10 | OCI/Vercel 배포 골격, backup/restore/rollback/runbook을 release-ready 상태로 만든다. config/image/local recovery smoke와 secret 분리 검사가 통과하면 종료한다. | `INT-S9` | `infra/**`, `docs/release/operations_runbook.md`, `tests/infra/**` | Stage 10 다른 감사와 가능 | `gpt-5.6-sol / xhigh` | `V-STACK`, config/backup fixture smoke, `V-DIFF` | `codex/s10-operations-ready` | 계획; 실제 배포·cloud 변경 금지 |
+
+### Stage별 통합 순서
+
+| 통합 Goal | 입력과 유일한 목표 | 모델 | branch | 통합 검증·다음 행동 | 상태 |
+|---|---|---|---|---|---|
+| `INT-S0` | `S0-ADR`, `S0-CONTRACT`, `S0-REPLAY-UNIT`의 commit만 깨끗한 worktree에 병합 | `gpt-5.6-sol / xhigh` | `codex/int-s0-foundation` | `V-CONTRACT`, 전체 offline pytest, ledger 증거 갱신·push 후 Stage 1 작업과 `INT-S1` 생성 | 본 Goal이 생성 예정 |
+| `INT-S1` | Stage 1 네 기반 결과 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s1-app-base` | Python/Web/DB fixture 검증 후 Stage 2 생성 | 계획 |
+| `INT-S2` | 기준정보·Market Gateway·Realtime/Event 결과 통합 | `gpt-5.6-sol / max` | `codex/int-s2-realtime-core` | deterministic 계산·recovery·adapter contract 검증 후 Stage 3 생성 | 계획 |
+| `INT-S3` | API·실제 web adapter·replay adapter·local stack 통합 | `gpt-5.6-sol / max` | `codex/int-s3-first-vertical` | fixture end-to-end·auth·WSS·health smoke; replay 실행 없이 Stage 4 생성 | 계획 |
+| `INT-S4` | 근거 backend와 UI 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s4-evidence` | no-evidence/no-LLM·PIT·source UI 검증 후 Stage 5 생성 | 계획 |
+| `INT-S5` | treemap server와 UI 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s5-treemap` | today와 값 일치·sequence·a11y·성능 fixture 검증 후 Stage 6 생성 | 계획 |
+| `INT-S6` | 장후 정합과 operator 통합 | `gpt-5.6-sol / max` | `codex/int-s6-reconciliation` | same-event revision·USER 403·audit·AUTH_REQUIRED fixture 검증 후 Stage 7 생성 | 계획 |
+| `INT-S7` | 역사 corpus와 ontology 통합 | `gpt-5.6-sol / max` | `codex/int-s7-research-base` | PIT/outcome/ontology 재현성 검증 후 Stage 8 생성 | 계획 |
+| `INT-S8` | matching engine 결과 검증과 gate 판정만 수행 | `gpt-5.6-sol / max` | `codex/int-s8-matching-gate` | 2인 blind 평가·2026-09 이후 새 봉인 구간·승인 artifact 없으면 Stage 9를 생성하지 않고 정확한 blocker 기록 | 계획 |
+| `INT-S9` | 승인된 history serving과 UI 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s9-historical-product` | gate/분모/정렬/leakage/E2E 검증 후 Stage 10 생성 | 외부 gate 대기 |
+| `INT-S10` | release 감사·ops 결과 통합과 최종 코드 완료 판정 | `gpt-5.6-sol / max` | `codex/int-s10-release-ready` | `V-ALL`, 차단 finding 0, secret 0, replay 미실행 확인, ledger·최종 branch commit/push; 실제 외부 검증은 별도 보고 | 계획 |
+
+통합 Goal은 최종 메시지가 아니라 commit diff와 검증 로그를 직접 확인한다. 결함을 발견하면 그 결함만 소유하는 repair Goal을 만들고 통합 Goal에서 새 기능을 구현하지 않는다. 각 통합 Goal은 다음 Stage 작업들과 다음 통합 Goal을 만든 뒤 종료한다.
+
+### 외부 의존성·blocker
+
+| ID | 현재 증거 | 필요한 해제 조건 | blocker와 무관하게 가능한 범위 |
+|---|---|---|---|
+| `B-REFDATA-KEYS` | `KRX_API_KEY`, `OPENDART_API_KEY`가 비어 있다. | 무료 공식 key 제공과 실제 field/Coverage 검증 | adapter, 설정 검증, fixture·실패 상태·계약 test |
+| `B-INFOSTOCK-AUTH` | 암호화된 browser state가 없고 ID/비밀번호 자동 입력은 금지다. | 운영자의 SSH tunnel 수동 로그인과 합법적 운영 수집 확인 | API import DB, browser adapter, encryption·AUTH_REQUIRED fixture test |
+| `B-DATA-RIGHTS` | 로컬 manifest에 교육 승인 표시는 있으나 production 저장·가공·표시 권리와 뉴스 약관 증거는 저장소에 없다. | 공급원별 허용 범위·보존·재배포 승인 기록 | fixture와 계약 기반 구현; production 수집·공개는 금지 |
+| `B-MARKET-FIXTURE` | 본·보조 capture가 중단됐고 gap recovery가 없다. | 구현 완료 후 사용자가 수집·재생 명령과 결과를 직접 판정 | synthetic fixture, adapter/unit/integration test; 저장 replay 실행 금지 |
+| `B-HISTORY-GATE` | v1 코드·가격 corpus·registry가 없고 기존 2026 봉인 구간은 재사용 금지다. | 2인 이상 blind 평가, 불일치 조정, 2026-09 이후 새 미사용 봉인 구간 1회 평가, artifact 승인 | corpus/ontology/engine/eval code와 gate-off product path |
+| `B-OPERATOR` | `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS`가 비어 있다. | verified 운영자 계정과 실제 role bootstrap 검증 | role/403/audit fixture test |
+| `B-DESIGN-REVIEW` | 디자이너 asset/font 권리와 제품·접근성 수동 검수 증거가 없다. | 권리 확인과 사람 검수 | 계약 fixture 기반 UI와 자동 접근성 test |
+| `B-DEPLOY` | DNS·SSH 일부만 검증됐고 application/TLS/backup/rollback은 미검증이다. | 사용자의 배포 승인, 계정 권한, staging·shadow·production 수동 gate | Compose/Caddy/Vercel 설정, local/CI smoke와 runbook; cloud mutation 금지 |
+
+### 최종 완료 조건
+
+`INT-S10`은 핵심 MVP 코드, 인증·권한 경계, 계약/fixture/프론트/백엔드 일치, 결측·지연·Coverage, 근거 없는 원인 금지, relevant build/lint/typecheck/unit/integration/E2E/smoke 통과, secret 미노출, 모든 소유 변경 commit, 최종 branch push를 직접 검증해야 한다. Record & Replay는 실행하지 않았다고 명시한다. `B-*`가 남아 있으면 코드 완료와 외부 검증 대기를 분리하며, 실패·미검증 항목을 완료로 표시하지 않는다.
+
 ## 1. 목적
 
 이 문서는 디자이너 프로토타입을 DAYJAVIEW 제품 화면으로 전환하고, 백엔드·실시간 데이터·뉴스 근거·과거 유사사례까지 연결해 최종 출시하는 전체 작업 순서를 정의한다.
