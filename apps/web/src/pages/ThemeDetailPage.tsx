@@ -1,0 +1,242 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useRepository } from '../app/RepositoryContext';
+import type { EvidenceResponse } from '../domain/contracts';
+import {
+  evidenceStatusLabel,
+  eventStatusLabel,
+  formatDate,
+  formatReturn,
+  formatTime,
+} from '../domain/formatting';
+import { CoverageIndicator } from '../shared/CoverageIndicator';
+import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
+import { useAsyncResource } from '../shared/useAsyncResource';
+
+function EvidenceSection({ eventId }: { eventId: string }) {
+  const repository = useRepository();
+  const resource = useAsyncResource<EvidenceResponse>(() => repository.getEvidence(eventId), [repository, eventId]);
+
+  if (resource.status === 'loading') return <LoadingState label="기사 근거를 확인하는 중입니다" />;
+  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+
+  const { evidenceStatus, items } = resource.data.data;
+
+  return (
+    <section className="detail-section" aria-labelledby="evidence-title">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">근거 상태</p>
+          <h2 id="evidence-title">확인된 기사 근거</h2>
+        </div>
+        <span className="status-chip">{evidenceStatusLabel(evidenceStatus)}</span>
+      </div>
+      {items.length ? (
+        <ul className="evidence-list">
+          {items.map((item) => (
+            <li key={item.newsId}>
+              <a href={item.originalUrl} target="_blank" rel="noreferrer">
+                <strong>{item.title}</strong>
+                <span>
+                  {item.sourceName} · {formatTime(item.publishedAt)} · 새 창에서 원문 보기
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <EmptyState
+          title={evidenceStatusLabel(evidenceStatus)}
+          description={
+            evidenceStatus === 'NO_NEW_CATALYST'
+              ? '현재까지 확인된 기사 범위에서 새 소재를 찾지 못했습니다.'
+              : '확인된 근거가 생기기 전에는 상승 이유를 만들지 않습니다.'
+          }
+        />
+      )}
+    </section>
+  );
+}
+
+export function ThemeDetailPage() {
+  const repository = useRepository();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { themeId = '', eventId = '' } = useParams();
+  const [calculationOpen, setCalculationOpen] = useState(false);
+  const calculationTriggerRef = useRef<HTMLButtonElement>(null);
+  const calculationCloseRef = useRef<HTMLButtonElement>(null);
+  const calculationWasOpenRef = useRef(false);
+  const resource = useAsyncResource(
+    () => repository.getThemeDetail(themeId, eventId),
+    [repository, themeId, eventId],
+  );
+
+  const closeCalculation = useCallback(() => {
+    setCalculationOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!calculationOpen) {
+      if (calculationWasOpenRef.current) calculationTriggerRef.current?.focus();
+      calculationWasOpenRef.current = false;
+      return undefined;
+    }
+    calculationWasOpenRef.current = true;
+    calculationCloseRef.current?.focus();
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') closeCalculation();
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        calculationCloseRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [calculationOpen, closeCalculation]);
+
+  if (resource.status === 'loading') return <LoadingState label="테마 상세를 불러오는 중입니다" />;
+  if (resource.status === 'error') return <ErrorState retry={resource.retry} />;
+
+  const detail = resource.data.data;
+  const reaction = detail.currentReaction;
+  const from = (location.state as { from?: string } | null)?.from;
+
+  return (
+    <div className="page page--detail">
+      <button
+        className="back-button"
+        type="button"
+        onClick={() => (from ? navigate(from) : navigate(-1))}
+        aria-label="이전 화면으로 돌아가기"
+      >
+        <span aria-hidden="true">←</span> 이전
+      </button>
+      <header className="detail-hero">
+        <div>
+          <p className="eyebrow">{formatDate(`${detail.marketDate}T00:00:00+09:00`)} 현재 Event</p>
+          <h1>{detail.classification.displayName}</h1>
+          <span className="status-chip">
+            {eventStatusLabel(detail.lifecycleStatus, detail.reconciliationStatus)}
+          </span>
+        </div>
+        <div className="detail-hero__metric">
+          <span>테마 수익률</span>
+          <strong className={reaction.weightedReturn === null ? '' : 'market-up'}>
+            {formatReturn(reaction.weightedReturn)}
+          </strong>
+          <span>
+            관련주 {reaction.advancingCount ?? '—'} / {reaction.validCount ?? '—'}종목 상승
+          </span>
+        </div>
+      </header>
+
+      <CoverageIndicator coverage={detail.coverage} />
+
+      <section className="detail-section" aria-labelledby="reason-title">
+        <p className="eyebrow">현재 → 근거</p>
+        <h2 id="reason-title">오늘 부각된 이유</h2>
+        <p className="reason-summary">
+          {detail.evidenceSummary.summary ?? evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
+        </p>
+        <p className="section-note">
+          {evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
+          {detail.evidenceSummary.latestPublishedAt
+            ? ` · 최근 확인 ${formatTime(detail.evidenceSummary.latestPublishedAt)}`
+            : ''}
+        </p>
+      </section>
+
+      <section className="detail-grid" aria-label="관심과 현재 움직임">
+        <article className="metric-card">
+          <span>관심 공백</span>
+          <strong>
+            {reaction.attentionGapTradingDays === null
+              ? '데이터 부족'
+              : `${reaction.attentionGapTradingDays.toLocaleString('ko-KR')}거래일`}
+          </strong>
+          <p>가격 저점이나 저평가를 뜻하지 않습니다.</p>
+        </article>
+        <article className="metric-card">
+          <span>오늘 거래 관심</span>
+          <strong>
+            {reaction.turnoverMultiple === null
+              ? '—'
+              : `평소의 ${reaction.turnoverMultiple.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배`}
+          </strong>
+          <p>같은 시각의 과거 기준과 비교한 값입니다.</p>
+        </article>
+      </section>
+
+      <section className="detail-section" aria-labelledby="leaders-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">현재 움직임</p>
+            <h2 id="leaders-title">주도 종목</h2>
+          </div>
+        </div>
+        {detail.leaders.length ? (
+          <ol className="leader-list">
+            {detail.leaders.map((leader, index) => (
+              <li key={leader.stockId}>
+                <div>
+                  <strong>{leader.name}</strong>
+                  {index === 0 ? <span className="badge">주도</span> : null}
+                </div>
+                <strong className="market-up">{formatReturn(leader.return)}</strong>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <EmptyState title="확인된 주도 종목이 없습니다" description="데이터가 확보되면 최대 3개 종목을 표시합니다." />
+        )}
+      </section>
+
+      <EvidenceSection eventId={detail.eventId} />
+
+      {detail.historicalAccess.status !== 'AVAILABLE' ? (
+        <aside className="gate-notice" aria-label="과거 유사사례 제공 상태">
+          <span className="eyebrow">검증 대기</span>
+          <strong>과거 관측은 검증 완료 후 제공합니다</strong>
+          <p>유사사례 링크와 과거 결과 데이터는 현재 화면에 노출하지 않습니다.</p>
+        </aside>
+      ) : null}
+
+      <button
+        ref={calculationTriggerRef}
+        className="text-button"
+        type="button"
+        onClick={() => setCalculationOpen(true)}
+      >
+        계산 기준 보기
+      </button>
+
+      {calculationOpen ? (
+        <div className="sheet-backdrop" role="presentation" onMouseDown={closeCalculation}>
+          <section
+            className="bottom-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="calculation-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="section-heading">
+              <h2 id="calculation-title">계산 기준</h2>
+              <button
+                ref={calculationCloseRef}
+                className="icon-button"
+                type="button"
+                onClick={closeCalculation}
+                aria-label="계산 기준 닫기"
+              >
+                ×
+              </button>
+            </div>
+            <p>테마 수익률은 전일 기준 상한형 유동시가총액 가중 결과입니다.</p>
+            <p>결측값은 0으로 바꾸지 않으며 Coverage 상태를 함께 표시합니다.</p>
+          </section>
+        </div>
+      ) : null}
+    </div>
+  );
+}
