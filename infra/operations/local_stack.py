@@ -7,7 +7,6 @@ import argparse
 import json
 import os
 import socket
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import NoReturn
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
@@ -73,66 +72,17 @@ def _health_payload() -> dict[str, object]:
     }
 
 
-class _HealthHandler(BaseHTTPRequestHandler):
-    server_version = "DAYJAVIEWFixture/1"
-
-    def do_GET(self) -> None:
-        if self.path != _HEALTH_PATH:
-            self._write_json(
-                404,
-                {
-                    "status": "NOT_FOUND",
-                    "locale": _LOCALE,
-                    "messageKo": "fixture health 경로가 아닙니다.",
-                },
-            )
-            return
-        try:
-            payload = _health_payload()
-        except SystemExit as exc:
-            self._write_json(
-                503,
-                {
-                    "status": "UNHEALTHY",
-                    "locale": _LOCALE,
-                    "messageKo": str(exc),
-                },
-            )
-            return
-        self._write_json(200, payload)
-
-    def log_message(self, format: str, *args: object) -> None:
-        print(
-            json.dumps(
-                {
-                    "component": "fixture-api",
-                    "locale": _LOCALE,
-                    "message": format % args,
-                },
-                ensure_ascii=False,
-                sort_keys=True,
-            ),
-            flush=True,
-        )
-
-    def _write_json(self, status: int, payload: dict[str, object]) -> None:
-        body = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-
 def _api() -> int:
     _require_fixture_mode()
     _dependency_status()
-    from apps.api import create_fixture_app
+    import sys
+    from pathlib import Path
 
-    environment = create_fixture_app()
-    if environment.app is None:
-        _fail("API fixture application 초기화에 실패했습니다.")
+    repository_root = Path(__file__).resolve().parents[2]
+    if str(repository_root) not in sys.path:
+        sys.path.insert(0, str(repository_root))
+    from apps.api.serve import serve_fixture_api
+
     host = os.environ.get("FIXTURE_API_HOST", "0.0.0.0")
     port = int(os.environ.get("FIXTURE_API_PORT", "8000"))
     print(
@@ -149,8 +99,7 @@ def _api() -> int:
         ),
         flush=True,
     )
-    ThreadingHTTPServer((host, port), _HealthHandler).serve_forever()
-    return 0
+    return serve_fixture_api(host=host, port=port, health_payload=_health_payload)
 
 
 def _probe(url: str) -> int:
