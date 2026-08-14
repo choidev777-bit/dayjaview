@@ -9,6 +9,7 @@ from .errors import (
     RecentAuthenticationRequired,
     ResourceNotFound,
 )
+from .google_oauth import HttpGoogleOAuthProvider
 from .models import (
     Availability,
     GoogleIdentity,
@@ -20,6 +21,7 @@ from .models import (
     TargetRecord,
 )
 from .oauth import FixtureGoogleOAuthProvider, GoogleOAuthProvider, OAuthProviderError
+from .postgres import PostgresIdentityRepository
 from .repository import IdentityRepository, InMemoryIdentityRepository
 from .security import (
     Clock,
@@ -41,6 +43,7 @@ __all__ = [
     "FixtureGoogleOAuthProvider",
     "GoogleIdentity",
     "GoogleOAuthProvider",
+    "HttpGoogleOAuthProvider",
     "IdentityError",
     "IdentityPolicy",
     "IdentityRepository",
@@ -51,6 +54,7 @@ __all__ = [
     "InvalidRequest",
     "OAuthCallbackRejected",
     "OAuthProviderError",
+    "PostgresIdentityRepository",
     "RecentAuthenticationRequired",
     "ResourceNotFound",
     "Role",
