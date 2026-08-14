@@ -3,13 +3,10 @@ from __future__ import annotations
 import json
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import parse_qs
 
-if TYPE_CHECKING:
-    from identity import InvalidRequest
-else:
-    from packages.identity import InvalidRequest
+from packages.identity import InvalidRequest
 
 Receive = Callable[[], Awaitable[dict[str, Any]]]
 Send = Callable[[dict[str, Any]], Awaitable[None]]
