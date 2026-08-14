@@ -32,14 +32,14 @@
 
 | 영역 | 사실 기반 판정 | 근거 |
 |---|---|---|
-| Git | `main`과 `origin/main`은 감사 기준 commit에서 일치하며 원격은 접근 가능하다. ADR-010의 “원격 생성 필요” 문구는 현재 상태보다 오래됐다. | `git status --short --branch`, `git ls-remote --symref origin HEAD` |
+| Git | `main`과 `origin/main`은 `6c2637e`에서 일치한다. Stage 0 통합은 별도 `codex/int-s0-foundation` branch에서 수행했고 검증된 task commit과 repair commit을 non-fast-forward merge했다. | `git rev-parse main origin/main`, `git ls-remote`, merge ancestry·graph 점검 |
 | 사용자 변경 | 추적 파일 `PROMPTS.md` 삭제 1건이 미커밋 상태다. 사용자 소유로 간주해 복원·수정·stage하지 않는다. | `git diff --name-status` → `D PROMPTS.md` |
-| 제품 애플리케이션 | 프론트엔드, API, worker 서비스, DB migration, 배포 코드, 기계 계약, package/환경 lock, CI가 없다. 제품 기능은 구현되지 않았다. | `git ls-files`, `rg --files`; `apps/`, `contracts/`, `infra/`, package manifest 부재 |
-| 문서 | PRD와 화면 기준은 현재 기준이지만 시스템·UI·API 문서는 구현 전 초안이다. API 계약에는 decimal return 규칙과 다른 saved fixture 예시, 일반 사용자 projection에 금지된 `reviewStatus` 예시가 있다. | 문서 metadata, `docs/api_contract.md` 4.1·5.2·10.4·10.6·18절 |
+| 제품 애플리케이션 | 프론트엔드, API, worker 서비스, DB migration과 배포 runtime은 아직 없다. Stage 0에서 기계 계약, 공통 fixture, package lock과 계약 CI만 추가됐으며 제품 기능 구현 완료를 뜻하지 않는다. | `apps/`, runtime `infra/` 부재; `contracts/**`, `pyproject.toml`, `uv.lock`, `.github/workflows/contracts.yml` 존재 |
+| 문서 | PRD·화면·시스템 기준은 유지된다. ADR-002~008이 경계의 확정·제안·외부 gate를 분리했고 API 문서의 saved decimal return과 일반 사용자 `reviewStatus` 모순은 기계 계약과 함께 제거됐다. API 문서는 여전히 프론트·백엔드 공동 승인 전 `0.2-draft`다. | `docs/adr/002-*`~`008-*`; `docs/api_contract.md`; contract validator |
 | 인포스탁 API 수집 | 로컬 import는 280/280 테마, 히스토리 39,696건, 실패 0건으로 완료됐지만 PostgreSQL 원천 DB·revision·Daily browser worker는 없다. | ignored `data/infostock/import/manifest.json`; tracked `scripts/collect_infostock.py` |
 | 시장 capture | 본 capture와 보조 capture가 약 10:40 KST에 각각 `INTERRUPTED`; gap recovery는 시작되지 않았다. 최종 replay fixture가 아니다. | `scripts/check_market_capture.ps1` read-only 결과 |
 | 기존 코드 | 추적 구현은 Infostock API collector와 2026-08-14 capture/replay 도구뿐이다. 모델 카드가 가리키는 `backend/app/engine/**`와 연구 artifact는 저장소에 없다. | `scripts/**`, `tests/**`, `git ls-files` |
-| 자동 검증 | offline 단위 테스트 24개 중 23개 통과, gap-recovery 분 경계 재구성 1개 실패다. | `python -m pytest -q` |
+| 자동 검증 | Stage 0 통합·repair 후 계약 validator, contract test 11개, market replay test 20개, 전체 offline test 35개가 통과한다. 저장 capture·gap recovery·replay는 실행하지 않았다. | `uv run python scripts/validate_contracts.py`; `uv run pytest tests/contracts -q`; `uv run pytest tests/test_market_replay.py -q`; `uv run pytest -q` |
 | 외부 설정 | 값 노출 없이 존재 여부만 확인했다. 키움·NAVER API HUB·OpenAI·Google OAuth secret은 설정돼 있고 KRX·OpenDART key, operator bootstrap email, 암호화된 Infostock browser state는 없다. | `.env.local` key presence 검사, state path 존재 검사 |
 
 ### 핵심 MVP 완료 조건
@@ -74,13 +74,13 @@
 
 | ID | Stage | 단 하나의 목표와 검증 가능한 종료 조건 | 선행 의존성 | 소유 파일·디렉터리 | 병렬 | 모델 | 필수 검증 | branch | 상태·blocker |
 |---|---:|---|---|---|---|---|---|---|---|
-| `S0-ADR` | 0 | 기존 확정 의미를 바꾸지 않고 ADR-002~008과 기존 ADR의 현재 증거를 정리한다. 각 ADR에 상태·결정·대안·결과·검증이 있고 상위 문서와 충돌하지 않으면 종료한다. | 이 원장 commit | `docs/adr/**` | `S0-CONTRACT`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / max` | `V-DIFF`, ADR 상태·링크 점검 | `codex/s0-adr-boundaries` | 준비 |
-| `S0-CONTRACT` | 0 | API 의미 계약을 OpenAPI·AsyncAPI·JSON Schema·공통 fixture·CI로 실행 가능하게 만든다. 모든 fixture와 예시가 schema/invariant를 통과하고 현재 문서의 두 모순이 제거되면 종료한다. | 이 원장 commit | `contracts/**`, `docs/api_contract.md`, `scripts/validate_contracts.py`, `tests/contracts/**`, `pyproject.toml`, `uv.lock`, `.github/workflows/contracts.yml` | `S0-ADR`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / xhigh` | `V-CONTRACT`, `V-DIFF` | `codex/s0-machine-contracts` | 준비 |
-| `S0-REPLAY-UNIT` | 0 | gap-recovery의 분 경계 candidate TTL 의미를 명세와 일치시켜 현재 실패 1건만 수술적으로 고친다. 전체 offline unit test가 통과하고 실제 replay·ignored data를 실행/변경하지 않으면 종료한다. | 이 원장 commit | `scripts/collect_market_gap_recovery.py`, `tests/test_market_replay.py` | `S0-ADR`, `S0-CONTRACT`와 가능 | `gpt-5.6-sol / xhigh` | `python -m pytest tests/test_market_replay.py -q`, `python -m pytest -q`, `V-DIFF` | `codex/s0-replay-minute-boundary` | 준비; 현재 1 failure |
-| `S1-WEB` | 1 | 계약 fixture로 로그인·오늘·테마 상세·관심·인사이트의 route/state shell을 구축한다. gate off 유사사례와 operator 비노출, 반응형·키보드 상태 test와 build가 통과하면 종료한다. | `INT-S0` | `apps/web/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, `V-CONTRACT`, `V-DIFF` | `codex/s1-web-fixture-shell` | 계획 |
-| `S1-IDENTITY` | 1 | Google OAuth server session, 사용자/saved library, 계정 삭제, operator 역할 경계를 fixture 환경에서 구현한다. 인증·CSRF·open redirect·IDOR·role test가 통과하면 종료한다. | `INT-S0` | `apps/api/**`, `packages/identity/**`, `infra/migrations/*identity*`, `tests/identity/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, auth contract test, `V-DIFF` | `codex/s1-identity-library` | 계획; live operator email 없음 |
-| `S1-INFOSTOCK` | 1 | 기존 280-theme import를 원본·revision·현재 membership·과거 leader가 분리된 PostgreSQL 모델로 idempotent 적재한다. 280/280 fixture import, lineage, 재실행·무결성 test가 통과하면 종료한다. | `INT-S0` | `packages/infostock/**`, `apps/worker-batch/infostock/**`, `infra/migrations/*infostock*`, `tests/infostock/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, fixture DB integration, `V-DIFF` | `codex/s1-infostock-store` | 계획; Daily 인증은 S6 |
-| `S1-CALC` | 1 | 순수 domain에서 유동시총 상한 가중, 중앙값, 확산, 관심 배수·공백, Coverage와 상태 전이를 결정적으로 구현한다. 경계·결측·property test와 versioned fixture가 통과하면 종료한다. | `INT-S0` | `packages/domain/**`, `packages/calculations/**`, `tests/domain/**`, `tests/calculations/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s1-domain-calculations` | 계획 |
+| `S0-ADR` | 0 | 기존 확정 의미를 바꾸지 않고 ADR-002~008과 기존 ADR의 현재 증거를 정리한다. 각 ADR에 상태·결정·대안·결과·검증이 있고 상위 문서와 충돌하지 않으면 종료한다. | 이 원장 commit | `docs/adr/**` | `S0-CONTRACT`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / max` | `V-DIFF`, ADR 상태·링크 점검 | `codex/s0-adr-boundaries` | 완료; thread `019ffe5b-1a95-7bb0-a407-55215c83ac04`, remote `330a4115d884bba1fa124e78a622d4b77cac5567`; 11개 ADR section·local link·`V-DIFF` 독립 통과 |
+| `S0-CONTRACT` | 0 | API 의미 계약을 OpenAPI·AsyncAPI·JSON Schema·공통 fixture·CI로 실행 가능하게 만든다. 모든 fixture와 예시가 schema/invariant를 통과하고 현재 문서의 두 모순이 제거되면 종료한다. | 이 원장 commit | `contracts/**`, `docs/api_contract.md`, `scripts/validate_contracts.py`, `tests/contracts/**`, `pyproject.toml`, `uv.lock`, `.github/workflows/contracts.yml` | `S0-ADR`, `S0-REPLAY-UNIT`와 가능 | `gpt-5.6-sol / xhigh` | `V-CONTRACT`, `V-DIFF` | `codex/s0-machine-contracts` | 완료; thread `019ffe5b-042d-7db2-a553-3285908d5fde`, remote `b18fb462eaf763b583631ca8453947b20024426f`; validator HTTP 30·WS 9·schema 79·fixture 43·문서 예시 21, contract test 11개 통과 |
+| `S0-REPLAY-UNIT` | 0 | gap-recovery의 분 경계 candidate TTL 의미를 명세와 일치시켜 현재 실패 1건만 수술적으로 고친다. 전체 offline unit test가 통과하고 실제 replay·ignored data를 실행/변경하지 않으면 종료한다. | 이 원장 commit | `scripts/collect_market_gap_recovery.py`, `tests/test_market_replay.py` | `S0-ADR`, `S0-CONTRACT`와 가능 | `gpt-5.6-sol / xhigh` | `python -m pytest tests/test_market_replay.py -q`, `python -m pytest -q`, `V-DIFF` | `codex/s0-replay-minute-boundary` | 완료; thread `019ffe5b-1cb3-7440-9adb-fd3ad2e060b1`, remote `9d60fbfcea9b34252e8445de5b8f1ecb64eafd05`; targeted 20개·branch offline 24개, 통합 전체 35개 통과; replay 미실행 |
+| `S1-WEB` | 1 | 계약 fixture로 로그인·오늘·테마 상세·관심·인사이트의 route/state shell을 구축한다. gate off 유사사례와 operator 비노출, 반응형·키보드 상태 test와 build가 통과하면 종료한다. | `INT-S0` | `apps/web/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / xhigh` | `V-WEB`, `V-CONTRACT`, `V-DIFF` | `codex/s1-web-fixture-shell` | 생성 준비; `INT-S0` 통합 검증 완료, 이 원장 evidence commit push 후 동일 exact base에서 생성; `B-DESIGN-REVIEW`는 자동 UI 구현을 막지 않음 |
+| `S1-IDENTITY` | 1 | Google OAuth server session, 사용자/saved library, 계정 삭제, operator 역할 경계를 fixture 환경에서 구현한다. 인증·CSRF·open redirect·IDOR·role test가 통과하면 종료한다. | `INT-S0` | `apps/api/**`, `packages/identity/**`, `infra/migrations/*identity*`, `tests/identity/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, auth contract test, `V-DIFF` | `codex/s1-identity-library` | 생성 준비; 동일 exact base; `B-OPERATOR`는 live bootstrap만 차단하고 fixture auth·role 구현은 가능 |
+| `S1-INFOSTOCK` | 1 | 기존 280-theme import를 원본·revision·현재 membership·과거 leader가 분리된 PostgreSQL 모델로 idempotent 적재한다. 280/280 fixture import, lineage, 재실행·무결성 test가 통과하면 종료한다. | `INT-S0` | `packages/infostock/**`, `apps/worker-batch/infostock/**`, `infra/migrations/*infostock*`, `tests/infostock/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, fixture DB integration, `V-DIFF` | `codex/s1-infostock-store` | 생성 준비; 동일 exact base; `B-INFOSTOCK-AUTH`·`B-DATA-RIGHTS`를 유지하고 fixture/import DB 범위만 진행, Daily 인증은 S6 |
+| `S1-CALC` | 1 | 순수 domain에서 유동시총 상한 가중, 중앙값, 확산, 관심 배수·공백, Coverage와 상태 전이를 결정적으로 구현한다. 경계·결측·property test와 versioned fixture가 통과하면 종료한다. | `INT-S0` | `packages/domain/**`, `packages/calculations/**`, `tests/domain/**`, `tests/calculations/**` | Stage 1 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s1-domain-calculations` | 생성 준비; 동일 exact base; 외부 blocker 없이 contract fixture 기반 구현 가능 |
 | `S2-REFDATA` | 2 | KRX Open API·OpenDART 무료 원천 adapter와 point-in-time 유동주식비율·거래일·조정가격 기준정보를 구현한다. fixture 계약·충돌/결측/중복차감 test가 통과하고 live 미검증이 분리되면 종료한다. | `INT-S1` | `packages/reference-data/**`, `apps/worker-batch/reference-data/**`, `infra/migrations/*reference*`, `tests/reference-data/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, source contract fixtures, `V-DIFF` | `codex/s2-reference-data` | 계획; KRX/OpenDART key 없음 |
 | `S2-MARKET` | 2 | 키움 read-only Market Gateway와 후보·구독 180/200 slot·재연결·스냅샷 보완을 canonical event로 구현한다. fixture/adapter contract·slot churn·old input test가 통과하면 종료한다. | `INT-S1` | `apps/worker-market/**`, `packages/adapters/kiwoom/**`, `tests/market-gateway/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, adapter contract, `V-DIFF` | `codex/s2-market-gateway` | 계획; 실제 장중 검증 대기 가능 |
 | `S2-REALTIME` | 2 | 단일 Event writer, hot state, dirty-theme 집계, hysteresis, outbox, versioned read snapshot을 구현한다. lifecycle/idempotency/recovery/Coverage test가 통과하면 종료한다. | `INT-S1` | `packages/realtime/**`, `packages/events/**`, `infra/migrations/*event*`, `tests/realtime/**`, `tests/events/**` | Stage 2 다른 작업과 가능 | `gpt-5.6-sol / max` | `V-PY`, `V-CONTRACT`, `V-DIFF` | `codex/s2-realtime-events` | 계획 |
@@ -107,8 +107,8 @@
 
 | 통합 Goal | 입력과 유일한 목표 | 모델 | branch | 통합 검증·다음 행동 | 상태 |
 |---|---|---|---|---|---|
-| `INT-S0` | `S0-ADR`, `S0-CONTRACT`, `S0-REPLAY-UNIT`의 commit만 깨끗한 worktree에 병합 | `gpt-5.6-sol / xhigh` | `codex/int-s0-foundation` | `V-CONTRACT`, 전체 offline pytest, ledger 증거 갱신·push 후 Stage 1 작업과 `INT-S1` 생성 | 본 Goal이 생성 예정 |
-| `INT-S1` | Stage 1 네 기반 결과 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s1-app-base` | Python/Web/DB fixture 검증 후 Stage 2 생성 | 계획 |
+| `INT-S0` | `S0-ADR`, `S0-CONTRACT`, `S0-REPLAY-UNIT`의 commit만 깨끗한 worktree에 병합 | `gpt-5.6-sol / xhigh` | `codex/int-s0-foundation` | `V-CONTRACT`, 전체 offline pytest, ledger 증거 갱신·push 후 Stage 1 작업과 `INT-S1` 생성 | 통합 검증 완료; merged artifact `e90c72e`에 task 3개와 dependency repair가 포함됨; 이 evidence commit push와 후속 Goal 생성만 남음 |
+| `INT-S1` | Stage 1 네 기반 결과 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s1-app-base` | Python/Web/DB fixture 검증 후 Stage 2 생성 | 생성 준비; Stage 1 네 task의 실제 thread ID를 prompt에 주입하고 동일 pushed `INT-S0` exact base에서 대기·검증·병합 |
 | `INT-S2` | 기준정보·Market Gateway·Realtime/Event 결과 통합 | `gpt-5.6-sol / max` | `codex/int-s2-realtime-core` | deterministic 계산·recovery·adapter contract 검증 후 Stage 3 생성 | 계획 |
 | `INT-S3` | API·실제 web adapter·replay adapter·local stack 통합 | `gpt-5.6-sol / max` | `codex/int-s3-first-vertical` | fixture end-to-end·auth·WSS·health smoke; replay 실행 없이 Stage 4 생성 | 계획 |
 | `INT-S4` | 근거 backend와 UI 통합 | `gpt-5.6-sol / xhigh` | `codex/int-s4-evidence` | no-evidence/no-LLM·PIT·source UI 검증 후 Stage 5 생성 | 계획 |
@@ -120,6 +120,21 @@
 | `INT-S10` | release 감사·ops 결과 통합과 최종 코드 완료 판정 | `gpt-5.6-sol / max` | `codex/int-s10-release-ready` | `V-ALL`, 차단 finding 0, secret 0, replay 미실행 확인, ledger·최종 branch commit/push; 실제 외부 검증은 별도 보고 | 계획 |
 
 통합 Goal은 최종 메시지가 아니라 commit diff와 검증 로그를 직접 확인한다. 결함을 발견하면 그 결함만 소유하는 repair Goal을 만들고 통합 Goal에서 새 기능을 구현하지 않는다. 각 통합 Goal은 다음 Stage 작업들과 다음 통합 Goal을 만든 뒤 종료한다.
+
+### Stage 0 통합 증거
+
+- 공통 base: `6c2637e88f1c4c671b2c83a9b4caf0cbbb334f9f`; 검증 시 `main`과 `origin/main`도 이 SHA에서 일치했다.
+- 원격 task SHA와 ancestry·소유 경로:
+  - `S0-ADR`: `codex/s0-adr-boundaries` → `330a4115d884bba1fa124e78a622d4b77cac5567`, `docs/adr/**`만 변경.
+  - `S0-CONTRACT`: `codex/s0-machine-contracts` → `b18fb462eaf763b583631ca8453947b20024426f`, 계약 task 소유 경로 55개만 변경.
+  - `S0-REPLAY-UNIT`: `codex/s0-replay-minute-boundary` → `9d60fbfcea9b34252e8445de5b8f1ecb64eafd05`, 지정 구현·test 2개만 변경.
+- 통합 중 새 `pyproject.toml`이 기존 replay import 의존성을 누락한 결함을 발견했다. 독립 repair Goal `REPAIR-S0-CONTRACT-DEPS`, thread `019ffe77-a834-7343-b154-3f63ab72e8fc`, branch `codex/repair-s0-contract-runtime-deps`, remote `4bd3c107031b0289f775454417739405d4a02f99`가 `pyproject.toml`·`uv.lock`만 수정해 `httpx==0.28.1`, `websockets==17.0.1`을 고정했다.
+- 감사 가능한 merge 순서: ADR `50d9ec2` → 계약 `f31b747` → replay `eeabce7` → dependency repair `e90c72e`.
+- 통합 검증: contract validator `HTTP 30 / WebSocket 9 / schema 79 / fixture 43 / 문서 JSON 예시 21`; `tests/contracts` 11개, `tests/test_market_replay.py` 20개, 전체 offline pytest 35개 통과; `git diff --check` 통과; 원격 SHA 4개와 merged ancestry·총 64개 task 경로 소유권 일치.
+- 저장 capture, gap recovery, replay, final replay와 judge replay는 실행하지 않았다. secret·ignored/generated market·Infostock data도 읽거나 변경하지 않았다.
+- 해결된 내부 blocker: 기존 gap-recovery 분 경계 실패와 통합 시 발견한 uv runtime dependency 누락. 외부 `B-*`는 해제 증거가 없어 아래 상태를 그대로 유지한다.
+- Stage 1 dependency: 네 task는 원장상 서로 독립이며 병렬 생성 가능하다. 이 Stage 0 evidence를 포함해 push되는 `codex/int-s0-foundation` commit 하나를 모두의 exact base로 사용하고, 해당 SHA를 각 `/goal` prompt와 `INT-S0` 최종 보고에 기록한다. `INT-S1`에는 네 task의 실제 thread ID를 전달한다.
+- 언어 연쇄 규칙: 이후 모든 Stage task·통합 Goal은 사용자 대상 답변, UI 문구, 오류·빈 상태·로딩·권한 안내와 제품/연구/운영 문서를 한국어 기본으로 작성하고 `ko-KR` 표시 규칙을 사용한다. 코드 식별자, API/JSON Schema field, URI, CLI와 library 이름은 영어를 유지한다.
 
 ### 외부 의존성·blocker
 
