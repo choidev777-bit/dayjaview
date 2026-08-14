@@ -81,6 +81,7 @@ def _candidate_envelope(
     action: str,
     source_at: datetime,
     received_at: datetime,
+    condition_id: str = "7",
 ) -> KiwoomSourceEnvelope:
     return KiwoomSourceEnvelope(
         source_schema_version="kiwoom.websocket.v1",
@@ -97,7 +98,7 @@ def _candidate_envelope(
                 {
                     "type": "02",
                     "item": "005930",
-                    "values": {"841": "7", "843": action},
+                    "values": {"841": condition_id, "843": action},
                 }
             ],
         },
@@ -121,6 +122,70 @@ def test_duplicate_and_same_key_payload_conflict_are_distinct() -> None:
     assert accepted.disposition is IngestDisposition.ACCEPTED
     assert duplicate.disposition is IngestDisposition.DUPLICATE
     assert conflicting.disposition is IngestDisposition.CONFLICT
+
+
+def test_candidate_condition_identity_separates_keys_and_fence_entries() -> None:
+    normalizer = KiwoomNormalizer()
+    source_at = BASE + timedelta(seconds=1)
+    received_at = BASE + timedelta(seconds=2)
+    condition_seven = normalizer.normalize(
+        _candidate_envelope(
+            sequence=1,
+            action="I",
+            source_at=source_at,
+            received_at=received_at,
+            condition_id="7",
+        )
+    )[0]
+    condition_eight = normalizer.normalize(
+        _candidate_envelope(
+            sequence=1,
+            action="I",
+            source_at=source_at,
+            received_at=received_at,
+            condition_id="8",
+        )
+    )[0]
+    fence = EventOrderFence()
+    fence.begin_session("session-current")
+
+    assert condition_seven.event_id != condition_eight.event_id
+    assert condition_seven.idempotency_key != condition_eight.idempotency_key
+    assert fence.evaluate(condition_seven).disposition is IngestDisposition.ACCEPTED
+    assert fence.evaluate(condition_eight).disposition is IngestDisposition.ACCEPTED
+
+
+def test_same_condition_source_event_converges_to_duplicate() -> None:
+    envelope = _candidate_envelope(
+        sequence=1,
+        action="I",
+        source_at=BASE + timedelta(seconds=1),
+        received_at=BASE + timedelta(seconds=2),
+        condition_id="7",
+    )
+    normalizer = KiwoomNormalizer()
+    first = normalizer.normalize(envelope)[0]
+    redelivered = normalizer.normalize(envelope)[0]
+    fence = EventOrderFence()
+    fence.begin_session("session-current")
+
+    assert first.event_id == redelivered.event_id
+    assert first.idempotency_key == redelivered.idempotency_key
+    assert fence.evaluate(first).disposition is IngestDisposition.ACCEPTED
+    assert fence.evaluate(redelivered).disposition is IngestDisposition.DUPLICATE
+
+
+def test_trade_and_snapshot_natural_keys_remain_unchanged() -> None:
+    normalizer = KiwoomNormalizer()
+    trade = normalizer.normalize(_trade_envelope())[0]
+    snapshot = normalizer.normalize(_snapshot_envelope())[0]
+
+    assert trade.idempotency_key == (
+        "kiwoom:541c291af5a96a1c227607e6fde4743fd6ca3a9ad448123f5a3e1ab199166f0d"
+    )
+    assert snapshot.idempotency_key == (
+        "kiwoom:149512d6032671172d55554612d79b86bc3d3ec491142cbb9f4f16cd41430505"
+    )
 
 
 def test_lower_sequence_is_rejected_even_if_it_arrives_later() -> None:
