@@ -65,6 +65,22 @@ class MarketReplayStoreTests(unittest.TestCase):
                 )
                 store.append_event(
                     run_id=run_id,
+                    event_type="candidate.rest",
+                    source="fixture",
+                    payload={"apiId": "ka10032"},
+                    received_at="2026-08-13T23:59:30+00:00",
+                    stock_code="000005",
+                )
+                store.append_event(
+                    run_id=run_id,
+                    event_type="candidate.rest",
+                    source="fixture",
+                    payload={"apiId": "ka10032"},
+                    received_at="2026-08-13T23:59:29.999999+00:00",
+                    stock_code="000007",
+                )
+                store.append_event(
+                    run_id=run_id,
                     event_type="subscription.changed",
                     source="fixture",
                     payload={"kind": "stock_trade", "targets": ["000001"]},
@@ -83,14 +99,33 @@ class MarketReplayStoreTests(unittest.TestCase):
                 output / "market-replay.sqlite3",
                 run_id=run_id,
                 trade_date=date(2026, 8, 14),
-                master_codes={"000001", "000002", "000003", "000004"},
-                stock_to_themes={"000001": {"t1"}, "000004": {"t2"}},
-                theme_members={"t1": {"000001", "000002", "000003"}, "t2": {"000004"}},
+                master_codes={
+                    "000001",
+                    "000002",
+                    "000003",
+                    "000004",
+                    "000005",
+                    "000006",
+                    "000007",
+                    "000008",
+                },
+                stock_to_themes={
+                    "000001": {"t1"},
+                    "000004": {"t2"},
+                    "000005": {"t3"},
+                    "000007": {"t4"},
+                },
+                theme_members={
+                    "t1": {"000001", "000002", "000003"},
+                    "t2": {"000004"},
+                    "t3": {"000005", "000006"},
+                    "t4": {"000007", "000008"},
+                },
                 start_hhmm="0900",
                 end_hhmm="0901",
                 candidate_ttl_seconds=30,
             )
-            self.assertEqual(result["0900"], {"000002", "000003"})
+            self.assertEqual(result["0900"], {"000002", "000003", "000005", "000006"})
             self.assertEqual(result["0901"], set())
 
     def test_gap_recovery_audit_and_combined_replay_use_historical_time(self):

@@ -185,6 +185,7 @@ def reconstruct_intended_codes_by_minute(
     minute = start_local
     while minute <= end_local:
         minute_utc = minute.astimezone(timezone.utc)
+        minute_start_utc = minute_utc.replace(second=0, microsecond=0)
         while event_position < len(events) and events[event_position][0] <= minute_utc:
             received_at, _, event_type, stock_code, payload = events[event_position]
             event_position += 1
@@ -206,7 +207,9 @@ def reconstruct_intended_codes_by_minute(
         active_candidates = {
             code
             for code, seen_at in candidate_last_seen.items()
-            if 0 <= (minute_utc - seen_at).total_seconds() <= candidate_ttl_seconds
+            if candidate_ttl_seconds >= 0
+            and seen_at <= minute_utc
+            and seen_at + timedelta(seconds=candidate_ttl_seconds) >= minute_start_utc
         }
         active_themes: set[str] = set()
         for code in active_candidates:
