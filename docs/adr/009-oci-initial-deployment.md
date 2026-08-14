@@ -62,6 +62,7 @@ DAYJAVIEW는 상시 scheduler, WebSocket API, PostgreSQL·Redis, 장중 worker, 
 - [ ] 핵심 image의 `linux/arm64` build·실행 검증
 - [ ] Playwright·Chromium 로그인·storage state 저장·복원 PoC
 - [ ] staging·production network·volume·credential 격리 검증
-- [ ] `api.dayjaview.duckdns.org` DNS·TLS와 Vercel rewrite·Google OAuth callback 검증
+- [x] `dayjaview.duckdns.org`와 `api.dayjaview.duckdns.org` A record를 OCI VM 공인 IPv4에 연결
+- [ ] `api.dayjaview.duckdns.org` TLS와 Vercel rewrite·Google OAuth callback 검증
 - [ ] PostgreSQL·session state 외부 backup과 restore drill
 - [ ] rollback과 재부팅 복구 시험

@@ -26,7 +26,9 @@
 
 ## DuckDNS 확인 조건
 
-`dayjaview.duckdns.org` 등록 후 `api.dayjaview.duckdns.org`의 A/AAAA 해석과 ACME 인증서 발급을 실제로 확인한다. 하위 hostname을 안정적으로 사용할 수 없으면 backend endpoint만 `dayjaview-api.duckdns.org`로 바꾸고 나머지 경계는 유지한다.
+2026-08-14에 `dayjaview.duckdns.org`를 OCI VM 공인 IPv4 `168.107.25.213`으로 등록했고, `dayjaview.duckdns.org`와 `api.dayjaview.duckdns.org`의 A record가 모두 같은 주소로 해석되는 것을 외부 DNS 조회로 확인했다. IPv6는 사용하지 않으므로 AAAA record는 구성하지 않는다.
+
+DNS 확인은 완료됐지만 애플리케이션 배포 완료를 뜻하지 않는다. 실행 가능한 API와 reverse proxy가 준비된 뒤 `api.dayjaview.duckdns.org`의 ACME 인증서 발급·자동 갱신을 검증한다. 하위 hostname이나 인증서 발급을 안정적으로 사용할 수 없으면 backend endpoint만 `dayjaview-api.duckdns.org`로 바꾸고 나머지 경계는 유지한다.
 
 ## 결과
 
@@ -53,5 +55,5 @@
 - [ ] 1회용 WebSocket ticket 재사용·만료·다른 session 사용 거부
 - [ ] WebSocket 인증 전 snapshot 0건
 - [ ] production Origin 외 REST mutation·WSS 연결 거부
-- [ ] DuckDNS 하위 hostname DNS·Caddy ACME 발급·자동 갱신 성공
-
+- [x] `dayjaview.duckdns.org`와 `api.dayjaview.duckdns.org` A record가 OCI VM으로 해석됨
+- [ ] `api.dayjaview.duckdns.org` Caddy ACME 발급·자동 갱신 성공

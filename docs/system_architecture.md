@@ -944,6 +944,8 @@ v2 예측기는 Historical Matching API에 포함하지 않는다.
 
 단일 VM에서 staging과 production을 동시에 실행할 때 Compose project 이름, network, port, volume, database credential을 분리한다. 자원 경합이 장중 처리 목표를 해치면 staging을 중지하거나 별도 호스트로 옮긴다.
 
+DNS 예약과 SSH 접속 검증은 애플리케이션 배포와 분리한다. 코드가 없는 상태에서는 빈 container나 placeholder 서비스를 외부에 배포하지 않는다. 첫 staging 배포는 프론트 앱 셸, 제품 데이터를 포함하지 않는 `/api/health`, PostgreSQL·Redis 연결, Google OAuth 기본 흐름과 첫 fixture/API 화면이 함께 실행될 때 수행한다. production 공개는 첫 수직 통합과 출시 검증을 통과한 뒤 진행한다.
+
 ### 13.2 Vercel frontend + OCI backend 배치
 
 ```mermaid
@@ -991,7 +993,7 @@ React는 `https://dayjaview.vercel.app`에서 제공한다. browser REST와 Goog
 
 WebSocket은 `wss://api.dayjaview.duckdns.org/v1/realtime`에 직접 연결한다. browser cookie를 cross-site로 보내지 않고, 인증된 `/api/v1/auth/realtime-ticket` 응답의 30초·1회용 ticket을 연결 직후 첫 message로 제출한다. 세부 결정은 [ADR-011](./adr/011-vercel-oci-split-deployment.md)을 따른다.
 
-현재 OCI VM에는 운영자 SSH public key 등록과 접속 검증까지 완료됐다. 이는 애플리케이션 배포 완료를 뜻하지 않는다. 이전 프로젝트의 service·container·cron·파일 잔존 여부 확인, OS patch, firewall, Docker Compose, domain·TLS, 영구 volume, backup 구성은 별도 완료 조건이다. private key는 운영자 단말에만 보관하고 서버나 저장소로 복사하지 않는다.
+현재 OCI VM에는 운영자 SSH public key 등록과 접속 검증이 완료됐다. `dayjaview.duckdns.org`와 `api.dayjaview.duckdns.org`의 A record도 OCI VM 공인 IPv4 `168.107.25.213`으로 연결하고 외부 해석을 검증했다. 이는 애플리케이션 배포 완료를 뜻하지 않는다. 이전 프로젝트의 service·container·cron·파일 잔존 여부 확인, OS patch, firewall, Docker Compose, TLS, 영구 volume, backup 구성은 별도 완료 조건이다. private key는 운영자 단말에만 보관하고 서버나 저장소로 복사하지 않는다.
 
 ### 13.3 Windows Market Gateway 경계
 

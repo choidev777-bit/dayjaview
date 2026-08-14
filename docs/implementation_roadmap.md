@@ -26,6 +26,7 @@
 7. v1 유사사례 엔진은 기준선으로만 사용한다.
 8. 온톨로지 재검증을 통과하기 전 유사사례를 일반 사용자에게 노출하지 않는다.
 9. 과거 관측값을 현재 사건의 예측·추천으로 표현하지 않는다.
+10. DNS·SSH 같은 가역적 provisioning은 구현 전에 끝낼 수 있지만, 실행 코드가 없는 빈 애플리케이션은 배포하지 않는다.
 
 ---
 
@@ -407,7 +408,8 @@ src/
 - production secret을 Git 밖 root 소유 `0600` env 파일 또는 OCI Vault로 주입
 - 영구 volume과 외부 암호화 backup 구성
 - Vercel `dayjaview.vercel.app` production 배포와 `/api/*` OCI external rewrite
-- DuckDNS `api.dayjaview.duckdns.org` 해석·Caddy TLS·Google OAuth callback 연결
+- [x] DuckDNS `dayjaview.duckdns.org`와 `api.dayjaview.duckdns.org`를 OCI VM 공인 IPv4에 연결하고 A record 해석 검증
+- DuckDNS `api.dayjaview.duckdns.org` Caddy TLS·Google OAuth callback 연결
 - 30초·1회용 WebSocket ticket 발급·원자적 소비·인증 전 차단
 - 재부팅 자동 기동, health check, rollback, backup restore 시험
 
@@ -469,6 +471,7 @@ src/
 - [ ] OCI host·SSH·firewall 보안 baseline을 적용했다.
 - [ ] 모든 필수 image와 browser worker가 ARM64에서 동작한다.
 - [ ] staging과 production의 network·volume·credential이 분리됐다.
+- [x] DuckDNS app·API hostname이 OCI VM 공인 IPv4로 해석된다.
 - [ ] Vercel app URL·DuckDNS API TLS·external rewrite·Google OAuth callback이 동작한다.
 - [ ] VM 재부팅 뒤 production stack과 영구 state가 복구된다.
 - [ ] PostgreSQL·인포스탁 session state backup을 새 환경에 복원했다.
@@ -500,6 +503,10 @@ src/
 ---
 
 ## 8. 단계 3 — 오늘·테마 상세·관심 첫 수직 통합
+
+### 첫 배포 게이트
+
+코드가 없는 상태에서는 DNS 예약과 SSH 접속 검증까지만 수행한다. 프론트 앱 셸, 제품 데이터를 포함하지 않는 `/api/health`, PostgreSQL·Redis 연결, Google OAuth 기본 흐름과 첫 fixture/API 화면이 함께 실행되는 시점에 첫 OCI staging·Vercel preview 배포를 수행한다. `production` 공개 배포는 아래 단계 3 완료 게이트와 출시 단계 검증을 통과한 뒤 수행한다.
 
 첫 통합 범위:
 
