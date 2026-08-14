@@ -214,8 +214,22 @@ class IdentityService:
     def authenticate(self, session_token: str | None) -> SessionPrincipal | None:
         if not session_token or len(session_token) > 512:
             return None
+        return self._authenticate_session_hash(token_hash(session_token))
+
+    def refresh_principal(
+        self,
+        principal: SessionPrincipal,
+    ) -> SessionPrincipal | None:
+        refreshed = self._authenticate_session_hash(principal.session_token_hash)
+        if refreshed is None or refreshed.user.user_id != principal.user.user_id:
+            return None
+        return refreshed
+
+    def _authenticate_session_hash(
+        self,
+        session_token_hash: str,
+    ) -> SessionPrincipal | None:
         now = self._clock.now()
-        session_token_hash = token_hash(session_token)
         record = self._repository.get_session(session_token_hash)
         if record is None or record.revoked_at is not None:
             return None
@@ -300,20 +314,19 @@ class IdentityService:
         self,
         *,
         ticket: str,
-        session_token: str | None,
         origin: str,
     ) -> SessionPrincipal:
-        principal = self.require_authenticated(session_token)
         if not constant_time_equal(origin, self.policy.allowed_origin):
             raise AuthenticationRequired
         consumed = self._repository.consume_realtime_ticket(
             ticket_hash=token_hash(ticket),
-            session_token_hash=principal.session_token_hash,
-            user_id=principal.user.user_id,
             origin=origin,
             now=self._clock.now(),
         )
         if consumed is None:
+            raise AuthenticationRequired
+        principal = self._authenticate_session_hash(consumed.session_token_hash)
+        if principal is None or principal.user.user_id != consumed.user_id:
             raise AuthenticationRequired
         return principal
 

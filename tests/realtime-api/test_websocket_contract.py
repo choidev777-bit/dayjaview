@@ -12,7 +12,6 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from apps.api import ApiSettings, RealtimeSnapshotHub, create_fixture_app
 from apps.api.app_types import JsonObject
-from apps.api.cookies import SESSION_COOKIE
 from packages.domain import DataStatus
 from packages.identity import GoogleIdentity
 from packages.realtime import (
@@ -48,18 +47,10 @@ class WebSocketHarness:
         self,
         app: Any,
         *,
-        session_token: str | None,
         origin: str = "https://dayjaview.vercel.app",
         query_string: bytes = b"",
     ) -> None:
         headers = [(b"origin", origin.encode("latin-1"))]
-        if session_token is not None:
-            headers.append(
-                (
-                    b"cookie",
-                    f"{SESSION_COOKIE}={session_token}".encode("latin-1"),
-                )
-            )
         self._scope = {
             "type": "websocket",
             "path": "/v1/realtime",
@@ -147,6 +138,21 @@ def _ticket(environment, completion):
     )
 
 
+async def _assert_ticket_rejected(app: Any, ticket: str) -> None:
+    websocket = WebSocketHarness(app)
+    assert (await websocket.start())["type"] == "websocket.accept"
+    await websocket.send_json({"type": "auth", "ticket": ticket})
+    error = await websocket.next_json()
+    _assert_contract("WsError", error)
+    assert error["code"] == "AUTHENTICATION_REQUIRED"
+    close = await websocket.next_event()
+    assert close["type"] == "websocket.close"
+    serialized = json.dumps([error, close])
+    assert "snapshotId" not in serialized
+    assert "evt_current" not in serialized
+    assert ticket not in serialized
+
+
 def _snapshot(
     fixture_name: str,
     *,
@@ -213,17 +219,14 @@ def _populated_hub() -> RealtimeSnapshotHub:
     return hub
 
 
-def test_authenticated_websocket_subscribe_sends_contract_full_snapshots_only() -> None:
+def test_cross_host_cookie_absent_websocket_sends_contract_full_snapshots_only() -> None:
     async def scenario() -> None:
         clock = MutableClock()
         hub = _populated_hub()
         environment = create_fixture_app(clock=clock, realtime_hub=hub)
         completion = _service_login(environment, subject="google-ws-smoke")
         ticket = _ticket(environment, completion)
-        websocket = WebSocketHarness(
-            environment.app,
-            session_token=completion.session_token,
-        )
+        websocket = WebSocketHarness(environment.app)
         assert (await websocket.start())["type"] == "websocket.accept"
         await websocket.assert_silent()
         await websocket.send_json({"type": "auth", "ticket": ticket.ticket})
@@ -255,53 +258,124 @@ def test_authenticated_websocket_subscribe_sends_contract_full_snapshots_only() 
     asyncio.run(scenario())
 
 
-def test_ticket_is_single_use_expiring_and_bound_to_issuing_user() -> None:
+def test_ticket_is_single_use_and_expiring_without_session_cookie() -> None:
     async def scenario() -> None:
         clock = MutableClock()
         environment = create_fixture_app(clock=clock, realtime_hub=_populated_hub())
         first = _service_login(environment, subject="google-ws-first")
-        second = _service_login(environment, subject="google-ws-second")
         issued = _ticket(environment, first)
 
-        wrong_user = WebSocketHarness(
-            environment.app,
-            session_token=second.session_token,
-        )
-        assert (await wrong_user.start())["type"] == "websocket.accept"
-        await wrong_user.send_json({"type": "auth", "ticket": issued.ticket})
-        wrong_error = await wrong_user.next_json()
-        _assert_contract("WsError", wrong_error)
-        assert wrong_error["code"] == "AUTHENTICATION_REQUIRED"
-        assert (await wrong_user.next_event())["type"] == "websocket.close"
-
-        first_use = WebSocketHarness(
-            environment.app,
-            session_token=first.session_token,
-        )
+        first_use = WebSocketHarness(environment.app)
         assert (await first_use.start())["type"] == "websocket.accept"
         await first_use.send_json({"type": "auth", "ticket": issued.ticket})
         await first_use.disconnect()
 
-        replay = WebSocketHarness(environment.app, session_token=first.session_token)
-        assert (await replay.start())["type"] == "websocket.accept"
-        await replay.send_json({"type": "auth", "ticket": issued.ticket})
-        replay_error = await replay.next_json()
-        assert replay_error["code"] == "AUTHENTICATION_REQUIRED"
-        assert (await replay.next_event())["type"] == "websocket.close"
+        await _assert_ticket_rejected(environment.app, issued.ticket)
 
         expired_ticket = _ticket(environment, first)
         clock.advance(timedelta(seconds=31))
-        expired = WebSocketHarness(environment.app, session_token=first.session_token)
-        assert (await expired.start())["type"] == "websocket.accept"
-        await expired.send_json({"type": "auth", "ticket": expired_ticket.ticket})
-        expired_error = await expired.next_json()
-        assert expired_error["code"] == "AUTHENTICATION_REQUIRED"
-        assert (await expired.next_event())["type"] == "websocket.close"
+        await _assert_ticket_rejected(environment.app, expired_ticket.ticket)
 
     asyncio.run(scenario())
 
 
-def test_unauthenticated_origin_query_and_auth_deadline_send_zero_snapshots() -> None:
+def test_ticket_rejects_revoked_expired_and_deleted_sessions() -> None:
+    async def scenario() -> None:
+        revoked_environment = create_fixture_app(clock=MutableClock())
+        revoked = _service_login(
+            revoked_environment,
+            subject="google-ws-ticket-revoked",
+        )
+        revoked_ticket = _ticket(revoked_environment, revoked)
+        revoked_environment.service.logout(
+            session_token=revoked.session_token,
+            origin="https://dayjaview.vercel.app",
+            csrf_token=revoked.csrf_token,
+            csrf_cookie=revoked.csrf_token,
+        )
+        await _assert_ticket_rejected(
+            revoked_environment.app,
+            revoked_ticket.ticket,
+        )
+
+        expiry_clock = MutableClock()
+        expired_environment = create_fixture_app(clock=expiry_clock)
+        expired = _service_login(
+            expired_environment,
+            subject="google-ws-ticket-session-expired",
+        )
+        expiry_clock.advance(timedelta(hours=7, minutes=59, seconds=45))
+        expired_ticket = _ticket(expired_environment, expired)
+        expiry_clock.advance(timedelta(seconds=16))
+        await _assert_ticket_rejected(
+            expired_environment.app,
+            expired_ticket.ticket,
+        )
+
+        deleted_environment = create_fixture_app(clock=MutableClock())
+        deleted = _service_login(
+            deleted_environment,
+            subject="google-ws-ticket-user-deleted",
+        )
+        deleted_ticket = _ticket(deleted_environment, deleted)
+        deleted_environment.service.delete_account(
+            session_token=deleted.session_token,
+            origin="https://dayjaview.vercel.app",
+            csrf_token=deleted.csrf_token,
+            csrf_cookie=deleted.csrf_token,
+        )
+        await _assert_ticket_rejected(
+            deleted_environment.app,
+            deleted_ticket.ticket,
+        )
+
+    asyncio.run(scenario())
+
+
+def test_authenticated_websocket_closes_after_session_revocation_by_hash() -> None:
+    async def scenario() -> None:
+        environment = create_fixture_app(
+            clock=MutableClock(),
+            realtime_hub=RealtimeSnapshotHub(),
+        )
+        completion = _service_login(
+            environment,
+            subject="google-ws-session-revoked",
+        )
+        ticket = _ticket(environment, completion)
+        websocket = WebSocketHarness(environment.app)
+        assert (await websocket.start())["type"] == "websocket.accept"
+        await websocket.send_json({"type": "auth", "ticket": ticket.ticket})
+        await websocket.send_json(
+            {
+                "type": "subscribe",
+                "requestId": "client_before_revoke",
+                "topics": [
+                    {"name": "theme_rank_snapshot", "params": {"limit": 10}}
+                ],
+            }
+        )
+        subscribed = await websocket.next_json()
+        assert subscribed["type"] == "subscribed"
+
+        environment.service.logout(
+            session_token=completion.session_token,
+            origin="https://dayjaview.vercel.app",
+            csrf_token=completion.csrf_token,
+            csrf_cookie=completion.csrf_token,
+        )
+        await websocket.send_json(
+            {"type": "pong", "sentAt": "2026-08-14T03:00:00+00:00"}
+        )
+        error = await websocket.next_json()
+        _assert_contract("WsError", error)
+        assert error["code"] == "AUTHENTICATION_REQUIRED"
+        assert (await websocket.next_event())["type"] == "websocket.close"
+
+    asyncio.run(scenario())
+
+
+def test_origin_query_and_auth_deadline_send_zero_snapshots() -> None:
     async def scenario() -> None:
         settings = ApiSettings(realtime_auth_deadline=timedelta(milliseconds=20))
         environment = create_fixture_app(
@@ -309,36 +383,27 @@ def test_unauthenticated_origin_query_and_auth_deadline_send_zero_snapshots() ->
             clock=MutableClock(),
             realtime_hub=_populated_hub(),
         )
-        completion = _service_login(environment, subject="google-ws-handshake")
-
-        anonymous = WebSocketHarness(environment.app, session_token=None)
-        anonymous_close = await anonymous.start()
-        assert anonymous_close["type"] == "websocket.close"
-
         wrong_origin = WebSocketHarness(
             environment.app,
-            session_token=completion.session_token,
             origin="https://evil.example",
         )
-        assert (await wrong_origin.start())["type"] == "websocket.close"
+        wrong_origin_close = await wrong_origin.start()
+        assert wrong_origin_close["type"] == "websocket.close"
 
         ticket_in_url = WebSocketHarness(
             environment.app,
-            session_token=completion.session_token,
             query_string=b"ticket=must-not-be-in-url",
         )
-        assert (await ticket_in_url.start())["type"] == "websocket.close"
+        query_close = await ticket_in_url.start()
+        assert query_close["type"] == "websocket.close"
 
-        deadline = WebSocketHarness(
-            environment.app,
-            session_token=completion.session_token,
-        )
+        deadline = WebSocketHarness(environment.app)
         assert (await deadline.start())["type"] == "websocket.accept"
         error = await deadline.next_json()
         assert error["code"] == "AUTHENTICATION_REQUIRED"
         close = await deadline.next_event()
         assert close["type"] == "websocket.close"
-        for value in (anonymous_close, error, close):
+        for value in (wrong_origin_close, query_close, error, close):
             serialized = json.dumps(value)
             assert "snapshotId" not in serialized
             assert "evt_current" not in serialized
@@ -353,10 +418,7 @@ def test_unsubscribe_stops_updates_and_resubscribe_gets_latest_gap_snapshot() ->
         environment = create_fixture_app(clock=clock, realtime_hub=hub)
         completion = _service_login(environment, subject="google-ws-unsubscribe")
         issued = _ticket(environment, completion)
-        websocket = WebSocketHarness(
-            environment.app,
-            session_token=completion.session_token,
-        )
+        websocket = WebSocketHarness(environment.app)
         assert (await websocket.start())["type"] == "websocket.accept"
         await websocket.send_json({"type": "auth", "ticket": issued.ticket})
         await websocket.send_json(
@@ -422,7 +484,7 @@ def test_reconnect_new_stream_and_session_expiry_use_full_snapshot_boundary() ->
         completion = _service_login(environment, subject="google-ws-reconnect")
 
         first_ticket = _ticket(environment, completion)
-        first = WebSocketHarness(environment.app, session_token=completion.session_token)
+        first = WebSocketHarness(environment.app)
         assert (await first.start())["type"] == "websocket.accept"
         await first.send_json({"type": "auth", "ticket": first_ticket.ticket})
         await first.send_json(
@@ -446,10 +508,7 @@ def test_reconnect_new_stream_and_session_expiry_use_full_snapshot_boundary() ->
         )
         hub.publish(restarted, params={"limit": 10})
         reconnect_ticket = _ticket(environment, completion)
-        reconnect = WebSocketHarness(
-            environment.app,
-            session_token=completion.session_token,
-        )
+        reconnect = WebSocketHarness(environment.app)
         assert (await reconnect.start())["type"] == "websocket.accept"
         await reconnect.send_json({"type": "auth", "ticket": reconnect_ticket.ticket})
         await reconnect.send_json(

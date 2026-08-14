@@ -57,8 +57,6 @@ class IdentityRepository(Protocol):
         self,
         *,
         ticket_hash: str,
-        session_token_hash: str,
-        user_id: str,
         origin: str,
         now: datetime,
     ) -> RealtimeTicketRecord | None: ...
@@ -194,8 +192,6 @@ class InMemoryIdentityRepository:
         self,
         *,
         ticket_hash: str,
-        session_token_hash: str,
-        user_id: str,
         origin: str,
         now: datetime,
     ) -> RealtimeTicketRecord | None:
@@ -203,12 +199,7 @@ class InMemoryIdentityRepository:
             record = self._tickets.get(ticket_hash)
             if record is None or record.consumed_at is not None or record.expires_at <= now:
                 return None
-            matches = (
-                constant_time_equal(record.session_token_hash, session_token_hash)
-                and record.user_id == user_id
-                and constant_time_equal(record.origin, origin)
-            )
-            if not matches:
+            if not constant_time_equal(record.origin, origin):
                 return None
             consumed = replace(record, consumed_at=now)
             self._tickets[ticket_hash] = consumed

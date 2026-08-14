@@ -132,31 +132,24 @@ def test_session_expiry_and_logout_prevent_token_reuse() -> None:
     assert environment.service.authenticate(fresh.session_token) is None
 
 
-def test_realtime_ticket_is_short_lived_one_use_and_session_bound() -> None:
+def test_realtime_ticket_is_origin_bound_one_use_and_resolves_stored_session() -> None:
     environment = create_fixture_app(clock=MutableClock())
     first = service_login(
         environment,
         code="ticket-code-1",
         identity=GoogleIdentity("google-sub-ticket-1", "티켓 사용자 1"),
     )
-    second = service_login(
-        environment,
-        code="ticket-code-2",
-        identity=GoogleIdentity("google-sub-ticket-2", "티켓 사용자 2"),
-    )
     ticket = environment.service.issue_realtime_ticket(**mutation_arguments(first))
 
     with pytest.raises(AuthenticationRequired):
         environment.service.consume_realtime_ticket(
             ticket=ticket.ticket,
-            session_token=second.session_token,
-            origin="https://dayjaview.vercel.app",
+            origin="https://evil.example",
         )
 
     assert (
         environment.service.consume_realtime_ticket(
             ticket=ticket.ticket,
-            session_token=first.session_token,
             origin="https://dayjaview.vercel.app",
         ).user.google_subject
         == "google-sub-ticket-1"
@@ -164,9 +157,81 @@ def test_realtime_ticket_is_short_lived_one_use_and_session_bound() -> None:
     with pytest.raises(AuthenticationRequired):
         environment.service.consume_realtime_ticket(
             ticket=ticket.ticket,
-            session_token=first.session_token,
             origin="https://dayjaview.vercel.app",
         )
+
+
+def test_realtime_ticket_rejects_revoked_expired_and_deleted_sessions() -> None:
+    revoked_environment = create_fixture_app(clock=MutableClock())
+    revoked = service_login(
+        revoked_environment,
+        code="ticket-revoked",
+        identity=GoogleIdentity("google-sub-ticket-revoked", "폐기 세션 사용자"),
+    )
+    revoked_ticket = revoked_environment.service.issue_realtime_ticket(
+        **mutation_arguments(revoked)
+    )
+    revoked_environment.service.logout(**mutation_arguments(revoked))
+
+    with pytest.raises(AuthenticationRequired):
+        revoked_environment.service.consume_realtime_ticket(
+            ticket=revoked_ticket.ticket,
+            origin="https://dayjaview.vercel.app",
+        )
+
+    expiry_clock = MutableClock()
+    expired_environment = create_fixture_app(clock=expiry_clock)
+    expired = service_login(
+        expired_environment,
+        code="ticket-session-expired",
+        identity=GoogleIdentity("google-sub-ticket-expired", "만료 세션 사용자"),
+    )
+    expiry_clock.advance(timedelta(hours=7, minutes=59, seconds=45))
+    expired_ticket = expired_environment.service.issue_realtime_ticket(
+        **mutation_arguments(expired)
+    )
+    expiry_clock.advance(timedelta(seconds=16))
+
+    with pytest.raises(AuthenticationRequired):
+        expired_environment.service.consume_realtime_ticket(
+            ticket=expired_ticket.ticket,
+            origin="https://dayjaview.vercel.app",
+        )
+
+    deleted_environment = create_fixture_app(clock=MutableClock())
+    deleted = service_login(
+        deleted_environment,
+        code="ticket-user-deleted",
+        identity=GoogleIdentity("google-sub-ticket-deleted", "삭제 사용자"),
+    )
+    deleted_ticket = deleted_environment.service.issue_realtime_ticket(
+        **mutation_arguments(deleted)
+    )
+    deleted_environment.service.delete_account(**mutation_arguments(deleted))
+
+    with pytest.raises(AuthenticationRequired):
+        deleted_environment.service.consume_realtime_ticket(
+            ticket=deleted_ticket.ticket,
+            origin="https://dayjaview.vercel.app",
+        )
+
+
+def test_realtime_principal_refresh_uses_session_hash_after_ticket_auth() -> None:
+    environment = create_fixture_app(clock=MutableClock())
+    completion = service_login(
+        environment,
+        code="ticket-refresh",
+        identity=GoogleIdentity("google-sub-ticket-refresh", "갱신 사용자"),
+    )
+    ticket = environment.service.issue_realtime_ticket(**mutation_arguments(completion))
+    principal = environment.service.consume_realtime_ticket(
+        ticket=ticket.ticket,
+        origin="https://dayjaview.vercel.app",
+    )
+
+    assert environment.service.refresh_principal(principal) == principal
+    environment.service.logout(**mutation_arguments(completion))
+    assert environment.service.refresh_principal(principal) is None
 
 
 def test_api_sets_secure_host_only_cookies_and_safe_redirect() -> None:
