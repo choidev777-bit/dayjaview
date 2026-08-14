@@ -1,0 +1,1 @@
+"""Identity fixture tests."""
