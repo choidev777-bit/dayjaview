@@ -1,0 +1,45 @@
+{
+  "data": {
+    "eventId": "evt_historical",
+    "marketDate": "2024-11-18",
+    "displayNameAtEvent": "LED",
+    "catalystSummary": "마이크로 LED 양산 발표",
+    "similarityReasons": ["유사 소재 유형", "관련 종목군 중첩"],
+    "leaders": [
+      {
+        "stockId": "stk_historical",
+        "symbol": "111111",
+        "name": "과거 예시 종목",
+        "return": 0.012,
+        "role": "LEADER"
+      }
+    ],
+    "outcomes": [
+      {
+        "horizonTradingDays": 1,
+        "return": -0.003,
+        "status": "OBSERVED",
+        "unavailableReason": null
+      },
+      {
+        "horizonTradingDays": 20,
+        "return": 0.011,
+        "status": "OBSERVED",
+        "unavailableReason": null
+      }
+    ],
+    "futureOutcomeExcludedFromSelection": true
+  },
+  "meta": {
+    "requestId": "req_historical_detail",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": "ontology-2026.08.1",
+      "retrievalArtifactVersion": "retrieval-2026.08.1",
+      "tradingCalendarVersion": "krx-calendar-2026.08.1",
+      "outcomeVersion": "leader-ew-v1-2026.08.1"
+    }
+  }
+}

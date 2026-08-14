@@ -1,0 +1,39 @@
+{
+  "data": {
+    "snapshotId": "snap_treemap_live",
+    "streamId": "stream_market_20260814",
+    "sequence": 1842,
+    "items": [
+      {
+        "eventId": "evt_current",
+        "themeId": "thm_nuclear",
+        "displayName": "원전수출",
+        "lifecycleStatus": "ACTIVE",
+        "weightedReturn": 0.027,
+        "advancingCount": 17,
+        "validCount": 21,
+        "coverageStatus": "SUFFICIENT",
+        "qualityFlags": []
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_treemap_live",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "marketContext": {
+      "market": "KRX",
+      "timeZone": "Asia/Seoul",
+      "marketDate": "2026-08-14",
+      "asOf": "2026-08-14T01:18:22.410Z",
+      "dataStatus": "LIVE",
+      "lastHealthyAt": "2026-08-14T01:18:22.410Z",
+      "qualityFlags": []
+    },
+    "versions": {
+      "calculationVersion": "theme-metrics-2026.08.1",
+      "membershipVersion": "membership-2026-08-14T00:10:00Z"
+    }
+  }
+}

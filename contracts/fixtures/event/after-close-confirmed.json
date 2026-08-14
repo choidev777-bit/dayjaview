@@ -1,0 +1,66 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "marketDate": "2026-08-14",
+    "lifecycleStatus": "CLOSED",
+    "reconciliationStatus": "MATCHED",
+    "classification": {
+      "classificationVersion": 2,
+      "themeId": "thm_nuclear",
+      "displayName": "원전수출",
+      "kind": "INFOSTOCK_THEME",
+      "certainty": "CONFIRMED",
+      "source": "INFOSTOCK",
+      "changedAt": "2026-08-14T07:12:04.000Z"
+    },
+    "currentReaction": {
+      "weightedReturn": 0.031,
+      "weightMethod": "FREE_FLOAT_CAPPED",
+      "advancingCount": 18,
+      "validCount": 21,
+      "turnoverMultiple": 2.9,
+      "attentionGapTradingDays": 163
+    },
+    "coverage": {
+      "status": "SUFFICIENT",
+      "core": {
+        "observedCount": 21,
+        "totalCount": 21,
+        "countRatio": 1.0,
+        "observedWeightRatio": 1.0
+      },
+      "related": {
+        "observedCount": 31,
+        "totalCount": 31,
+        "countRatio": 1.0
+      }
+    },
+    "evidenceSummary": {
+      "evidenceStatus": "AFTER_CLOSE_CONFIRMED",
+      "summary": "인포스탁 기준 원전수출 테마로 확정",
+      "sourceCount": 2,
+      "latestPublishedAt": "2026-08-14T01:20:00.000Z"
+    },
+    "leaders": [
+      {
+        "stockId": "stk_example",
+        "symbol": "000000",
+        "name": "예시 종목",
+        "return": 0.151,
+        "role": "LEADER"
+      }
+    ],
+    "historicalAccess": {
+      "status": "GATED",
+      "reason": "ONTOLOGY_VALIDATION_REQUIRED"
+    },
+    "canonicalPath": "/v1/themes/thm_nuclear/events/evt_current",
+    "qualityFlags": []
+  },
+  "meta": {
+    "requestId": "req_event_after_close",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T07:12:05.000Z"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "items": [
+      {
+        "reviewId": "review_1",
+        "reviewType": "EVENT_RECONCILIATION",
+        "reviewStatus": "PENDING",
+        "targetId": "evt_unmatched",
+        "reasonCode": "RECONCILIATION_UNMATCHED",
+        "version": 1,
+        "createdAt": "2026-08-14T07:15:00.000Z",
+        "resolvedAt": null
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_operator_reviews",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T07:16:00.000Z"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "evidenceStatus": "SINGLE_SOURCE",
+    "items": [
+      {
+        "newsId": "news_1",
+        "sourceName": "예시 언론사",
+        "title": "체코 신규 원전 관련 보도",
+        "publishedAt": "2026-08-14T01:17:00.000Z",
+        "receivedAt": "2026-08-14T01:17:08.201Z",
+        "originalUrl": "https://example.com/news/123",
+        "matchBasis": ["THEME", "STOCK", "TIME"],
+        "summary": "기사에서 확인된 범위의 자체 요약",
+        "qualityFlags": []
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_evidence_single",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z"
+  }
+}

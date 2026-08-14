@@ -1,0 +1,18 @@
+{
+  "type": "subscribe",
+  "requestId": "client_001",
+  "topics": [
+    {
+      "name": "theme_rank_snapshot",
+      "params": {"limit": 10}
+    },
+    {
+      "name": "theme_treemap_snapshot",
+      "params": {"limit": 12}
+    },
+    {
+      "name": "event_state_changed",
+      "params": {"eventIds": ["evt_current"]}
+    }
+  ]
+}

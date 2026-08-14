@@ -1,0 +1,26 @@
+{
+  "data": {
+    "items": [
+      {
+        "savedType": "EVENT",
+        "targetId": "evt_unavailable",
+        "displayName": "접근 제한 과거 이벤트",
+        "savedAt": "2026-08-13T02:10:00.000Z",
+        "availability": "UNAVAILABLE",
+        "unavailableReason": "FEATURE_NOT_ENTITLED",
+        "currentState": null
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_saved_unavailable",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T02:11:20.100Z"
+  }
+}

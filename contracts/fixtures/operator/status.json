@@ -1,0 +1,27 @@
+{
+  "data": {
+    "deploymentVersion": "2026.08.14.1",
+    "commit": "6c2637e",
+    "startedAt": "2026-08-14T00:00:00.000Z",
+    "services": [
+      {
+        "name": "market",
+        "status": "SUCCEEDED",
+        "lastSucceededAt": "2026-08-14T01:18:22.410Z",
+        "errorCode": null
+      },
+      {
+        "name": "infostock",
+        "status": "AUTH_REQUIRED",
+        "lastSucceededAt": null,
+        "errorCode": "AUTH_REQUIRED"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_operator_status",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z"
+  }
+}

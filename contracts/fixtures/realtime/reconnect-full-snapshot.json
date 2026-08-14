@@ -1,0 +1,17 @@
+{
+  "type": "theme_rank_snapshot",
+  "schemaVersion": "2026-08-14.1",
+  "subscriptionId": "sub_002",
+  "streamId": "stream_restarted_20260814",
+  "topic": "theme_rank_snapshot",
+  "sequence": 1,
+  "generatedAt": "2026-08-14T01:19:00.100Z",
+  "asOf": "2026-08-14T01:19:00.000Z",
+  "marketDate": "2026-08-14",
+  "dataStatus": "LIVE",
+  "qualityFlags": [],
+  "payload": {
+    "snapshotId": "snap_rank_reconnect",
+    "items": []
+  }
+}

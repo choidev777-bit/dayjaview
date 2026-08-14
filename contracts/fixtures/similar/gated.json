@@ -1,0 +1,25 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "decisionAt": "2026-08-14T01:18:22.410Z",
+    "availability": "GATED",
+    "summary": [],
+    "items": [],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_similar_gated",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": null,
+      "retrievalArtifactVersion": null,
+      "tradingCalendarVersion": "krx-calendar-2026.08.1"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "data": {
+    "items": [
+      {
+        "savedType": "THEME",
+        "targetId": "thm_584",
+        "displayName": "스페이스X(SpaceX)",
+        "savedAt": "2026-08-14T02:10:00.000Z",
+        "availability": "AVAILABLE",
+        "unavailableReason": null,
+        "currentState": {
+          "eventId": "evt_current",
+          "eventState": "ACTIVE",
+          "weightedReturn": 0.0342,
+          "dataStatus": "LIVE",
+          "asOf": "2026-08-14T02:11:20.000Z"
+        }
+      }
+    ],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_saved_library",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T02:11:20.100Z"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "data": {
+    "snapshotId": "snap_rank_partial",
+    "streamId": "stream_market_20260814",
+    "sequence": 1844,
+    "items": [
+      {
+        "eventId": "evt_partial",
+        "lifecycleStatus": "WEAKENING",
+        "reconciliationStatus": "PENDING",
+        "classification": {
+          "classificationVersion": 1,
+          "themeId": "thm_partial",
+          "displayName": "부분 관측 테마",
+          "kind": "INFOSTOCK_THEME",
+          "certainty": "PROVISIONAL",
+          "source": "LIVE_ENGINE",
+          "changedAt": "2026-08-14T00:20:00.000Z"
+        },
+        "rank": 2,
+        "rankChange60s": null,
+        "badges": [],
+        "weightedReturn": 0.011,
+        "weightMethod": "FREE_FLOAT_CAPPED",
+        "advancingCount": 4,
+        "validCount": 9,
+        "leader": null,
+        "evidence": {
+          "evidenceStatus": "SEARCHING",
+          "summary": null,
+          "publishedAt": null
+        },
+        "coverage": {
+          "status": "PARTIAL",
+          "core": {
+            "observedCount": 4,
+            "totalCount": 9,
+            "countRatio": 0.4444,
+            "observedWeightRatio": 0.52
+          },
+          "related": {
+            "observedCount": 7,
+            "totalCount": 18,
+            "countRatio": 0.3889
+          }
+        },
+        "qualityFlags": ["PARTIAL_COVERAGE"]
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_rank_partial",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:21:00.100Z",
+    "marketContext": {
+      "market": "KRX",
+      "timeZone": "Asia/Seoul",
+      "marketDate": "2026-08-14",
+      "asOf": "2026-08-14T01:20:59.900Z",
+      "dataStatus": "DEGRADED",
+      "lastHealthyAt": "2026-08-14T01:18:22.410Z",
+      "qualityFlags": ["PARTIAL_COVERAGE"]
+    },
+    "versions": {
+      "calculationVersion": "theme-metrics-2026.08.1",
+      "rankingModelVersion": "theme-rank-2026.08.1",
+      "membershipVersion": "membership-2026-08-14T00:10:00Z"
+    }
+  }
+}

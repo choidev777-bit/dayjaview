@@ -1,0 +1,66 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "marketDate": "2026-08-14",
+    "lifecycleStatus": "ACTIVE",
+    "reconciliationStatus": "PENDING",
+    "classification": {
+      "classificationVersion": 1,
+      "themeId": "thm_nuclear",
+      "displayName": "원전수출",
+      "kind": "INFOSTOCK_THEME",
+      "certainty": "PROVISIONAL",
+      "source": "LIVE_ENGINE",
+      "changedAt": "2026-08-14T00:11:04.000Z"
+    },
+    "currentReaction": {
+      "weightedReturn": 0.029,
+      "weightMethod": "FREE_FLOAT_CAPPED",
+      "advancingCount": 18,
+      "validCount": 21,
+      "turnoverMultiple": 2.7,
+      "attentionGapTradingDays": 163
+    },
+    "coverage": {
+      "status": "SUFFICIENT",
+      "core": {
+        "observedCount": 19,
+        "totalCount": 21,
+        "countRatio": 0.9048,
+        "observedWeightRatio": 0.96
+      },
+      "related": {
+        "observedCount": 27,
+        "totalCount": 31,
+        "countRatio": 0.871
+      }
+    },
+    "evidenceSummary": {
+      "evidenceStatus": "MULTI_SOURCE_CONFIRMED",
+      "summary": "복수 매체가 체코 신규 원전 협상 진전을 보도",
+      "sourceCount": 2,
+      "latestPublishedAt": "2026-08-14T01:20:00.000Z"
+    },
+    "leaders": [
+      {
+        "stockId": "stk_example",
+        "symbol": "000000",
+        "name": "예시 종목",
+        "return": 0.148,
+        "role": "LEADER"
+      }
+    ],
+    "historicalAccess": {
+      "status": "GATED",
+      "reason": "ONTOLOGY_VALIDATION_REQUIRED"
+    },
+    "canonicalPath": "/v1/themes/thm_nuclear/events/evt_current",
+    "qualityFlags": []
+  },
+  "meta": {
+    "requestId": "req_event_multi",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:20:08.000Z"
+  }
+}

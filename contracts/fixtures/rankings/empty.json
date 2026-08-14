@@ -1,0 +1,28 @@
+{
+  "data": {
+    "snapshotId": "snap_rank_empty",
+    "streamId": "stream_market_20260814",
+    "sequence": 120,
+    "items": []
+  },
+  "meta": {
+    "requestId": "req_rank_empty",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T00:05:00.100Z",
+    "marketContext": {
+      "market": "KRX",
+      "timeZone": "Asia/Seoul",
+      "marketDate": "2026-08-14",
+      "asOf": "2026-08-14T00:05:00.000Z",
+      "dataStatus": "LIVE",
+      "lastHealthyAt": "2026-08-14T00:05:00.000Z",
+      "qualityFlags": []
+    },
+    "versions": {
+      "calculationVersion": "theme-metrics-2026.08.1",
+      "rankingModelVersion": "theme-rank-2026.08.1",
+      "membershipVersion": "membership-2026-08-14T00:10:00Z"
+    }
+  }
+}

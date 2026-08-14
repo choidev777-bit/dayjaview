@@ -1,0 +1,18 @@
+{
+  "data": {
+    "eventId": "evt_current",
+    "evidenceStatus": "SEARCHING",
+    "items": [],
+    "page": {
+      "nextCursor": null,
+      "hasMore": false,
+      "limit": 20
+    }
+  },
+  "meta": {
+    "requestId": "req_evidence_searching",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:10:00.000Z"
+  }
+}
