@@ -17,7 +17,6 @@ from packages.identity.security import Clock
 
 from .app_types import JsonObject, JsonValue
 from .config import ApiSettings
-from .cookies import SESSION_COOKIE
 from .http import Receive, Send
 from .product import ensure_public_projection
 
@@ -343,12 +342,11 @@ class RealtimeWebSocketServer:
         if connection.get("type") != "websocket.connect":
             await self._close(send, _INVALID_MESSAGE_CLOSE, "연결 요청 형식 오류")
             return
-        origin, session_token = _connection_credentials(scope)
+        origin = _connection_origin(scope)
         if (
             scope.get("path") != "/v1/realtime"
             or scope.get("query_string", b"")
             or origin != self._settings.app_base_url
-            or self._identity_service.authenticate(session_token) is None
         ):
             await self._close(send, _AUTHENTICATION_CLOSE, "인증 필요")
             return
@@ -358,8 +356,7 @@ class RealtimeWebSocketServer:
             await self._serve_authenticated_connection(
                 receive=receive,
                 send=send,
-                origin=origin,
-                session_token=cast(str, session_token),
+                origin=cast(str, origin),
             )
         except Exception:  # noqa: BLE001 - never expose internal failure text
             try:
@@ -373,7 +370,6 @@ class RealtimeWebSocketServer:
         receive: Receive,
         send: Send,
         origin: str,
-        session_token: str,
     ) -> None:
         try:
             auth_event = await asyncio.wait_for(
@@ -396,7 +392,6 @@ class RealtimeWebSocketServer:
             ticket = _auth_ticket(auth)
             principal = self._identity_service.consume_realtime_ticket(
                 ticket=ticket,
-                session_token=session_token,
                 origin=origin,
             )
         except (IdentityError, InvalidSubscription, ValueError, json.JSONDecodeError):
@@ -413,12 +408,8 @@ class RealtimeWebSocketServer:
         last_sent: dict[tuple[str, SnapshotTopic, str], tuple[str, int, str]] = {}
         try:
             while True:
-                current = self._identity_service.authenticate(session_token)
-                if (
-                    current is None
-                    or current.session_token_hash != principal.session_token_hash
-                    or current.user.user_id != principal.user.user_id
-                ):
+                current = self._identity_service.refresh_principal(principal)
+                if current is None:
                     await self._send_error(
                         send,
                         request_id=None,
@@ -427,6 +418,7 @@ class RealtimeWebSocketServer:
                     )
                     await self._close(send, _AUTHENTICATION_CLOSE, "세션 만료")
                     return
+                principal = current
 
                 receive_task: asyncio.Future[Any] = asyncio.ensure_future(receive())
                 update_task: asyncio.Future[Any] = asyncio.ensure_future(
@@ -449,12 +441,8 @@ class RealtimeWebSocketServer:
                 if not done:
                     continue
 
-                refreshed = self._identity_service.authenticate(session_token)
-                if (
-                    refreshed is None
-                    or refreshed.session_token_hash != principal.session_token_hash
-                    or refreshed.user.user_id != principal.user.user_id
-                ):
+                refreshed = self._identity_service.refresh_principal(principal)
+                if refreshed is None:
                     await self._send_error(
                         send,
                         request_id=None,
@@ -463,6 +451,7 @@ class RealtimeWebSocketServer:
                     )
                     await self._close(send, _AUTHENTICATION_CLOSE, "세션 만료")
                     return
+                principal = refreshed
 
                 if receive_task in done:
                     event = receive_task.result()
@@ -666,22 +655,15 @@ def _request_id(value: JsonValue) -> str:
     return value
 
 
-def _connection_credentials(scope: Mapping[str, Any]) -> tuple[str | None, str | None]:
-    headers: dict[str, list[str]] = {}
+def _connection_origin(scope: Mapping[str, Any]) -> str | None:
+    origins: list[str] = []
     try:
         for raw_name, raw_value in scope.get("headers", []):
             name = raw_name.decode("latin-1").casefold()
-            headers.setdefault(name, []).append(raw_value.decode("latin-1"))
+            if name == "origin":
+                origins.append(raw_value.decode("latin-1"))
     except (AttributeError, UnicodeDecodeError):
-        return None, None
-    origins = headers.get("origin", [])
+        return None
     if len(origins) != 1:
-        return None, None
-    cookies: dict[str, str] = {}
-    for header in headers.get("cookie", []):
-        for part in header.split(";"):
-            name, separator, value = part.strip().partition("=")
-            if not separator or not name or name in cookies:
-                return None, None
-            cookies[name] = value
-    return origins[0], cookies.get(SESSION_COOKIE)
+        return None
+    return origins[0]
