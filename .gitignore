@@ -1,0 +1,23 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+
+# Local runtime data
+data/
+logs/
+coverage/
+
+# Tooling
+.vercel/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+

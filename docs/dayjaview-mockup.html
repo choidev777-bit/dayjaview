@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DAYJAVIEW 핵심 사용자 여정 데모</title>
+  <style>
+    :root {
+      /* 디자이너 디자인 토큰으로 교체할 영역 */
+      --bg:#f3f5f8; --surface:#fff; --soft:#f7f8fa; --ink:#17191c;
+      --muted:#626a76; --faint:#9299a3; --line:#e8ebef;
+      --brand:#356cf9; --brand-soft:#edf3ff;
+      --up:#e5484d; --down:#2878d0; --warn:#8a5d00; --warn-soft:#fff6db;
+      --phone-radius:30px; --card-radius:18px; --button-radius:14px;
+      --shadow:0 2px 6px rgba(25,35,50,.04),0 18px 50px rgba(25,35,50,.10);
+      --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",sans-serif;
+      --fast:160ms; --sheet-motion:280ms;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+      line-height:1.45;-webkit-font-smoothing:antialiased;word-break:keep-all}
+    button,a{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+    button{cursor:pointer} a{text-decoration:none}
+    button:focus-visible,a:focus-visible{outline:3px solid rgba(53,108,249,.28);outline-offset:2px}
+    .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+    .up{color:var(--up)} .down{color:var(--down)}
+
+    .demo-head{max-width:1180px;margin:auto;padding:34px 20px 22px}
+    .eyebrow{margin:0 0 8px;color:var(--brand);font-size:12px;font-weight:850;letter-spacing:.08em}
+    .demo-head h1{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.2;letter-spacing:-.035em}
+    .summary{max-width:720px;margin:12px 0 0;color:var(--muted);font-size:14px}
+    .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+    .pill{padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);
+      color:var(--muted);font-size:12px;font-weight:700}
+    .pill b{color:var(--ink)}
+    .journey{display:flex;align-items:center;gap:7px;margin-top:18px;color:var(--muted);
+      font-size:12px;font-weight:750;overflow-x:auto}
+    .journey span{flex:0 0 auto}.journey .step{padding:6px 10px;border-radius:999px;
+      background:var(--brand-soft);color:var(--brand)}
+    .journey .arrow{color:var(--faint)}
+
+    .rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(326px,372px);gap:22px;
+      max-width:1180px;margin:auto;padding:0 20px 30px;overflow-x:auto;overscroll-behavior-inline:contain;
+      scroll-snap-type:x proximity;scrollbar-color:#cfd4dc transparent}
+    .stage{min-width:0;scroll-snap-align:start}
+    .flow-label{display:flex;align-items:center;gap:9px;min-height:28px;margin:0 4px 9px;
+      color:var(--muted);font-size:12px;font-weight:850}
+    .flow-label b{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;
+      background:var(--brand);color:#fff;font-size:11px}
+    .phone{overflow:hidden;border:1px solid rgba(16,24,40,.08);border-radius:var(--phone-radius);
+      background:var(--surface);box-shadow:var(--shadow)}
+    .status{display:flex;justify-content:space-between;height:31px;padding:7px 21px 2px;
+      color:var(--faint);font-size:10.5px;font-weight:750}
+    .screen{height:694px;padding:5px 20px 22px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+    .screen::-webkit-scrollbar,.swipe::-webkit-scrollbar,.tabs::-webkit-scrollbar{display:none}
+    .topbar{display:flex;align-items:center;justify-content:space-between;min-height:46px}
+    .topbar h2{margin:0;font-size:22px;font-weight:900;letter-spacing:-.03em}
+    .icon-btn{display:grid;place-items:center;width:38px;height:38px;border:0;border-radius:12px;
+      background:transparent;font-size:19px;font-weight:800}
+    .icon-btn:hover{background:var(--soft)}
+    .back{display:inline-flex;align-items:center;min-height:38px;color:var(--muted);font-size:14px;font-weight:800}
+    .context{display:flex;justify-content:space-between;margin:1px 0 20px;color:var(--faint);font-size:11.5px;font-weight:700}
+    .state{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--up)}
+    .market{display:flex;gap:14px;margin-bottom:22px;padding:12px 14px;border-radius:14px;
+      background:var(--soft);color:var(--muted);font-size:12.5px;font-weight:750}
+
+    .section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:0 0 12px}
+    .section-head h3{margin:0;font-size:17px;letter-spacing:-.025em}
+    .section-head p{margin:3px 0 0;color:var(--faint);font-size:11.5px}
+    .text-btn,.info-btn{min-height:30px;padding:4px 1px;border:0;background:transparent;
+      color:var(--brand);font-size:11.5px;font-weight:850}
+    .content-section{margin-top:24px}
+    .content-label{margin:0 0 10px;color:var(--muted);font-size:12px;font-weight:850}
+
+    .theme-list{display:grid;gap:11px}
+    .theme-card{display:block;padding:16px;border:1px solid var(--line);border-radius:var(--card-radius);
+      background:var(--surface);transition:transform var(--fast),border-color var(--fast),box-shadow var(--fast)}
+    .theme-card:hover{transform:translateY(-1px);border-color:#cad8ff;box-shadow:0 8px 22px rgba(53,108,249,.09)}
+    .theme-card.selected{border-color:#cad8ff;background:linear-gradient(180deg,#fff,#fbfdff)}
+    .theme-top{display:flex;align-items:flex-start;gap:10px}
+    .rank{display:grid;place-items:center;flex:0 0 24px;height:24px;border-radius:8px;background:var(--soft);
+      color:var(--muted);font-size:12px;font-weight:900}
+    .theme-name-wrap{flex:1;min-width:0}.theme-name{font-size:17px;font-weight:900;letter-spacing:-.025em}
+    .theme-return{font-size:18px;font-weight:900;letter-spacing:-.02em}
+    .badge{display:block;width:max-content;margin-top:6px;padding:4px 8px;border-radius:8px;
+      background:var(--brand-soft);color:var(--brand);font-size:10.5px;font-weight:900}
+    .badge.new{background:var(--warn-soft);color:var(--warn)}
+    .theme-reason{margin:12px 0 10px 34px;font-size:13.5px;font-weight:720;line-height:1.48}
+    .facts{display:grid;gap:5px;margin-left:34px;color:var(--muted);font-size:11.5px;font-weight:680}
+    .history-line{margin:11px 0 0 34px;padding-top:10px;border-top:1px solid var(--line);
+      color:var(--brand);font-size:11.5px;font-weight:850}
+    .screen-note{margin:16px 1px 0;color:var(--faint);font-size:10.5px;line-height:1.55}
+
+    .bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);
+      background:rgba(255,255,255,.96)}
+    .nav-item{display:grid;place-items:center;gap:2px;min-height:62px;color:var(--faint);
+      font-size:10.5px;font-weight:800}.nav-item i{font-style:normal;font-size:17px;line-height:1}
+    .nav-item.active{color:var(--brand)}
+
+    .insight-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 13px}
+    .insight-intro h3{margin:0;font-size:17px;letter-spacing:-.025em}
+    .insight-intro p{margin:3px 0 0;color:var(--faint);font-size:11.5px}
+    .live-label{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:5px 8px;border-radius:999px;
+      background:#fff0f1;color:#b92d36;font-size:10.5px;font-weight:900}
+    .live-label i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(229,72,77,.4);
+      animation:live-pulse 1.15s ease-out infinite}
+    @keyframes live-pulse{0%{box-shadow:0 0 0 0 rgba(229,72,77,.38)}70%{box-shadow:0 0 0 6px rgba(229,72,77,0)}100%{box-shadow:0 0 0 0 rgba(229,72,77,0)}}
+    .treemap-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 8px;
+      color:var(--faint);font-size:10.5px;font-weight:720}
+    .treemap-legend{display:flex;align-items:center;gap:8px}.treemap-legend span{display:inline-flex;align-items:center;gap:4px}
+    .treemap-legend i{width:6px;height:6px;border-radius:50%}.legend-up{background:var(--up)}
+    .legend-flat{background:#7d8592}.legend-down{background:var(--down)}
+    .treemap-shell{position:relative;height:480px;overflow:hidden;border:1px solid var(--line);border-radius:20px;
+      background:#e9edf2;box-shadow:inset 0 0 0 3px var(--surface)}
+    .treemap{position:absolute;inset:3px}
+    .treemap-tile{position:absolute;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;
+      min-width:0;min-height:0;padding:12px;border:3px solid var(--surface);border-radius:13px;color:#fff;
+      text-align:left;overflow:hidden;isolation:isolate;box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
+      transition:left 680ms cubic-bezier(.16,.84,.24,1),top 680ms cubic-bezier(.16,.84,.24,1),
+        width 680ms cubic-bezier(.16,.84,.24,1),height 680ms cubic-bezier(.16,.84,.24,1),
+        background-color 260ms ease,transform var(--fast),filter 260ms ease,opacity 180ms ease}
+    .treemap-tile.is-new{opacity:0;transition:opacity 180ms ease}
+    .treemap-tile::before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(155deg,rgba(255,255,255,.15),transparent 48%,rgba(0,0,0,.09))}
+    .treemap-tile:hover{z-index:2;transform:scale(.985);filter:brightness(1.05)}
+    .treemap-tile:focus-visible{z-index:3;outline:3px solid rgba(53,108,249,.4);outline-offset:-3px}
+    .treemap-tile[data-theme-state="RISING_FAST"]{outline:2px solid #ffd15c;outline-offset:-6px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 0 rgba(255,196,57,.54);animation:tile-rise 1.2s ease-out 1}
+    .treemap-tile[data-theme-state="WEAKENING"]{filter:saturate(.42) brightness(.92)}
+    .treemap-tile[data-theme-state="WEAKENING"]:hover{filter:saturate(.42) brightness(1)}
+    .treemap-tile[data-theme-state="DELAYED"]{filter:grayscale(.82) saturate(.18) brightness(.84)}
+    .treemap-tile[data-theme-state="DELAYED"]:hover{filter:grayscale(.82) saturate(.18) brightness(.92)}
+    .treemap-tile[data-theme-state="CLOSED"]{filter:saturate(.25) brightness(.88)}
+    @keyframes tile-rise{0%{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 0 rgba(255,196,57,.5)}
+      70%{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 7px rgba(255,196,57,0)}
+      100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 0 rgba(255,196,57,0)}}
+    .tile-state{position:absolute;top:9px;left:9px;padding:3px 6px;border:1px solid rgba(255,255,255,.34);
+      border-radius:999px;background:rgba(12,18,28,.18);color:rgba(255,255,255,.9);font-size:8.5px;font-weight:900}
+    .treemap-tile[data-theme-state="ACTIVE"] .tile-state{display:none}
+    .tile-name{display:block;max-width:100%;font-size:15px;font-weight:950;line-height:1.2;letter-spacing:-.03em;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 7px rgba(0,0,0,.18)}
+    .tile-value{display:block;margin-top:4px;font-size:17px;font-weight:950;line-height:1;font-variant-numeric:tabular-nums;
+      text-shadow:0 1px 7px rgba(0,0,0,.18)}
+    .treemap-tile[data-size="sm"]{padding:9px}.treemap-tile[data-size="sm"] .tile-name{font-size:12px}
+    .treemap-tile[data-size="sm"] .tile-value{font-size:13px}
+    .treemap-tile[data-size="xs"]{padding:7px;justify-content:center}.treemap-tile[data-size="xs"] .tile-name{font-size:10.5px}
+    .treemap-tile[data-size="xs"] .tile-value{display:none}
+    .insight-note{display:flex;align-items:flex-start;gap:7px;margin:10px 2px 0;color:var(--faint);font-size:10.5px;line-height:1.5}
+    .insight-note i{flex:0 0 14px;display:grid;place-items:center;width:14px;height:14px;margin-top:1px;border-radius:50%;
+      background:var(--soft);font-style:normal;font-weight:900}
+
+    .tabs{display:flex;gap:5px;margin:1px -2px 20px;padding:2px;overflow-x:auto;scrollbar-width:none}
+    .tab{flex:0 0 auto;padding:8px 12px;border:0;border-radius:10px;background:transparent;
+      color:var(--faint);font-size:12.5px;font-weight:850}
+    .tab.active{background:var(--ink);color:#fff}
+    .tab:disabled{opacity:.42;cursor:not-allowed}
+    .hero{margin-bottom:22px}.hero-row{display:flex;justify-content:space-between;gap:12px}
+    .hero-row h2{margin:0;font-size:27px;letter-spacing:-.04em}.hero-return{font-size:27px;font-weight:950}
+    .hero-meta{display:flex;justify-content:space-between;gap:8px;margin-top:7px;color:var(--muted);
+      font-size:11.5px;font-weight:730}
+    .reason-card{padding:16px;border-radius:var(--card-radius);background:var(--soft)}
+    .reason-main{margin:0;font-size:15px;font-weight:780;line-height:1.52}
+    .reason-state{display:flex;align-items:center;gap:7px;margin-top:10px;color:var(--muted);font-size:11.5px;font-weight:700}
+    .reason-state i{width:6px;height:6px;border-radius:50%;background:var(--brand)}
+
+    .attention{padding:17px;border:1px solid #dce6ff;border-radius:var(--card-radius);background:var(--brand-soft)}
+    .attention h3{margin:0;color:#214fb9;font-size:18px;font-weight:920;letter-spacing:-.03em}
+    .attention>p{margin:6px 0 0;color:#5570a8;font-size:11.5px;font-weight:700}
+    .attention-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+    .attention-grid div{padding:10px;border-radius:12px;background:rgba(255,255,255,.72)}
+    .attention-grid span{display:block;color:#6d7fa5;font-size:10.5px;font-weight:700}
+    .attention-grid strong{display:block;margin-top:3px;color:#20355e;font-size:13px;font-weight:900}
+    .attention-action{text-align:right;margin-top:8px}
+
+    .metric-list,.leader-list,.history-summary{overflow:hidden;border:1px solid var(--line);border-radius:var(--card-radius)}
+    .metric-row,.leader-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+      min-height:48px;padding:11px 14px;border-bottom:1px solid var(--line)}
+    .metric-row:last-child,.leader-row:last-child{border-bottom:0}
+    .metric-row span{color:var(--muted);font-size:12px;font-weight:720}
+    .metric-row strong{font-size:13px;font-weight:900;text-align:right}
+    .leader-row span{font-size:13px;font-weight:780}.leader-row strong{font-size:13.5px;font-weight:900}
+    .leader-row em{margin-left:5px;color:var(--brand);font-size:10.5px;font-style:normal;font-weight:850}
+
+    .history-head{display:flex;justify-content:space-between;gap:10px;padding:14px 15px;background:var(--soft)}
+    .history-head strong{font-size:14px}.history-head span{color:var(--muted);font-size:11px;font-weight:700}
+    .horizons{display:grid;grid-template-columns:repeat(3,1fr)}
+    .horizon{padding:13px 5px;border-right:1px solid var(--line);text-align:center}.horizon:last-child{border:0}
+    .horizon small{display:block;color:var(--muted);font-size:10.5px;font-weight:700}
+    .horizon b{display:block;margin-top:5px;font-size:12.5px}.horizon strong{display:block;margin-top:2px;font-size:11px}
+
+    .swipe-hint{color:var(--faint);font-size:10.5px;font-weight:700}
+    .swipe{display:grid;grid-auto-flow:column;grid-auto-columns:86%;gap:10px;margin-right:-20px;
+      padding-right:20px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;
+      scrollbar-width:none;touch-action:pan-x}
+    .case-card{display:block;min-height:150px;padding:15px;border:1px solid var(--line);
+      border-radius:var(--card-radius);scroll-snap-align:start}
+    .case-date{color:var(--faint);font-size:10.5px;font-weight:850}
+    .case-title{min-height:42px;margin:7px 0 10px;font-size:13.5px;font-weight:780;line-height:1.45}
+    .chips{display:flex;flex-wrap:wrap;gap:5px}.chip{padding:4px 7px;border-radius:7px;
+      background:var(--brand-soft);color:var(--brand);font-size:10px;font-weight:850}
+    .case-result{display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;
+      border-top:1px solid var(--line);color:var(--muted);font-size:10.5px;font-weight:700}
+    .case-result strong{font-size:12px}
+
+    .case-hero{margin-bottom:22px}.case-kicker{color:var(--brand);font-size:11.5px;font-weight:850}
+    .case-hero h2{margin:5px 0 0;font-size:22px;line-height:1.34;letter-spacing:-.035em}
+    .match{padding:15px;border-radius:var(--card-radius);background:var(--brand-soft)}
+    .match p{margin:0 0 10px;color:#2d4c87;font-size:12.5px;font-weight:750}
+    .outcome{padding:17px;border-radius:var(--card-radius);background:var(--ink);color:#fff}
+    .outcome small{color:rgba(255,255,255,.62);font-size:11px;font-weight:750}
+    .outcome b{display:block;margin-top:4px;font-size:27px;letter-spacing:-.035em}
+    .outcome p{margin:4px 0 0;color:rgba(255,255,255,.72);font-size:11px}
+    .results{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+    .result{padding:12px 6px;border:1px solid var(--line);border-radius:13px;text-align:center}
+    .result span{display:block;color:var(--muted);font-size:10.5px;font-weight:700}
+    .result strong{display:block;margin-top:4px;font-size:14px}
+    .button{display:flex;align-items:center;justify-content:center;min-height:46px;padding:11px 15px;
+      border:0;border-radius:var(--button-radius);background:var(--soft);font-size:13px;font-weight:850}
+
+    .foot{max-width:1180px;margin:auto;padding:2px 20px 42px;color:var(--faint);font-size:11px;text-align:center}
+
+    .sheet{width:min(100%,460px);max-height:min(78vh,680px);margin:auto auto 0;padding:0;overflow:hidden;
+      border:0;border-radius:24px 24px 0 0;background:var(--surface);color:var(--ink);
+      box-shadow:0 -18px 60px rgba(14,22,36,.20)}
+    .sheet[open]{animation:up var(--sheet-motion) cubic-bezier(.2,.8,.2,1)}
+    .sheet::backdrop{background:rgba(12,18,28,.48);backdrop-filter:blur(2px)}
+    @keyframes up{from{transform:translateY(24px);opacity:.55}to{transform:translateY(0);opacity:1}}
+    .handle{width:38px;height:4px;margin:10px auto 2px;border-radius:99px;background:#d9dde3}
+    .sheet-inner{max-height:calc(min(78vh,680px) - 16px);padding:14px 22px 24px;overflow-y:auto}
+    .sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .sheet-head h2{margin:5px 0 0;font-size:21px;letter-spacing:-.03em}
+    .close{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:11px;
+      background:var(--soft);font-size:18px}
+    .sheet-body{margin-top:18px;color:var(--muted);font-size:13px;line-height:1.68}
+    .sheet-body p{margin:0 0 12px}.sheet-body strong{color:var(--ink)}
+    .formula{margin:12px 0;padding:13px 14px;border-radius:13px;background:var(--soft);
+      color:var(--ink);font-size:12px;font-weight:750;line-height:1.65}
+    .caution{padding:11px 12px;border-radius:12px;background:var(--warn-soft);
+      color:var(--warn);font-size:11.5px;font-weight:700}
+
+    @media(max-width:760px){
+      .demo-head{padding-top:24px}.rail{grid-auto-columns:min(88vw,372px);padding-inline:16px;scroll-snap-type:x mandatory}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+    }
+  </style>
+</head>
+<body>
+  <header class="demo-head">
+    <p class="eyebrow">DAYJAVIEW UX DEMO</p>
+    <h1>오늘의 테마를 발견하고,<br>실시간 지형부터 과거 흐름까지 검증하기</h1>
+    <p class="summary">2~3년차 개인투자자가 강한 테마와 시장의 관심 분포를 한눈에 찾고, 상세 맥락과 과거 유사사례의 이후 흐름까지 판단하도록 정보량을 줄인 데모다.</p>
+    <div class="meta">
+      <span class="pill"><b>화면 구조 검토용</b> · 모든 수치는 예시</span>
+      <span class="pill">파란색 <b>계산 기준</b>을 누르면 산식 확인</span>
+    </div>
+    <div class="journey" aria-label="핵심 사용자 여정">
+      <span class="step">1. 강한 테마 발견</span><span class="arrow">→</span>
+      <span class="step">2. 실시간 시장 지형</span><span class="arrow">→</span>
+      <span class="step">3. 지금의 맥락 판단</span><span class="arrow">→</span>
+      <span class="step">4. 과거 실제 결과 검증</span>
+    </div>
+  </header>
+
+  <main class="rail">
+    <section class="stage" id="screen-home">
+      <div class="flow-label"><b>1</b>오늘 · 발견</div>
+      <article class="phone" aria-label="오늘 홈 화면">
+        <div class="status"><span>9:41</span><span>장 마감</span></div>
+        <div class="screen">
+          <div class="topbar"><h2>오늘</h2><button class="icon-btn" type="button" aria-label="검색">⌕</button></div>
+          <div class="context"><span>2026년 8월 13일</span><span class="state"><i class="dot"></i>장후 확정</span></div>
+          <div class="market"><span>코스피 <b class="down num">−0.8%</b></span><span>코스닥 <b class="up num">+0.3%</b></span></div>
+          <div class="section-head"><div><h3>지금 강한 테마</h3><p>현재 강도와 확산을 함께 반영했어요</p></div></div>
+
+          <div class="theme-list">
+            <a class="theme-card selected" href="#screen-theme" data-theme-id="defense">
+              <div class="theme-top">
+                <span class="rank">1</span>
+                <div class="theme-name-wrap"><div class="theme-name">방산</div><span class="badge">8개월 만에 재점화</span></div>
+                <span class="theme-return up num">+4.9%</span>
+              </div>
+              <p class="theme-reason">중동 분쟁 확산으로 방산 수출 확대 기대</p>
+              <div class="facts"><span>한화에어로스페이스 <b class="up num">+9.2%</b></span><span>관련주 <b class="num">15 / 21</b> 상승</span></div>
+              <div class="history-line">비슷한 과거 14번 중 다음날 10번 상승</div>
+            </a>
+
+            <a class="theme-card" href="#screen-theme" data-theme-id="nuclear">
+              <div class="theme-top">
+                <span class="rank">2</span><div class="theme-name-wrap"><div class="theme-name">원전수출</div></div>
+                <span class="theme-return up num">+3.8%</span>
+              </div>
+              <p class="theme-reason">유럽 신규 원전 사업 수주 기대</p>
+              <div class="facts"><span>두산에너빌리티 <b class="up num">+6.4%</b></span><span>관련주 <b class="num">12 / 18</b> 상승</span></div>
+              <div class="history-line">비슷한 과거 11번 중 다음날 7번 상승</div>
+            </a>
+
+            <a class="theme-card" href="#screen-theme" data-theme-id="robot">
+              <div class="theme-top">
+                <span class="rank">3</span>
+                <div class="theme-name-wrap"><div class="theme-name">산업용 로봇</div><span class="badge new">신규 소재</span></div>
+                <span class="theme-return up num">+3.1%</span>
+              </div>
+              <p class="theme-reason">대기업 제조 자동화 투자 확대 발표</p>
+              <div class="facts"><span>로보스타 <b class="up num">+8.1%</b></span><span>관련주 <b class="num">9 / 16</b> 상승</span></div>
+              <div class="history-line">동일 소재 과거사례 부족</div>
+            </a>
+          </div>
+          <p class="screen-note">홈에는 T+5·T+20·유사도 점수·전체 거래대금을 넣지 않는다. 먼저 무엇이 왜 움직이는지만 보여준다.</p>
+        </div>
+        <nav class="bottom-nav" aria-label="하단 메뉴">
+          <a class="nav-item active" href="#screen-home"><i>▦</i><span>오늘</span></a>
+          <a class="nav-item" href="#screen-insight"><i>◫</i><span>인사이트</span></a>
+          <a class="nav-item" href="#screen-theme"><i>⌕</i><span>테마</span></a>
+          <a class="nav-item" href="#screen-case"><i>☆</i><span>관심</span></a>
+        </nav>
+      </article>
+    </section>
+
+    <section class="stage" id="screen-insight">
+      <div class="flow-label"><b>2</b>인사이트 · 실시간 시장 지형</div>
+      <article class="phone" aria-label="실시간 테마 인사이트 화면">
+        <div class="status"><span>9:41</span><span>실시간</span></div>
+        <div class="screen">
+          <div class="topbar"><h2>인사이트</h2><button class="icon-btn" type="button" aria-label="검색">⌕</button></div>
+          <div class="context"><span>2026년 8월 13일</span><span class="state"><i class="dot"></i><span id="insight-updated">방금 업데이트</span></span></div>
+          <div class="insight-intro">
+            <div><h3>실시간 테마 맵</h3><p>면적이 클수록 상승률이 높아요</p></div>
+            <span class="live-label"><i></i>LIVE</span>
+          </div>
+          <div class="treemap-meta">
+            <div class="treemap-legend" aria-label="등락 색상 범례">
+              <span><i class="legend-up"></i>상승</span><span><i class="legend-flat"></i>보합</span><span><i class="legend-down"></i>하락</span>
+            </div>
+            <span id="treemap-basis">상승률 기준</span>
+          </div>
+          <div class="treemap-shell">
+            <div class="treemap" id="theme-treemap" aria-label="실시간 테마 트리맵"></div>
+          </div>
+          <div class="insight-note"><i>i</i><span>예시 체결로 숫자·색상은 0.25초, 면적·위치는 0.75초마다 갱신됩니다. 노란 테두리는 급부상, 흐린 타일은 약화, 회색 타일은 수신 지연 상태입니다.</span></div>
+        </div>
+        <nav class="bottom-nav" aria-label="하단 메뉴">
+          <a class="nav-item" href="#screen-home"><i>▦</i><span>오늘</span></a>
+          <a class="nav-item active" href="#screen-insight" aria-current="page"><i>◫</i><span>인사이트</span></a>
+          <a class="nav-item" href="#screen-theme"><i>⌕</i><span>테마</span></a>
+          <a class="nav-item" href="#screen-case"><i>☆</i><span>관심</span></a>
+        </nav>
+      </article>
+    </section>
+
+    <section class="stage" id="screen-theme">
+      <div class="flow-label"><b>3</b><span id="detail-flow-name">방산</span> · 판단</div>
+      <article class="phone" id="theme-detail-phone" aria-label="방산 테마 상세 화면">
+        <div class="status"><span>9:41</span><span>장 마감</span></div>
+        <div class="screen">
+          <div class="topbar"><a class="back" id="theme-back" href="#screen-home">‹ 오늘</a><button class="icon-btn" type="button" aria-label="관심 등록">☆</button></div>
+          <div class="tabs" role="tablist" aria-label="테마 상세 메뉴">
+            <button class="tab active" type="button" role="tab" data-tab="summary" aria-selected="true">요약</button>
+            <button class="tab" type="button" role="tab" data-tab="cases" aria-selected="false">유사사례</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" disabled title="핵심 여정 데모에서는 생략">히스토리</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" disabled title="핵심 여정 데모에서는 생략">관련주</button>
+          </div>
+
+          <section class="hero">
+            <div class="hero-row"><h2 id="detail-theme-name">방산</h2><span class="hero-return up num" id="detail-theme-return">+4.9%</span></div>
+            <div class="hero-meta"><span>대형주 반영 · 관련주 <b class="num" id="detail-advance">15 / 21</b> 상승</span>
+              <button class="info-btn" type="button" data-sheet="theme-return">계산 기준</button></div>
+          </section>
+
+          <section class="content-section">
+            <p class="content-label">오늘 부각된 이유</p>
+            <div class="reason-card">
+              <p class="reason-main" id="detail-reason">중동 분쟁 확산으로 국내 방산기업의 수출 확대 기대</p>
+              <div class="reason-state"><i></i><span id="detail-reason-state">기존 소재 재부각 · 최초 확인 10:08</span></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="attention">
+              <h3 id="detail-attention-title">8개월 만에 다시 주목받고 있어요</h3>
+              <p id="detail-attention-caption">이전 관심 구간의 마지막 주목일 2025.12.03</p>
+              <div class="attention-grid">
+                <div><span>관심 공백</span><strong class="num" id="detail-gap">163거래일</strong></div>
+                <div><span>오늘 거래 관심</span><strong class="num" id="detail-interest">평소의 2.4배</strong></div>
+              </div>
+              <div class="attention-action"><button class="info-btn" type="button" data-sheet="attention">계산 기준</button></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3>지금 움직임</h3></div></div>
+            <div class="metric-list">
+              <div class="metric-row"><span>시장 테마 순위</span><strong class="num" id="detail-rank">1위</strong></div>
+              <div class="metric-row"><span>거래 관심 증가 종목</span><strong class="num" id="detail-interest-stocks">8 / 21</strong></div>
+              <div class="metric-row"><span>테마 확산</span><strong id="detail-spread">관련주 전반으로 확산</strong></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3>주도 종목</h3><p>오늘 테마 움직임을 이끄는 종목</p></div><span class="swipe-hint">상위 3개</span></div>
+            <div class="leader-list" id="detail-leaders">
+              <div class="leader-row"><span>한화에어로스페이스<em>주도</em></span><strong class="up num">+9.2%</strong></div>
+              <div class="leader-row"><span>LIG넥스원</span><strong class="up num">+7.4%</strong></div>
+              <div class="leader-row"><span>현대로템</span><strong class="up num">+5.8%</strong></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3 id="detail-similar-heading">비슷했던 과거 14번</h3><p>오늘과 사건 구조가 비슷했던 사례</p></div>
+              <button class="info-btn" type="button" data-sheet="similarity">계산 기준</button></div>
+            <div class="history-summary">
+              <div class="history-head"><strong>이후 대표 흐름</strong><span>당시 주도주 기준</span></div>
+              <div class="horizons" id="detail-horizons">
+                <div class="horizon"><small>다음날</small><b class="num">10 / 14 상승</b><strong class="up num">대표 +3.8%</strong></div>
+                <div class="horizon"><small>5거래일</small><b class="num">9 / 14 상승</b><strong class="up num">대표 +8.2%</strong></div>
+                <div class="horizon"><small>20거래일</small><b class="num">6 / 14 상승</b><strong class="up num">대표 +4.1%</strong></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="content-section" id="similar-cases">
+            <div class="section-head"><div><h3>가장 비슷한 사례</h3></div><span class="swipe-hint">옆으로 넘겨보기 →</span></div>
+            <div class="swipe" id="detail-case-list" aria-label="과거 유사사례 가로 목록">
+              <a class="case-card" href="#screen-case">
+                <div class="case-date num">2026.02.19</div><div class="case-title">중동 지정학적 리스크 확대로 방산 수출 기대</div>
+                <div class="chips"><span class="chip">중동</span><span class="chip">분쟁 확대</span><span class="chip">수출 수혜</span></div>
+                <div class="case-result"><span>5거래일 후</span><strong class="up num">+3.1%</strong></div>
+              </a>
+              <a class="case-card" href="#screen-case">
+                <div class="case-date num">2022.09.20</div><div class="case-title">유럽 방산 수요 증가와 국내 기업 수출 확대 전망</div>
+                <div class="chips"><span class="chip">유럽</span><span class="chip">수출 확대</span></div>
+                <div class="case-result"><span>5거래일 후</span><strong class="up num">+5.4%</strong></div>
+              </a>
+              <a class="case-card" href="#screen-case">
+                <div class="case-date num">2025.03.18</div><div class="case-title">방산 수출 파이프라인 확대 지속 전망</div>
+                <div class="chips"><span class="chip">수출</span><span class="chip">수주 기대</span></div>
+                <div class="case-result"><span>5거래일 후</span><strong class="up num">+2.2%</strong></div>
+              </a>
+            </div>
+          </section>
+          <p class="screen-note">관심 공백은 저점이라는 뜻이 아니다. 거래 관심이 컸던 이전 구간과 현재 구간 사이의 기간이다.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="stage" id="screen-case">
+      <div class="flow-label"><b>4</b>과거 사례 · 검증</div>
+      <article class="phone" id="case-detail-phone" aria-label="방산 과거 유사사례 상세 화면">
+        <div class="status"><span>9:41</span><span>과거 사례</span></div>
+        <div class="screen">
+          <div class="topbar"><a class="back" id="case-back" href="#screen-theme">‹ 방산</a><button class="icon-btn" type="button" aria-label="공유">↗</button></div>
+          <section class="case-hero"><div class="case-kicker num" id="case-kicker">2026년 2월 19일 · 방산</div>
+            <h2 id="case-title">중동 지정학적 리스크 확대로 방산 수출 기대</h2></section>
+
+          <section class="content-section">
+            <p class="content-label">오늘과 비슷한 이유</p>
+            <div class="match"><p>사건의 지역·원인·수혜 구조가 같아요</p>
+              <div class="chips" id="case-tags"><span class="chip">중동</span><span class="chip">분쟁 확대</span><span class="chip">방산 수요</span><span class="chip">국내기업 수혜</span></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3>발생 전 상태</h3><p>사건이 나오기 전까지 얼마나 움직였는지</p></div></div>
+            <div class="metric-list">
+              <div class="metric-row"><span>직전 5거래일</span><strong class="down num">−1.8%</strong></div>
+              <div class="metric-row"><span>직전 20거래일</span><strong class="down num">−8.4%</strong></div>
+              <div class="metric-row"><span>이전 관심 이후</span><strong class="num">43거래일</strong></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3>당시 결과</h3></div><button class="info-btn" type="button" data-sheet="past-return">계산 기준</button></div>
+            <div class="outcome"><small>사건 당일 · 당시 주도주 바스켓</small><b class="num" id="case-day-return">+12.4%</b>
+              <p id="case-leader-names">한화에어로스페이스 · LIG넥스원 · 현대로템 · 한국항공우주</p></div>
+            <div class="results" id="case-results">
+              <div class="result"><span>다음날</span><strong class="up num">+1.2%</strong></div>
+              <div class="result"><span>5거래일</span><strong class="up num">+3.1%</strong></div>
+              <div class="result"><span>20거래일</span><strong class="up num">+5.8%</strong></div>
+            </div>
+          </section>
+
+          <section class="content-section">
+            <div class="section-head"><div><h3>당시 주도 종목</h3><p>5거래일 후 실제 결과</p></div></div>
+            <div class="leader-list" id="case-leaders">
+              <div class="leader-row"><span>한화에어로스페이스</span><strong class="up num">+6.2%</strong></div>
+              <div class="leader-row"><span>LIG넥스원</span><strong class="up num">+4.1%</strong></div>
+              <div class="leader-row"><span>현대로템</span><strong class="up num">+2.8%</strong></div>
+              <div class="leader-row"><span>한국항공우주</span><strong class="up num">+1.9%</strong></div>
+            </div>
+          </section>
+          <section class="content-section"><a class="button" id="case-return-button" href="#screen-theme">방산 요약으로 돌아가기</a></section>
+          <p class="screen-note">미래 결과는 유사사례를 고를 때 사용하지 않는다. 유사사례를 먼저 고른 뒤 실제 이후 가격을 정답지로 붙인다.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="foot">DAYJAVIEW 화면 구조 데모 · 모든 종목명과 수치는 UX 검토용 예시 · 실제 서비스에서는 데이터 시점과 계산 기준을 함께 제공</footer>
+
+  <dialog class="sheet" id="calc-sheet" aria-labelledby="sheet-title">
+    <div class="handle" aria-hidden="true"></div>
+    <div class="sheet-inner">
+      <div class="sheet-head"><h2 id="sheet-title">계산 기준</h2><button class="close" id="sheet-close" type="button" aria-label="닫기">×</button></div>
+      <div class="sheet-body" id="sheet-body"></div>
+    </div>
+  </dialog>
+
+  <script>
+    const themeSeeds = [
+      {id:"defense",name:"방산",return:4.9,themeState:"RISING_FAST",related:[15,21],reason:"중동 분쟁 확산으로 국내 방산기업의 수출 확대 기대",state:"기존 소재 재부각 · 최초 확인 10:08",gapMonths:8,gapDays:163,lastDate:"2025.12.03",interest:2.4,leaders:[["한화에어로스페이스",9.2],["LIG넥스원",7.4],["현대로템",5.8]],similar:14,tags:["중동","분쟁 확대","수출 수혜"]},
+      {id:"nuclear",name:"원전수출",return:3.8,themeState:"ACTIVE",related:[12,18],reason:"유럽 신규 원전 사업 수주 기대가 관련 기업으로 확산",state:"기존 소재 재부각 · 최초 확인 09:34",gapMonths:5,gapDays:108,lastDate:"2026.03.12",interest:2.1,leaders:[["두산에너빌리티",6.4],["한전기술",5.2],["우진",3.9]],similar:11,tags:["유럽","신규 원전","수주 기대"]},
+      {id:"robot",name:"산업용 로봇",return:3.1,themeState:"ACTIVE",related:[9,16],reason:"대기업 제조 자동화 투자 확대 발표로 로봇주 동반 강세",state:"신규 소재 · 최초 확인 11:02",gapMonths:3,gapDays:67,lastDate:"2026.05.08",interest:2.8,leaders:[["로보스타",8.1],["레인보우로보틱스",6.7],["두산로보틱스",4.3]],similar:8,tags:["자동화","설비 투자","로봇 수요"]},
+      {id:"ai-chip",name:"AI 반도체",return:2.6,themeState:"ACTIVE",related:[18,27],reason:"글로벌 AI 서버 투자 상향으로 고대역폭 메모리 수요 기대",state:"기존 소재 확산 · 최초 확인 09:12",gapMonths:2,gapDays:42,lastDate:"2026.06.15",interest:3.1,leaders:[["SK하이닉스",5.6],["한미반도체",4.8],["이수페타시스",3.7]],similar:18,tags:["AI 서버","HBM","투자 확대"]},
+      {id:"power",name:"전력설비",return:2.0,themeState:"ACTIVE",related:[11,20],reason:"북미 데이터센터 전력망 투자 확대 기대가 재부각",state:"기존 소재 재부각 · 최초 확인 10:21",gapMonths:6,gapDays:129,lastDate:"2026.02.09",interest:2.0,leaders:[["HD현대일렉트릭",5.1],["효성중공업",4.2],["LS ELECTRIC",3.8]],similar:13,tags:["데이터센터","전력망","북미 투자"]},
+      {id:"bio",name:"바이오 CDMO",return:1.5,themeState:"WEAKENING",related:[7,14],reason:"글로벌 제약사의 위탁생산 발주 확대 전망",state:"기존 소재 확산 · 최초 확인 10:47",gapMonths:9,gapDays:188,lastDate:"2025.11.14",interest:1.8,leaders:[["삼성바이오로직스",3.4],["에스티팜",2.9],["프레스티지바이오로직스",2.4]],similar:10,tags:["위탁생산","수주","공급 확대"]},
+      {id:"shipping",name:"해운",return:.8,themeState:"ACTIVE",related:[5,12],reason:"주요 항로 운임 반등과 공급 차질 우려가 함께 반영",state:"단기 소재 부각 · 최초 확인 11:18",gapMonths:4,gapDays:84,lastDate:"2026.04.17",interest:1.7,leaders:[["HMM",2.8],["팬오션",1.9],["대한해운",1.5]],similar:12,tags:["운임 반등","항로 차질","공급 감소"]},
+      {id:"battery",name:"2차전지",return:-1.3,themeState:"WEAKENING",related:[6,23],reason:"전기차 수요 전망 조정으로 관련주 전반의 투자심리 약화",state:"기존 소재 약세 · 최초 확인 09:05",gapMonths:1,gapDays:22,lastDate:"2026.07.13",interest:1.5,leaders:[["LG에너지솔루션",-.7],["에코프로비엠",-1.8],["포스코퓨처엠",-2.2]],similar:16,tags:["전기차","수요 둔화","실적 우려"]},
+      {id:"entertainment",name:"엔터",return:-.5,themeState:"DELAYED",related:[4,11],reason:"주요 아티스트 활동 공백 우려로 개별 종목 중심 약세",state:"단기 소재 약화 · 최초 확인 10:55",gapMonths:2,gapDays:49,lastDate:"2026.06.04",interest:1.3,leaders:[["하이브",.6],["JYP Ent.",-.4],["에스엠",-1.1]],similar:9,tags:["아티스트","활동 일정","실적 전망"]}
+    ];
+    const themes = themeSeeds.map(function(theme,index){
+      return Object.assign({rank:index+1},theme,{baseReturn:theme.return,momentum:0});
+    });
+    const themeById = new Map(themes.map(function(theme){return [theme.id,theme]}));
+    let treemapLayout = new Map();
+    let treemapLayoutSignature = "";
+    let liveUpdateCount = 0;
+
+    function signedPercent(value){
+      const normalized=Math.abs(value)<.05?0:value;
+      return (normalized>0?"+":"")+normalized.toFixed(1)+"%";
+    }
+    function rateClass(value){return value>.05?"up":value<-.05?"down":""}
+    function treemapColor(value){
+      if(value>.12){const strength=Math.min(1,value/6);return "hsl("+(357-strength*2)+" 68% "+(55-strength*14)+"%)"}
+      if(value<-.12){const strength=Math.min(1,Math.abs(value)/4);return "hsl("+(211+strength*2)+" 64% "+(57-strength*15)+"%)"}
+      return "#747d89";
+    }
+    function visibleTreemapThemes(){
+      const selected=themes.filter(function(theme){return theme.return>0}).sort(function(a,b){
+        return b.return-a.return||a.id.localeCompare(b.id);
+      }).slice(0,12);
+      return selected.sort(function(a,b){return a.rank-b.rank});
+    }
+    function partition(items,x,y,width,height,result){
+      if(items.length===0)return;
+      if(items.length===1){result.push({theme:items[0].theme,x:x,y:y,width:width,height:height});return}
+      const total=items.reduce(function(sum,item){return sum+item.weight},0);
+      let running=0,bestIndex=1,bestDistance=Infinity;
+      for(let index=1;index<items.length;index+=1){
+        running+=items[index-1].weight;
+        const distance=Math.abs(total/2-running);
+        if(distance<bestDistance){bestDistance=distance;bestIndex=index}
+      }
+      const first=items.slice(0,bestIndex),second=items.slice(bestIndex);
+      const firstWeight=first.reduce(function(sum,item){return sum+item.weight},0);
+      const ratio=Math.min(.88,Math.max(.12,firstWeight/total));
+      if(width>=height){
+        const firstWidth=width*ratio;
+        partition(first,x,y,firstWidth,height,result);
+        partition(second,x+firstWidth,y,width-firstWidth,height,result);
+      }else{
+        const firstHeight=height*ratio;
+        partition(first,x,y,width,firstHeight,result);
+        partition(second,x,y+firstHeight,width,height-firstHeight,result);
+      }
+    }
+    const themeStateLabels={ACTIVE:"",RISING_FAST:"급부상",WEAKENING:"약화",DELAYED:"수신 지연",CLOSED:"장 마감"};
+    function renderTreemap(forceLayout){
+      const map=document.querySelector("#theme-treemap");
+      if(!map)return;
+      const bounds=map.getBoundingClientRect();
+      if(!bounds.width||!bounds.height)return;
+      const visibleThemes=visibleTreemapThemes();
+      const items=visibleThemes.map(function(theme){return {theme:theme,weight:theme.return}});
+      const visibleIds=new Set(visibleThemes.map(function(theme){return theme.id}));
+      map.querySelectorAll(".treemap-tile").forEach(function(tile){
+        if(!visibleIds.has(tile.dataset.tileId)){tile.remove();treemapLayout.delete(tile.dataset.tileId)}
+      });
+      const signature=Math.round(bounds.width)+"x"+Math.round(bounds.height)+"|"+visibleThemes.map(function(theme){return theme.id}).join("|");
+      if(forceLayout||signature!==treemapLayoutSignature||items.some(function(item){return !treemapLayout.has(item.theme.id)})){
+        const layout=[];partition(items,0,0,bounds.width,bounds.height,layout);
+        treemapLayout=new Map(layout.map(function(box){return [box.theme.id,box]}));
+        treemapLayoutSignature=signature;
+      }
+      items.forEach(function(item){
+        const box=treemapLayout.get(item.theme.id);if(!box)return;
+        let tile=map.querySelector('[data-tile-id="'+item.theme.id+'"]');
+        if(!tile){
+          tile=document.createElement("button");tile.type="button";tile.className="treemap-tile is-new";
+          tile.dataset.tileId=item.theme.id;
+          tile.innerHTML='<span class="tile-state"></span><span class="tile-name"></span><strong class="tile-value"></strong>';
+          tile.addEventListener("click",function(){openThemeDetail(tile.dataset.tileId,"insight")});
+          map.appendChild(tile);
+        }
+        const area=box.width*box.height;
+        tile.dataset.size=area<7200?"xs":area<15500?"sm":"lg";
+        tile.dataset.themeState=item.theme.themeState;
+        tile.style.left=box.x+"px";tile.style.top=box.y+"px";
+        tile.style.width=box.width+"px";tile.style.height=box.height+"px";
+        tile.style.backgroundColor=treemapColor(item.theme.return);
+        const primary=signedPercent(item.theme.return);
+        const stateLabel=themeStateLabels[item.theme.themeState]||"";
+        tile.querySelector(".tile-state").textContent=stateLabel;
+        tile.querySelector(".tile-name").textContent=item.theme.name;
+        tile.querySelector(".tile-value").textContent=primary;
+        tile.setAttribute("aria-label",item.theme.name+", "+primary+(stateLabel?", "+stateLabel:"")+", 상세 보기");
+        if(tile.classList.contains("is-new"))requestAnimationFrame(function(){tile.classList.remove("is-new")});
+      });
+    }
+    function updateThemeStates(){
+      const liveThemes=themes.filter(function(theme){
+        return theme.themeState!=="DELAYED"&&theme.themeState!=="CLOSED";
+      });
+      const fastest=liveThemes.filter(function(theme){return theme.return>0}).sort(function(a,b){
+        return b.momentum-a.momentum;
+      })[0];
+      liveThemes.forEach(function(theme){
+        if(fastest&&theme.id===fastest.id&&fastest.momentum>.015){theme.themeState="RISING_FAST";return}
+        theme.themeState=theme.return<=0||theme.momentum<-.08?"WEAKENING":"ACTIVE";
+      });
+    }
+    function updateLiveThemes(){
+      liveUpdateCount+=1;
+      themes.forEach(function(theme){
+        if(theme.themeState==="DELAYED"||theme.themeState==="CLOSED")return;
+        const previousReturn=theme.return;
+        const returnPull=(theme.baseReturn-theme.return)*.045;
+        theme.return=Math.max(-4.5,Math.min(8.5,theme.return+returnPull+(Math.random()-.5)*.42));
+        theme.momentum=theme.momentum*.72+(theme.return-previousReturn);
+      });
+      if(liveUpdateCount%12===0)updateThemeStates();
+      renderTreemap(liveUpdateCount%3===0);
+      const now=new Date();
+      document.querySelector("#insight-updated").textContent=now.toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})+" 업데이트";
+    }
+    function detailRank(theme){
+      return themes.slice().sort(function(a,b){return b.return-a.return}).findIndex(function(item){return item.id===theme.id})+1;
+    }
+    function eventCases(theme){
+      const dates=["2026.02.19","2024.11.07","2022.09.20"];
+      const tails=["관련 기대가 시장에 빠르게 확산","수급 유입과 함께 주요 종목 동반 강세","유사한 정책·산업 환경에서 관심 재점화"];
+      return dates.map(function(date,index){
+        return {date:date,title:theme.reason.replace(/[.。]$/g,"")+" · "+tails[index],tags:theme.tags.slice(0,index===0?3:2),result:theme.return*(.62+index*.17)};
+      });
+    }
+    function openThemeDetail(id,source){
+      const theme=themeById.get(id);if(!theme)return;
+      const back=document.querySelector("#theme-back");
+      back.href=source==="insight"?"#screen-insight":"#screen-home";
+      back.textContent=source==="insight"?"‹ 인사이트":"‹ 오늘";
+      document.querySelector("#detail-flow-name").textContent=theme.name;
+      document.querySelector("#detail-theme-name").textContent=theme.name;
+      const detailReturn=document.querySelector("#detail-theme-return");
+      detailReturn.textContent=signedPercent(theme.return);detailReturn.className="hero-return num "+rateClass(theme.return);
+      document.querySelector("#detail-advance").textContent=theme.related[0]+" / "+theme.related[1];
+      document.querySelector("#detail-reason").textContent=theme.reason;
+      document.querySelector("#detail-reason-state").textContent=theme.state;
+      document.querySelector("#detail-attention-title").textContent=theme.gapMonths+"개월 만에 다시 주목받고 있어요";
+      document.querySelector("#detail-attention-caption").textContent="이전 관심 구간의 마지막 주목일 "+theme.lastDate;
+      document.querySelector("#detail-gap").textContent=theme.gapDays+"거래일";
+      document.querySelector("#detail-interest").textContent="평소의 "+theme.interest.toFixed(1)+"배";
+      const interested=Math.max(2,Math.round(theme.related[1]*Math.min(.7,theme.interest/6)));
+      document.querySelector("#detail-rank").textContent=detailRank(theme)+"위";
+      document.querySelector("#detail-interest-stocks").textContent=interested+" / "+theme.related[1];
+      const spreadRatio=theme.related[0]/theme.related[1];
+      document.querySelector("#detail-spread").textContent=spreadRatio>.65?"관련주 전반으로 확산":spreadRatio>.45?"주요 종목 중심 확산":"일부 종목 중심 움직임";
+      document.querySelector("#detail-leaders").innerHTML=theme.leaders.map(function(leader,index){
+        return '<div class="leader-row"><span>'+leader[0]+(index===0?'<em>주도</em>':'')+'</span><strong class="num '+rateClass(leader[1])+'">'+signedPercent(leader[1])+'</strong></div>';
+      }).join("");
+      document.querySelector("#detail-similar-heading").textContent="비슷했던 과거 "+theme.similar+"번";
+      const wins=[Math.round(theme.similar*.71),Math.round(theme.similar*.64),Math.round(theme.similar*.45)];
+      const returns=[theme.return*.78,theme.return*1.42,theme.return*.86];
+      const labels=["다음날","5거래일","20거래일"];
+      document.querySelector("#detail-horizons").innerHTML=labels.map(function(label,index){
+        return '<div class="horizon"><small>'+label+'</small><b class="num">'+wins[index]+' / '+theme.similar+' 상승</b><strong class="num '+rateClass(returns[index])+'">대표 '+signedPercent(returns[index])+'</strong></div>';
+      }).join("");
+      document.querySelector("#detail-case-list").innerHTML=eventCases(theme).map(function(item,index){
+        return '<a class="case-card" href="#screen-case" data-case-index="'+index+'"><div class="case-date num">'+item.date+'</div><div class="case-title">'+item.title+'</div><div class="chips">'+item.tags.map(function(tag){return '<span class="chip">'+tag+'</span>'}).join("")+'</div><div class="case-result"><span>5거래일 후</span><strong class="num '+rateClass(item.result)+'">'+signedPercent(item.result)+'</strong></div></a>';
+      }).join("");
+      document.querySelectorAll("#detail-case-list [data-case-index]").forEach(function(card){
+        card.addEventListener("click",function(){updateCaseDetail(theme,Number(card.dataset.caseIndex))});
+      });
+      const detailPhone=document.querySelector("#theme-detail-phone");
+      detailPhone.setAttribute("aria-label",theme.name+" 테마 상세 화면");
+      detailPhone.querySelector(".screen").scrollTo({top:0,behavior:"auto"});
+      location.hash="screen-theme";
+    }
+    function updateCaseDetail(theme,index){
+      const item=eventCases(theme)[index]||eventCases(theme)[0];
+      document.querySelector("#case-back").textContent="‹ "+theme.name;
+      document.querySelector("#case-kicker").textContent=item.date.replace(/\./g,"년 ").replace("년 ","년 ").replace(/년 (\d{2})년 /,"년 $1월 ").replace(/ (\d{2})$/," $1일")+" · "+theme.name;
+      document.querySelector("#case-title").textContent=item.title;
+      document.querySelector("#case-tags").innerHTML=item.tags.concat([theme.name]).map(function(tag){return '<span class="chip">'+tag+'</span>'}).join("");
+      document.querySelector("#case-day-return").textContent=signedPercent(item.result*1.7);
+      document.querySelector("#case-leader-names").textContent=theme.leaders.map(function(leader){return leader[0]}).join(" · ");
+      const caseReturns=[item.result*.38,item.result,item.result*1.25];
+      document.querySelector("#case-results").innerHTML=["다음날","5거래일","20거래일"].map(function(label,resultIndex){
+        return '<div class="result"><span>'+label+'</span><strong class="num '+rateClass(caseReturns[resultIndex])+'">'+signedPercent(caseReturns[resultIndex])+'</strong></div>';
+      }).join("");
+      document.querySelector("#case-leaders").innerHTML=theme.leaders.map(function(leader){
+        return '<div class="leader-row"><span>'+leader[0]+'</span><strong class="num '+rateClass(leader[1])+'">'+signedPercent(leader[1]*.68)+'</strong></div>';
+      }).join("");
+      document.querySelector("#case-return-button").textContent=theme.name+" 요약으로 돌아가기";
+      document.querySelector("#case-detail-phone").setAttribute("aria-label",theme.name+" 과거 유사사례 상세 화면");
+    }
+    document.querySelectorAll("[data-theme-id]").forEach(function(link){
+      link.addEventListener("click",function(event){event.preventDefault();openThemeDetail(link.dataset.themeId,"home")});
+    });
+    const treemapObserver="ResizeObserver" in window?new ResizeObserver(function(){renderTreemap(true)}):null;
+    if(treemapObserver)treemapObserver.observe(document.querySelector("#theme-treemap"));
+    window.addEventListener("resize",function(){renderTreemap(true)});
+    requestAnimationFrame(function(){renderTreemap(true)});
+    setInterval(updateLiveThemes,250);
+
+    const sheet = document.querySelector("#calc-sheet");
+    const title = document.querySelector("#sheet-title");
+    const body = document.querySelector("#sheet-body");
+    const contents = {
+      "theme-return": {
+        title: "대형주 반영 테마 수익률",
+        body: '<p><strong>직접 수혜 핵심 종목</strong>의 당일 수익률을 유동시가총액으로 가중해 합산한다.</p>' +
+          '<div class="formula">유동시가총액 = 전일 조정종가 × 상장주식수 × 유동주식비율<br><br>테마 수익률 = Σ(상한 적용 가중치 × 종목 수익률)</div>' +
+          '<p>종목당 가중치는 초기 최대 30%다. 초과분은 다른 종목에 다시 나눈다. 대형주 한 종목이 지배하지 않도록 상승 종목 수를 반드시 함께 보여준다.</p>' +
+          '<div class="caution">30%는 초기값이다. 20%·25%·30%·35%를 과거 데이터로 비교한 뒤 확정한다.</div>'
+      },
+      attention: {
+        title: "관심 공백과 거래 관심",
+        body: '<p><strong>가격이 저점인지</strong>가 아니라 테마 전체의 거래 관심이 오랫동안 없었는지 계산한다.</p>' +
+          '<div class="formula">오늘 거래 관심 배수 = 구성종목의 현재 누적 거래대금 합계 ÷ 각 종목의 직전 60거래일 동일 시각 거래대금 중앙값 합계</div>' +
+          '<p>초기 주목일 조건은 거래 관심 2배 이상, 구성종목 30% 이상이 각자 평소의 2배 이상, 대형주 반영 테마 수익률 +1% 이상이다.</p>' +
+          '<p>주목일이 여러 날 이어지면 하나의 관심 구간으로 묶는다. 10거래일 연속 조건이 없을 때 구간이 끝난다.</p>' +
+          '<div class="formula">관심 공백 = 직전 관심 구간 마지막 날과 현재 구간 첫날 사이 KRX 거래일 수<br><br>표시 개월 = 163 ÷ 21 ≈ 8개월</div>' +
+          '<div class="caution">2배·30%·+1%·10거래일은 초기 연구값이다. 백테스트 후 확정한다.</div>'
+      },
+      similarity: {
+        title: "유사사례와 대표 흐름",
+        body: '<p>같은 테마명만 찾지 않는다. 하위테마, 사건 종류, 진행 단계, 지역, 수혜 구조, 발생 전 가격·거래 상태를 함께 비교한다.</p>' +
+          '<p>유사사례를 먼저 고른 뒤 각 사건 당시 주도주를 동일가중 바스켓으로 만든다.</p>' +
+          '<div class="formula">사건 수익률 = 당시 주도주 수익률의 동일가중 평균<br><br>대표 수익률 = 사건별 수익률의 중앙값<br><br>10 / 14 상승 = 14개 사건 중 바스켓 수익률이 0%보다 큰 사건 10개</div>' +
+          '<p>미래 수익률은 유사사례 선정에 사용하지 않는다.</p>'
+      },
+      "past-return": {
+        title: "과거 사건 수익률",
+        body: '<p>각 사건 당시 기록된 주도주만 사용한다. 현재 관련주 목록을 과거에 소급하지 않는다.</p>' +
+          '<div class="formula">T+n 종목 수익률 = T+n 조정종가 ÷ T0 조정종가 − 1<br><br>T+n 사건 수익률 = 당시 주도주들의 T+n 수익률 동일가중 평균</div>' +
+          '<p>T+1은 다음 KRX 거래일, T+5는 다섯 번째 거래일, T+20은 스무 번째 거래일 종가 기준이다.</p>'
+      }
+    };
+    document.querySelectorAll("[data-sheet]").forEach(function(trigger){
+      trigger.addEventListener("click",function(){
+        const content=contents[trigger.dataset.sheet]; if(!content)return;
+        title.textContent=content.title; body.innerHTML=content.body; sheet.showModal();
+      });
+    });
+    document.querySelector("#sheet-close").addEventListener("click",function(){sheet.close()});
+    sheet.addEventListener("click",function(event){if(event.target===sheet)sheet.close()});
+    document.querySelectorAll(".tab:not(:disabled)").forEach(function(tab){
+      tab.addEventListener("click",function(){
+        document.querySelectorAll(".tab").forEach(function(item){item.classList.remove("active");item.setAttribute("aria-selected","false")});
+        tab.classList.add("active");tab.setAttribute("aria-selected","true");
+        if(tab.dataset.tab==="cases")document.querySelector("#similar-cases").scrollIntoView({behavior:"smooth",block:"start"});
+        if(tab.dataset.tab==="summary")tab.closest(".screen").scrollTo({top:0,behavior:"smooth"});
+      });
+    });
+  </script>
+</body>
+</html>
