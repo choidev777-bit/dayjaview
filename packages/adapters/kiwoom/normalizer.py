@@ -267,6 +267,8 @@ def _make_event(
         "sourceSequence": envelope.source_sequence,
         "sourceItemIndex": item_index,
     }
+    if isinstance(data, CandidateData):
+        natural_key["conditionId"] = data.condition_id
     digest = hashlib.sha256(_canonical_json(natural_key).encode("utf-8")).hexdigest()
     return CanonicalMarketEvent(
         schema_version=CANONICAL_EVENT_SCHEMA_VERSION,
