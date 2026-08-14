@@ -67,7 +67,6 @@ def _health_payload() -> dict[str, object]:
             "B-REFDATA-KEYS",
             "B-MARKET-FIXTURE",
             "B-INFOSTOCK-AUTH",
-            "B-DATA-RIGHTS",
             "B-OPERATOR",
             "B-DEPLOY",
         ],

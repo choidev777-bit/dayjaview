@@ -26,7 +26,7 @@ def main() -> int:
                 {
                     "component": "DAILY_FEATURED_THEME",
                     "status": "BLOCKED",
-                    "blockers": ["B-INFOSTOCK-AUTH", "B-DATA-RIGHTS"],
+                    "blockers": ["B-INFOSTOCK-AUTH"],
                     "nextPage": 1,
                     "coverageComplete": False,
                     "liveRequestAttempted": False,

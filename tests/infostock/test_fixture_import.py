@@ -56,7 +56,7 @@ def test_280_import_is_atomic_idempotent_and_preserves_lineage_counts() -> None:
     assert first.status == "PARTIAL"
     assert first.core_status == "COMPLETE"
     assert first.daily_status == "BLOCKED"
-    assert first.blockers == ("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS")
+    assert first.blockers == ("B-INFOSTOCK-AUTH",)
     assert first.themes_imported == 280
     assert first.snapshots_linked == 282
     assert first.history_rows_seen == 280
@@ -68,7 +68,7 @@ def test_280_import_is_atomic_idempotent_and_preserves_lineage_counts() -> None:
     assert first.history_revisions_created == 280
     assert first.history_leaders_created == 280
     assert first.history_memberships_created == 280
-    assert first.quality_issues_created == 2
+    assert first.quality_issues_created == 1
     assert first.reused is False
     assert second.run_id == first.run_id
     assert second.reused is True

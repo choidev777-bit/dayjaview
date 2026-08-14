@@ -2,8 +2,7 @@
   "components": {
     "dailyFeaturedTheme": {
       "blockers": [
-        "B-INFOSTOCK-AUTH",
-        "B-DATA-RIGHTS"
+        "B-INFOSTOCK-AUTH"
       ],
       "bodies": 1,
       "capturedPages": [
@@ -46,7 +45,6 @@
   "overallStatus": "PARTIAL",
   "parserVersion": "infostock-existing-collection/2.0.0",
   "qualityIssueCounts": {
-    "B-DATA-RIGHTS": 1,
     "B-INFOSTOCK-AUTH": 1,
     "BODY_MISSING": 4,
     "BODY_PARSE_PARTIAL": 1,

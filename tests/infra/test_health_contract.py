@@ -25,7 +25,6 @@ def test_health_payload_is_deterministic_fixture_only(monkeypatch) -> None:
         "B-REFDATA-KEYS",
         "B-MARKET-FIXTURE",
         "B-INFOSTOCK-AUTH",
-        "B-DATA-RIGHTS",
         "B-OPERATOR",
         "B-DEPLOY",
     ]

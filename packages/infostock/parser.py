@@ -206,15 +206,6 @@ def _blocked_daily() -> DailyBackfill:
             None,
             {"messageKo": "synthetic theme fixture에는 실제 Daily backfill이 없습니다."},
         ),
-        QualityIssue(
-            "DAILY_FEATURED_THEME",
-            "B-DATA-RIGHTS",
-            "BLOCKER",
-            "BACKFILL",
-            None,
-            None,
-            {"messageKo": "Daily production 권리 증거가 없습니다."},
-        ),
     )
     return DailyBackfill(
         component_status="BLOCKED",
@@ -227,7 +218,7 @@ def _blocked_daily() -> DailyBackfill:
         earliest_date=None,
         latest_date=None,
         coverage_complete=False,
-        blockers=("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS"),
+        blockers=("B-INFOSTOCK-AUTH",),
         quality_issues=issues,
     )
 

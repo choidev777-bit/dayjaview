@@ -47,15 +47,6 @@
       }
     },
     {
-      "name": "INFOSTOCK_RIGHTS_EVIDENCE_PATH",
-      "required": {
-        "localFixture": false,
-        "ciFixture": false,
-        "staging": true,
-        "production": true
-      }
-    },
-    {
       "name": "INFOSTOCK_SESSION_STATE_PATH",
       "required": {
         "localFixture": false,

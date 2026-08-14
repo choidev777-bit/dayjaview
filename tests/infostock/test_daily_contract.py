@@ -87,7 +87,7 @@ AI 투자 확대로 관련주 상승
     assert relations[1].quality_status == "SOURCE_CODE_MISSING"
 
 
-def test_daily_live_fetch_is_not_called_before_auth_and_rights_gates() -> None:
+def test_daily_live_fetch_is_not_called_before_auth_gate() -> None:
     source = FakeDailySource({})
 
     with pytest.raises(DataRightsBlockedError) as raised:
@@ -108,9 +108,7 @@ def test_daily_pagination_full_backfill_and_resume_checkpoint() -> None:
         }
     )
 
-    full = collect_daily_browser_backfill(
-        source, auth_verified=True, rights_verified=True
-    )
+    full = collect_daily_browser_backfill(source, auth_verified=True)
 
     assert source.list_calls == [1, 2]
     assert len(full.details) == 2
@@ -130,7 +128,6 @@ def test_daily_pagination_full_backfill_and_resume_checkpoint() -> None:
             seen_post_keys=(first_key,),
         ),
         auth_verified=True,
-        rights_verified=True,
     )
 
     assert resumed_source.list_calls == [2]
@@ -149,16 +146,12 @@ def test_daily_pagination_loop_and_invalid_cursor_fail_explicitly() -> None:
     )
 
     with pytest.raises(FixtureValidationError) as loop_error:
-        collect_daily_browser_backfill(
-            loop_source, auth_verified=True, rights_verified=True
-        )
+        collect_daily_browser_backfill(loop_source, auth_verified=True)
     assert loop_error.value.code == "DAILY_PAGINATION_LOOP"
 
     invalid_source = FakeDailySource(
         {1: _page(1, (), has_next=True, next_page=1)}
     )
     with pytest.raises(FixtureValidationError) as cursor_error:
-        collect_daily_browser_backfill(
-            invalid_source, auth_verified=True, rights_verified=True
-        )
+        collect_daily_browser_backfill(invalid_source, auth_verified=True)
     assert cursor_error.value.code == "DAILY_CURSOR_INVALID"

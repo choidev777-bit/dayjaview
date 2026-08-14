@@ -191,15 +191,6 @@ def _empty_daily() -> DailyBackfill:
         ),
         QualityIssue(
             "DAILY_FEATURED_THEME",
-            "B-DATA-RIGHTS",
-            "BLOCKER",
-            "BACKFILL",
-            None,
-            None,
-            {"messageKo": "저장·가공 권리 증거가 없습니다."},
-        ),
-        QualityIssue(
-            "DAILY_FEATURED_THEME",
             "DAILY_CAPTURE_MISSING",
             "BLOCKER",
             "BACKFILL",
@@ -219,7 +210,7 @@ def _empty_daily() -> DailyBackfill:
         earliest_date=None,
         latest_date=None,
         coverage_complete=False,
-        blockers=("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS"),
+        blockers=("B-INFOSTOCK-AUTH",),
         quality_issues=issues,
     )
 

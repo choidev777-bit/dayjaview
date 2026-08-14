@@ -109,7 +109,7 @@ def test_daily_existing_capture_is_importable_but_full_backfill_is_blocked(
     issue_counts = Counter(issue.issue_code for issue in daily.quality_issues)
 
     assert daily.component_status == "BLOCKED"
-    assert daily.blockers == ("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS")
+    assert daily.blockers == ("B-INFOSTOCK-AUTH",)
     assert daily.coverage_complete is False
     assert (daily.first_page, daily.last_page, daily.next_page) == (1, 1, 2)
     assert len(daily.entries) == 5
@@ -123,7 +123,6 @@ def test_daily_existing_capture_is_importable_but_full_backfill_is_blocked(
     assert issue_counts["BODY_MISSING"] == 4
     assert issue_counts["PAGINATION_INCOMPLETE"] == 1
     assert issue_counts["B-INFOSTOCK-AUTH"] == 1
-    assert issue_counts["B-DATA-RIGHTS"] == 1
 
 
 def test_committed_machine_and_korean_reports_match_actual_recalculation(

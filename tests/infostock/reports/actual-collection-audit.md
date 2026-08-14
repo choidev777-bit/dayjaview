@@ -16,6 +16,6 @@
 - DailyFeaturedTheme: BLOCKED
   - 확보 목록: 5건, 본문: 1건, 관계: 232건
   - pagination: 1페이지만 확보, next=2, 전체 기간 미완료
-  - blocker: B-INFOSTOCK-AUTH, B-DATA-RIGHTS
+  - blocker: B-INFOSTOCK-AUTH
 
 Daily 실제 전체 backfill이 완료되지 않았으므로 S1 전체 DB 상태는 PARTIAL입니다.

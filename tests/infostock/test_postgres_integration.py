@@ -258,7 +258,7 @@ def test_postgres16_actual_full_import_daily_boundary_and_revision_contract() ->
         assert first.status == "PARTIAL"
         assert first.core_status == "COMPLETE"
         assert first.daily_status == "BLOCKED"
-        assert first.blockers == ("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS")
+        assert first.blockers == ("B-INFOSTOCK-AUTH",)
         assert first.themes_imported == 280
         assert first.history_rows_seen == 39_696
         assert first.related_stocks_seen == 6_629
@@ -362,10 +362,7 @@ def test_postgres16_actual_full_import_daily_boundary_and_revision_contract() ->
             1,
             232,
         )
-        assert tuple(component_rows[0][7]) == (
-            "B-INFOSTOCK-AUTH",
-            "B-DATA-RIGHTS",
-        )
+        assert tuple(component_rows[0][7]) == ("B-INFOSTOCK-AUTH",)
         assert component_rows[1][:4] == ("THEME_DATABASE", "COMPLETE", 280, 280)
         checkpoint = connection.execute(
             """

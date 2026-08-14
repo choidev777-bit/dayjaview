@@ -53,14 +53,17 @@ class ExistingCollectionPolicy:
 
 
 class InfostockAccessPolicy:
-    """Local audited imports are allowed; production access remains fail-closed."""
+    """Validate import lineage scope and the remaining authentication gate."""
 
     @staticmethod
     def require_import_scope(rights_scope: str) -> None:
+        """`rights_scope` records how a bundle entered; it must match the DB CHECK."""
+
         if rights_scope not in {"FIXTURE_ONLY", "LOCAL_AUDITED_IMPORT"}:
-            raise DataRightsBlockedError(
-                "B-DATA-RIGHTS",
-                "승인된 fixture 또는 명시적으로 지정한 기존 수집본만 적재할 수 있습니다.",
+            raise FixtureValidationError(
+                "INVALID_RIGHTS_SCOPE",
+                "$.rightsScope",
+                "rights_scope는 FIXTURE_ONLY 또는 LOCAL_AUDITED_IMPORT여야 합니다.",
             )
 
     @staticmethod
@@ -70,30 +73,9 @@ class InfostockAccessPolicy:
         InfostockAccessPolicy.require_import_scope(rights_scope)
 
     @staticmethod
-    def require_production_collection() -> None:
-        raise DataRightsBlockedError(
-            "B-DATA-RIGHTS",
-            "공급원별 저장·가공 권리 승인 전 production Infostock 수집은 비활성 상태입니다.",
-        )
-
-    @staticmethod
-    def require_production_serving() -> None:
-        raise DataRightsBlockedError(
-            "B-DATA-RIGHTS",
-            "재배포 권리 승인 전 production Infostock 데이터 표시는 비활성 상태입니다.",
-        )
-
-    @staticmethod
-    def require_daily_browser_collection(
-        *, auth_verified: bool = False, rights_verified: bool = False
-    ) -> None:
+    def require_daily_browser_collection(*, auth_verified: bool = False) -> None:
         if not auth_verified:
             raise DataRightsBlockedError(
                 "B-INFOSTOCK-AUTH",
                 "검증된 암호화 browser session이 없어 DailyFeaturedTheme live 수집을 시작하지 않습니다.",
-            )
-        if not rights_verified:
-            raise DataRightsBlockedError(
-                "B-DATA-RIGHTS",
-                "DailyFeaturedTheme 저장·가공 권리 증거가 없어 live 수집을 시작하지 않습니다.",
             )

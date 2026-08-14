@@ -395,15 +395,6 @@ def parse_legacy_daily_payload(
         ),
         QualityIssue(
             "DAILY_FEATURED_THEME",
-            "B-DATA-RIGHTS",
-            "BLOCKER",
-            "BACKFILL",
-            None,
-            None,
-            {"messageKo": "production 저장·가공 권리 증거가 확인되지 않았습니다."},
-        ),
-        QualityIssue(
-            "DAILY_FEATURED_THEME",
             "PAGINATION_INCOMPLETE",
             "BLOCKER",
             "LIST_PAGE",
@@ -627,7 +618,7 @@ def parse_legacy_daily_payload(
         earliest_date=min(dated) if dated else None,
         latest_date=max(dated) if dated else None,
         coverage_complete=False,
-        blockers=("B-INFOSTOCK-AUTH", "B-DATA-RIGHTS"),
+        blockers=("B-INFOSTOCK-AUTH",),
         quality_issues=tuple(issues),
     )
 
@@ -681,14 +672,11 @@ def collect_daily_browser_backfill(
     checkpoint: DailyBackfillCursor | None = None,
     *,
     auth_verified: bool = False,
-    rights_verified: bool = False,
     max_pages: int = 10_000,
 ) -> DailyBrowserBatch:
-    """Execute deterministic pagination/resume only after both external gates."""
+    """Execute deterministic pagination/resume only after the authentication gate."""
 
-    InfostockAccessPolicy.require_daily_browser_collection(
-        auth_verified=auth_verified, rights_verified=rights_verified
-    )
+    InfostockAccessPolicy.require_daily_browser_collection(auth_verified=auth_verified)
     cursor = checkpoint or DailyBackfillCursor()
     if cursor.complete:
         return DailyBrowserBatch((), (), cursor)

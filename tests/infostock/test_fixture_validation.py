@@ -131,29 +131,17 @@ def test_ignored_local_import_path_is_not_a_committed_fixture() -> None:
     assert raised.value.code == "UNAPPROVED_FIXTURE_PATH"
 
 
-def test_production_collection_serving_and_daily_auth_are_fail_closed() -> None:
+def test_unknown_rights_scope_is_rejected_and_daily_auth_is_fail_closed() -> None:
     payload = build_fixture_payload()
-    payload["rightsScope"] = "PRODUCTION_APPROVED"
+    payload["rightsScope"] = "SOMETHING_ELSE"
     payload["bundleHash"] = fixture_bundle_hash(payload)
 
-    with pytest.raises(DataRightsBlockedError) as import_error:
+    with pytest.raises(FixtureValidationError) as import_error:
         parse_fixture_payload(payload)
-    assert import_error.value.blocker == "B-DATA-RIGHTS"
-
-    with pytest.raises(DataRightsBlockedError) as collection_error:
-        InfostockAccessPolicy.require_production_collection()
-    assert collection_error.value.blocker == "B-DATA-RIGHTS"
-
-    with pytest.raises(DataRightsBlockedError) as serving_error:
-        InfostockAccessPolicy.require_production_serving()
-    assert serving_error.value.blocker == "B-DATA-RIGHTS"
+    assert import_error.value.code == "INVALID_RIGHTS_SCOPE"
 
     with pytest.raises(DataRightsBlockedError) as auth_error:
         InfostockAccessPolicy.require_daily_browser_collection()
     assert auth_error.value.blocker == "B-INFOSTOCK-AUTH"
 
-    with pytest.raises(DataRightsBlockedError) as rights_error:
-        InfostockAccessPolicy.require_daily_browser_collection(
-            auth_verified=True, rights_verified=False
-        )
-    assert rights_error.value.blocker == "B-DATA-RIGHTS"
+    InfostockAccessPolicy.require_daily_browser_collection(auth_verified=True)

@@ -3,14 +3,14 @@
 - 상태: `proposed`
 - 결정일: 2026-08-14
 - 적용 범위: 외부 시장·테마·뉴스·기준정보·가격 데이터의 수집, 저장, 가공, 보존과 사용자 표시
-- 현재 외부 게이트: `B-DATA-RIGHTS`, `B-REFDATA-KEYS`, `B-INFOSTOCK-AUTH` 미해제
+- 현재 외부 게이트: `B-REFDATA-KEYS`, `B-INFOSTOCK-AUTH` 미해제. `B-DATA-RIGHTS`는 2026-08-15 사용자 확인으로 해제됨
 - 관련 문서: [PRD.md](../PRD.md), [product_decisions.md](../product_decisions.md), [system_architecture.md](../system_architecture.md), [implementation_roadmap.md](../implementation_roadmap.md), [ADR-004](./004-realtime-state-storage.md)
 
 ## 배경
 
 API 접근 가능, 로컬 수집 성공 또는 교육 목적 승인은 production에서 원본을 저장·가공·재배포할 권리를 자동으로 뜻하지 않는다. 공급원마다 허용된 field, 원문 보존, 파생값 생성, 사용자 표시, attribution과 보존 기간이 다를 수 있다.
 
-현재 저장소에는 인포스탁 production 저장·가공·표시 권리와 뉴스 약관 증거가 없다. KRX·OpenDART key, 인포스탁 운영 browser state와 구체적인 가격 공급원도 준비되지 않았다. 권리를 추정해 production collector를 켜거나 문서의 예정 UI를 권리 승인으로 간주해서는 안 된다.
+인포스탁과 뉴스 공급원의 production 저장·가공·표시 권리는 2026-08-15 사용자 확인으로 확보됐다. KRX·OpenDART key, 인포스탁 운영 browser state와 구체적인 가격 공급원은 아직 준비되지 않았다. 나머지 공급원에 대해 권리를 추정해 production collector를 켜거나 문서의 예정 UI를 권리 승인으로 간주해서는 안 된다.
 
 ## 결정
 
@@ -29,8 +29,8 @@ API 접근 가능, 로컬 수집 성공 또는 교육 목적 승인은 productio
 | 공급원 | 저장소의 현재 증거 | 지금 가능한 범위 | production 해제 조건 |
 |---|---|---|---|
 | 키움 REST·WebSocket | 제품 입력과 공식 한도·session PoC 요구만 기록됨 | synthetic fixture, adapter·schema·실패 test | 공식 이용 조건·호출/구독 한도와 저장·파생·표시 범위 기록, live 기술 PoC |
-| 인포스탁 | 로컬 manifest의 교육 승인 표시는 있으나 production 범위 증거 없음 | fixture·기존 import를 이용한 DB/adapter 계약 구현 | 합법적 접근·갱신 방식, 저장·가공·표시·보존 승인과 운영자 수동 인증 |
-| 뉴스 RSS·NAVER API HUB | 예정 공급원과 표시 원칙은 있으나 약관 증거 없음 | synthetic article metadata와 계약·매칭 fixture | 공급원별 수집·호출·원문 처리·보존·재배포·link 정책 승인 |
+| 인포스탁 | 2026-08-15 사용자 확인으로 저장·가공·표시 권리 확보 | 수집·저장·가공·표시 전 범위. 일일 증분의 운영자 인증만 `B-INFOSTOCK-AUTH`로 남음 | 해제됨 |
+| 뉴스 RSS·NAVER API HUB | 2026-08-15 사용자 확인으로 수집·처리 권리 확보 | 수집·매칭·자체 요약·출처 표시. 원문 재배포는 PD-003 원칙대로 계속 금지 | 해제됨 |
 | KRX Open API·OpenDART | 무료 공식 API만 사용한다는 제품 결정, key와 field/Coverage 검증은 없음 | adapter, 설정 검증, fixture와 결측·충돌 test | 공식 key, 실제 field 의미·기준일·Coverage와 원천별 이용 범위 검증 |
 | 조정 가격·거래일 | 제품 역할은 정의됐지만 실제 공급원·권리 record 없음 | synthetic/승인 fixture, point-in-time·기업행위 schema test | 공급원, 저장·연구·표시 범위와 calendar/price version 고정 |
 
@@ -82,8 +82,8 @@ API 접근 가능, 로컬 수집 성공 또는 교육 목적 승인은 productio
 - [PRD.md](../PRD.md)의 4.7, 10절과 Gate A는 허용된 경로, 뉴스 원문 비재배포, 운영 수집 전 권리 확보를 제품 기준으로 둔다.
 - [product_decisions.md](../product_decisions.md)의 PD-003은 기사 전문을 명시적 허용 때만 처리·저장하고 자체 요약·출처·link만 표시하도록 한다. PD-004는 인포스탁 접근 경로를 정하지만 production 권리 승인을 대신하지 않는다. PD-009는 KRX·OpenDART 무료 공식 API 범위만 허용한다.
 - [system_architecture.md](../system_architecture.md)의 15.4는 공급원별 수집·저장·가공·표시 범위와 보존·삭제 정책을 요구한다.
-- [implementation_roadmap.md](../implementation_roadmap.md)의 `B-DATA-RIGHTS`는 local 교육 승인 외 production 권리와 뉴스 약관 증거가 없다고 기록하며, fixture·계약 구현만 허용하고 production 수집·공개를 금지한다.
-- `B-REFDATA-KEYS`와 `B-INFOSTOCK-AUTH`도 live 검증을 막는다. 이 상태를 권리 승인이나 구현 완료로 표현하지 않는다.
+- `B-DATA-RIGHTS`는 2026-08-15 사용자 확인으로 해제돼 [implementation_roadmap.md](../implementation_roadmap.md) blocker 표와 코드 차단 경로에서 제거됐다. 인포스탁·뉴스의 production 수집·저장·가공·표시가 열렸고, 원문 재배포 금지는 권리가 아니라 PD-003 제품 원칙으로 유지된다.
+- `B-REFDATA-KEYS`와 `B-INFOSTOCK-AUTH`는 여전히 live 검증을 막는다. 이 상태를 구현 완료로 표현하지 않는다.
 
 ## accepted 전환 조건과 검증
 
