@@ -307,7 +307,9 @@ class LiveProductRepository implements ProductRepository {
       const response = await this.request<RankingResponse>('/api/v1/themes/rankings?limit=10');
       this.rankingCache = response;
       this.seedSequence('theme_rank_snapshot', response.data.streamId, response.data.sequence);
-      if (this.latestRankingSnapshot) this.applyRankingSnapshot(this.latestRankingSnapshot);
+      if (this.latestRankingSnapshot && this.acceptSnapshot(this.latestRankingSnapshot)) {
+        this.applyRankingSnapshot(this.latestRankingSnapshot);
+      }
     }
     this.startRealtime();
     return this.rankingCache;
@@ -318,7 +320,9 @@ class LiveProductRepository implements ProductRepository {
       const response = await this.request<TreemapResponse>('/api/v1/insights/treemap?limit=12');
       this.treemapCache = response;
       this.seedSequence('theme_treemap_snapshot', response.data.streamId, response.data.sequence);
-      if (this.latestTreemapSnapshot) this.applyTreemapSnapshot(this.latestTreemapSnapshot);
+      if (this.latestTreemapSnapshot && this.acceptSnapshot(this.latestTreemapSnapshot)) {
+        this.applyTreemapSnapshot(this.latestTreemapSnapshot);
+      }
     }
     this.startRealtime();
     return this.treemapCache;
