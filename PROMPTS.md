@@ -9,7 +9,7 @@
 ## 0. 현재 상태 요약 (2026-08-14 12:00 기준)
 
 - 레포에 제품 코드 0. 문서(PRD·화면·API 계약·아키텍처·ADR·로드맵)는 완비.
-- **이 PC에서 2026-08-14 장중 리플레이 수집이 실행 중** (`scripts/run_market_capture.ps1` 등). 15:30 장 마감 후 장후 절차(백필·최종화·감사)가 남아 있음 → 세션 R이 처리.
+- **이 PC에서 2026-08-14 장중 리플레이 수집이 실행 중** (`scripts/run_market_capture.ps1` 등). 리플레이는 구현이 끝난 뒤 테스트 입력으로 쓴다. 장후 절차(백필·최종화·감사)는 세션 R이 테스트 국면에서 처리.
 - DNS(`dayjaview.duckdns.org`, `api.dayjaview.duckdns.org` → 168.107.25.213)와 OCI SSH 접속 검증 완료. 앱 배포는 미시작.
 - 로컬 툴체인: Node 26.4 / Python 3.12.10 / Docker 29.7 확인됨.
 - 디자인 원본 `nangom/dayjaview-prototype`은 public, 기준 커밋 `6532487`.
@@ -19,27 +19,27 @@
 
 | # | 세션 | 작업 | 도구 | 모델 | 의존 | 비고 |
 |---|---|---|---|---|---|---|
-| 1 | **R** | 시장 리플레이 장후 최종화 | Claude | fable5 max | 없음 (15:30 이후) | **기상 즉시 최우선. B 레인보다 먼저** |
-| 2 | **C1** | 기계 판독 계약(contracts/) 생성 | Codex | sol xhigh | 없음 | R과 동시 시작 가능 |
-| 3 | **B1** | 백엔드 골격 + 스택 ADR | Claude | opus4.8 max | 없음 | R 종료 후 시작 |
-| 4 | **C2** | 프론트엔드 셸 전체 (fixture 기반) | Codex | **sol max** | C1 | 가장 큰 프론트 작업 |
-| 5 | **B2** | 인포스탁 데이터 기반 (DB·import) | Claude | fable5 max | B1 | |
-| 6 | **B3** | 실시간 테마 엔진 + 리플레이 연동 | Claude | fable5 max | B2, R | 핵심 엔진 |
-| 7 | **B4** | REST·WS API + Google OAuth + 관심 | Claude | opus4.8 max | B2 (계약 C1) | |
-| 8 | **C3** | 유사사례 잠금 셸 + 운영자 화면 UI | Codex | sol xhigh | C2 | C2 직후 아무 때나 |
-| 9 | **V1** | 첫 수직 통합 (오늘·상세·관심) | Claude | **fable5 max** | C2, B3, B4 | 두 레인 합류점 |
-| 10 | **C4** | 인사이트 트리맵 | Codex | sol xhigh | V1 | |
-| 11 | **B5** | 장후 확정 + 운영자 파이프라인 | Claude | fable5 max | B3, B4 | |
-| 12 | **B6** | 뉴스 수집·근거 파이프라인 | Claude | opus4.8 max | B2, B4 | 키 없으면 fixture 모드 |
-| 13 | **V2** | 자동 검증 스위트 + CI | Claude | opus4.8 max | V1 | |
+| 1 | **C1** | 기계 판독 계약(contracts/) 생성 | Codex | sol xhigh | 없음 | B1과 동시 시작 |
+| 2 | **B1** | 백엔드 골격 + 스택 ADR | Claude | opus4.8 max | 없음 | C1과 동시 시작 |
+| 3 | **C2** | 프론트엔드 셸 전체 (fixture 기반) | Codex | **sol max** | C1 | 가장 큰 프론트 작업 |
+| 4 | **B2** | 인포스탁 데이터 기반 (DB·import) | Claude | fable5 max | B1 | |
+| 5 | **B3** | 실시간 테마 엔진 + 리플레이 연동 | Claude | fable5 max | B2 | 입력은 로컬 수집 DB 그대로 사용 (R 불필요) |
+| 6 | **B4** | REST·WS API + Google OAuth + 관심 | Claude | opus4.8 max | B2 (계약 C1) | |
+| 7 | **C3** | 유사사례 잠금 셸 + 운영자 화면 UI | Codex | sol xhigh | C2 | C2 직후 아무 때나 |
+| 8 | **V1** | 첫 수직 통합 (오늘·상세·관심) | Claude | **fable5 max** | C2, B3, B4 | 두 레인 합류점 |
+| 9 | **C4** | 인사이트 트리맵 | Codex | sol xhigh | V1 | |
+| 10 | **B5** | 장후 확정 + 운영자 파이프라인 | Claude | fable5 max | B3, B4 | |
+| 11 | **B6** | 뉴스 수집·근거 파이프라인 | Claude | opus4.8 max | B2, B4 | 키 없으면 fixture 모드 |
+| 12 | **R** | 리플레이 데이터셋 최종화·검증 | Claude | fable5 max | 구현 완료 후 (15:30 이후 언제든) | **테스트 국면 진입점** |
+| 13 | **V2** | 자동 검증 스위트 + CI | Claude | opus4.8 max | V1, R | |
 | 14 | **D1** | 배포 준비 (compose·Caddy·vercel.json) | Claude | opus4.8 max | B4 | V1과 병렬 가능 |
 | 15 | **D2** | OCI 스테이징 실배포 + Vercel | Claude | fable5 max | D1, V1 | **사용자 참관 권장** |
 
-레인 운영: 터미널 2개면 충분하다.
+레인 운영: 터미널 2개면 충분하다. 리플레이는 **구현 도구가 아니라 테스트 입력**이다 — 구현 세션들은 리플레이 최종화(R)를 기다리지 않고, 이미 로컬에 쌓인 수집 DB를 읽기 전용으로 사용한다. R은 본격 검증(V2) 전에 데이터셋을 공식 완료 판정하는 세션이다.
 
 ```text
 Codex 레인 : C1 ──▶ C2 ──▶ C3 ──────────────▶ C4
-Claude 레인: R ──▶ B1 ─▶ B2 ─▶ B3 ─▶ B4 ─▶ V1 ─▶ B5 ─▶ B6 ─▶ V2 ─▶ D1 ─▶ D2
+Claude 레인: B1 ─▶ B2 ─▶ B3 ─▶ B4 ─▶ V1 ─▶ B5 ─▶ B6 ─▶ R ─▶ V2 ─▶ D1 ─▶ D2
 ```
 
 담당 구분 원칙: **Codex = 계약·화면(코드젠 성격의 잘 명세된 작업)**, **Claude = 데이터·엔진·통합·검증·운영(장기 맥락·크로스 시스템·이 PC의 실행 중 수집기와 공존해야 하는 작업)**. 모델은 통합·엔진·운영처럼 판단이 무거운 세션만 최상위(fable5 max / sol max), 나머지는 opus4.8 max / sol xhigh.
@@ -58,49 +58,6 @@ Claude 레인: R ──▶ B1 ─▶ B2 ─▶ B3 ─▶ B4 ─▶ V1 ─▶ B5 
 
 - 도달: 계약→프론트 셸→백엔드(데이터·엔진·API)→리플레이 기반 수직 통합→트리맵→장후 확정→뉴스 골격→검증 스위트→스테이징 배포까지. 즉 **로드맵 단계 0~6 + 9의 코드 부분**.
 - 도달 불가(사람·거래일 필요): 실장(다음 거래일 월요일) 라이브 검증, 단계 7 온톨로지 재검증(2인 블라인드 평가), 단계 8 유사사례 해금, 단계 10 shadow 운영·출시. 유사사례 화면은 feature flag 잠금 상태로만 존재.
-
----
-
-## 세션 R — 시장 리플레이 장후 최종화 [Claude, fable5 max]
-
-```text
-# 작업: 2026-08-14 시장 리플레이 fixture 장후 최종화 (이 세션은 이 작업만 수행)
-
-저장소: C:\dayjaview (main 브랜치, 이 PC에서 오늘 장중 수집이 실행됐다)
-
-## 필독 (순서대로)
-1. docs/one_time_market_replay_collection_plan.md — 성공 조건과 장후 절차의 기준
-2. docs/market_replay_2026-08-14_completion_report.md — 현재 상태, §4 장후 실행 절차, §5 증거 기록란
-
-## 전제 확인 (수정 아님, 확인만)
-- 지금이 15:30 KST 이후인지 확인한다.
-- 본 수집 run과 보조 run이 스스로 정상 종료됐는지 확인한다 (collection_runs.status=COMPLETED).
-  아직 RUNNING이면 절대 프로세스를 종료하지 말고 종료될 때까지 대기 후 진행한다.
-
-## 목표
-완료 보고서 §4의 절차를 그대로 실행해 데이터셋을 최종 판정하고, §5 증거 기록란을 실측값으로 채운다.
-1. scripts/check_market_capture.ps1 -TradeDate 2026-08-14
-2. python -m pytest -q (레포 루트, 기존 리플레이 테스트)
-3. ka10084 공백 복구 전수 실행 (run_market_gap_recovery.ps1, 계획 문서의 장후 전수 기준)
-4. 전 종목 1분봉 백필 (repair_market_backfill.py 등 계획 문서가 정한 절차)
-5. finalize_market_replay.py → audit-supplement → audit-recovery → prove-combined → socket-prove
-6. 각 게이트의 PASS/FAIL/알려진 한계를 §1 표와 §5 기록란에 실측값·해시로 기입. 판정을 미화하지 않는다.
-   계획 문서가 인정한 알려진 한계(09:00~10:09 보조 공백 등)는 FAIL 유지로 정직하게 기록한다.
-
-## 금지
-- scripts/의 수집·검증 로직 변경 금지 (버그로 절차가 막힐 때만 최소 수정하고 사유를 커밋 메시지에 명시)
-- data/, logs/, .env* 커밋 금지. credential이 로그·문서에 남지 않게 한다.
-- 이 작업 외 다른 구현 착수 금지. 발견한 문제는 docs/BACKLOG.md에 한 줄 기록만.
-
-## 완료 기준
-- verify/audit/prove 계열 명령의 exit code와 최종 해시가 보고서에 기록됨
-- 완료 보고서 상태가 실측 결과에 따라 갱신됨 (완료 또는 한계 명시된 부분 완료)
-- docs/implementation_roadmap.md에는 손대지 않는다 (이 작업은 로드맵 체크 대상 아님)
-
-## 마무리
-git pull --rebase origin main → 변경된 문서(와 불가피했던 스크립트 최소 수정)만 커밋 → push
-커밋 메시지 예: docs: finalize 2026-08-14 market replay dataset with audit evidence
-```
 
 ---
 
@@ -295,6 +252,7 @@ git pull --rebase origin main → 커밋 → push
 - Market Gateway 입력 어댑터: 운영에서는 키움 WS, 개발·테스트에서는 리플레이 재생을 같은 인터페이스로 소비.
   리플레이 소스: scripts/replay_market.py 의 WebSocket 재생(1배속·20배속·무지연)을 클라이언트로 구독하거나
   sqlite를 직접 읽는 재생기를 backend 쪽에 구현 (scripts는 절대 수정하지 않는다)
+- 리플레이 데이터셋 공식 최종화(세션 R)를 기다리지 않는다 — 로컬 수집 DB를 읽기 전용으로 그대로 사용
 - 종목 실시간 상태 저장 + 종목→테마 역색인 + dirty 테마 증분 계산
 - 테마 지표: spec 문서의 상한형 유동시가총액 가중 수익률 (유동비율 미승인 상태는 spec이 정한 fallback과 qualityFlags로 표기),
   중앙값, 상승 확산, 거래 관심, Coverage (미달을 0으로 계산 금지)
@@ -548,6 +506,52 @@ git pull --rebase origin main → 커밋 → push
 ## 마무리
 git pull --rebase origin main → 커밋 → push
 커밋 메시지 예: feat(news): evidence pipeline with strict no-evidence-no-cause gate
+```
+
+---
+
+## 세션 R — 리플레이 데이터셋 최종화·검증 [Claude, fable5 max] (테스트 국면 진입점)
+
+실행 시점: 구현 세션들이 끝난 뒤, 본격 검증(V2) 전. 15:30 장 마감 이후면 언제든 가능.
+
+```text
+# 작업: 2026-08-14 시장 리플레이 fixture 장후 최종화 (이 세션은 이 작업만 수행)
+# 위치: 구현은 끝났고, 이제 수집해둔 데이터로 테스트하는 국면이다. 이 세션은 그 테스트 입력(리플레이 데이터셋)을
+#       공식 완료 판정하는 작업이다.
+
+저장소: C:\dayjaview (main 브랜치, 이 PC에서 2026-08-14 장중 수집이 실행됐다)
+
+## 필독 (순서대로)
+1. docs/one_time_market_replay_collection_plan.md — 성공 조건과 장후 절차의 기준
+2. docs/market_replay_2026-08-14_completion_report.md — 현재 상태, §4 장후 실행 절차, §5 증거 기록란
+
+## 전제 확인 (수정 아님, 확인만)
+- 본 수집 run과 보조 run이 스스로 정상 종료됐는지 확인한다 (collection_runs.status=COMPLETED).
+  아직 RUNNING이면 절대 프로세스를 종료하지 말고 종료될 때까지 대기 후 진행한다.
+
+## 목표
+완료 보고서 §4의 절차를 그대로 실행해 데이터셋을 최종 판정하고, §5 증거 기록란을 실측값으로 채운다.
+1. scripts/check_market_capture.ps1 -TradeDate 2026-08-14
+2. python -m pytest -q (레포 루트, 기존 리플레이 테스트)
+3. ka10084 공백 복구 전수 실행 (run_market_gap_recovery.ps1, 계획 문서의 장후 전수 기준)
+4. 전 종목 1분봉 백필 (repair_market_backfill.py 등 계획 문서가 정한 절차)
+5. finalize_market_replay.py → audit-supplement → audit-recovery → prove-combined → socket-prove
+6. 각 게이트의 PASS/FAIL/알려진 한계를 §1 표와 §5 기록란에 실측값·해시로 기입. 판정을 미화하지 않는다.
+   계획 문서가 인정한 알려진 한계(09:00~10:09 보조 공백 등)는 FAIL 유지로 정직하게 기록한다.
+
+## 금지
+- scripts/의 수집·검증 로직 변경 금지 (버그로 절차가 막힐 때만 최소 수정하고 사유를 커밋 메시지에 명시)
+- data/, logs/, .env* 커밋 금지. credential이 로그·문서에 남지 않게 한다.
+- 이 작업 외 다른 구현 착수 금지. 발견한 문제는 docs/BACKLOG.md에 한 줄 기록만.
+
+## 완료 기준
+- verify/audit/prove 계열 명령의 exit code와 최종 해시가 보고서에 기록됨
+- 완료 보고서 상태가 실측 결과에 따라 갱신됨 (완료 또는 한계 명시된 부분 완료)
+- docs/implementation_roadmap.md에는 손대지 않는다 (이 작업은 로드맵 체크 대상 아님)
+
+## 마무리
+git pull --rebase origin main → 변경된 문서(와 불가피했던 스크립트 최소 수정)만 커밋 → push
+커밋 메시지 예: docs: finalize 2026-08-14 market replay dataset with audit evidence
 ```
 
 ---
