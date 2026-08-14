@@ -130,12 +130,16 @@ function rankingSnapshot({
   };
 }
 
-function treemapSnapshot(sequence: number, snapshotId: string): RealtimeTreemapSnapshot {
+function treemapSnapshot(
+  sequence: number,
+  snapshotId: string,
+  streamId = treemapLive.data.streamId,
+): RealtimeTreemapSnapshot {
   return {
     type: 'theme_treemap_snapshot',
     schemaVersion: meta.schemaVersion,
     subscriptionId: 'sub_test',
-    streamId: treemapLive.data.streamId,
+    streamId,
     topic: 'theme_treemap_snapshot',
     sequence,
     generatedAt: meta.generatedAt,
@@ -360,6 +364,92 @@ describe('live saved adapter 동기화·IDOR 경계', () => {
 });
 
 describe('live WebSocket full snapshot·sequence·reconnect', () => {
+  it.each([
+    {
+      caseName: 'same stream older buffered snapshot',
+      bufferedSequence: treemapLive.data.sequence - 1,
+      bufferedStreamId: treemapLive.data.streamId,
+      usesBufferedSnapshot: false,
+    },
+    {
+      caseName: 'same stream equal buffered snapshot',
+      bufferedSequence: treemapLive.data.sequence,
+      bufferedStreamId: treemapLive.data.streamId,
+      usesBufferedSnapshot: false,
+    },
+    {
+      caseName: 'same stream newer buffered snapshot',
+      bufferedSequence: treemapLive.data.sequence + 1,
+      bufferedStreamId: treemapLive.data.streamId,
+      usesBufferedSnapshot: true,
+    },
+    {
+      caseName: 'new stream first buffered full snapshot',
+      bufferedSequence: 1,
+      bufferedStreamId: 'stream_market_20260815',
+      usesBufferedSnapshot: true,
+    },
+  ])(
+    'reconciles $caseName against the first treemap REST response',
+    async ({ bufferedSequence, bufferedStreamId, usesBufferedSnapshot }) => {
+      const sockets: FakeSocket[] = [];
+      let resolveTreemapResponse!: (response: Response) => void;
+      const treemapResponse = new Promise<Response>((resolve) => {
+        resolveTreemapResponse = resolve;
+      });
+      const repository = createProductionRepository({
+        readCsrfToken: () => 'csrf_test',
+        webSocketFactory: () => {
+          const socket = new FakeSocket();
+          sockets.push(socket);
+          return socket;
+        },
+        fetcher: async (input) => {
+          const path = String(input);
+          if (path === '/api/auth/session') return jsonResponse(authenticatedSession);
+          if (path.startsWith('/api/v1/themes/rankings')) return jsonResponse(rankingLive);
+          if (path.startsWith('/api/v1/insights/treemap')) return treemapResponse;
+          if (path === '/api/v1/auth/realtime-ticket') {
+            return jsonResponse(realtimeTicket());
+          }
+          throw new Error(`Unexpected request: ${path}`);
+        },
+      });
+
+      await repository.getSession();
+      await repository.getRankings();
+      await vi.waitFor(() => expect(sockets).toHaveLength(1));
+      sockets[0].serverOpen();
+
+      const pendingTreemap = repository.getTreemap();
+
+      const bufferedSnapshotId = `buffered_${bufferedStreamId}_${bufferedSequence}`;
+      const bufferedDisplayName = `WS ${bufferedSnapshotId}`;
+      const bufferedSnapshot = treemapSnapshot(
+        bufferedSequence,
+        bufferedSnapshotId,
+        bufferedStreamId,
+      );
+      bufferedSnapshot.payload.items[0].displayName = bufferedDisplayName;
+      sockets[0].serverMessage(bufferedSnapshot);
+      resolveTreemapResponse(jsonResponse(treemapLive));
+
+      const result = await pendingTreemap;
+      expect(result.data.snapshotId).toBe(
+        usesBufferedSnapshot ? bufferedSnapshotId : treemapLive.data.snapshotId,
+      );
+      expect(result.data.streamId).toBe(
+        usesBufferedSnapshot ? bufferedStreamId : treemapLive.data.streamId,
+      );
+      expect(result.data.sequence).toBe(
+        usesBufferedSnapshot ? bufferedSequence : treemapLive.data.sequence,
+      );
+      expect(result.data.items[0].displayName).toBe(
+        usesBufferedSnapshot ? bufferedDisplayName : treemapLive.data.items[0].displayName,
+      );
+    },
+  );
+
   it('topic별 sequence를 추적해 중복·역순을 무시하고 gap과 재연결 첫 full snapshot으로 교체한다', async () => {
     const sockets: FakeSocket[] = [];
     const reconnectCallbacks: Array<() => void> = [];
