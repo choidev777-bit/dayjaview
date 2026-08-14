@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
-if TYPE_CHECKING:
-    from identity import IdentityService, RuntimeOperatorStatus
-else:
-    from packages.identity import IdentityService, RuntimeOperatorStatus
+from packages.identity import IdentityService, RuntimeOperatorStatus
 
 from .app_types import JsonObject
 

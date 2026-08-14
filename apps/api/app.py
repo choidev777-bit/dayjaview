@@ -3,40 +3,26 @@ from __future__ import annotations
 import re
 import secrets
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from datetime import UTC, date, datetime
+from decimal import Decimal
+from typing import Any
 from urllib.parse import unquote
 
-if TYPE_CHECKING:
-    from identity import (
-        FixtureGoogleOAuthProvider,
-        IdentityError,
-        IdentityService,
-        InMemoryIdentityRepository,
-        InMemoryTargetCatalog,
-        InvalidRequest,
-        Role,
-        RuntimeOperatorStatus,
-        SavedType,
-        SystemClock,
-        TargetRecord,
-    )
-    from identity.security import Clock
-else:
-    from packages.identity import (
-        FixtureGoogleOAuthProvider,
-        IdentityError,
-        IdentityService,
-        InMemoryIdentityRepository,
-        InMemoryTargetCatalog,
-        InvalidRequest,
-        Role,
-        RuntimeOperatorStatus,
-        SavedType,
-        SystemClock,
-        TargetRecord,
-    )
-    from packages.identity.security import Clock
+from packages.identity import (
+    FeatureNotEntitled,
+    FixtureGoogleOAuthProvider,
+    IdentityError,
+    IdentityService,
+    InMemoryIdentityRepository,
+    InMemoryTargetCatalog,
+    InvalidRequest,
+    Role,
+    RuntimeOperatorStatus,
+    SavedType,
+    SystemClock,
+    TargetRecord,
+)
+from packages.identity.security import Clock
 
 from .app_types import JsonObject, JsonValue
 from .config import ApiSettings
@@ -51,14 +37,33 @@ from .cookies import (
     oauth_state_cookie,
     session_cookie,
 )
+from .errors import (
+    ApiError,
+    InvalidApiRequest,
+    ProductDataUnavailable,
+    ProductResourceNotFound,
+    ResourceIdMismatch,
+    UnsupportedMarketDate,
+)
 from .http import ApiRequest, ApiResponse, Receive, Send
 from .operator_boundary import (
     OperatorBoundary,
     OperatorStatusSource,
     StaticOperatorStatusSource,
 )
+from .product import (
+    EmptyProductReadRepository,
+    InMemoryProductReadRepository,
+    ProductDocument,
+    ProductReadRepository,
+)
+from .realtime import RealtimeSnapshotHub, RealtimeWebSocketServer
 
 _SAVED_PATH = re.compile(r"^/v1/me/saved/(themes|stocks|events)/([^/]+)$")
+_THEME_EVENT_PATH = re.compile(r"^/v1/themes/([^/]+)/events/([^/]+)$")
+_EVENT_EVIDENCE_PATH = re.compile(r"^/v1/events/([^/]+)/evidence$")
+_SIMILAR_EVENTS_PATH = re.compile(r"^/v1/events/([^/]+)/similar-events$")
+_HISTORICAL_EVENT_PATH = re.compile(r"^/v1/events/([^/]+)$")
 _ROLE_ORDER = {Role.USER: 0, Role.HISTORICAL_PILOT: 1, Role.OPERATOR: 2}
 
 
@@ -69,12 +74,22 @@ class IdentityApiApp:
         identity_service: IdentityService,
         operator_boundary: OperatorBoundary,
         settings: ApiSettings,
+        product_repository: ProductReadRepository | None = None,
+        realtime_hub: RealtimeSnapshotHub | None = None,
         clock: Clock | None = None,
     ) -> None:
         self.identity_service = identity_service
         self._operator_boundary = operator_boundary
         self._settings = settings
         self._clock = clock or SystemClock()
+        self._product_repository = product_repository or EmptyProductReadRepository()
+        self.realtime_hub = realtime_hub or RealtimeSnapshotHub()
+        self._realtime_server = RealtimeWebSocketServer(
+            identity_service=identity_service,
+            hub=self.realtime_hub,
+            settings=settings,
+            clock=self._clock,
+        )
         if settings.app_base_url.rstrip("/") != identity_service.policy.allowed_origin:
             raise ValueError("API and identity origins must match")
 
@@ -84,14 +99,17 @@ class IdentityApiApp:
         receive: Receive,
         send: Send,
     ) -> None:
+        if scope.get("type") == "websocket":
+            await self._realtime_server(scope, receive, send)
+            return
         if scope.get("type") != "http":
-            raise RuntimeError("IdentityApiApp supports HTTP ASGI scopes only")
+            raise RuntimeError("IdentityApiApp supports HTTP and WebSocket ASGI scopes")
         request_id = self._new_request_id()
         try:
             request = await ApiRequest.from_asgi(scope, receive)
             request_id = self._request_id(request)
             response = self._handle(request, request_id)
-        except IdentityError as error:
+        except (IdentityError, ApiError) as error:
             response = self._error_response(error, request_id)
         except Exception:  # noqa: BLE001 - never expose provider or storage exception text
             response = self._internal_error_response(request_id)
@@ -108,6 +126,33 @@ class IdentityApiApp:
             return self._logout(request, request_id)
         if request.path == "/v1/auth/realtime-ticket" and request.method == "POST":
             return self._realtime_ticket(request, request_id)
+        if request.path == "/v1/market/session" and request.method == "GET":
+            return self._market_session(request, request_id)
+        if request.path == "/v1/themes/rankings" and request.method == "GET":
+            return self._theme_rankings(request, request_id)
+        if request.path == "/v1/insights/treemap" and request.method == "GET":
+            return self._theme_treemap(request, request_id)
+        match = _THEME_EVENT_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._theme_event(
+                request,
+                request_id,
+                unquote(match.group(1)),
+                unquote(match.group(2)),
+            )
+        match = _EVENT_EVIDENCE_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._event_evidence(request, request_id, unquote(match.group(1)))
+        match = _SIMILAR_EVENTS_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._similar_events(request, request_id, unquote(match.group(1)))
+        match = _HISTORICAL_EVENT_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._historical_event(
+                request,
+                request_id,
+                unquote(match.group(1)),
+            )
         if request.path == "/v1/me/saved" and request.method == "GET":
             return self._list_saved(request, request_id)
         match = _SAVED_PATH.fullmatch(request.path)
@@ -222,6 +267,246 @@ class IdentityApiApp:
             {"ticket": ticket.ticket, "expiresAt": ticket.expires_at},
             request_id,
         )
+
+    def _market_session(self, request: ApiRequest, request_id: str) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys(set())
+        request.require_empty_body()
+        document = self._product_repository.market_session()
+        if document is None:
+            raise ProductDataUnavailable
+        return self._document_response(document, request_id)
+
+    def _theme_rankings(self, request: ApiRequest, request_id: str) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys({"limit", "marketDate"})
+        request.require_empty_body()
+        limit = self._query_limit(request, default=10, maximum=50)
+        market_date = request.query_value("marketDate")
+        if market_date is not None:
+            self._validate_market_date(market_date)
+        document = self._product_repository.rankings(market_date)
+        if document is None:
+            if market_date is not None:
+                raise UnsupportedMarketDate
+            raise ProductDataUnavailable
+        return self._document_response(
+            self._limit_items(document, limit=limit),
+            request_id,
+        )
+
+    def _theme_treemap(self, request: ApiRequest, request_id: str) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys({"limit"})
+        request.require_empty_body()
+        limit = self._query_limit(request, default=12, maximum=12)
+        document = self._product_repository.treemap()
+        if document is None:
+            raise ProductDataUnavailable
+        return self._document_response(
+            self._limit_items(document, limit=limit),
+            request_id,
+        )
+
+    def _theme_event(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        theme_id: str,
+        event_id: str,
+    ) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys(set())
+        request.require_empty_body()
+        self._validate_identifier(theme_id)
+        self._validate_identifier(event_id)
+        document = self._product_repository.theme_event(theme_id, event_id)
+        if document is None:
+            if self._product_repository.theme_for_event(event_id) is not None:
+                raise ResourceIdMismatch("themeId")
+            raise ProductResourceNotFound
+        return self._document_response(document, request_id)
+
+    def _event_evidence(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        event_id: str,
+    ) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys({"cursor", "limit"})
+        request.require_empty_body()
+        self._validate_identifier(event_id)
+        cursor = self._query_cursor(request)
+        limit = self._query_limit(request, default=20, maximum=100)
+        document = self._product_repository.evidence(event_id, cursor)
+        if document is None:
+            if cursor is not None:
+                raise InvalidApiRequest("다음 페이지 정보를 확인해 주세요.")
+            raise ProductResourceNotFound
+        return self._document_response(
+            self._limit_page(document, limit=limit),
+            request_id,
+        )
+
+    def _similar_events(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        event_id: str,
+    ) -> ApiResponse:
+        principal = self.identity_service.require_authenticated(
+            request.cookies.get(SESSION_COOKIE)
+        )
+        request.require_query_keys(
+            {"horizonTradingDays", "sort", "cursor", "limit"}
+        )
+        request.require_empty_body()
+        self._validate_identifier(event_id)
+        horizon = request.query_value("horizonTradingDays")
+        if horizon is not None and horizon not in {"1", "5", "20"}:
+            raise InvalidApiRequest("조회 기간을 확인해 주세요.")
+        sort = request.query_value("sort") or "relevance"
+        if sort not in {"relevance", "eventDate"}:
+            raise InvalidApiRequest("정렬 기준을 확인해 주세요.")
+        cursor = self._query_cursor(request)
+        limit = self._query_limit(request, default=20, maximum=100)
+        document = self._product_repository.similar_events(event_id, cursor)
+        if document is None:
+            if cursor is not None:
+                raise InvalidApiRequest("다음 페이지 정보를 확인해 주세요.")
+            raise ProductResourceNotFound
+        availability = document.data.get("availability")
+        if availability == "AVAILABLE" and Role.HISTORICAL_PILOT not in principal.roles:
+            raise FeatureNotEntitled(
+                "과거 유사사례 기능을 사용할 권한이 없습니다.",
+                reason_code="HISTORICAL_PILOT_REQUIRED",
+            )
+        return self._document_response(
+            self._limit_page(document, limit=limit),
+            request_id,
+        )
+
+    def _historical_event(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        event_id: str,
+    ) -> ApiResponse:
+        principal = self.identity_service.require_authenticated(
+            request.cookies.get(SESSION_COOKIE)
+        )
+        request.require_query_keys({"contextEventId"})
+        request.require_empty_body()
+        self._validate_identifier(event_id)
+        context_event_id = request.query_value("contextEventId")
+        if context_event_id is not None:
+            self._validate_identifier(context_event_id)
+        if Role.HISTORICAL_PILOT not in principal.roles:
+            raise FeatureNotEntitled(
+                "과거 이벤트 기능을 사용할 권한이 없습니다.",
+                reason_code="HISTORICAL_PILOT_REQUIRED",
+            )
+        document = self._product_repository.historical_event(event_id)
+        if document is None:
+            raise ProductResourceNotFound
+        return self._document_response(document, request_id)
+
+    def _document_response(
+        self,
+        document: ProductDocument,
+        request_id: str,
+    ) -> ApiResponse:
+        return self._success(
+            200,
+            document.copy_data(),
+            request_id,
+            market_context=document.copy_market_context(),
+            versions=document.copy_versions(),
+        )
+
+    @staticmethod
+    def _limit_items(document: ProductDocument, *, limit: int) -> ProductDocument:
+        data = document.copy_data()
+        items = data.get("items")
+        if not isinstance(items, list):
+            raise TypeError("product snapshot items must be a list")
+        data["items"] = items[:limit]
+        return ProductDocument(
+            data,
+            document.copy_market_context(),
+            document.copy_versions(),
+        )
+
+    @staticmethod
+    def _limit_page(document: ProductDocument, *, limit: int) -> ProductDocument:
+        data = document.copy_data()
+        items = data.get("items")
+        page = data.get("page")
+        if not isinstance(items, list) or not isinstance(page, dict):
+            raise TypeError("paginated product document is invalid")
+        if len(items) > limit and page.get("nextCursor") is None:
+            raise ValueError("paginated fixture needs a next cursor before slicing")
+        data["items"] = items[:limit]
+        page["limit"] = limit
+        return ProductDocument(
+            data,
+            document.copy_market_context(),
+            document.copy_versions(),
+        )
+
+    @staticmethod
+    def _query_limit(
+        request: ApiRequest,
+        *,
+        default: int,
+        maximum: int,
+    ) -> int:
+        raw = request.query_value("limit")
+        if raw is None:
+            return default
+        if re.fullmatch(r"[1-9][0-9]*", raw) is None:
+            raise InvalidApiRequest("조회 개수를 확인해 주세요.")
+        limit = int(raw)
+        if limit > maximum:
+            raise InvalidApiRequest("조회 개수를 확인해 주세요.")
+        return limit
+
+    @staticmethod
+    def _query_cursor(request: ApiRequest) -> str | None:
+        cursor = request.query_value("cursor")
+        if cursor is None:
+            return None
+        if (
+            not 1 <= len(cursor) <= 4096
+            or cursor != cursor.strip()
+            or any(ord(character) < 0x20 or ord(character) == 0x7F for character in cursor)
+        ):
+            raise InvalidApiRequest("다음 페이지 정보를 확인해 주세요.")
+        return cursor
+
+    @staticmethod
+    def _validate_market_date(value: str) -> None:
+        try:
+            parsed = date.fromisoformat(value)
+        except ValueError as error:
+            raise InvalidApiRequest("거래일 형식을 확인해 주세요.") from error
+        if parsed.isoformat() != value:
+            raise InvalidApiRequest("거래일 형식을 확인해 주세요.")
+
+    @staticmethod
+    def _validate_identifier(value: str) -> None:
+        if (
+            not 1 <= len(value) <= 128
+            or value != value.strip()
+            or any(
+                ord(character) < 0x20
+                or ord(character) == 0x7F
+                or character in {"/", "\\"}
+                for character in value
+            )
+        ):
+            raise InvalidApiRequest("식별자 형식을 확인해 주세요.")
 
     def _list_saved(self, request: ApiRequest, request_id: str) -> ApiResponse:
         request.require_query_keys({"type", "cursor", "limit"})
@@ -340,12 +625,12 @@ class IdentityApiApp:
 
     def _operator_route(self, request: ApiRequest, request_id: str) -> ApiResponse:
         session_token = request.cookies.get(SESSION_COOKIE)
+        self.identity_service.require_operator(session_token)
         if request.path == "/v1/operator/status" and request.method == "GET":
             request.require_query_keys(set())
             request.require_empty_body()
             status = self._operator_boundary.status(session_token)
             return self._success(200, status, request_id)
-        self.identity_service.require_operator(session_token)
         return self._not_found(request_id)
 
     def _success(
@@ -353,11 +638,23 @@ class IdentityApiApp:
         status_code: int,
         data: JsonObject,
         request_id: str,
+        *,
+        market_context: JsonObject | None = None,
+        versions: JsonObject | None = None,
     ) -> ApiResponse:
-        payload: JsonObject = {"data": data, "meta": self._meta(request_id)}
+        meta = self._meta(request_id)
+        if market_context is not None:
+            meta["marketContext"] = market_context
+        if versions is not None:
+            meta["versions"] = versions
+        payload: JsonObject = {"data": data, "meta": meta}
         return ApiResponse.json(status_code, _json_ready(payload))
 
-    def _error_response(self, error: IdentityError, request_id: str) -> ApiResponse:
+    def _error_response(
+        self,
+        error: IdentityError | ApiError,
+        request_id: str,
+    ) -> ApiResponse:
         details: JsonObject = {key: value for key, value in error.details.items()}
         payload: JsonObject = {
             "error": {
@@ -422,6 +719,8 @@ class FixtureIdentityEnvironment:
     repository: InMemoryIdentityRepository
     oauth_provider: FixtureGoogleOAuthProvider
     target_catalog: InMemoryTargetCatalog
+    product_repository: ProductReadRepository
+    realtime_hub: RealtimeSnapshotHub
 
 
 def create_app(
@@ -429,6 +728,8 @@ def create_app(
     identity_service: IdentityService,
     operator_status_source: OperatorStatusSource,
     settings: ApiSettings,
+    product_repository: ProductReadRepository | None = None,
+    realtime_hub: RealtimeSnapshotHub | None = None,
     clock: Clock | None = None,
 ) -> IdentityApiApp:
     return IdentityApiApp(
@@ -438,6 +739,8 @@ def create_app(
             status_source=operator_status_source,
         ),
         settings=settings,
+        product_repository=product_repository,
+        realtime_hub=realtime_hub,
         clock=clock,
     )
 
@@ -448,6 +751,8 @@ def create_fixture_app(
     clock: Clock | None = None,
     targets: tuple[TargetRecord, ...] = (),
     operator_status: RuntimeOperatorStatus | None = None,
+    product_repository: ProductReadRepository | None = None,
+    realtime_hub: RealtimeSnapshotHub | None = None,
 ) -> FixtureIdentityEnvironment:
     effective_settings = settings or ApiSettings()
     effective_clock = clock or SystemClock()
@@ -469,13 +774,27 @@ def create_fixture_app(
         started_at=effective_clock.now(),
         services=(),
     )
+    effective_product_repository = (
+        product_repository or InMemoryProductReadRepository()
+    )
+    effective_realtime_hub = realtime_hub or RealtimeSnapshotHub()
     app = create_app(
         identity_service=service,
         operator_status_source=StaticOperatorStatusSource(runtime_status),
         settings=effective_settings,
+        product_repository=effective_product_repository,
+        realtime_hub=effective_realtime_hub,
         clock=effective_clock,
     )
-    return FixtureIdentityEnvironment(app, service, repository, oauth_provider, target_catalog)
+    return FixtureIdentityEnvironment(
+        app,
+        service,
+        repository,
+        oauth_provider,
+        target_catalog,
+        effective_product_repository,
+        effective_realtime_hub,
+    )
 
 
 def _json_ready(value: JsonValue) -> Any:
@@ -484,6 +803,15 @@ def _json_ready(value: JsonValue) -> Any:
             raise ValueError("response timestamps must be timezone-aware")
         normalized = value.astimezone(UTC)
         return normalized.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    if isinstance(value, Decimal):
+        if not value.is_finite():
+            raise ValueError("response decimals must be finite")
+        if value == value.to_integral_value():
+            return int(value)
+        converted = float(value)
+        if converted in {float("inf"), float("-inf")}:
+            raise ValueError("response decimal is outside the JSON number range")
+        return converted
     if isinstance(value, list):
         return [_json_ready(item) for item in value]
     if isinstance(value, dict):

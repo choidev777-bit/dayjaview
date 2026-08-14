@@ -3,13 +3,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from identity import IdentityPolicy
-    from identity.security import parse_operator_bootstrap_emails
-else:
-    from packages.identity import IdentityPolicy, parse_operator_bootstrap_emails
+from packages.identity import IdentityPolicy, parse_operator_bootstrap_emails
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,8 +14,16 @@ class ApiSettings:
     session_ttl: timedelta = timedelta(hours=8)
     oauth_state_ttl: timedelta = timedelta(minutes=10)
     realtime_ticket_ttl: timedelta = timedelta(seconds=30)
+    realtime_auth_deadline: timedelta = timedelta(seconds=5)
+    realtime_maximum_message_bytes: int = 65_536
     recent_authentication_window: timedelta = timedelta(minutes=10)
     operator_bootstrap_emails: frozenset[str] = frozenset()
+
+    def __post_init__(self) -> None:
+        if self.realtime_auth_deadline <= timedelta(0):
+            raise ValueError("realtime_auth_deadline must be positive")
+        if not 1 <= self.realtime_maximum_message_bytes <= 1_048_576:
+            raise ValueError("realtime_maximum_message_bytes is outside the safe range")
 
     @classmethod
     def from_environment(cls, environment: Mapping[str, str]) -> ApiSettings:
