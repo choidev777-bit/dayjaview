@@ -1,0 +1,192 @@
+{
+  "fixtureVersion": "kiwoom-market-gateway.fixture.v1",
+  "adapter": {
+    "readOnly": true,
+    "liveValidation": "PENDING_EXTERNAL"
+  },
+  "sessions": [
+    {
+      "sessionId": "fixture-session-old",
+      "connectedAt": "2026-08-14T00:00:00+00:00",
+      "disconnectAfterMessages": true,
+      "messages": [
+        {
+          "sourceSchemaVersion": "kiwoom.websocket.v1",
+          "channel": "KIWOOM_WEBSOCKET",
+          "sessionId": "fixture-session-old",
+          "sourceMessageId": "ws-condition-initial-001",
+          "sourceSequence": 1,
+          "sourceTimestamp": "2026-08-14T00:00:01+00:00",
+          "receivedAt": "2026-08-14T00:00:01.100000+00:00",
+          "marketDate": "2026-08-14",
+          "payload": {
+            "trnm": "CNSRREQ",
+            "seq": "7",
+            "data": [
+              {"stk_cd": "005930", "name": "fixture-a"},
+              {"stk_cd": "000660", "name": "fixture-b"}
+            ]
+          }
+        },
+        {
+          "sourceSchemaVersion": "kiwoom.websocket.v1",
+          "channel": "KIWOOM_WEBSOCKET",
+          "sessionId": "fixture-session-old",
+          "sourceMessageId": "ws-real-002",
+          "sourceSequence": 2,
+          "sourceTimestamp": "2026-08-14T00:00:02.100000+00:00",
+          "receivedAt": "2026-08-14T00:00:02.150000+00:00",
+          "marketDate": "2026-08-14",
+          "payload": {
+            "trnm": "REAL",
+            "data": [
+              {
+                "type": "0B",
+                "item": "A005930",
+                "values": {
+                  "20": "090002",
+                  "10": "+73100",
+                  "12": "1.25",
+                  "15": "+12",
+                  "13": "1200",
+                  "14": "87500000",
+                  "16": "+72400",
+                  "17": "+73300",
+                  "18": "+72000",
+                  "228": "102.50",
+                  "311": "4360000"
+                }
+              },
+              {
+                "type": "02",
+                "item": "035420",
+                "values": {"20": "090002", "841": "9", "843": "I"}
+              }
+            ]
+          }
+        },
+        {
+          "sourceSchemaVersion": "kiwoom.websocket.v1",
+          "channel": "KIWOOM_WEBSOCKET",
+          "sessionId": "fixture-session-old",
+          "sourceMessageId": "ws-real-003",
+          "sourceSequence": 3,
+          "sourceTimestamp": "2026-08-14T00:00:03+00:00",
+          "receivedAt": "2026-08-14T00:00:03.050000+00:00",
+          "marketDate": "2026-08-14",
+          "payload": {
+            "trnm": "REAL",
+            "data": [
+              {
+                "type": "0B",
+                "item": "000660",
+                "values": {
+                  "20": "090003",
+                  "10": "+193500",
+                  "12": "2.10",
+                  "15": "8",
+                  "13": "500",
+                  "14": "96500000",
+                  "16": "+190000",
+                  "17": "+194000",
+                  "18": "+189000",
+                  "228": "110.20",
+                  "311": "1400000"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "sessionId": "fixture-session-new",
+      "connectedAt": "2026-08-14T00:00:05+00:00",
+      "disconnectAfterMessages": false,
+      "messages": []
+    }
+  ],
+  "snapshotCalls": [
+    {
+      "sessionId": "fixture-session-new",
+      "responses": [
+        {
+          "sourceSchemaVersion": "kiwoom.ka10095.v1",
+          "channel": "KIWOOM_REST_SNAPSHOT",
+          "sessionId": "fixture-session-new",
+          "sourceMessageId": "rest-ka10095-001",
+          "sourceSequence": 1,
+          "sourceTimestamp": "2026-08-14T00:00:06+00:00",
+          "receivedAt": "2026-08-14T00:00:06.100000+00:00",
+          "marketDate": "2026-08-14",
+          "requestId": "snapshot-request-001",
+          "payload": {
+            "apiId": "ka10095",
+            "rows": [
+              {
+                "stk_cd": "005930",
+                "cur_prc": "+73200",
+                "flu_rt": "1.39",
+                "trde_qty": "10",
+                "acc_trde_qty": "1210",
+                "acc_trde_prica": "88200000",
+                "open_pric": "+72400",
+                "high_pric": "+73400",
+                "low_pric": "+72000",
+                "cntr_str": "103.10",
+                "mac": "4365000"
+              },
+              {
+                "stk_cd": "000660",
+                "cur_prc": "+194000",
+                "flu_rt": "2.37",
+                "trde_qty": "7",
+                "acc_trde_qty": "507",
+                "acc_trde_prica": "97800000",
+                "open_pric": "+190000",
+                "high_pric": "+194500",
+                "low_pric": "+189000",
+                "cntr_str": "111.00",
+                "mac": "1405000"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "sessionId": "fixture-session-new",
+      "responses": [
+        {
+          "sourceSchemaVersion": "kiwoom.ka10095.v1",
+          "channel": "KIWOOM_REST_SNAPSHOT",
+          "sessionId": "fixture-session-new",
+          "sourceMessageId": "rest-ka10095-gap-002",
+          "sourceSequence": 2,
+          "sourceTimestamp": "2026-08-14T00:00:07+00:00",
+          "receivedAt": "2026-08-14T00:00:07.100000+00:00",
+          "marketDate": "2026-08-14",
+          "requestId": "snapshot-gap-request-002",
+          "payload": {
+            "apiId": "ka10095",
+            "rows": [
+              {
+                "stk_cd": "035420",
+                "cur_prc": "+207000",
+                "flu_rt": "1.72",
+                "trde_qty": "5",
+                "acc_trde_qty": "305",
+                "acc_trde_prica": "63100000",
+                "open_pric": "+204000",
+                "high_pric": "+208000",
+                "low_pric": "+203500",
+                "cntr_str": "105.40",
+                "mac": "512000"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
