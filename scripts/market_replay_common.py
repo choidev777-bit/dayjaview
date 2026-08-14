@@ -9,10 +9,10 @@ import os
 import sqlite3
 import uuid
 from dataclasses import dataclass
-from datetime import date, datetime, time as datetime_time, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from datetime import time as datetime_time
 from pathlib import Path
 from typing import Any, Iterable, Iterator
-
 
 SCHEMA_VERSION = "1.0.0"
 COLLECTOR_VERSION = "2026.08.14.1"

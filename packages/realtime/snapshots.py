@@ -7,14 +7,10 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from importlib import import_module
 from threading import RLock
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
-if TYPE_CHECKING:
-    from domain import DataStatus
-else:
-    DataStatus = import_module("packages." + "domain").DataStatus
+from packages.domain import DataStatus
 
 
 def _require_text(value: str, field_name: str) -> None:

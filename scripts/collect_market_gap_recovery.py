@@ -18,7 +18,8 @@ import os
 import sqlite3
 import sys
 from collections import defaultdict
-from datetime import date, datetime, time as clock_time, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from datetime import time as clock_time
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +33,6 @@ from market_replay_common import (
     normalize_stock_code,
     parse_trade_date,
 )
-
 
 LOG = logging.getLogger("dayjaview.market_gap_recovery")
 PURPOSE = "ka10084 one-minute recovery for the pre-sidecar snapshot gap"

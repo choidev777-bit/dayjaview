@@ -4,19 +4,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, localcontext
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain.coverage import CoverageStatus
-    from domain.models import UnavailableReason
-else:
-    CoverageStatus = import_module(
-        "packages." + "domain.coverage"
-    ).CoverageStatus
-    UnavailableReason = import_module(
-        "packages." + "domain.models"
-    ).UnavailableReason
+from packages.domain.coverage import CoverageStatus
+from packages.domain.models import UnavailableReason
 
 from .policies import ATTENTION_POLICY_V1, AttentionPolicy
 from .theme_metrics import ThemeMetrics

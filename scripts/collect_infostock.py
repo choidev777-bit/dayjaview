@@ -26,7 +26,6 @@ from typing import Any, Iterable
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-
 SCHEMA_VERSION = "1.0.0"
 SOURCE = "infostock"
 DEFAULT_BASE_URL = "https://api.infostock.co.kr:9081/web"

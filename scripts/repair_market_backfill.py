@@ -28,7 +28,6 @@ from market_replay_common import (
     parse_trade_date,
 )
 
-
 LOG = logging.getLogger("dayjaview.market_backfill_repair")
 
 

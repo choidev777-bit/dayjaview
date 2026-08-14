@@ -5,26 +5,15 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 from decimal import Decimal, localcontext
 from enum import StrEnum
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain.models import (
-        QualityFlag,
-        StockTradingValueObservation,
-        ThemeMembershipSnapshot,
-        UnavailableReason,
-        require_aware,
-        select_membership_snapshot,
-    )
-else:
-    _models = import_module("packages." + "domain.models")
-    QualityFlag = _models.QualityFlag
-    StockTradingValueObservation = _models.StockTradingValueObservation
-    ThemeMembershipSnapshot = _models.ThemeMembershipSnapshot
-    UnavailableReason = _models.UnavailableReason
-    require_aware = _models.require_aware
-    select_membership_snapshot = _models.select_membership_snapshot
+from packages.domain.models import (
+    QualityFlag,
+    StockTradingValueObservation,
+    ThemeMembershipSnapshot,
+    UnavailableReason,
+    require_aware,
+    select_membership_snapshot,
+)
 
 from .policies import RANKING_BASELINE_POLICY_V1, SameTimeBaselinePolicy
 

@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 
 from scripts.validate_contracts import (
-    ContractValidationError,
     FIXTURES,
     REQUIRED_ASYNC_MESSAGES,
     REQUIRED_HTTP_SURFACE,
     SHARED_SCHEMA_PATH,
+    ContractValidationError,
     load_contracts,
     run_validation,
     validate_instance,

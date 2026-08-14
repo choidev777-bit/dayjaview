@@ -13,16 +13,16 @@ import sqlite3
 import sys
 import time
 from collections import Counter, defaultdict
-from datetime import datetime, time as datetime_time, timedelta, timezone
+from datetime import datetime, timedelta, timezone
+from datetime import time as datetime_time
 from itertools import chain
 from pathlib import Path
 from typing import Any, AsyncIterator, Callable, Iterable, Iterator
 
 import websockets
-
 from market_replay_common import (
-    EventRecord,
     KST,
+    EventRecord,
     canonical_json,
     iter_events,
     latest_run_id,

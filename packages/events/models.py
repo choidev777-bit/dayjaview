@@ -7,15 +7,8 @@ import json
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import StrEnum
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain import LifecycleStatus, ReconciliationStatus
-else:
-    _domain = import_module("packages." + "domain")
-    LifecycleStatus = _domain.LifecycleStatus
-    ReconciliationStatus = _domain.ReconciliationStatus
+from packages.domain import LifecycleStatus, ReconciliationStatus
 
 EVENT_COMMAND_SCHEMA_VERSION = "event-command-2026.08.1"
 EVENT_DOMAIN_EVENT_VERSION = "1"

@@ -7,16 +7,8 @@ import json
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from enum import StrEnum
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain import CoverageStatus, LifecycleStatus, transition_lifecycle
-else:
-    _domain = import_module("packages." + "domain")
-    CoverageStatus = _domain.CoverageStatus
-    LifecycleStatus = _domain.LifecycleStatus
-    transition_lifecycle = _domain.transition_lifecycle
+from packages.domain import CoverageStatus, LifecycleStatus, transition_lifecycle
 
 HYSTERESIS_POLICY_VERSION = "theme-hysteresis-2026.08.1"
 

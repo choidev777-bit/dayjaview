@@ -1,4 +1,3 @@
-import importlib.util
 import asyncio
 import contextlib
 import json
@@ -10,15 +9,12 @@ import unittest
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-
 SCRIPTS = Path(__file__).parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from market_replay_common import (  # noqa: E402
-    ReplayStore,
-    iter_events,
-    payload_hash,
-    source_clock_to_utc,
+import websockets  # noqa: E402
+from collect_market_gap_recovery import (  # noqa: E402
+    reconstruct_intended_codes_by_minute,
 )
 from collect_market_replay import (  # noqa: E402
     CandidateManager,
@@ -26,25 +22,28 @@ from collect_market_replay import (  # noqa: E402
     parse_condition_list,
     stock_code_from_row,
 )
-from replay_market import audit_capture, prove_replay_files, verify_database  # noqa: E402
-from replay_market import (  # noqa: E402
+from collect_market_snapshot_supplement import MainCaptureFollower  # noqa: E402
+from finalize_market_replay import finalize  # noqa: E402
+from market_replay_common import (  # noqa: E402
+    ReplayStore,
+    iter_events,
+    payload_hash,
+    source_clock_to_utc,
+)
+from repair_market_backfill import select_repair_codes  # noqa: E402
+from replay_market import (  # noqa: E402  # noqa: E402
     VerificationError,
+    audit_capture,
     audit_gap_recovery,
     audit_supplemental_capture,
     iter_combined_selected_events,
     iter_selected_events,
     prove_combined_service_replay,
+    prove_replay_files,
     prove_websocket_replay,
     serve_event_factory,
+    verify_database,
 )
-from repair_market_backfill import select_repair_codes  # noqa: E402
-from finalize_market_replay import finalize  # noqa: E402
-from collect_market_snapshot_supplement import MainCaptureFollower  # noqa: E402
-from collect_market_gap_recovery import (  # noqa: E402
-    reconstruct_intended_codes_by_minute,
-)
-
-import websockets  # noqa: E402
 
 
 class MarketReplayStoreTests(unittest.TestCase):

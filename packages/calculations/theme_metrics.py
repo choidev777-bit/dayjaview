@@ -4,35 +4,18 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal, localcontext
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain.coverage import Coverage, CoveragePart, CoverageStatus
-    from domain.models import (
-        MembershipRole,
-        QualityFlag,
-        StockMarketObservation,
-        StockReference,
-        ThemeMembershipSnapshot,
-        UnavailableReason,
-        decimal_to_number,
-        require_aware,
-    )
-else:
-    _coverage = import_module("packages." + "domain.coverage")
-    Coverage = _coverage.Coverage
-    CoveragePart = _coverage.CoveragePart
-    CoverageStatus = _coverage.CoverageStatus
-    _models = import_module("packages." + "domain.models")
-    MembershipRole = _models.MembershipRole
-    QualityFlag = _models.QualityFlag
-    StockMarketObservation = _models.StockMarketObservation
-    StockReference = _models.StockReference
-    ThemeMembershipSnapshot = _models.ThemeMembershipSnapshot
-    UnavailableReason = _models.UnavailableReason
-    decimal_to_number = _models.decimal_to_number
-    require_aware = _models.require_aware
+from packages.domain.coverage import Coverage, CoveragePart, CoverageStatus
+from packages.domain.models import (
+    MembershipRole,
+    QualityFlag,
+    StockMarketObservation,
+    StockReference,
+    ThemeMembershipSnapshot,
+    UnavailableReason,
+    decimal_to_number,
+    require_aware,
+)
 
 from .policies import THEME_CALCULATION_POLICY_V1, ThemeCalculationPolicy
 from .weights import (

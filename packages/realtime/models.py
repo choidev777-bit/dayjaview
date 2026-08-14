@@ -8,17 +8,9 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain import StockMarketObservation
-    from events.models import LineageRef
-else:
-    StockMarketObservation = import_module(
-        "packages." + "domain"
-    ).StockMarketObservation
-    LineageRef = import_module("packages." + "events.models").LineageRef
+from packages.domain import StockMarketObservation
+from packages.events.models import LineageRef
 
 HOT_STATE_CHECKPOINT_VERSION = "hot-state-2026.08.1"
 

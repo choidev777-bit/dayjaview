@@ -3,20 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from domain import (
-        LifecycleStatus,
-        ReconciliationStatus,
-        transition_lifecycle,
-    )
-else:
-    _domain = import_module("packages." + "domain")
-    LifecycleStatus = _domain.LifecycleStatus
-    ReconciliationStatus = _domain.ReconciliationStatus
-    transition_lifecycle = _domain.transition_lifecycle
+from packages.domain import (
+    LifecycleStatus,
+    ReconciliationStatus,
+    transition_lifecycle,
+)
 
 from .models import (
     EVENT_DOMAIN_EVENT_VERSION,

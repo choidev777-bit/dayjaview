@@ -24,7 +24,6 @@ from typing import Any, Iterable
 
 import httpx
 import websockets
-
 from market_replay_common import (
     COLLECTOR_VERSION,
     KST,
@@ -39,7 +38,6 @@ from market_replay_common import (
     source_clock_to_utc,
     utc_now,
 )
-
 
 LOG = logging.getLogger("dayjaview.market_capture")
 REAL_HTTP_BASE = "https://api.kiwoom.com"

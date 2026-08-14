@@ -2,7 +2,6 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-
 MODULE_PATH = Path(__file__).parents[1] / "scripts" / "collect_infostock.py"
 SPEC = importlib.util.spec_from_file_location("collect_infostock", MODULE_PATH)
 assert SPEC and SPEC.loader

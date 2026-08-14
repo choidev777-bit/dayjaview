@@ -6,32 +6,19 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import date, datetime
-from importlib import import_module
 from threading import RLock
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from calculations import (
-        THEME_CALCULATION_POLICY_V1,
-        ThemeCalculationPolicy,
-        ThemeMetrics,
-        calculate_theme_metrics,
-    )
-    from domain import (
-        StockReference,
-        ThemeMembershipSnapshot,
-        select_membership_snapshot,
-    )
-else:
-    _calculations = import_module("packages." + "calculations")
-    THEME_CALCULATION_POLICY_V1 = _calculations.THEME_CALCULATION_POLICY_V1
-    ThemeCalculationPolicy = _calculations.ThemeCalculationPolicy
-    ThemeMetrics = _calculations.ThemeMetrics
-    calculate_theme_metrics = _calculations.calculate_theme_metrics
-    _domain = import_module("packages." + "domain")
-    StockReference = _domain.StockReference
-    ThemeMembershipSnapshot = _domain.ThemeMembershipSnapshot
-    select_membership_snapshot = _domain.select_membership_snapshot
+from packages.calculations import (
+    THEME_CALCULATION_POLICY_V1,
+    ThemeCalculationPolicy,
+    ThemeMetrics,
+    calculate_theme_metrics,
+)
+from packages.domain import (
+    StockReference,
+    ThemeMembershipSnapshot,
+    select_membership_snapshot,
+)
 
 from .hot_state import HotStateStore
 

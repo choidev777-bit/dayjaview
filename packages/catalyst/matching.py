@@ -5,13 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from importlib import import_module
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from news import NewsItem
-else:
-    NewsItem = import_module("packages." + "news").NewsItem
+from packages.news import NewsItem
 
 from .models import MatchBasis, MatchTrigger, NewsThemeMatch, ThemeContext
 

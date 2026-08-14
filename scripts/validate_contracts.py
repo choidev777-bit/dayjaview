@@ -17,7 +17,6 @@ from openapi_spec_validator import validate as validate_openapi
 from openapi_spec_validator.readers import read_from_filename
 from referencing import Registry, Resource
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
 FIXTURES = CONTRACTS / "fixtures"
