@@ -3,6 +3,13 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
+from packages.catalyst import (
+    CatalystEvidence,
+    EvidenceRevision,
+    EvidenceStatus,
+    ExtractionMethod,
+    MatchBasis,
+)
 from packages.domain import (
     DataStatus,
     MembershipRole,
@@ -17,6 +24,7 @@ from packages.realtime import (
     StockRealtimeUpdate,
     VersionedThemeCatalog,
 )
+from scripts.validate_contracts import validate_instance
 
 MARKET_DATE = date(2026, 8, 14)
 KNOWN_AT = datetime(2026, 8, 13, 23, 0, tzinfo=UTC)
@@ -185,6 +193,151 @@ def test_market_updates_flow_into_active_event_and_ranked_snapshot() -> None:
     }
     assert statuses["thm_thin"] == "CANDIDATE"
     assert statuses["thm_full"] == "ACTIVE"
+
+
+def test_theme_detail_matches_contract_and_lists_top_three_leaders() -> None:
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(
+        ("KRX:000001", "KRX:000002", "KRX:000003", "KRX:000009")
+    ):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    view = pipeline.publish(
+        now=BASE + timedelta(seconds=20),
+        data_status=DataStatus.LIVE,
+    )
+    items = view.rankings.payload["items"]
+    assert isinstance(items, list)
+    event_id = items[0]["eventId"]
+
+    detail = pipeline.theme_detail(event_id)
+    assert detail is not None
+    validate_instance(detail, "ThemeDetailData", label="theme-detail")
+
+    assert detail["eventId"] == event_id
+    assert detail["marketDate"] == "2026-08-14"
+    assert detail["lifecycleStatus"] == "ACTIVE"
+    assert detail["canonicalPath"] == f"/v1/themes/thm_full/events/{event_id}"
+    assert detail["coverage"] == items[0]["coverage"]
+    assert detail["currentReaction"]["weightedReturn"] == items[0]["weightedReturn"]
+    # 거래대금 배수·관심 공백 기준선은 A-6 전까지 없으므로 정직하게 null이다.
+    assert detail["currentReaction"]["turnoverMultiple"] is None
+    assert detail["currentReaction"]["attentionGapTradingDays"] is None
+    assert detail["evidenceSummary"] == {
+        "evidenceStatus": "SEARCHING",
+        "summary": None,
+        "sourceCount": 0,
+        "latestPublishedAt": None,
+    }
+    # 유사사례는 E-19 통과 전까지 잠겨 있다.
+    assert detail["historicalAccess"]["status"] == "GATED"
+
+    leaders = detail["leaders"]
+    assert isinstance(leaders, list)
+    # 관측 CORE 3종목이 수익률 내림차순(+3%, +1%, +0.25%)으로 나온다.
+    assert [leader["stockId"] for leader in leaders] == [
+        "KRX:000001",
+        "KRX:000002",
+        "KRX:000003",
+    ]
+    assert all(leader["role"] == "LEADER" for leader in leaders)
+    # rankings의 단일 주도주는 상세 leaders의 첫 종목과 같다.
+    assert items[0]["leader"]["stockId"] == leaders[0]["stockId"]
+    assert items[0]["leader"]["return"] == leaders[0]["return"]
+
+    assert pipeline.theme_id_for_event(event_id) == "thm_full"
+    assert pipeline.theme_id_for_event("evt_unknown") is None
+
+
+def test_theme_detail_is_hidden_before_the_event_becomes_public() -> None:
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    view = pipeline.publish(
+        now=BASE + timedelta(seconds=7),
+        data_status=DataStatus.LIVE,
+    )
+    candidate = next(
+        event for event in view.events if event.canonical_theme_id == "thm_full"
+    )
+    assert candidate.lifecycle_status.value == "CANDIDATE"
+    # 테마는 알지만 아직 공개 상태가 아니므로 상세 문서는 없다.
+    assert pipeline.theme_id_for_event(candidate.event_id) == "thm_full"
+    assert pipeline.theme_detail(candidate.event_id) is None
+    assert pipeline.theme_detail("evt_unknown") is None
+
+
+def test_recorded_evidence_reaches_both_rankings_and_detail() -> None:
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    first = pipeline.publish(
+        now=BASE + timedelta(seconds=20),
+        data_status=DataStatus.LIVE,
+    )
+    items = first.rankings.payload["items"]
+    assert isinstance(items, list)
+    event_id = items[0]["eventId"]
+    published_at = datetime(2026, 8, 14, 1, 17, tzinfo=UTC)
+
+    pipeline.record_evidence(
+        EvidenceRevision(
+            event_id=event_id,
+            revision=1,
+            evidence_status=EvidenceStatus.SINGLE_SOURCE,
+            summary="테스트 소재 보도",
+            news_ids=("news_1",),
+            catalyst_key="TEST_CATALYST",
+            reason="테스트 근거 1건 확인",
+            policy_version="catalyst-evidence-2026.08.1",
+            decided_at=BASE + timedelta(seconds=25),
+            evidence_confirmed_at=BASE + timedelta(seconds=25),
+        ),
+        (
+            CatalystEvidence(
+                news_id="news_1",
+                event_id=event_id,
+                publisher="테스트매체",
+                title="테스트 소재 보도",
+                summary="테스트 소재 보도 요약",
+                match_basis=(MatchBasis.THEME,),
+                entities=("테스트 테마",),
+                published_at=published_at,
+                received_at=published_at + timedelta(minutes=1),
+                original_url="https://news.example.com/1",
+                quality_flags=(),
+                extraction_method=ExtractionMethod.LLM_GROUNDED,
+                model_name="stub-grounding-model",
+                prompt_version="catalyst-grounding-2026.08.1",
+                confidence=0.9,
+                generated_at=published_at + timedelta(minutes=2),
+            ),
+        ),
+    )
+    view = pipeline.publish(
+        now=BASE + timedelta(seconds=30),
+        data_status=DataStatus.LIVE,
+    )
+
+    ranking_items = view.rankings.payload["items"]
+    assert isinstance(ranking_items, list)
+    # rankings는 RankingEvidence(publishedAt) 모양을 유지한다.
+    assert ranking_items[0]["evidence"] == {
+        "evidenceStatus": "SINGLE_SOURCE",
+        "summary": "테스트 소재 보도",
+        "publishedAt": published_at.isoformat(),
+    }
+    detail = pipeline.theme_detail(event_id)
+    assert detail is not None
+    validate_instance(detail, "ThemeDetailData", label="theme-detail-evidence")
+    # 상세는 sourceCount·latestPublishedAt까지 싣는다.
+    assert detail["evidenceSummary"] == {
+        "evidenceStatus": "SINGLE_SOURCE",
+        "summary": "테스트 소재 보도",
+        "sourceCount": 1,
+        "latestPublishedAt": published_at.isoformat(),
+    }
 
 
 def test_close_market_discards_candidates_and_closes_active_events() -> None:

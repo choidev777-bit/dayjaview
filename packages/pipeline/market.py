@@ -109,6 +109,7 @@ class MarketDataPipeline:
         self._snapshots = snapshot_repository
         self._hysteresis: dict[str, HysteresisState] = {}
         self._event_ids: dict[str, str] = {}
+        self._theme_by_event: dict[str, str] = {}
         self._activated_at: dict[str, datetime] = {}
         self._evidence: dict[str, dict[str, object]] = {}
         self._latest_metrics: dict[str, ThemeMetricUpdate] = {}
@@ -197,11 +198,67 @@ class MarketDataPipeline:
     ) -> None:
         """판정된 근거 상태를 다음 발행부터 rankings에 싣는다."""
 
-        summary = evidence_summary(revision, evidence)
-        self._evidence[revision.event_id] = {
-            "evidenceStatus": summary["evidenceStatus"],
-            "summary": summary["summary"],
-            "publishedAt": summary["latestPublishedAt"],
+        self._evidence[revision.event_id] = evidence_summary(revision, evidence)
+
+    def theme_id_for_event(self, event_id: str) -> str | None:
+        """이 파이프라인이 만든 Event가 속한 테마."""
+
+        return self._theme_by_event.get(event_id)
+
+    def theme_detail(self, event_id: str) -> dict[str, object] | None:
+        """활성화된 Event 하나의 테마 상세 문서를 만든다.
+
+        아직 공개 상태가 아닌 CANDIDATE·DISCARDED Event는 None을 돌려준다.
+        거래대금 배수·관심 공백은 기준선 이력이 쌓이기 전이라(A-6) null이다.
+        """
+
+        theme_id = self._theme_by_event.get(event_id)
+        if theme_id is None:
+            return None
+        event = self._event_store.read_event(event_id)
+        update = self._latest_metrics.get(theme_id)
+        if event is None or update is None:
+            return None
+        if event.lifecycle_status not in (
+            LifecycleStatus.ACTIVE,
+            LifecycleStatus.WEAKENING,
+            LifecycleStatus.CLOSED,
+        ):
+            return None
+        metrics = update.metrics
+        evidence = self._evidence.get(event_id)
+        return {
+            "eventId": event.event_id,
+            "marketDate": self._market_date.isoformat(),
+            "lifecycleStatus": event.lifecycle_status.value,
+            "reconciliationStatus": event.reconciliation_status.value,
+            "classification": event.classification.to_public_dict(),
+            "currentReaction": metrics.to_public_current_reaction(
+                turnover_multiple=None,
+                attention_gap_trading_days=None,
+            ),
+            "coverage": metrics.coverage.to_public_dict(),
+            "evidenceSummary": (
+                dict(evidence)
+                if evidence is not None
+                else {
+                    "evidenceStatus": EvidenceStatus.SEARCHING.value,
+                    "summary": None,
+                    "sourceCount": 0,
+                    "latestPublishedAt": None,
+                }
+            ),
+            "leaders": [
+                {**leader, "role": "LEADER"}
+                for leader in self._leaders(theme_id, limit=3)
+            ],
+            # 유사사례는 온톨로지 재검증(E-19) 통과 전까지 잠겨 있다.
+            "historicalAccess": {
+                "status": "GATED",
+                "reason": "ONTOLOGY_VALIDATION_REQUIRED",
+            },
+            "canonicalPath": f"/v1/themes/{theme_id}/events/{event_id}",
+            "qualityFlags": list(metrics.quality_flags),
         }
 
     def apply_update(self, update: StockRealtimeUpdate) -> HotApplyResult:
@@ -315,6 +372,7 @@ class MarketDataPipeline:
         if event_id is None:
             event_id = self._create_event(update, now=now)
             self._event_ids[theme_id] = event_id
+            self._theme_by_event[event_id] = theme_id
 
         state = self._hysteresis.get(theme_id) or HysteresisState.candidate(
             theme_id=theme_id,
@@ -448,7 +506,11 @@ class MarketDataPipeline:
             item["leader"] = self._leader(theme_id)
             evidence = self._evidence.get(event.event_id)
             item["evidence"] = (
-                dict(evidence)
+                {
+                    "evidenceStatus": evidence["evidenceStatus"],
+                    "summary": evidence["summary"],
+                    "publishedAt": evidence["latestPublishedAt"],
+                }
                 if evidence is not None
                 else {
                     "evidenceStatus": EvidenceStatus.SEARCHING.value,
@@ -472,20 +534,13 @@ class MarketDataPipeline:
             return ()
         return tuple(member.stock_id for member in membership.members)
 
-    def _leader(self, theme_id: str) -> dict[str, object] | None:
-        """관측된 CORE 구성 종목 중 당일 수익률 최고 종목."""
+    def _leaders(self, theme_id: str, *, limit: int) -> list[dict[str, object]]:
+        """관측된 CORE 구성 종목을 당일 수익률 내림차순으로 상위 limit개."""
 
         update = self._latest_metrics.get(theme_id)
         if update is None:
-            return None
-        membership = self._catalog.select(
-            theme_id=theme_id,
-            market_date=update.market_date,
-            decision_at=update.as_of,
-        )
-        if membership is None:
-            return None
-        best: tuple[Decimal, str] | None = None
+            return []
+        returns: list[tuple[Decimal, str]] = []
         for weight in update.metrics.capped_weights:
             state = self._hot.get(
                 market_date=update.market_date,
@@ -496,18 +551,25 @@ class MarketDataPipeline:
             reference = self._reference_close(weight.stock_id, update)
             if reference is None:
                 continue
-            stock_return = state.current_price / reference - Decimal(1)
-            if best is None or stock_return > best[0]:
-                best = (stock_return, weight.stock_id)
-        if best is None:
-            return None
-        stock_return, stock_id = best
-        return {
-            "stockId": stock_id,
-            "symbol": stock_id.removeprefix("KRX:"),
-            "name": self._stock_names.get(stock_id, stock_id),
-            "return": float(stock_return),
-        }
+            returns.append(
+                (state.current_price / reference - Decimal(1), weight.stock_id)
+            )
+        returns.sort(key=lambda entry: (-entry[0], entry[1]))
+        return [
+            {
+                "stockId": stock_id,
+                "symbol": stock_id.removeprefix("KRX:"),
+                "name": self._stock_names.get(stock_id, stock_id),
+                "return": float(stock_return),
+            }
+            for stock_return, stock_id in returns[:limit]
+        ]
+
+    def _leader(self, theme_id: str) -> dict[str, object] | None:
+        """rankings에 싣는 단일 주도주 = 상세 화면 leaders의 첫 종목."""
+
+        leaders = self._leaders(theme_id, limit=1)
+        return leaders[0] if leaders else None
 
     def _reference_close(
         self,

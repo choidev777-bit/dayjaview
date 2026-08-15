@@ -34,6 +34,10 @@ class SnapshotSource(Protocol):
     @property
     def last_as_of(self) -> datetime | None: ...
 
+    def theme_id_for_event(self, event_id: str) -> str | None: ...
+
+    def theme_detail(self, event_id: str) -> dict[str, object] | None: ...
+
 
 def _utc_iso(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="milliseconds").replace(
@@ -123,3 +127,34 @@ class SnapshotProductReadRepository(EmptyProductReadRepository):
         if snapshot is None:
             return None
         return _snapshot_document(snapshot)
+
+    def theme_for_event(self, event_id: str) -> str | None:
+        """공개 가능한 Event일 때만 테마를 알려 준다.
+
+        아직 공개 상태가 아닌 Event까지 여기서 테마를 돌려주면 라우트가
+        themeId 불일치(409)로 답하게 되므로, 상세 문서가 있는 Event만 센다.
+        """
+
+        if self._source.theme_detail(event_id) is None:
+            return None
+        return self._source.theme_id_for_event(event_id)
+
+    def theme_event(
+        self,
+        theme_id: str,
+        event_id: str,
+    ) -> ProductDocument | None:
+        snapshot = self._source.latest_rankings
+        if snapshot is None:
+            return None
+        if self._source.theme_id_for_event(event_id) != theme_id:
+            return None
+        detail = self._source.theme_detail(event_id)
+        if detail is None:
+            return None
+        base = _snapshot_document(snapshot)
+        return ProductDocument(
+            cast(JsonObject, detail),
+            base.copy_market_context(),
+            base.copy_versions(),
+        )

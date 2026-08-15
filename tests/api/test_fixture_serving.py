@@ -14,6 +14,7 @@ from apps.api.serve import (
 from packages.events import InMemoryEventStore
 from packages.pipeline import MarketPublishLoop, PublishedView
 from packages.realtime import InMemorySnapshotRepository
+from scripts.validate_contracts import validate_instance
 
 BASE_URL = "https://dayjaview.vercel.app"
 
@@ -119,6 +120,77 @@ def test_asgi_wrapper_serves_health_and_delegates_product_routes() -> None:
             session = await client.get("/auth/session")
             assert session.status_code == 200
             assert session.json()["data"]["authenticated"] is False
+
+    asyncio.run(scenario())
+
+
+def test_theme_detail_is_served_from_the_pipeline() -> None:
+    async def scenario() -> None:
+        environment, pipeline = build_fixture_environment()
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(transport=transport, base_url=BASE_URL) as client:
+            await _login(client, environment)
+            rankings = await client.get("/v1/themes/rankings")
+            item = rankings.json()["data"]["items"][0]
+            event_id = item["eventId"]
+            theme_id = item["classification"]["themeId"]
+
+            response = await client.get(
+                f"/v1/themes/{theme_id}/events/{event_id}"
+            )
+            assert response.status_code == 200
+            body = response.json()
+            validate_instance(body, "ThemeDetailResponse", label="theme-detail-rest")
+            detail = body["data"]
+            assert detail["eventId"] == event_id
+            assert detail["classification"] == item["classification"]
+            assert detail["coverage"] == item["coverage"]
+            assert (
+                detail["currentReaction"]["weightedReturn"] == item["weightedReturn"]
+            )
+            assert detail["canonicalPath"] == (
+                f"/v1/themes/{theme_id}/events/{event_id}"
+            )
+            # rankings의 주도주가 상세 leaders 첫 종목과 같다(SK하이닉스).
+            assert detail["leaders"][0]["symbol"] == item["leader"]["symbol"]
+            assert detail["leaders"][0]["name"] == "SK하이닉스"
+            # 상세 meta는 rankings와 같은 시장 맥락을 쓴다.
+            assert (
+                body["meta"]["marketContext"]
+                == rankings.json()["meta"]["marketContext"]
+            )
+
+            mismatched = await client.get(
+                f"/v1/themes/thm_other/events/{event_id}"
+            )
+            assert mismatched.status_code == 409
+
+            missing = await client.get(
+                f"/v1/themes/{theme_id}/events/evt_unknown"
+            )
+            assert missing.status_code == 404
+
+        assert pipeline.theme_id_for_event(event_id) == theme_id
+
+    asyncio.run(scenario())
+
+
+def test_theme_detail_requires_login() -> None:
+    async def scenario() -> None:
+        environment, pipeline = build_fixture_environment()
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(transport=transport, base_url=BASE_URL) as client:
+            events = pipeline.current_events()
+            event_id = next(
+                event.event_id
+                for event in events
+                if event.lifecycle_status.value == "ACTIVE"
+            )
+            theme_id = pipeline.theme_id_for_event(event_id)
+            anonymous = await client.get(
+                f"/v1/themes/{theme_id}/events/{event_id}"
+            )
+            assert anonymous.status_code == 401
 
     asyncio.run(scenario())
 
