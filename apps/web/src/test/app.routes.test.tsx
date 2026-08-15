@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { App } from '../app/App';
@@ -9,7 +9,9 @@ describe('인증과 route shell', () => {
   it('비로그인 사용자는 제품 데이터 없이 로그인 화면만 본다', async () => {
     render(<App repository={createFixtureRepository({ authenticated: false })} initialEntries={['/today']} />);
 
-    expect(await screen.findByRole('heading', { name: 'DAYJAVIEW' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: '오늘 강한 테마를 확인하세요' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Google로 계속하기' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
     expect(screen.queryByText('원전수출')).not.toBeInTheDocument();
@@ -19,9 +21,12 @@ describe('인증과 route shell', () => {
     const user = userEvent.setup();
     render(<App repository={createFixtureRepository({ authenticated: false })} initialEntries={['/saved']} />);
 
-    await user.click(await screen.findByRole('button', { name: 'Google로 계속하기' }));
+    expect(
+      await screen.findByRole('heading', { name: '저장한 분석을 확인하세요' }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Google로 계속하기' }));
 
-    expect(await screen.findByRole('heading', { name: '관심' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '저장' })).toBeInTheDocument();
   });
 
   it.each([
@@ -71,6 +76,41 @@ describe('인증과 route shell', () => {
     expect(await screen.findByText('페이지를 찾을 수 없습니다')).toBeInTheDocument();
     expect(screen.queryByText(/운영자/)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /operator/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('하단 탭과 즐겨찾기 route shell', () => {
+  it('하단 탭은 시안 구성 4개를 유지하고 데스크톱 사이드바를 두지 않는다', async () => {
+    render(<App repository={createFixtureRepository()} initialEntries={['/today']} />);
+
+    const navigation = await screen.findByRole('navigation', { name: '주요 메뉴' });
+    expect(within(navigation).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      '홈',
+      '실시간',
+      '즐겨찾기',
+      '리서치',
+    ]);
+    expect(screen.getAllByRole('navigation')).toHaveLength(1);
+  });
+
+  it('리서치 탭은 화면 자리만 두고 답변을 만들지 않는다', async () => {
+    render(<App repository={createFixtureRepository()} initialEntries={['/research']} />);
+
+    expect(await screen.findByRole('heading', { name: '무엇이 궁금하세요?' })).toBeInTheDocument();
+    expect(screen.getByText('준비 중인 화면이에요')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('홈 순위 휠은 목록 의미와 방향키 이동을 제공한다', async () => {
+    const user = userEvent.setup();
+    render(<App repository={createFixtureRepository()} initialEntries={['/today']} />);
+
+    const wheel = await screen.findByRole('list', { name: /오늘 많이 오른 테마 순위, 총 1개/ });
+    const card = within(wheel).getByRole('link', { name: /1위 원전수출/ });
+    card.focus();
+    await user.keyboard('{ArrowDown}');
+
+    expect(card).toHaveFocus();
   });
 });
 

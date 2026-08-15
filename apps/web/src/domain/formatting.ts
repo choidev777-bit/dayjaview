@@ -30,6 +30,11 @@ export function formatReturn(value: number | null): string {
   })}%`;
 }
 
+export function returnTone(value: number | null): 'market-up' | 'market-down' | 'market-flat' {
+  if (value === null || value === 0) return 'market-flat';
+  return value > 0 ? 'market-up' : 'market-down';
+}
+
 export function formatDate(value: string): string {
   return dateFormatter.format(new Date(value)).replace(/\. /g, '.').replace(/\.$/, '');
 }

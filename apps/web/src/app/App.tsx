@@ -1,5 +1,11 @@
 import { useEffect } from 'react';
 import {
+  IconGridLine,
+  IconHouseLine,
+  IconMagnifyingglassLine,
+  IconStarLine,
+} from '@karrotmarket/react-monochrome-icon';
+import {
   BrowserRouter,
   MemoryRouter,
   Navigate,
@@ -15,6 +21,7 @@ import { safeReturnTo } from '../domain/formatting';
 import { HistoricalGatePage } from '../pages/HistoricalGatePage';
 import { InsightsPage } from '../pages/InsightsPage';
 import { LoginPage } from '../pages/LoginPage';
+import { ResearchPage } from '../pages/ResearchPage';
 import { SavedPage } from '../pages/SavedPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
 import { TodayPage } from '../pages/TodayPage';
@@ -23,37 +30,23 @@ import { useAsyncResource } from '../shared/useAsyncResource';
 import { RepositoryProvider, useRepository } from './RepositoryContext';
 
 const navigation = [
-  { to: '/today', label: '오늘', symbol: '●' },
-  { to: '/insights', label: '인사이트', symbol: '◫' },
-  { to: '/saved', label: '관심', symbol: '♡' },
+  { to: '/today', label: '홈', Icon: IconHouseLine },
+  { to: '/insights', label: '실시간', Icon: IconGridLine },
+  { to: '/saved', label: '즐겨찾기', Icon: IconStarLine },
+  { to: '/research', label: '리서치', Icon: IconMagnifyingglassLine },
 ] as const;
 
-function AppShell({ onLogout }: { onLogout: () => Promise<void> }) {
+function AppShell() {
   return (
     <div className="app-shell">
-      <aside className="sidebar" aria-label="DAYJAVIEW">
-        <NavLink className="wordmark" to="/today" aria-label="DAYJAVIEW 오늘로 이동">
-          <span className="brand-mark brand-mark--small" aria-hidden="true">D</span>
-          <span>DAYJAVIEW</span>
-        </NavLink>
-        <nav className="primary-navigation" aria-label="데스크톱 주요 메뉴">
-          {navigation.map((item) => (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'is-active' : undefined)}>
-              <span aria-hidden="true">{item.symbol}</span>
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <button className="logout-button" type="button" onClick={onLogout}>로그아웃</button>
-      </aside>
       <main className="app-content" id="main-content">
         <Outlet />
       </main>
-      <nav className="bottom-navigation" aria-label="모바일 주요 메뉴">
-        {navigation.map((item) => (
-          <NavLink key={item.to} to={item.to} className={({ isActive }) => (isActive ? 'is-active' : undefined)}>
-            <span aria-hidden="true">{item.symbol}</span>
-            {item.label}
+      <nav className="bottom-navigation" aria-label="주요 메뉴">
+        {navigation.map(({ to, label, Icon }) => (
+          <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'is-active' : undefined)}>
+            <Icon className="nav-icon" size={20} aria-hidden="true" />
+            <small>{label}</small>
           </NavLink>
         ))}
       </nav>
@@ -66,8 +59,8 @@ function NotFoundPage() {
     <div className="page page--gate">
       <div className="state-panel">
         <p className="state-panel__title">페이지를 찾을 수 없습니다</p>
-        <p>주소를 확인하거나 오늘 화면으로 돌아가 주세요.</p>
-        <NavLink className="button button--secondary" to="/today">오늘로 이동</NavLink>
+        <p>주소를 확인하거나 홈으로 돌아가 주세요.</p>
+        <NavLink className="button button--secondary" to="/today">홈으로 이동</NavLink>
       </div>
     </div>
   );
@@ -76,11 +69,12 @@ function NotFoundPage() {
 function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
   return (
     <Routes>
-      <Route element={<AppShell onLogout={onLogout} />}>
+      <Route element={<AppShell />}>
         <Route index element={<Navigate to="/today" replace />} />
         <Route path="/today" element={<TodayPage />} />
         <Route path="/insights" element={<InsightsPage />} />
-        <Route path="/saved" element={<SavedPage />} />
+        <Route path="/saved" element={<SavedPage onLogout={onLogout} />} />
+        <Route path="/research" element={<ResearchPage />} />
         <Route path="/themes/:themeId/events/:eventId" element={<ThemeDetailPage />} />
         <Route path="/themes/:themeId/events/:eventId/similar" element={<HistoricalGatePage />} />
         <Route path="/events/:matchedEventId" element={<HistoricalGatePage />} />
@@ -123,6 +117,7 @@ function AuthGate() {
     const returnTo = safeReturnTo(`${location.pathname}${location.search}${location.hash}`);
     return (
       <LoginPage
+        returnTo={returnTo}
         onLogin={async () => {
           const next = await repository.startGoogleLogin(returnTo);
           if (next.authenticated) {

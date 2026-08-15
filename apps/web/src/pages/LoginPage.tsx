@@ -1,7 +1,14 @@
 import { useState } from 'react';
 
-export function LoginPage({ onLogin }: { onLogin: () => Promise<void> }) {
+export function LoginPage({
+  returnTo,
+  onLogin,
+}: {
+  returnTo: string;
+  onLogin: () => Promise<void>;
+}) {
   const [status, setStatus] = useState<'idle' | 'pending' | 'error'>('idle');
+  const savedIntent = returnTo.startsWith('/saved');
 
   async function handleLogin() {
     setStatus('pending');
@@ -15,19 +22,22 @@ export function LoginPage({ onLogin }: { onLogin: () => Promise<void> }) {
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-title">
-        <div className="brand-mark" aria-hidden="true">
-          D
+        <span className="login-mark" role="img" aria-label="DAYJAVIEW" />
+        <div className="login-card__copy">
+          <small>DAY-JA-VIEW</small>
+          <h1 id="login-title">{savedIntent ? '저장한 분석을 확인하세요' : '오늘 강한 테마를 확인하세요'}</h1>
+          <p>
+            {savedIntent
+              ? '저장해 둔 테마와 분석 기록을 이어서 살펴보세요.'
+              : '로그인하면 오늘 강해지는 테마와 확인된 근거를 볼 수 있어요.'}
+          </p>
         </div>
-        <p className="eyebrow">국내 주식 테마 분석</p>
-        <h1 id="login-title">DAYJAVIEW</h1>
-        <p className="login-card__intro">오늘 강해지는 테마와 확인된 근거를 한곳에서 살펴보세요.</p>
         <button
-          className="button button--google"
+          className="button button--primary"
           type="button"
           onClick={handleLogin}
           disabled={status === 'pending'}
         >
-          <span aria-hidden="true">G</span>
           {status === 'pending' ? 'Google 로그인 연결 중' : 'Google로 계속하기'}
         </button>
         {status === 'error' ? (

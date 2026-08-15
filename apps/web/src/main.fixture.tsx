@@ -10,6 +10,7 @@ import {
   type SavedFixture,
   type TreemapFixture,
 } from './adapters/fixtureRepository';
+import './styles/tokens.css';
 import './styles/global.css';
 
 const params = new URLSearchParams(window.location.search);

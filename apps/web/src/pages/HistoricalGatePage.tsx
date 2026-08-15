@@ -1,10 +1,12 @@
-import { useParams } from 'react-router-dom';
+import { IconArrowLeftLine } from '@karrotmarket/react-monochrome-icon';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { ErrorState, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 export function HistoricalGatePage() {
   const repository = useRepository();
+  const navigate = useNavigate();
   const params = useParams();
   const eventId = params.eventId ?? params.matchedEventId ?? '';
   const resource = useRepositoryResource(
@@ -19,9 +21,12 @@ export function HistoricalGatePage() {
 
   return (
     <div className="page page--gate">
-      <header className="page-header">
-        <p className="eyebrow">과거 관측</p>
-        <h1>유사사례</h1>
+      <header className="app-bar">
+        <button type="button" onClick={() => navigate(-1)} aria-label="이전 화면으로 돌아가기">
+          <IconArrowLeftLine size={24} aria-hidden="true" />
+        </button>
+        <strong>과거 사례</strong>
+        <span className="app-bar__spacer" aria-hidden="true" />
       </header>
       <PermissionState />
     </div>

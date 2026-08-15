@@ -11,6 +11,7 @@
     "build": "vite build && node scripts/assert-production-boundary.mjs"
   },
   "dependencies": {
+    "@karrotmarket/react-monochrome-icon": "^1.25.0",
     "@vitejs/plugin-react": "6.0.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",

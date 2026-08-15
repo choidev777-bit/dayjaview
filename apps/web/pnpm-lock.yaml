@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@karrotmarket/react-monochrome-icon':
+        specifier: ^1.25.0
+        version: 1.25.0(@types/react@19.2.18)(react@19.2.8)
       '@vitejs/plugin-react':
         specifier: 6.0.5
         version: 6.0.5(vite@8.2.1(@types/node@26.2.0))
@@ -280,6 +283,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@karrotmarket/react-monochrome-icon@1.25.0':
+    resolution: {integrity: sha512-lUz+APCpCC+XsKgwQuJwjgSe96iBnUFlGmA4+ijFn1smB+rIJwzS7JRHKiHKQ5q29ICqLzBjng+1QLYICUAiMQ==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
 
   '@oxc-project/types@0.144.0':
     resolution: {integrity: sha512-nuhZIOLuI6TFQ32I/WnUx+SCPY7SdSKwgnFHydAuoS1+Z4BRcaP+RRJmGzl9lw+0OFF7UmaESf7KQRXaNLHypg==}
@@ -1557,6 +1566,11 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@karrotmarket/react-monochrome-icon@1.25.0(@types/react@19.2.18)(react@19.2.8)':
+    dependencies:
+      '@types/react': 19.2.18
+      react: 19.2.8
 
   '@oxc-project/types@0.144.0': {}
 

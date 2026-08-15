@@ -2,7 +2,14 @@ import { useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { SavedItem, SavedType } from '../domain/contracts';
-import { dataStatusLabel, eventStatusLabel, formatDate, formatReturn, formatTime } from '../domain/formatting';
+import {
+  dataStatusLabel,
+  eventStatusLabel,
+  formatDate,
+  formatReturn,
+  formatTime,
+  returnTone,
+} from '../domain/formatting';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
@@ -43,39 +50,39 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
   }
 
   return (
-    <article className="saved-card">
-      <div className="saved-card__topline">
+    <article className="saved-row">
+      <div className="saved-row__topline">
         <span className="badge">{savedTypeLabel(item.savedType)}</span>
         <span>저장 {formatDate(item.savedAt)}</span>
       </div>
-      <h2>{item.displayName}</h2>
+      <h3>{item.displayName}</h3>
       {item.availability === 'UNAVAILABLE' ? (
         <div className="permission-inline">
           <strong>현재 확인할 수 없음</strong>
           <span>접근 권한이 없거나 제공 게이트가 닫혀 있습니다.</span>
         </div>
       ) : item.currentState ? (
-        <div className="saved-card__state">
+        <div className="saved-row__state">
           <strong>{eventStatusLabel(item.currentState.eventState, 'PENDING')}</strong>
           <span>{dataStatusLabel(item.currentState.dataStatus)}</span>
-          <span className="market-up">{formatReturn(item.currentState.weightedReturn)}</span>
+          <span className={returnTone(item.currentState.weightedReturn)}>
+            {formatReturn(item.currentState.weightedReturn)}
+          </span>
           <span>기준 {formatTime(item.currentState.asOf)}</span>
         </div>
       ) : null}
-      <div className="saved-card__actions">
+      <div className="saved-row__actions">
         {link ? <Link to={link}>상세 보기</Link> : null}
         <button type="button" className="text-button" onClick={remove} disabled={removing}>
           {removing ? '저장 해제 중' : '저장 해제'}
         </button>
       </div>
-      {failed ? (
-        <p role="alert">저장을 해제하지 못했습니다. 다시 시도해 주세요.</p>
-      ) : null}
+      {failed ? <p role="alert">저장을 해제하지 못했습니다. 다시 시도해 주세요.</p> : null}
     </article>
   );
 }
 
-export function SavedPage() {
+export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
   const repository = useRepository();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedFilter = searchParams.get('type');
@@ -114,12 +121,18 @@ export function SavedPage() {
 
   return (
     <div className="page page--saved">
-      <header className="page-header">
-        <p className="eyebrow">Google 계정에 동기화</p>
-        <h1>관심</h1>
-        <p>저장한 테마·종목·이벤트의 현재 상태를 다시 확인하세요.</p>
+      <header className="page-intro">
+        <h1>저장</h1>
       </header>
-      <div className="filter-tabs" role="tablist" aria-label="관심 유형 필터">
+
+      <div className="library-heading">
+        <h2>저장한 분석</h2>
+        <span>
+          {resource.status === 'success' ? `${resource.data.data.items.length.toLocaleString('ko-KR')}개` : '—'}
+        </span>
+      </div>
+
+      <div className="filter-row" role="tablist" aria-label="관심 유형 필터">
         {filters.map(([value, label], index) => (
           <button
             key={value}
@@ -137,14 +150,15 @@ export function SavedPage() {
           </button>
         ))}
       </div>
-      <div role="tabpanel" aria-label={`${filters.find(([value]) => value === filter)?.[1]} 관심 목록`}>
-        {resource.status === 'loading' ? <LoadingState label="관심 목록을 불러오는 중입니다" /> : null}
+
+      <div role="tabpanel" aria-label={`${filters.find(([value]) => value === filter)?.[1]} 저장 목록`}>
+        {resource.status === 'loading' ? <LoadingState label="저장 목록을 불러오는 중입니다" /> : null}
         {resource.status === 'error' ? <ErrorState error={resource.error} retry={resource.retry} /> : null}
         {resource.status === 'success' && !resource.data.data.items.length ? (
           <EmptyState
             title="저장한 항목이 없습니다"
-            description="오늘과 인사이트에서 관심 있는 테마를 찾아보세요."
-            action={<Link className="button button--secondary" to="/today">오늘로 이동</Link>}
+            description="홈과 실시간에서 관심 있는 테마를 찾아 저장해 보세요."
+            action={<Link className="button button--secondary" to="/today">홈으로 이동</Link>}
           />
         ) : null}
         {resource.status === 'success' && resource.data.data.items.length ? (
@@ -155,7 +169,25 @@ export function SavedPage() {
           </div>
         ) : null}
       </div>
-      <p className="section-note">저장 여부는 시장 순위·계산·공용 결과에 영향을 주지 않습니다.</p>
+
+      <div className="library-divider">
+        <span>최근 본 테마</span>
+      </div>
+
+      <div className="library-heading">
+        <h2>내가 눌러본 테마</h2>
+      </div>
+      {/* 시안은 localStorage에 남기지만 제품은 계정 저장이 원칙이다 (adaptation plan §8.6).
+          서버 저장소가 생기기 전까지 기기에 남기지 않고 준비 중 상태로 둔다. */}
+      <div className="library-empty">
+        <strong>최근 본 테마를 아직 계정에 저장하지 않습니다</strong>
+        <p>기기에만 남기지 않고 계정에 저장하도록 준비 중이에요.</p>
+      </div>
+
+      <p className="section-note notice">저장 여부는 시장 순위·계산·공용 결과에 영향을 주지 않습니다.</p>
+      <button className="text-button" type="button" onClick={onLogout}>
+        로그아웃
+      </button>
     </div>
   );
 }

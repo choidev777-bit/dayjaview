@@ -5,13 +5,14 @@ import { describe, expect, it } from 'vitest';
 import { App } from '../app/App';
 import { createFixtureRepository } from '../adapters/fixtureRepository';
 import styles from '../styles/global.css?raw';
+import tokens from '../styles/tokens.css?raw';
 
 describe('접근성 foundation', () => {
   it('로그인과 핵심 shell에 자동 검사 가능한 접근성 위반이 없다', async () => {
     const login = render(
       <App repository={createFixtureRepository({ authenticated: false })} initialEntries={['/today']} />,
     );
-    await screen.findByRole('heading', { name: 'DAYJAVIEW' });
+    await screen.findByRole('heading', { name: '오늘 강한 테마를 확인하세요' });
     const loginResult = await axe.run(login.container, {
       rules: { 'color-contrast': { enabled: false } },
     });
@@ -19,7 +20,7 @@ describe('접근성 foundation', () => {
     login.unmount();
 
     const shell = render(<App repository={createFixtureRepository()} initialEntries={['/today']} />);
-    await screen.findByRole('heading', { name: '오늘' });
+    await screen.findByRole('heading', { name: '오늘 많이 오른 테마예요' });
     const shellResult = await axe.run(shell.container, {
       rules: { 'color-contrast': { enabled: false } },
     });
@@ -44,12 +45,19 @@ describe('접근성 foundation', () => {
     expect(trigger).toHaveFocus();
   });
 
-  it('responsive, focus-visible, reduced-motion 규칙을 CSS 계약으로 고정한다', () => {
+  it('시안 토큰과 420px 단일 열, focus-visible, reduced-motion 규칙을 CSS 계약으로 고정한다', () => {
+    expect(tokens).toMatch(/--djv-color-brand: #ff6600/);
+    expect(tokens).toMatch(/--djv-app-max-width: 420px/);
+    expect(tokens).toMatch(/--djv-touch-size: 48px/);
     expect(styles).toMatch(/:focus-visible/);
-    expect(styles).toMatch(/@media \(min-width: 40rem\)/);
-    expect(styles).toMatch(/@media \(min-width: 64rem\)/);
+    // 시안에는 440px 경계 하나뿐이다. 데스크톱 사이드바 전환 breakpoint는 두지 않는다.
+    expect(styles).toMatch(/@media \(max-width: 440px\)/);
+    expect(styles).not.toMatch(/min-width: 40rem/);
+    expect(styles).not.toMatch(/min-width: 64rem/);
     expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
     expect(styles).toMatch(/transition-duration:\s*0\.01ms\s*!important/);
     expect(styles).toMatch(/env\(safe-area-inset-bottom\)/);
+    // 토큰은 tokens.css 한 곳에서만 정의한다.
+    expect(styles).not.toMatch(/--color-accent/);
   });
 });
