@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-15 · 기준 commit `6bda408` · `uv run pytest -q` 438 passed·6 skipped
+- **마지막 갱신**: 2026-08-15 · 기준 commit `5273e9d` · `uv run pytest -q` 444 passed·6 skipped
 
 ## 요약
 
@@ -33,7 +33,9 @@
   - `theme_detail` 빌더 + `theme_for_event` 매핑. 계약 스키마 통과 + 브라우저 렌더 확인.
 - [ ] **A-6** 랭킹 부가 지표 살리기 — `rankChange60s: null`, `badges: []` 유지 중. 분단위 거래대금 이력 축적이 선행.
 - [ ] **A-7** 관심 목록에 실데이터 연결 — `InMemoryTargetCatalog`가 fixture 타깃만 안다. `SavedCurrentState` 미채움.
-- [ ] **A-8** 거래일 전환과 매일 기준정보 수집 — 신설(2026-08-15). 거래일이 상수(`fixture_universe.py:22`)라 파이프라인이 하루밖에 못 돈다. `close_market` 후 다음 거래일로 넘어가는 코드가 없고, `collect_daily.py`를 매일 돌리는 스케줄도 없다. 이대로 배포하면 다음 날 어제 전일종가로 조용히 틀린 값을 낸다. F 출시 전 필수.
+- [ ] **A-8** 거래일 전환과 매일 기준정보 수집 — ②③④는 2026-08-15 `5273e9d`로 완료. `packages/pipeline/trading_day.py`(거래일 판정), `TradingDayLoop`(날짜 전환·비거래일 미가동·전환 시 이전 장 마감), `prepare_reference_data`(그날 수집본 없으면 수집, 실패 시 그날 계산 미시작).
+  - **남은 것 ① 장중 기준가**: 장중에는 당일 KRX 일별매매 row가 없어 **전일종가 0/2,411**, 기업행위 원천이 없어 **기업행위 해소 1/2,411**이다(2026-08-15 실측). 이대로면 장중 내내 전 테마 Coverage INSUFFICIENT로 순위가 빈다. 해법은 확인됨 — 키움 체결에 FID 11(전일대비)이 실제로 오고 `현재가 − 전일대비 = 기준가`이며 권리락도 자동 반영된다. `packages/adapters/kiwoom/normalizer.py`가 FID 11을 읽지 않아 못 쓰고 있다(fixture에 11이 없어 여태 드러나지 않음). A-3와 같은 파일이라 A-3 종료 후 착수.
+  - 배선 잔여: `apps/api/serve.py`가 아직 `MarketPublishLoop`을 직접 쓴다. `TradingDayLoop`으로 바꾸는 것은 ①과 함께 한다.
 
 ## B. "왜 오르는지" 뉴스 근거
 
