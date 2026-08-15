@@ -62,8 +62,17 @@ class IdentityPolicy:
 
     def __post_init__(self) -> None:
         parsed = urlsplit(self.app_base_url)
-        if parsed.scheme != "https" or not parsed.netloc or parsed.path not in ("", "/"):
-            raise ValueError("app_base_url must be an HTTPS origin")
+        # 브라우저가 신뢰 가능한 컨텍스트로 취급하는 localhost만 http를 허용한다.
+        local_http = parsed.scheme == "http" and parsed.hostname in (
+            "localhost",
+            "127.0.0.1",
+        )
+        if (
+            (parsed.scheme != "https" and not local_http)
+            or not parsed.netloc
+            or parsed.path not in ("", "/")
+        ):
+            raise ValueError("app_base_url must be an HTTPS origin or http://localhost")
         if parsed.query or parsed.fragment:
             raise ValueError("app_base_url must not contain a query or fragment")
         if validate_internal_return_to(
