@@ -7,11 +7,19 @@ EventWriter, SnapshotRepository)을 하나의 실행 경로로 조립만 한다.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
 
 from packages.calculations import THEME_CALCULATION_POLICY_V1, ThemeMetrics
+from packages.catalyst import (
+    CatalystEvidence,
+    EvidenceRevision,
+    EvidenceStatus,
+    ThemeContext,
+    evidence_summary,
+)
 from packages.domain import (
     DataStatus,
     LifecycleStatus,
@@ -101,6 +109,8 @@ class MarketDataPipeline:
         self._snapshots = snapshot_repository
         self._hysteresis: dict[str, HysteresisState] = {}
         self._event_ids: dict[str, str] = {}
+        self._activated_at: dict[str, datetime] = {}
+        self._evidence: dict[str, dict[str, object]] = {}
         self._latest_metrics: dict[str, ThemeMetricUpdate] = {}
         self._input_sequence = 0
         self._command_sequence = 0
@@ -141,6 +151,58 @@ class MarketDataPipeline:
             if (event := self._event_store.read_event(event_id)) is not None
         ]
         return tuple(events)
+
+    def active_theme_contexts(self) -> tuple[ThemeContext, ...]:
+        """근거 매칭이 조회할 활성 Event를 ThemeContext로 넘긴다.
+
+        아직 활성화되지 않은 후보 테마는 근거를 찾지 않는다.
+        """
+
+        contexts: list[ThemeContext] = []
+        for theme_id in sorted(self._latest_metrics):
+            event_id = self._event_ids.get(theme_id)
+            event = None if event_id is None else self._event_store.read_event(event_id)
+            activated_at = self._activated_at.get(theme_id)
+            if event is None or activated_at is None:
+                continue
+            if event.lifecycle_status not in (
+                LifecycleStatus.ACTIVE,
+                LifecycleStatus.WEAKENING,
+            ):
+                continue
+            leader = self._leader(theme_id)
+            leader_stock_ids = () if leader is None else (str(leader["stockId"]),)
+            contexts.append(
+                ThemeContext(
+                    event_id=event.event_id,
+                    theme_id=theme_id,
+                    display_name=event.classification.display_name,
+                    market_date=self._market_date,
+                    activated_at=activated_at,
+                    leader_names=() if leader is None else (str(leader["name"]),),
+                    leader_stock_ids=leader_stock_ids,
+                    related_stock_ids=tuple(
+                        stock_id
+                        for stock_id in self._member_stock_ids(theme_id)
+                        if stock_id not in leader_stock_ids
+                    ),
+                )
+            )
+        return tuple(contexts)
+
+    def record_evidence(
+        self,
+        revision: EvidenceRevision,
+        evidence: Sequence[CatalystEvidence] = (),
+    ) -> None:
+        """판정된 근거 상태를 다음 발행부터 rankings에 싣는다."""
+
+        summary = evidence_summary(revision, evidence)
+        self._evidence[revision.event_id] = {
+            "evidenceStatus": summary["evidenceStatus"],
+            "summary": summary["summary"],
+            "publishedAt": summary["latestPublishedAt"],
+        }
 
     def apply_update(self, update: StockRealtimeUpdate) -> HotApplyResult:
         """정규화된 시장 관측 1건을 hot state와 dirty 테마 집계에 반영한다."""
@@ -236,6 +298,8 @@ class MarketDataPipeline:
         )
         self._hysteresis[theme_id] = decision.state
         if decision.transition is not None:
+            if decision.transition.to_status is LifecycleStatus.ACTIVE:
+                self._activated_at.setdefault(theme_id, now)
             self._transition_event(
                 event_id,
                 target=decision.transition.to_status,
@@ -338,13 +402,31 @@ class MarketDataPipeline:
             }
             item.update(metrics.to_public_ranking_fields())
             item["leader"] = self._leader(theme_id)
-            item["evidence"] = {
-                "evidenceStatus": "SEARCHING",
-                "summary": None,
-                "publishedAt": None,
-            }
+            evidence = self._evidence.get(event.event_id)
+            item["evidence"] = (
+                dict(evidence)
+                if evidence is not None
+                else {
+                    "evidenceStatus": EvidenceStatus.SEARCHING.value,
+                    "summary": None,
+                    "publishedAt": None,
+                }
+            )
             items.append(item)
         return items
+
+    def _member_stock_ids(self, theme_id: str) -> tuple[str, ...]:
+        update = self._latest_metrics.get(theme_id)
+        if update is None:
+            return ()
+        membership = self._catalog.select(
+            theme_id=theme_id,
+            market_date=update.market_date,
+            decision_at=update.as_of,
+        )
+        if membership is None:
+            return ()
+        return tuple(member.stock_id for member in membership.members)
 
     def _leader(self, theme_id: str) -> dict[str, object] | None:
         """관측된 CORE 구성 종목 중 당일 수익률 최고 종목."""
