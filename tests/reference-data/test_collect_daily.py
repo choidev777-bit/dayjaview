@@ -39,6 +39,44 @@ KRX_ROW = {
 }
 
 
+def _dart_row(**overrides: Any) -> dict[str, Any]:
+    row = {
+        "rcept_no": "20260814000001",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "stlm_dt": "2026-06-30",
+    }
+    row.update(overrides)
+    return row
+
+
+# 실제 응답 모양. stlm_dt가 있어야 저장된 as_of가 결산기준일인지 검증할 수 있고,
+# 자기주식 '-'와 최대주주 '계' 합계 row도 실제로 오는 값이다.
+_DART_ROWS: dict[str, list[dict[str, Any]]] = {
+    "stockTotqySttus.json": [
+        _dart_row(se="보통주", istc_totqy="100,000,000", tesstk_co="-"),
+        _dart_row(se="합계", istc_totqy="100,000,000", tesstk_co="-"),
+    ],
+    "hyslrSttus.json": [
+        _dart_row(
+            nm="예시홀딩스",
+            relate="최대주주 본인",
+            stock_knd="보통주",
+            trmend_posesn_stock_co="25,000,000",
+        ),
+        _dart_row(
+            nm="계",
+            relate=None,
+            stock_knd="보통주",
+            trmend_posesn_stock_co="25,000,000",
+        ),
+    ],
+    "tesstkAcqsDspsSttus.json": [
+        _dart_row(stock_knd="보통주", acqs_mth3="총계", trmend_qy="-"),
+    ],
+}
+
+
 def _corp_code_zip() -> bytes:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
@@ -48,6 +86,11 @@ def _corp_code_zip() -> bytes:
 
 def _worker() -> Any:
     return import_module("apps.worker-batch.reference-data.collect_daily")
+
+
+def _reference_modules() -> dict[str, Any]:
+    prefix = "packages." + "reference-data.reference_data"
+    return {name: import_module(f"{prefix}.{name}") for name in ("parsers", "models")}
 
 
 def _arguments(output_dir: Path, **overrides: Any) -> argparse.Namespace:
@@ -169,7 +212,7 @@ def test_collect_daily_stores_raw_snapshots_and_resumes(tmp_path: Path) -> None:
             json={
                 "status": "000",
                 "message": "정상",
-                "list": [{"rcept_no": "20260814000001"}],
+                "list": _DART_ROWS[request.url.path.rsplit("/", 1)[-1]],
             },
             request=request,
         )
@@ -199,6 +242,19 @@ def test_collect_daily_stores_raw_snapshots_and_resumes(tmp_path: Path) -> None:
     )
     assert "krx-secret" not in json.dumps(body, ensure_ascii=False)
     assert json.loads(body["rawPayloadText"])["OutBlock_1"][0]["ISU_CD"] == "A00001"
+
+    # 정기보고서는 수집 시각이 아니라 결산기준일을 as_of로 저장해야 다시 읽힌다.
+    modules = _reference_modules()
+    stored_total = modules["parsers"].load_collected_snapshot(
+        json.loads(
+            (tmp_path / "OPENDART_STOCK_TOTAL.00000001_2026_11012.json").read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+    assert stored_total.metadata.as_of.date() == date(2026, 6, 30)
+    normalized = modules["parsers"].parse_open_dart(stored_total, stock_code="A00001")
+    assert normalized.issued_share_observations[0].value == 100_000_000
 
     krx_calls.clear()
     dart_calls.clear()

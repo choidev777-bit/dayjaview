@@ -8,10 +8,14 @@
   "collectedAt": "2026-08-14T08:01:00+09:00",
   "parserVersion": "reference-source-2026.08.1",
   "revision": 1,
-  "lineage": ["fixture:opendart:largest-shareholder:00000001:2026:11012"],
-  "sourceDocumentIds": ["20260814000001"],
+  "lineage": [
+    "fixture:opendart:largest-shareholder:00000001:2026:11012"
+  ],
+  "sourceDocumentIds": [
+    "20260814000001"
+  ],
   "liveValidationStatus": "UNVERIFIED",
-  "rawHash": "c0b218d88fd408be1a0138b1dd0189c97364ab19f0fc147adbfce8b9ba9cf6aa",
+  "rawHash": "01b9fa7068a2c8850c5340291b5a561ada6ea9f9d9a072e9290d0f468dd5590d",
   "rawResponse": {
     "status": "000",
     "message": "정상",
@@ -59,6 +63,21 @@
         "trmend_posesn_stock_co": "5,000,000",
         "trmend_posesn_stock_qota_rt": "5.00",
         "rm": "보호예수 확인",
+        "stlm_dt": "2026-06-30"
+      },
+      {
+        "rcept_no": "20260814000001",
+        "corp_cls": "Y",
+        "corp_code": "00000001",
+        "corp_name": "예시전자",
+        "nm": "계",
+        "relate": null,
+        "stock_knd": "보통주",
+        "bsis_posesn_stock_co": "34,000,000",
+        "bsis_posesn_stock_qota_rt": "34.00",
+        "trmend_posesn_stock_co": "35,000,000",
+        "trmend_posesn_stock_qota_rt": "35.00",
+        "rm": "",
         "stlm_dt": "2026-06-30"
       }
     ]

@@ -110,6 +110,12 @@ def _integer(value: object, path: str, *, allow_zero: bool = False) -> int:
     return result
 
 
+def _treasury_shares(value: object, path: str) -> int:
+    """OpenDART 정기보고서는 자기주식 0주를 숫자가 아니라 '-'로 렌더링해 보낸다."""
+
+    return 0 if str(value).strip() == "-" else _integer(value, path, allow_zero=True)
+
+
 def _decimal(value: object, path: str) -> Decimal:
     text = str(value).replace(",", "").strip()
     try:
@@ -463,6 +469,12 @@ def _is_common(value: object, path: str) -> bool:
     return text in {"보통주", "보통주식", "의결권있는주식"}
 
 
+def _is_total_row(name: str) -> bool:
+    """최대주주 응답은 주식 종류별 합계 row를 붙여 보낸다. 개별 보유와 이중 차감된다."""
+
+    return "".join(name.split()) in {"계", "합계", "소계", "총계"}
+
+
 def _holder_id(corp_code: str, name: str, relationship: str) -> str:
     normalized = "|".join((corp_code, "".join(name.split()), "".join(relationship.split())))
     return f"DART_HOLDER:{sha256_text(normalized)[:24]}"
@@ -505,7 +517,7 @@ def _parse_stock_total(
     if effective_on != metadata.as_of.date():
         _fail("SOURCE_REFERENCE_CONFLICT", f"{path}.stlm_dt", "결산기준일이 as_of와 다릅니다.")
     issued = _integer(row.get("istc_totqy"), f"{path}.istc_totqy")
-    treasury = _integer(row.get("tesstk_co"), f"{path}.tesstk_co", allow_zero=True)
+    treasury = _treasury_shares(row.get("tesstk_co"), f"{path}.tesstk_co")
     return OpenDartNormalization(
         issued_share_observations=(
             FieldObservation(
@@ -560,6 +572,8 @@ def _parse_largest_shareholders(
         if shares == 0:
             continue
         name = _text(row.get("nm"), f"{path}.nm")
+        if _is_total_row(name):
+            continue
         relationship = _text(row.get("relate"), f"{path}.relate")
         corp_code = _text(row.get("corp_code"), f"{path}.corp_code")
         effective_on = _date(row.get("stlm_dt"), f"{path}.stlm_dt")
@@ -625,7 +639,7 @@ def _parse_treasury_status(
         holder_name="자기주식",
         category=NonFloatCategory.TREASURY,
         share_class=ShareClass.COMMON,
-        shares=_integer(row.get("trmend_qy"), f"{path}.trmend_qy", allow_zero=True),
+        shares=_treasury_shares(row.get("trmend_qy"), f"{path}.trmend_qy"),
         effective_on=effective_on,
         metadata=metadata,
     )

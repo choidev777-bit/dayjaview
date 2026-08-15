@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import FIXTURE_ROOT, REPOSITORY_ROOT
+from conftest import FIXTURE_ROOT, REPOSITORY_ROOT, aware
 
 
 @pytest.mark.parametrize(
@@ -74,6 +74,69 @@ def test_opendart_holders_keep_categories_and_stable_identity(
         "CONTROLLING_HOLDER",
         "STRATEGIC_LOCKUP",
     }
+
+
+def test_opendart_holders_skip_share_class_total_row(
+    modules: dict[str, Any], load_fixture
+) -> None:
+    """실제 hyslrSttus는 주식 종류별 '계' row를 붙여 보낸다. 이중 차감되면 안 된다."""
+
+    snapshot = load_fixture("opendart-largest-shareholder.json")
+    normalized = modules["parsers"].parse_open_dart(snapshot, stock_code="A00001")
+
+    assert [item.holder_name for item in normalized.non_float_holdings] == [
+        "예시홀딩스",
+        "예시인",
+        "전략투자자",
+    ]
+    assert sum(item.shares for item in normalized.non_float_holdings) == 35_000_000
+
+
+def test_opendart_stock_total_reads_dash_treasury_as_zero(
+    modules: dict[str, Any],
+) -> None:
+    """자사주가 없는 회사는 tesstk_co가 숫자가 아니라 '-'로 온다."""
+
+    models = modules["models"]
+    hashing = modules["hashing"]
+    timestamp = aware("2026-06-30T00:00:00+09:00")
+    payload = {
+        "status": "000",
+        "message": "정상",
+        "list": [
+            {
+                "rcept_no": "20260814000001",
+                "corp_code": "00000001",
+                "se": "보통주",
+                "istc_totqy": "62,000,000",
+                "tesstk_co": "-",
+                "stlm_dt": "2026-06-30",
+            }
+        ],
+    }
+    raw_text = hashing.canonical_json(payload)
+    snapshot = models.SourceSnapshot(
+        metadata=models.SourceMetadata(
+            provider=models.SourceProvider.OPENDART,
+            dataset=models.SourceDataset.OPENDART_STOCK_TOTAL,
+            endpoint="https://opendart.fss.or.kr/api/stockTotqySttus.json",
+            source_key="00000001:2026:11012",
+            as_of=timestamp,
+            collected_at=aware("2026-08-15T09:00:00+09:00"),
+            parser_version="reference-source-2026.08.1",
+            revision=1,
+            lineage=("opendart:stock-total:00000001:2026:11012",),
+            source_document_ids=("20260814000001",),
+        ),
+        raw_payload_text=raw_text,
+        raw_hash=hashing.sha256_text(raw_text),
+    )
+
+    normalized = modules["parsers"].parse_open_dart(snapshot, stock_code="A00001")
+
+    assert normalized.issued_share_observations[0].value == 62_000_000
+    assert normalized.non_float_holdings[0].holder_id == "ISSUER_TREASURY"
+    assert normalized.non_float_holdings[0].shares == 0
 
 
 def test_opendart_treasury_total_has_same_economic_holder_key(

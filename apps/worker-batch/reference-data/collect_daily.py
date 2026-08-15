@@ -23,6 +23,14 @@ REPORT_DATASETS = (
     "OPENDART_LARGEST_SHAREHOLDER",
     "OPENDART_TREASURY_STATUS",
 )
+# 정기보고서 row의 stlm_dt(결산기준일). 파서는 as_of.date()가 이 값과 같기를
+# 요구하므로 수집 시각이 아니라 이 날짜를 as_of로 저장해야 나중에 읽힌다.
+REPORT_SETTLEMENT_MONTH_DAY = {
+    "11011": (12, 31),
+    "11012": (6, 30),
+    "11013": (3, 31),
+    "11014": (9, 30),
+}
 
 
 def _package(name: str) -> Any:
@@ -195,6 +203,10 @@ def collect(
     if arguments.limit is not None:
         targets = targets[: arguments.limit]
 
+    month, day = REPORT_SETTLEMENT_MONTH_DAY[arguments.report_code]
+    settlement_as_of = datetime(
+        arguments.business_year, month, day, tzinfo=UTC
+    )
     dart_calls = 0
     for stock_code in targets:
         corp_code = corp_codes[stock_code]
@@ -209,7 +221,7 @@ def collect(
                     corp_code=corp_code,
                     business_year=arguments.business_year,
                     report_code=arguments.report_code,
-                    as_of=collected_at,
+                    as_of=settlement_as_of,
                     collected_at=collected_at,
                 ),
                 output_dir=output_dir,
