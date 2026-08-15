@@ -168,6 +168,7 @@ def load_collected_references(
         for snapshot in by_dataset.get(models.SourceDataset.OPENDART_CORP_CODE, [])
         for stock_code, corp_code in parsers.parse_corp_code_index(snapshot).items()
     }
+    errors = _module("errors")
     for dataset in (
         models.SourceDataset.OPENDART_STOCK_TOTAL,
         models.SourceDataset.OPENDART_LARGEST_SHAREHOLDER,
@@ -177,7 +178,15 @@ def load_collected_references(
             stock_code = stock_by_corp.get(snapshot.metadata.source_key.partition(":")[0])
             if stock_code is None:
                 continue
-            normalized = parsers.parse_open_dart(snapshot, stock_code=stock_code)
+            try:
+                normalized = parsers.parse_open_dart(snapshot, stock_code=stock_code)
+            except errors.SourceContractError:
+                # 정기보고서 표 모양은 회사마다 다르다. 보고서를 안 낸 회사(013),
+                # 자사주 거래가 없어 총계 row가 없는 회사, 결산월이 12월이 아닌
+                # 회사가 실제로 2,410종목 중 118종목 있다. 한 종목의 공시 모양
+                # 때문에 시장 전체 기준정보가 죽으면 안 되므로 그 종목만 관측 없이
+                # 남기고, 유동주식비율 없음은 Coverage가 그대로 드러낸다.
+                continue
             shares.extend(normalized.issued_share_observations)
             holdings.extend(normalized.non_float_holdings)
             declarations.extend(normalized.coverage_declarations)

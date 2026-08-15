@@ -211,6 +211,42 @@ def test_collected_bundle_resolves_references_through_the_corp_code_index(
     assert reference.free_float_validated is True
 
 
+def test_unparseable_opendart_snapshot_only_drops_that_stock(tmp_path: Path) -> None:
+    """정기보고서 표 모양은 회사마다 다르다. 한 종목 때문에 전체가 죽으면 안 된다."""
+
+    _write_collected_bundle(tmp_path)
+    models = _reference_module("models")
+    hashing = _reference_module("hashing")
+    parsers = _reference_module("parsers")
+    # 보고서를 내지 않은 회사에 OpenDART가 주는 응답.
+    no_data = '{"status":"013","message":"조회된 데이타가 없습니다."}'
+    snapshot = models.SourceSnapshot(
+        metadata=replace(
+            _fixture("opendart-stock-total.json").metadata,
+            source_key="00000002:2026:11012",
+            source_document_ids=(),
+            lineage=("opendart:stock-total:00000002:2026:11012",),
+        ),
+        raw_payload_text=no_data,
+        raw_hash=hashing.sha256_text(no_data),
+    )
+    (tmp_path / "no-data.json").write_text(
+        json.dumps(
+            parsers.dump_collected_snapshot(snapshot), ensure_ascii=False, sort_keys=True
+        ),
+        encoding="utf-8",
+    )
+
+    references = load_collected_references(
+        tmp_path,
+        market_date=date(2026, 8, 13),
+        decision_at=datetime.fromisoformat("2026-08-14T09:00:00+09:00"),
+        stock_ids=("KRX:A00001",),
+    )
+
+    assert references[0].free_float_ratio == Decimal("0.55")
+
+
 def test_official_sources_resolve_a_usable_stock_reference() -> None:
     references = _resolve(("KRX:A00001",))
 
