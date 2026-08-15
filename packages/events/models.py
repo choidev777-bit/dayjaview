@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import StrEnum
 
-from packages.domain import LifecycleStatus, ReconciliationStatus
+from packages.domain import LifecycleStatus, ReconciliationStatus, StateAxis
 
 EVENT_COMMAND_SCHEMA_VERSION = "event-command-2026.08.1"
 EVENT_DOMAIN_EVENT_VERSION = "1"
@@ -412,7 +412,42 @@ class TransitionLifecycleCommand:
         }
 
 
-type EventCommand = CreateEventCommand | TransitionLifecycleCommand
+@dataclass(frozen=True, slots=True)
+class ReconcileEventCommand:
+    """장후 정합: 기존 Event에 같은 eventId의 reconciliation revision을 남긴다."""
+
+    metadata: EventInputMetadata
+    event_id: str
+    target: ReconciliationStatus
+    expected_state_version: int
+    reason: str
+    policy_version: str
+
+    def __post_init__(self) -> None:
+        _require_text(self.event_id, "event_id")
+        _require_text(self.reason, "reason")
+        _require_text(self.policy_version, "policy_version")
+        if self.target is ReconciliationStatus.PENDING:
+            raise ValueError("reconciliation target은 PENDING일 수 없습니다")
+        if self.expected_state_version < 1:
+            raise ValueError("expected_state_version은 1 이상이어야 합니다")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "commandType": "RECONCILE_EVENT",
+            "schemaVersion": EVENT_COMMAND_SCHEMA_VERSION,
+            "metadata": self.metadata.to_dict(),
+            "eventId": self.event_id,
+            "target": self.target.value,
+            "expectedStateVersion": self.expected_state_version,
+            "reason": self.reason,
+            "policyVersion": self.policy_version,
+        }
+
+
+type EventCommand = (
+    CreateEventCommand | TransitionLifecycleCommand | ReconcileEventCommand
+)
 
 
 def command_fingerprint(command: EventCommand) -> str:
@@ -478,8 +513,8 @@ class CommandReceipt:
 class EventStateLog:
     event_id: str
     state_version: int
-    from_status: LifecycleStatus | None
-    to_status: LifecycleStatus
+    from_status: LifecycleStatus | ReconciliationStatus | None
+    to_status: LifecycleStatus | ReconciliationStatus
     policy_version: str
     reason: str
     occurred_at: datetime
@@ -488,6 +523,7 @@ class EventStateLog:
     source_sequence: int
     command_message_id: str
     lineage: tuple[LineageRef, ...]
+    axis: StateAxis = StateAxis.LIFECYCLE
 
 
 def outbox_message_id(command_message_id: str, event_type: str) -> str:

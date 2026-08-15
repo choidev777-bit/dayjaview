@@ -7,13 +7,17 @@ from dataclasses import replace
 from packages.domain import (
     LifecycleStatus,
     ReconciliationStatus,
+    StateAxis,
     transition_lifecycle,
+    transition_reconciliation,
 )
 
 from .models import (
     EVENT_DOMAIN_EVENT_VERSION,
     EVENT_PRODUCER,
     CanonicalEvent,
+    ClassificationCertainty,
+    ClassificationSource,
     CommandReceipt,
     CreateEventCommand,
     EventClassification,
@@ -21,6 +25,7 @@ from .models import (
     EventStateLog,
     EventWriteDisposition,
     EventWriteResult,
+    ReconcileEventCommand,
     TransitionLifecycleCommand,
     command_fingerprint,
     outbox_message_id,
@@ -53,8 +58,10 @@ class EventWriter:
                 return receipt.result
             if isinstance(command, CreateEventCommand):
                 result = self._create(transaction, command)
-            else:
+            elif isinstance(command, TransitionLifecycleCommand):
                 result = self._transition(transaction, command)
+            else:
+                result = self._reconcile(transaction, command)
             transaction.save_receipt(
                 CommandReceipt(
                     message_id=command.metadata.message_id,
@@ -230,6 +237,115 @@ class EventWriter:
                 "fromLifecycleStatus": event.lifecycle_status.value,
                 "lifecycleStatus": updated.lifecycle_status.value,
                 "stateVersion": updated.state_version,
+                "policyVersion": command.policy_version,
+                "reason": command.reason,
+            },
+        )
+        transaction.enqueue_outbox(message)
+        return EventWriteResult(
+            event=updated,
+            disposition=EventWriteDisposition.APPLIED,
+            outbox_message_id=message.message_id,
+        )
+
+    def _reconcile(
+        self,
+        transaction: EventTransaction,
+        command: ReconcileEventCommand,
+    ) -> EventWriteResult:
+        event = transaction.get_event(command.event_id)
+        if event is None:
+            raise EventNotFoundError(f"Event를 찾을 수 없습니다: {command.event_id}")
+
+        metadata = command.metadata
+        latest_sequence = transaction.latest_source_sequence(
+            event.event_id, metadata.source
+        )
+        if latest_sequence is not None and metadata.source_sequence <= latest_sequence:
+            return EventWriteResult(
+                event=event,
+                disposition=EventWriteDisposition.STALE_SOURCE_SEQUENCE,
+                outbox_message_id=None,
+            )
+        if command.expected_state_version < event.state_version:
+            return EventWriteResult(
+                event=event,
+                disposition=EventWriteDisposition.STALE_STATE_VERSION,
+                outbox_message_id=None,
+            )
+        if command.expected_state_version > event.state_version:
+            raise ConcurrentEventWriteError(
+                "expected_state_version이 현재 Event stateVersion보다 큽니다"
+            )
+        if metadata.occurred_at < event.changed_at:
+            return EventWriteResult(
+                event=event,
+                disposition=EventWriteDisposition.STALE_OCCURRED_AT,
+                outbox_message_id=None,
+            )
+        if command.target is event.reconciliation_status:
+            return EventWriteResult(
+                event=event,
+                disposition=EventWriteDisposition.ALREADY_IN_STATE,
+                outbox_message_id=None,
+            )
+
+        transition_reconciliation(
+            event.reconciliation_status,
+            command.target,
+            policy_version=command.policy_version,
+        )
+        classification = event.classification
+        if command.target is ReconciliationStatus.MATCHED:
+            # 장후 확정(MATCHED)에서만 분류가 인포스탁 확정으로 승격된다
+            # (contracts/fixtures/event/after-close-confirmed.json 계약).
+            classification = replace(
+                classification,
+                classification_version=classification.classification_version + 1,
+                certainty=ClassificationCertainty.CONFIRMED,
+                source=ClassificationSource.INFOSTOCK,
+                changed_at=metadata.occurred_at,
+            )
+        updated = replace(
+            event,
+            reconciliation_status=command.target,
+            classification=classification,
+            state_version=event.state_version + 1,
+            state_policy_version=command.policy_version,
+            changed_at=metadata.occurred_at,
+            last_source=metadata.source,
+            last_source_sequence=metadata.source_sequence,
+            last_received_at=metadata.received_at,
+            lineage=metadata.lineage,
+        )
+        transaction.update_event(updated, expected_state_version=event.state_version)
+        transaction.append_state_log(
+            EventStateLog(
+                event_id=updated.event_id,
+                state_version=updated.state_version,
+                from_status=event.reconciliation_status,
+                to_status=command.target,
+                policy_version=command.policy_version,
+                reason=command.reason,
+                occurred_at=metadata.occurred_at,
+                received_at=metadata.received_at,
+                source=metadata.source,
+                source_sequence=metadata.source_sequence,
+                command_message_id=metadata.message_id,
+                lineage=metadata.lineage,
+                axis=StateAxis.RECONCILIATION,
+            )
+        )
+        message = self._event_message(
+            event=updated,
+            command=command,
+            event_type="canonical_event.reconciled",
+            payload={
+                "eventId": updated.event_id,
+                "fromReconciliationStatus": event.reconciliation_status.value,
+                "reconciliationStatus": updated.reconciliation_status.value,
+                "stateVersion": updated.state_version,
+                "classificationVersion": updated.classification.classification_version,
                 "policyVersion": command.policy_version,
                 "reason": command.reason,
             },

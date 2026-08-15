@@ -19,6 +19,7 @@ EXPECTED_ORDER = (
     "0002_reference_data.sql",
     "0002_event_realtime.sql",
     "0003_news_catalyst.sql",
+    "0004_event_reconciliation.sql",
 )
 
 

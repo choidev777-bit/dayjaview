@@ -25,8 +25,9 @@ from packages.realtime import (
 )
 
 TEST_DSN = os.environ.get("PIPELINE_TEST_DSN")
-MIGRATION = (
-    Path(__file__).resolve().parents[2] / "infra/migrations/0002_event_realtime.sql"
+MIGRATIONS = tuple(
+    Path(__file__).resolve().parents[2] / "infra/migrations" / name
+    for name in ("0002_event_realtime.sql", "0004_event_reconciliation.sql")
 )
 MARKET_DATE = date(2026, 8, 14)
 KNOWN_AT = datetime(2026, 8, 13, 23, 0, tzinfo=UTC)
@@ -47,7 +48,8 @@ def connection():
         admin.execute("DROP SCHEMA IF EXISTS event CASCADE")
         admin.execute("DROP SCHEMA IF EXISTS realtime CASCADE")
         admin.execute("DROP SCHEMA IF EXISTS serving CASCADE")
-        admin.execute(MIGRATION.read_text(encoding="utf-8"))
+        for migration in MIGRATIONS:
+            admin.execute(migration.read_text(encoding="utf-8"))
     connection = psycopg.connect(TEST_DSN)
     try:
         yield connection

@@ -19,6 +19,7 @@ from .models import (
     EventWriteDisposition,
     EventWriteResult,
     LineageRef,
+    ReconcileEventCommand,
     TransitionLifecycleCommand,
     command_fingerprint,
 )
@@ -76,6 +77,7 @@ __all__ = [
     "OutboxStatus",
     "PostgresEventStore",
     "PublishBatchResult",
+    "ReconcileEventCommand",
     "SimulatedCommitFailure",
     "TransitionLifecycleCommand",
     "command_fingerprint",

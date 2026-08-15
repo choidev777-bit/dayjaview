@@ -396,16 +396,17 @@ class _PostgresEventTransaction:
         self._cursor.execute(
             """
             INSERT INTO event.state_logs (
-                event_id, state_version, from_status, to_status,
+                event_id, state_version, axis, from_status, to_status,
                 policy_version, reason, occurred_at, received_at,
                 source, source_sequence, command_message_id, lineage
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb
             )
             """,
             (
                 state_log.event_id,
                 state_log.state_version,
+                state_log.axis.value,
                 None if state_log.from_status is None else state_log.from_status.value,
                 state_log.to_status.value,
                 state_log.policy_version,
