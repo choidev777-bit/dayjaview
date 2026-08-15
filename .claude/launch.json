@@ -14,7 +14,7 @@
         "run",
         "python",
         "-c",
-        "import os; os.environ.setdefault('APP_BASE_URL', 'http://localhost:5173'); from apps.api.serve import serve_fixture_api; serve_fixture_api(host='127.0.0.1', port=8000)"
+        "import os; os.environ.setdefault('APP_BASE_URL', 'http://localhost:5173'); os.environ.setdefault('OPERATOR_BOOTSTRAP_GOOGLE_EMAILS', 'fixture@dayjaview.test'); from apps.api.serve import serve_fixture_api; serve_fixture_api(host='127.0.0.1', port=8000)"
       ],
       "port": 8000
     }
