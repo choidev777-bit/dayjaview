@@ -226,14 +226,25 @@ def _select_holdings(
     bool,
     tuple[NonFloatHolding, ...],
 ]:
+    eligible = [
+        holding
+        for holding in holdings
+        if holding.stock_code == stock_code
+        and _pit_eligible(holding, market_date=market_date, decision_at=decision_at)
+    ]
+    # 비유동 보유 명단은 공시 **한 시점을 통째로** 쓴다. 정기보고서는 그 시점의
+    # 전체 명단이지 변경분이 아니므로, 주주별로 최신 관측을 따로 고르면 그 뒤
+    # 공시에서 지분을 전부 처분해 명단에서 빠진 주주가 옛 지분 그대로 남는다.
+    # 이미 시장에 풀린 주식을 잠긴 것으로 세고, 그 옛 날짜 때문에 종목 전체가
+    # STALE로 버려진다.
+    if eligible:
+        latest_disclosure = max(holding.effective_on for holding in eligible)
+        eligible = [
+            holding for holding in eligible if holding.effective_on == latest_disclosure
+        ]
+
     groups: defaultdict[tuple[str, str, object], list[NonFloatHolding]] = defaultdict(list)
-    for holding in holdings:
-        if holding.stock_code != stock_code or not _pit_eligible(
-            holding,
-            market_date=market_date,
-            decision_at=decision_at,
-        ):
-            continue
+    for holding in eligible:
         groups[holding.economic_key].append(holding)
 
     priority = {dataset: index for index, dataset in enumerate(HOLDING_SOURCE_PRIORITY)}
@@ -241,9 +252,7 @@ def _select_holdings(
     considered: list[NonFloatHolding] = []
     duplicate_count = 0
     conflict = False
-    for values in groups.values():
-        latest_effective = max(value.effective_on for value in values)
-        latest = [value for value in values if value.effective_on == latest_effective]
+    for latest in groups.values():
         latest_by_source_values: list[NonFloatHolding] = []
         for source in {value.metadata.dataset for value in latest}:
             source_values = [

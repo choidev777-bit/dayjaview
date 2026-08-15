@@ -128,6 +128,36 @@ def test_same_source_same_revision_conflict_is_not_order_dependent(
     assert result.state.value == "CONFLICT"
 
 
+def test_holder_absent_from_the_newest_disclosure_is_not_deducted(
+    modules: dict[str, Any], load_fixture
+) -> None:
+    """옛 공시에만 있는 주주는 그 시점 이후 지분이 없다는 뜻이다."""
+
+    values = _inputs(modules, load_fixture)
+    models = modules["models"]
+    old_holder = models.NonFloatHolding(
+        stock_code="A00001",
+        holder_id="DART_HOLDER:exited",
+        holder_name="지분을 전부 처분한 주주",
+        category=models.NonFloatCategory.CONTROLLING_HOLDER,
+        share_class=models.ShareClass.COMMON,
+        shares=20_000_000,
+        effective_on=values["holdings"][0].effective_on - timedelta(days=182),
+        metadata=values["holdings"][0].metadata,
+    )
+    result = _calculate(
+        modules,
+        values,
+        holdings=(*values["holdings"], old_holder),
+    )
+
+    # 최신 공시 명단에 없으므로 2천만주를 차감하지 않고, 그 옛 날짜 때문에
+    # 종목 전체가 STALE로 버려지지도 않는다.
+    assert result.state.value == "VERIFIED"
+    assert result.deducted_non_float_shares == 45_000_000
+    assert result.ratio == Decimal("0.55")
+
+
 def test_missing_required_source_does_not_use_remaining_value(
     modules: dict[str, Any], load_fixture
 ) -> None:
