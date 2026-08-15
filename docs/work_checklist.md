@@ -2,14 +2,14 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-15 · 기준 commit `a52b12c` · `uv run pytest -q` 446 passed·6 skipped
+- **마지막 갱신**: 2026-08-15 · 기준 commit `92b7c94` · `uv run pytest -q` 449 passed·6 skipped
 
 ## 요약
 
 | 그룹 | 완료 | 남음 |
 |---|---|---|
 | A. 실데이터 연결 | 4 / 8 | A-3, A-6, A-7, A-8 |
-| B. 뉴스 근거 | 4 / 4 | (REST 배선 잔여 1건, 아래 참조) |
+| B. 뉴스 근거 | 4 / 4 | (live 수집 실행·`.env.example` 항목만, B-8 참조) |
 | C. 화면 | 2 / 2 | — |
 | D. 매일 자동 운영 | 0 / 3 | D-13, D-14, D-15 |
 | E. 과거 연구 | 0 / 5 | E-16 ~ E-20 |
@@ -45,7 +45,7 @@
 - [x] **B-9** 뉴스 ↔ 실시간 테마 매칭 — 2026-08-15 `cf153bd`
 - [x] **B-10** 근거 있을 때만 AI 요약 — 2026-08-15 `9f83666`
 - [x] **B-11** 근거 UI 완성 — 2026-08-15 `6c7fb83`
-- [ ] **(B 잔여)** 상세 화면의 근거 섹션이 실서빙에서 404다. `/v1/events/{eventId}/evidence`가 파이프라인에 연결돼 있지 않아(`SnapshotProductReadRepository.evidence()`가 None) 화면에 "데이터를 불러오지 못했습니다"가 뜬다. 2026-08-15 A-5 검증 중 확인.
+- [x] **(B 잔여)** 근거 REST 배선 — 2026-08-15 `92b7c94`. `MarketDataPipeline.evidence_document`(공개 Event만, 판정 전 SEARCHING) + `SnapshotProductReadRepository.evidence`. 브라우저에서 `/evidence` 200과 근거 섹션 렌더 확인. 잔여였던 live 수집 실행·`.env.example` 항목 추가는 B-8 줄에 그대로 남아 있다.
 
 ## C. 화면
 
