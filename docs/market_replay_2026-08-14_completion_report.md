@@ -2,13 +2,30 @@
 
 ## 0. 판정 상태
 
-**현재 상태: 장중 수집 중 — 최종 완료 아님**
+**현재 상태: 수집 취소로 종료 — 계획된 완료 조건 미달, 부분 fixture로 확정**
+(2026-08-15 갱신. 이전 문구는 "장중 수집 중"이었으나 실제로는 그날 취소로 끝났다.)
+
+manifest 실측:
+
+| | 본 수집 `data/market-replay/2026-08-14` | 보조 수집 `data/market-replay-supplemental/2026-08-14` |
+|---|---|---|
+| status / error | `INTERRUPTED` / `cancelled` | `INTERRUPTED` / `stopped by user` |
+| 확보 구간(KST) | 09:00:00.569 ~ **10:39:31** | 10:09:17 ~ **10:39:24** |
+| 계획 종료(KST) | 15:40 (`endAt`) — **미도달** | 장 마감까지 — **미도달** |
+| event 수 | 1,803,564 (체결 1,561,132) | 133,965 (snapshot 132,561) |
+| 종목 수 | 2,182 | 2,218 |
+| 1분봉 | **0행** (`backfillMinuteBars: true`였으나 미실행) | — |
+
+**이 데이터셋으로는 통과할 수 없는 게이트가 있다.** 장 마감 범위, 전 종목 1분봉,
+run 정상 종료는 재수집 없이는 영구 미달이다. 정규장이 다시 열려야만 닫힌다.
+아래 1절 표를 그 사실에 맞춰 갱신했고, PENDING(곧 끝남)과 FAIL(이 데이터셋으로
+불가)과 미실행(절차를 돌리지 않음)을 구분했다.
 
 이 보고서는 `one_time_market_replay_collection_plan.md`의 성공 조건을 실제 증거와
 일대일로 대조하기 위한 문서다. 구현 코드가 존재하거나 테스트가 일부 통과했다는
-이유만으로 데이터셋을 완료 처리하지 않는다. 2026-08-14 장 종료, 전 종목 1분봉
-백필, 무결성·completeness·동일성 검사가 모두 끝난 뒤에만 이 문서의 상태를
-`완료`로 바꾼다.
+이유만으로 데이터셋을 완료 처리하지 않는다. 계획이 정의한 `완료`는 달성되지
+않았으며, 이 문서는 **확보된 범위 안에서 무엇이 검증 가능한지**를 확정하는
+용도로 남긴다.
 
 이 fixture의 완료는 DAYJAVIEW 제품 전체 기능이 이미 통과했다는 뜻이 아니다.
 향후 구현된 서비스의 Market Gateway를 이 fixture에 연결해 오늘의 입력을 같은
@@ -21,21 +38,25 @@
 | 목적·범위 설명 | 구현 계획 0~3절 | PASS |
 | 수집·저장 구현 | collector, SQLite, NDJSON, manifest 소스 및 테스트 | PASS |
 | 09:00 시작 범위 | 첫 REST 09:00:00.569, 첫 체결 09:00:00.863 KST | PASS |
-| 장 마감 범위 | 마지막 시장 event가 15:30 이후 | PENDING |
-| 필수 장중 공급원 | 조건식, REST 4종, 0B, 0J, 0U, 구독 결정 | 장중 확인 PASS / 최종 PENDING |
-| 활성 테마 비구독 종목 보조 시세 | `ka10095` 30초 snapshot, coverage, 무오류 batch | 10:09 이후 PASS / 09:00~10:09 알려진 공백 FAIL |
-| 보조 시작 전 공백 복구 | `ka10084` 1분 market state, 전 테마 연관 master 종목 | 구현·실계정 1종목 smoke PASS / 장후 전수 PENDING |
-| 본·보조 통합 재생 | 수신 시각 병합, 단일 sequence, payload hash 보존 | 제한 구간 PASS / 최종 PENDING |
-| 전 종목 1분봉 | master 대비 완료 95% 이상, 실제 bar 종목 90% 이상 | PENDING |
-| run 정상 종료 | `collection_runs.status=COMPLETED`, 종료 시각 존재 | PENDING |
-| 저장 무결성 | `replay_market.py verify` exit 0 | PENDING |
-| 수집 완전성 | `replay_market.py audit` exit 0 | PENDING |
-| DB·원본·재생 동일성 | `replay_market.py prove` exit 0 | PENDING |
-| 서비스 profile 재생 | 실제 DB emit 건수/hash 증명 | PENDING |
+| 장 마감 범위 | 마지막 시장 event가 15:30 이후 | **FAIL(영구)** — 10:39:31 KST 취소, 15:30 미도달 |
+| 필수 장중 공급원 | 조건식, REST 4종, 0B, 0J, 0U, 구독 결정 | 09:00~10:39 PASS / 이후 데이터 없음 |
+| 활성 테마 비구독 종목 보조 시세 | `ka10095` 30초 snapshot, coverage, 무오류 batch | 10:09:17~10:39:24 PASS / 09:00~10:09 공백 FAIL / 10:39 이후 없음 |
+| 보조 시작 전 공백 복구 | `ka10084` 1분 market state, 전 테마 연관 master 종목 | **미실행** — 구현·1종목 smoke만 PASS. `data/market-replay-gap-recovery/` 생성되지 않음 |
+| 본·보조 통합 재생 | 수신 시각 병합, 단일 sequence, payload hash 보존 | 제한 구간 PASS / 전 구간 대상 없음 |
+| 전 종목 1분봉 | master 대비 완료 95% 이상, 실제 bar 종목 90% 이상 | **FAIL(영구)** — `minute_bars` 0행, 백필 미실행 |
+| run 정상 종료 | `collection_runs.status=COMPLETED`, 종료 시각 존재 | **FAIL(영구)** — 본 `INTERRUPTED/cancelled`, 보조 `INTERRUPTED/stopped by user` |
+| 저장 무결성 | `replay_market.py verify` exit 0 | **미실행** |
+| 수집 완전성 | `replay_market.py audit` exit 0 | **미실행** — 완전성 기준이 장 마감·1분봉을 전제하므로 이 데이터셋으로는 통과 불가 |
+| DB·원본·재생 동일성 | `replay_market.py prove` exit 0 | **미실행** |
+| 서비스 profile 재생 | 실제 DB emit 건수/hash 증명 | **미실행** |
 | WebSocket 재생 | 실제 DB의 제한 구간을 접속자가 순서대로 수신 | PASS |
 | 재생 clock | 실제 DB 동일 구간을 1배속·20배속·무지연 재생 | PASS |
-| 회귀 테스트 | 전체 pytest 통과 | 장중 23 PASS / 최종 재실행 PENDING |
-| credential 부재 | audit의 exact-key 검사와 로그 검사 | PENDING |
+| 회귀 테스트 | 전체 pytest 통과 | 장중 23 PASS / 수집 종료 후 재실행 **미실행** |
+| credential 부재 | audit의 exact-key 검사와 로그 검사 | **미실행** |
+
+판정 구분: **FAIL(영구)** = 재수집 없이는 닫히지 않음(정규장 필요). **미실행** =
+절차를 돌리면 결과가 바뀔 수 있음. 취소로 끝났으므로 4절 증명 절차는 어느 것도
+실행되지 않았다.
 
 ## 2. 기능별 fixture 적합성 감사
 
@@ -50,6 +71,13 @@
 | 후보 밖 사후 사례 분석 | KOSPI·KOSDAQ 전 종목 1분봉 | master/완료/bar coverage 및 시간 범위 감사 |
 | 상승 이유 대기·장애 상태 | 뉴스가 없는 입력 계약, source status/error | `SEARCHING/상승 이유 확인 중` 동작을 서비스에서 검증 |
 | 장애·복구 | source status/error, REST 원본, 구독 재등록 | 기록된 운영 event를 replay하여 상태 처리 검증 |
+
+**취소로 추가 제외된 항목(2026-08-15 갱신).** 위 표에서 09:00~10:39 구간으로
+검증 가능한 것은 후보 종목 발견, 실시간 종목 선정, 테마 집계·Coverage,
+CANDIDATE→ACTIVE 승격, 급부상·주도주·순위, 시장 필터, 상승 이유 대기·장애
+상태다. 반면 **WEAKENING/CLOSED 소멸 전이**는 장 후반이 없어 재생할 수 없고,
+**후보 밖 사후 사례 분석**은 1분봉이 0행이라 불가능하다. 이 둘은 A-3(실제 장중
+실행)에서만 닫힌다.
 
 뉴스 기사 매칭 품질, 20/60거래일 동시간대 baseline, 유동주식비율 승인값,
 T+1/T+5/T+20 outcome은 오늘 하루 fixture만으로 만들 수 없으며 완료 범위에서
@@ -132,6 +160,10 @@ T+1/T+5/T+20 outcome은 오늘 하루 fixture만으로 만들 수 없으며 완�
 
 ## 4. 장 종료 후 실행할 증명 절차
 
+**미실행.** 수집이 10:39에 취소돼 아래 절차는 하나도 돌지 않았다. 지금 돌려도
+`finalize`·`audit`은 장 마감 범위와 1분봉을 전제하므로 통과하지 않는다. 절차
+자체는 다음 정규장 재수집 때 그대로 쓴다.
+
 ```powershell
 ./scripts/check_market_capture.ps1 -TradeDate 2026-08-14
 python -m pytest -q
@@ -169,23 +201,29 @@ WebSocket은 실제 DB에서 짧은 시간 구간을 선택해 다음을 확인�
 
 ## 5. 최종 증거 기록란
 
-- 최종 run 상태/종료 시각: PENDING
-- 전체 event 수: PENDING
-- 서비스 replay event 수: PENDING
-- 전체 DB↔NDJSON envelope SHA-256: PENDING
-- 서비스 replay envelope SHA-256: PENDING
-- NDJSON 파일 SHA-256: PENDING
-- minute bar 종목/행 수 및 시간 범위: PENDING
-- 백필 실패·복구 종목 수: PENDING
-- verify 결과: PENDING
-- audit 결과: PENDING
-- prove 결과: PENDING
-- pytest 결과: 장중 23 passed / 최종 PENDING
-- 보조 run 상태/이벤트 수/응답률: RUNNING / 최종 PENDING
-- 보조 operational audit: PENDING
+2026-08-15 manifest·SQLite 실측으로 기록란을 확정했다. 취소로 끝났으므로
+`PENDING`(진행 중)은 남기지 않고 실측값 또는 `미실행`으로 바꿨다.
+
+- 최종 run 상태/종료 시각: **`INTERRUPTED` / `cancelled`, 2026-08-14 10:39:31 KST**
+- 전체 event 수: **1,803,564** (market.trade 1,561,132 · candidate.rest 134,098 · kiwoom.websocket.raw 98,544 · candidate.condition 4,098 · subscription.changed 2,224 · market.breadth 1,190 · market.index 1,190 · kiwoom.rest.raw 796 · reference.infostock_theme 281 · source.status 8 · reference.stock_master 2 · candidate.condition_list 1)
+- 수집 종목 수: **2,182** (동시 구독 상한 `maxSubscriptions: 180`)
+- 시장 event 시간 범위: **09:00:00.569 ~ 10:39:31 KST** (계획 `endAt` 15:40 미도달)
+- 서비스 replay event 수: 미실행
+- 전체 DB↔NDJSON envelope SHA-256: 미실행
+- 서비스 replay envelope SHA-256: 미실행
+- NDJSON 파일 SHA-256: 미실행
+- minute bar 종목/행 수 및 시간 범위: **0종목 / 0행** — `backfillMinuteBars: true`였으나 취소로 백필 미실행
+- 백필 실패·복구 종목 수: 해당 없음(백필 미실행)
+- verify 결과: 미실행
+- audit 결과: 미실행 (완전성 기준상 이 데이터셋으로는 통과 불가)
+- prove 결과: 미실행
+- pytest 결과: 장중 23 passed / 수집 종료 후 재실행 미실행
+- 보조 run 상태/이벤트 수: **`INTERRUPTED` / `stopped by user`, 133,965건** (market.snapshot 132,561 · kiwoom.ka10095.raw 1,342 · supplemental.coverage 61 · source.status 1), 종목 2,218, 구간 **10:09:17 ~ 10:39:24 KST**
+- 보조 operational audit: 미실행
 - 보조 09:00 전체구간 exact coverage: FAIL — 10:09:17 이전 알려진 공백
-- `ka10084` 공백 복구: 구현·1종목 실계정 smoke PASS / 장후 2,278종목 전수 PENDING
+- `ka10084` 공백 복구: 구현·1종목 실계정 smoke PASS / **장후 전수 미실행** — `data/market-replay-gap-recovery/` 없음
 - 복구 후 exact live coverage: FAIL 유지 — 60초 해상도, quote-only 변화 복구 불가
 - 본·보조 통합 WebSocket: 장중 PASS — 본 체결 233건+보조 snapshot 400건, 합계 633건, mismatch 0, 기대/수신 hash 일치
 - 실제 DB WebSocket 재생 결과: PASS — 212건, mismatch 0, 기대/수신 hash 일치
-- 최종 판정: PENDING
+- 저장 위치·보존: `data/**`는 `.gitignore` 14행으로 git에 없다. 본 5.7GB·보조 790MB·smoke 211MB가 **이 PC에만 존재**하며, 정규장에서만 재생성 가능하므로 별도 백업이 필요하다.
+- **최종 판정: 계획된 완료 조건 미달. 09:00~10:39 부분 fixture로 확정하고, 소멸 전이·1분봉·장후 정합은 A-3 실제 장중 실행으로 넘긴다.**
