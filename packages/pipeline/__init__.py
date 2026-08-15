@@ -10,12 +10,22 @@ from .membership import (
     build_theme_universe,
     load_theme_universe,
 )
+from .references import (
+    ADJUSTED_PRICE_VERSION,
+    REFERENCE_POLICY_VERSION,
+    production_reference_policy,
+    resolve_stock_references,
+)
 
 __all__ = [
+    "ADJUSTED_PRICE_VERSION",
     "RANKING_MODEL_VERSION",
+    "REFERENCE_POLICY_VERSION",
     "MarketDataPipeline",
     "PublishedView",
     "ThemeUniverse",
     "build_theme_universe",
     "load_theme_universe",
+    "production_reference_policy",
+    "resolve_stock_references",
 ]
