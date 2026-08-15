@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from httpx import ASGITransport, AsyncClient
 
+from apps.api.cookies import CSRF_COOKIE
 from apps.api.serve import (
     FIXTURE_DEMO_LOGIN_CODE,
     build_fixture_environment,
@@ -191,6 +192,66 @@ def test_theme_detail_requires_login() -> None:
                 f"/v1/themes/{theme_id}/events/{event_id}"
             )
             assert anonymous.status_code == 401
+
+    asyncio.run(scenario())
+
+
+def test_saved_library_reads_real_themes_events_and_current_state() -> None:
+    async def scenario() -> None:
+        environment, _pipeline = build_fixture_environment()
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(transport=transport, base_url=BASE_URL) as client:
+            await _login(client, environment)
+            rankings = await client.get("/v1/themes/rankings")
+            ranking_item = rankings.json()["data"]["items"][0]
+            market_context = rankings.json()["meta"]["marketContext"]
+            theme_id = ranking_item["classification"]["themeId"]
+            event_id = ranking_item["eventId"]
+            headers = {
+                "Origin": BASE_URL,
+                "X-CSRF-Token": client.cookies[CSRF_COOKIE],
+            }
+
+            for path in (
+                f"/v1/me/saved/themes/{theme_id}",
+                f"/v1/me/saved/events/{event_id}",
+                # 관측 부족으로 아직 활성화되지 않은 실테마도 저장은 된다.
+                "/v1/me/saved/themes/thm_fixture_semi",
+                "/v1/me/saved/stocks/KRX:005930",
+            ):
+                saved = await client.put(path, headers=headers)
+                assert saved.status_code == 200, path
+
+            unknown = await client.put(
+                "/v1/me/saved/themes/thm_not_in_universe",
+                headers=headers,
+            )
+            assert unknown.status_code == 404
+
+            listed = await client.get("/v1/me/saved")
+            assert listed.status_code == 200
+            body = listed.json()
+            validate_instance(body, "SavedListResponse", label="saved-library-rest")
+            items = {entry["targetId"]: entry for entry in body["data"]["items"]}
+
+            theme = items[theme_id]
+            assert theme["displayName"] == "픽스처 대형 기술주"
+            assert theme["availability"] == "AVAILABLE"
+            assert theme["currentState"] == {
+                "eventId": event_id,
+                "eventState": "ACTIVE",
+                "weightedReturn": ranking_item["weightedReturn"],
+                "dataStatus": market_context["dataStatus"],
+                "asOf": market_context["asOf"],
+            }
+            # 저장한 Event는 그 Event의 현재 상태를 그대로 본다.
+            assert items[event_id]["displayName"] == theme["displayName"]
+            assert items[event_id]["currentState"] == theme["currentState"]
+            # 아직 공개 상태가 아닌 테마와 종목은 현재 상태가 없다.
+            assert items["thm_fixture_semi"]["displayName"] == "픽스처 반도체"
+            assert items["thm_fixture_semi"]["currentState"] is None
+            assert items["KRX:005930"]["displayName"] == "삼성전자"
+            assert items["KRX:005930"]["currentState"] is None
 
     asyncio.run(scenario())
 

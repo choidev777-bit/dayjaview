@@ -7,7 +7,7 @@ EventWriter, SnapshotRepository)을 하나의 실행 경로로 조립만 한다.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -235,6 +235,23 @@ class MarketDataPipeline:
         """이 파이프라인이 만든 Event가 속한 테마."""
 
         return self._theme_by_event.get(event_id)
+
+    def event_id_for_theme(self, theme_id: str) -> str | None:
+        """그 테마에 대해 이 거래일에 만든 Event."""
+
+        return self._event_ids.get(theme_id)
+
+    @property
+    def theme_names(self) -> Mapping[str, str]:
+        """이 거래일 명단이 아는 테마와 표시 이름."""
+
+        return self._theme_names
+
+    @property
+    def stock_names(self) -> Mapping[str, str]:
+        """이 거래일 명단이 아는 구성종목과 표시 이름."""
+
+        return self._stock_names
 
     def theme_detail(self, event_id: str) -> dict[str, object] | None:
         """활성화된 Event 하나의 테마 상세 문서를 만든다.

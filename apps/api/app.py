@@ -20,6 +20,7 @@ from packages.identity import (
     RuntimeOperatorStatus,
     SavedType,
     SystemClock,
+    TargetCatalog,
     TargetRecord,
 )
 from packages.identity.security import Clock
@@ -718,7 +719,7 @@ class FixtureIdentityEnvironment:
     service: IdentityService
     repository: InMemoryIdentityRepository
     oauth_provider: FixtureGoogleOAuthProvider
-    target_catalog: InMemoryTargetCatalog
+    target_catalog: TargetCatalog
     product_repository: ProductReadRepository
     realtime_hub: RealtimeSnapshotHub
 
@@ -750,6 +751,7 @@ def create_fixture_app(
     settings: ApiSettings | None = None,
     clock: Clock | None = None,
     targets: tuple[TargetRecord, ...] = (),
+    target_catalog: TargetCatalog | None = None,
     operator_status: RuntimeOperatorStatus | None = None,
     product_repository: ProductReadRepository | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
@@ -757,14 +759,16 @@ def create_fixture_app(
     effective_settings = settings or ApiSettings()
     effective_clock = clock or SystemClock()
     repository = InMemoryIdentityRepository()
-    target_catalog = InMemoryTargetCatalog(targets)
+    effective_target_catalog: TargetCatalog = (
+        InMemoryTargetCatalog(targets) if target_catalog is None else target_catalog
+    )
     oauth_provider = FixtureGoogleOAuthProvider(
         expected_redirect_uri=effective_settings.identity_policy().oauth_redirect_uri
     )
     service = IdentityService(
         repository=repository,
         oauth_provider=oauth_provider,
-        target_catalog=target_catalog,
+        target_catalog=effective_target_catalog,
         policy=effective_settings.identity_policy(),
         clock=effective_clock,
     )
@@ -791,7 +795,7 @@ def create_fixture_app(
         service,
         repository,
         oauth_provider,
-        target_catalog,
+        effective_target_catalog,
         effective_product_repository,
         effective_realtime_hub,
     )

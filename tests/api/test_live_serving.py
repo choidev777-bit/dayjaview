@@ -18,7 +18,9 @@ from apps.api.serve import (
     _report_period,
 )
 from apps.api.snapshot_product import SnapshotProductReadRepository
+from apps.api.snapshot_targets import SnapshotTargetCatalog
 from packages.domain import DataStatus
+from packages.identity import SavedType
 from packages.pipeline import MarketPublishLoop
 
 ENV = {
@@ -49,12 +51,15 @@ def test_report_period_picks_the_latest_filed_combination() -> None:
 def test_handle_answers_empty_until_a_session_exists() -> None:
     handle = LivePipelineHandle()
     repository = SnapshotProductReadRepository(handle)
+    catalog = SnapshotTargetCatalog(handle)
 
     assert handle.latest_rankings is None
     assert handle.last_data_status is DataStatus.PREOPEN
     assert handle.theme_detail("evt_any") is None
     assert repository.rankings(None) is None
     assert repository.evidence("evt_any", None) is None
+    # 세션이 없는 날에는 저장 대상도 알지 못한다(목록에서 UNAVAILABLE로 남는다).
+    assert catalog.get_target(SavedType.THEME, "thm_fixture_tech") is None
 
 
 def test_build_session_assembles_the_day_and_switches_the_handle() -> None:
@@ -68,6 +73,14 @@ def test_build_session_assembles_the_day_and_switches_the_handle() -> None:
         # handle이 그날 파이프라인을 본다: publish하면 rankings가 나온다.
         view = session.tick()
         assert handle.latest_rankings is view.rankings
+
+        # 그날 명단의 테마가 저장 대상이 된다.
+        target = SnapshotTargetCatalog(handle).get_target(
+            SavedType.THEME,
+            "thm_fixture_tech",
+        )
+        assert target is not None
+        assert target.display_name == "픽스처 대형 기술주"
     finally:
         controller.close()
 

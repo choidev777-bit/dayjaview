@@ -65,6 +65,7 @@ from .config import ApiSettings
 from .fixture_universe import FIXTURE_MARKET_DATE, fixture_universe
 from .realtime import RealtimeSnapshotHub
 from .snapshot_product import SnapshotProductReadRepository
+from .snapshot_targets import SnapshotTargetCatalog
 
 KIWOOM_FIXTURE_PATH = "tests/market-gateway/fixtures/kiwoom-market-v1.json"
 FIXTURE_DEMO_LOGIN_CODE = "fixture-demo-login"
@@ -266,6 +267,7 @@ def build_fixture_environment(
     environment = create_fixture_app(
         settings=effective_settings,
         product_repository=SnapshotProductReadRepository(pipeline),
+        target_catalog=SnapshotTargetCatalog(pipeline),
     )
     publish_view_to_hub(environment.realtime_hub, view)
     environment.oauth_provider.register_code(
@@ -438,9 +440,23 @@ class LivePipelineHandle:
         pipeline = self._pipeline
         return None if pipeline is None else pipeline.last_as_of
 
+    @property
+    def theme_names(self) -> Mapping[str, str]:
+        pipeline = self._pipeline
+        return {} if pipeline is None else pipeline.theme_names
+
+    @property
+    def stock_names(self) -> Mapping[str, str]:
+        pipeline = self._pipeline
+        return {} if pipeline is None else pipeline.stock_names
+
     def theme_id_for_event(self, event_id: str) -> str | None:
         pipeline = self._pipeline
         return None if pipeline is None else pipeline.theme_id_for_event(event_id)
+
+    def event_id_for_theme(self, theme_id: str) -> str | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.event_id_for_theme(theme_id)
 
     def theme_detail(self, event_id: str) -> dict[str, object] | None:
         pipeline = self._pipeline
@@ -626,6 +642,7 @@ def serve_live_api(
     environment = create_fixture_app(
         settings=settings,
         product_repository=SnapshotProductReadRepository(handle),
+        target_catalog=SnapshotTargetCatalog(handle),
     )
     # 실 구글 로그인(F-21) 전까지 로컬 확인용 데모 로그인을 유지한다.
     environment.oauth_provider.register_code(
