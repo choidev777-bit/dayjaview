@@ -588,6 +588,46 @@ a:focus-visible,
   font-size: 0.75rem;
 }
 
+.evidence-list li {
+  padding-block: 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.evidence-list li:last-child {
+  border-bottom: 0;
+}
+
+.evidence-list li a,
+.evidence-list li:last-child a {
+  min-height: 2.75rem;
+  border-bottom: 0;
+}
+
+.evidence-summary {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.evidence-basis {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.evidence-notice {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-small);
+  background: var(--color-surface-soft);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
 .gate-notice {
   display: grid;
   gap: 0.4rem;

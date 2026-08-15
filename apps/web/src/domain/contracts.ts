@@ -149,6 +149,8 @@ export interface ThemeDetailResponse {
   meta: ResponseMeta;
 }
 
+export type MatchBasis = 'THEME' | 'STOCK' | 'TIME';
+
 export interface EvidenceItem {
   newsId: string;
   sourceName: string;
@@ -156,7 +158,7 @@ export interface EvidenceItem {
   publishedAt: string | null;
   receivedAt: string;
   originalUrl: string;
-  matchBasis: string[];
+  matchBasis: MatchBasis[];
   summary: string;
   qualityFlags: string[];
 }
@@ -166,6 +168,11 @@ export interface EvidenceResponse {
     eventId: string;
     evidenceStatus: EvidenceStatus;
     items: EvidenceItem[];
+    page: {
+      nextCursor: string | null;
+      hasMore: boolean;
+      limit: number;
+    };
   };
   meta: ResponseMeta;
 }

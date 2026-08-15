@@ -99,6 +99,59 @@ describe('근거 상태 matrix', () => {
     expect((await screen.findAllByText('확인된 신규 소재 없음')).length).toBeGreaterThan(0);
   });
 
+  it('뉴스 수집 지연을 확인된 신규 소재 없음과 구분해 안내한다', async () => {
+    render(
+      <App
+        repository={createFixtureRepository({ detail: 'searching', evidence: 'degraded' })}
+        initialEntries={['/themes/thm_nuclear/events/evt_current']}
+      />,
+    );
+
+    expect(await screen.findByText(/뉴스 수집이 지연되고 있습니다/)).toHaveTextContent(
+      '마지막 정상 수집 10:58',
+    );
+    expect(
+      screen.getByText('수집이 지연되는 동안에는 확인된 신규 소재가 없다고 단정하지 않습니다.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('확인된 신규 소재 없음')).not.toBeInTheDocument();
+  });
+
+  it('출처마다 매체·발행 시각·원문 링크·연결 기준을 제공한다', async () => {
+    render(
+      <App
+        repository={createFixtureRepository({ detail: 'single', evidence: 'single' })}
+        initialEntries={['/themes/thm_nuclear/events/evt_current']}
+      />,
+    );
+
+    const link = await screen.findByRole('link', { name: /새 창에서 원문 보기/ });
+    expect(link).toHaveAttribute('href', 'https://example.com/news/123');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noreferrer');
+    expect(screen.getByText('예시 언론사 · 10:17 · 새 창에서 원문 보기')).toBeInTheDocument();
+    expect(screen.getByText('테마 일치 · 종목 일치 · 시각 근접')).toBeInTheDocument();
+    expect(screen.getByText('자체 요약')).toBeInTheDocument();
+  });
+
+  it('장후 확정 근거에 장중 이력 보존을 안내한다', async () => {
+    const fixture = createFixtureRepository({ detail: 'closed', evidence: 'multi' });
+    const repository = {
+      ...fixture,
+      async getEvidence(eventId: string) {
+        const response = await fixture.getEvidence(eventId);
+        const confirmed = structuredClone(response);
+        confirmed.data.evidenceStatus = 'AFTER_CLOSE_CONFIRMED';
+        return confirmed;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
+
+    expect(
+      await screen.findByText('장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.')).toBeInTheDocument();
+  });
+
   it('복수 근거 확정과 출처를 함께 표시한다', async () => {
     render(
       <App

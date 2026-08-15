@@ -273,26 +273,26 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ## 작업별 권장 모델·추론 레벨
 
-사용자가 세션을 열 때 참고하는 권장값이다. 기준: 새 설계·애매한 판단·비가역 작업은 Fable 5, 절차가 명확한 구현은 Opus 5. 추론 레벨은 기본 high, 아래 표의 7개만 max.
+사용자가 세션을 열 때 참고하는 권장값이다.
 
 | 작업 | 모델 | 추론 |
 |---|---|---|
-| A-1, A-2, A-5, A-6, A-7 | Opus 5 | high |
+| A-1, A-2, A-5, A-6, A-7 | Opus 5 | max |
 | A-3 키움 live 어댑터 | **Fable 5** | **max** |
 | A-4 상시 파이프라인·영속화 | **Fable 5** | **max** |
 | B-8 codex분 정리·뉴스 수집 | **Fable 5** | high |
 | B-9, B-11 | Opus 5 | high |
 | B-10 grounded LLM 요약 | **Fable 5** | high |
-| C-0, C-12 | Opus 5 | high |
+| C-0, C-12 | Opus 5 | max |
 | D-13 장후 정합 | **Fable 5** | **max** |
 | D-14 증분 수집(설계 포함) | **Fable 5** | high |
-| D-15 운영자 콘솔 | Opus 5 | high |
+| D-15 운영자 콘솔 | Opus 5 | max |
 | E-16 과거 주가 corpus | **Fable 5** | high |
 | E-17 온톨로지 | **Fable 5** | **max** |
 | E-18 TOP3 | Opus 5 | high |
 | E-19 유사사례 엔진 | **Fable 5** | **max** |
-| E-20 유사사례 화면 | Opus 5 | high |
-| F-21, F-22, F-24 | Opus 5 | high |
+| E-20 유사사례 화면 | Opus 5 | max |
+| F-21, F-22, F-24 | Opus 5 | max |
 | F-23 보안 점검 | **Fable 5** | **max** |
 | F-25 실제 배포 | **Fable 5** | **max** |
 

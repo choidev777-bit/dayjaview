@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
-import type { EvidenceResponse } from '../domain/contracts';
+import type { EvidenceResponse, ResponseMeta } from '../domain/contracts';
 import {
   evidenceStatusLabel,
+  evidenceStatusNote,
   eventStatusLabel,
   formatDate,
   formatReturn,
   formatTime,
+  matchBasisLabel,
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
@@ -68,6 +70,18 @@ function SavedThemeControl({ themeId, displayName }: { themeId: string; displayN
   );
 }
 
+const NEWS_DELAY_FLAGS = ['SOURCE_DEGRADED', 'STALE_NEWS_DATA'];
+
+function newsCollectionDelayed(meta: ResponseMeta): boolean {
+  const context = meta.marketContext;
+  if (!context) return false;
+  return (
+    context.dataStatus === 'DELAYED' ||
+    context.dataStatus === 'DEGRADED' ||
+    context.qualityFlags.some((flag) => NEWS_DELAY_FLAGS.includes(flag))
+  );
+}
+
 function EvidenceSection({ eventId }: { eventId: string }) {
   const repository = useRepository();
   const resource = useRepositoryResource<EvidenceResponse>(
@@ -80,7 +94,9 @@ function EvidenceSection({ eventId }: { eventId: string }) {
   if (resource.status === 'loading') return <LoadingState label="기사 근거를 확인하는 중입니다" />;
   if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
 
-  const { evidenceStatus, items } = resource.data.data;
+  const { evidenceStatus, items, page } = resource.data.data;
+  const delayed = newsCollectionDelayed(resource.data.meta);
+  const lastHealthyAt = resource.data.meta.marketContext?.lastHealthyAt ?? null;
 
   return (
     <section className="detail-section" aria-labelledby="evidence-title">
@@ -91,26 +107,51 @@ function EvidenceSection({ eventId }: { eventId: string }) {
         </div>
         <span className="status-chip">{evidenceStatusLabel(evidenceStatus)}</span>
       </div>
+
+      {delayed ? (
+        <p className="evidence-notice" role="status">
+          뉴스 수집이 지연되고 있습니다. 확인된 신규 소재 없음과 다른 상태입니다.
+          {lastHealthyAt ? ` 마지막 정상 수집 ${formatTime(lastHealthyAt)}` : ''}
+        </p>
+      ) : null}
+
+      {evidenceStatus === 'AFTER_CLOSE_CONFIRMED' ? (
+        <p className="evidence-notice">
+          장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.
+        </p>
+      ) : null}
+
       {items.length ? (
-        <ul className="evidence-list">
-          {items.map((item) => (
-            <li key={item.newsId}>
-              <a href={item.originalUrl} target="_blank" rel="noreferrer">
-                <strong>{item.title}</strong>
-                <span>
-                  {item.sourceName} · {formatTime(item.publishedAt)} · 새 창에서 원문 보기
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="section-note">{evidenceStatusNote(evidenceStatus)}</p>
+          <ul className="evidence-list">
+            {items.map((item) => (
+              <li key={item.newsId}>
+                <a href={item.originalUrl} target="_blank" rel="noreferrer">
+                  <strong>{item.title}</strong>
+                  <span>
+                    {item.sourceName} · {formatTime(item.publishedAt)} · 새 창에서 원문 보기
+                  </span>
+                </a>
+                <p className="evidence-summary">{item.summary}</p>
+                <p className="evidence-basis">
+                  <span className="badge">자체 요약</span>
+                  {item.matchBasis.map(matchBasisLabel).join(' · ')}
+                </p>
+              </li>
+            ))}
+          </ul>
+          {page.hasMore ? (
+            <p className="section-note">최근 {items.length}건만 표시합니다.</p>
+          ) : null}
+        </>
       ) : (
         <EmptyState
           title={evidenceStatusLabel(evidenceStatus)}
           description={
-            evidenceStatus === 'NO_NEW_CATALYST'
-              ? '현재까지 확인된 기사 범위에서 새 소재를 찾지 못했습니다.'
-              : '확인된 근거가 생기기 전에는 상승 이유를 만들지 않습니다.'
+            delayed
+              ? '수집이 지연되는 동안에는 확인된 신규 소재가 없다고 단정하지 않습니다.'
+              : evidenceStatusNote(evidenceStatus)
           }
         />
       )}
@@ -204,10 +245,16 @@ export function ThemeDetailPage() {
         <p className="eyebrow">현재 → 근거</p>
         <h2 id="reason-title">오늘 부각된 이유</h2>
         <p className="reason-summary">
-          {detail.evidenceSummary.summary ?? evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
+          {detail.evidenceSummary.evidenceStatus === 'SEARCHING'
+            ? evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)
+            : (detail.evidenceSummary.summary ??
+              evidenceStatusLabel(detail.evidenceSummary.evidenceStatus))}
         </p>
         <p className="section-note">
           {evidenceStatusLabel(detail.evidenceSummary.evidenceStatus)}
+          {detail.evidenceSummary.sourceCount > 0
+            ? ` · 출처 ${detail.evidenceSummary.sourceCount.toLocaleString('ko-KR')}곳`
+            : ''}
           {detail.evidenceSummary.latestPublishedAt
             ? ` · 최근 확인 ${formatTime(detail.evidenceSummary.latestPublishedAt)}`
             : ''}
