@@ -98,7 +98,7 @@
   - **역할은 로그인 시점에 부여된다.** 이미 로그인한 뒤 env를 켰다면 다시 로그인해야 운영자가 된다(테스트로 고정).
   - 실행 중인 fixture 서버에서 데모 로그인이 `roles: [USER, OPERATOR]`를 받고, 브라우저 `/operator.html`이 운영자 5개 endpoint를 200으로 읽어 D-15 콘솔이 렌더되는 것까지 확인했다. local fixture 서버는 `.claude/launch.json`이 데모 계정을 운영자로 부트스트랩한다.
   - **부수 수정** 2026-08-16 `5e5b54f`: `infra/deployment/environment.contract.json`이 구글 키를 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`으로 선언하는데 코드·`.env.example`은 `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`을 읽고 있었다. 계약대로 배포하면 구글 키가 비어 보여 fixture provider(인증 우회)로 떨어진다. 계약 이름을 코드에 맞추고, compose secret 검사의 금지 이름도 고쳤다(이전 이름으로는 실제 변수를 못 잡았다). 계약 파일을 읽는 코드가 없어 아무도 못 잡던 것이라 `test_compose_contract.py`에 계약↔코드 이름 일치 검사를 넣어 고정했다.
-- [x] **F-23** 보안 점검 — 2026-08-16 `PENDING_HASH`
+- [x] **F-23** 보안 점검 — 2026-08-16 `0e12854`
   - 결과: [security_audit.md](./release/security_audit.md) · 재현 테스트 `tests/security/**` 11개. **제품 파일은 고치지 않았다**(로드맵이 수리를 별도 작업으로 못박음). 12건 발견 — 중간 2 · 낮음 5 · 정보성 5.
   - **중간 ①** 근거 기사 URL의 scheme이 http(s)로 제한되지 않는다. `canonical_url`은 "절대 주소인가"만 봐서 `javascript://host/%0a…`가 통과하고, 저장되는 값은 정규화본이 아니라 공급원 원문이다. 그게 웹의 유일한 동적 `href`(`ThemeDetailPage.tsx:134`)에 들어간다. `target="_blank"` 덕에 실제 실행 가능성은 낮아 "높음"은 아니다.
   - **중간 ②** OpenDART 키가 `?crtfc_key=`로 URL에 실려 httpx 예외 메시지에 박히고 `__cause__`에 보존된다. 바로 옆 KRX 어댑터는 헤더로 올바르게 보낸다. 지금은 worker가 최상위 메시지만 출력해 유출이 없지만 traceback을 로깅하면 새어 나온다.
