@@ -5,15 +5,18 @@
 - **원칙**: 제품 파일은 고치지 않았다. 재현 가능한 finding과 그것을 고정하는 테스트만 남긴다. **수리는 별도 작업이다.**
 - **재현 테스트**: `tests/security/**` (11개, `uv run pytest -q` 510 passed·8 skipped)
 - **주의**: `tests/security/**`의 테스트는 **현재의 취약한 동작을 고정한다.** 수리하면 실패하므로, 고칠 때 해당 테스트도 같이 고쳐야 한다.
+- **정정(2026-08-16)**: 최초판이 발견 1을 "중간"으로 올린 근거는 "React는 `href`의 scheme을 검사하지 않는다"였는데 **사실이 아니었다.** 이 저장소의 react-dom 19.2.8은 렌더 시점에 `javascript:` href를 차단한다(1번 참조). 심각도를 낮음으로 내렸다. 최종: **중간 1 · 낮음 6 · 정보성 5.**
 
 ---
 
 ## 발견 요약
 
+번호는 발견 순서를 그대로 둔 고정 식별자이고, 표만 심각도 순으로 정렬했다.
+
 | # | 심각도 | 항목 | 재현 |
 |---|---|---|---|
-| 1 | 중간 | 근거 기사 URL의 scheme이 http(s)로 제한되지 않는다 | `test_evidence_url_scheme.py` |
 | 2 | 중간 | OpenDART API 키가 URL 쿼리로 나가고 예외 체인에 남는다 | `test_collector_credential_exposure.py` |
+| 1 | 낮음 | 근거 기사 URL의 scheme이 http(s)로 제한되지 않는다 | `test_evidence_url_scheme.py` |
 | 3 | 낮음 | 인증 진입점에 요청 한도가 없고 만료 레코드를 지우지 않는다 | `test_auth_endpoint_abuse.py` |
 | 4 | 낮음 | 웹 정적 호스트에 보안 헤더 설정이 없다 | 코드 부재 |
 | 5 | 낮음 | OpenDART ZIP을 크기 상한 없이 압축해제한다 | 코드 확인 |
@@ -27,7 +30,7 @@
 
 ---
 
-## 1. 근거 기사 URL의 scheme이 제한되지 않는다 (중간)
+## 1. 근거 기사 URL의 scheme이 제한되지 않는다 (낮음)
 
 - **위치**: `packages/news/normalize.py:16-19` (수집 검증) → `packages/news/ingestion.py:128` (저장) → `packages/catalyst/projection.py:24` (API 투영) → `apps/web/src/pages/ThemeDetailPage.tsx:134` (렌더링)
 - **문제**: `canonical_url()`은 "절대 주소인가"(scheme과 netloc이 있는가)만 본다. scheme 허용목록이 없어 `javascript://host/%0a…`와 `data://host/…`가 통과한다. 실행으로 확인했다.
@@ -35,11 +38,12 @@
   'javascript://dayjaview.test/%0aalert(document.cookie)' -> 그대로 통과
   'javascript:alert(1)'                                   -> 거부(netloc 없음)
   ```
-  게다가 `ingestion.py:128`이 저장하는 값은 정규화된 `canonical`이 아니라 공급원이 준 **원문 그대로**(`raw.original_url`)다. 이 값이 `originalUrl`로 API에 실려 웹의 **유일한 동적 `href`**에 들어간다. React는 `href`의 scheme을 검사하지 않는다.
-- **악용 조건**: 등록된 RSS 매체가 침해되거나 오염된 항목을 내보내면, `<link>javascript://x/%0a…</link>` 한 줄이 저장돼 사용자가 "원문 보기"를 누를 때 `dayjaview.vercel.app` origin에서 스크립트가 실행될 수 있다.
-- **완화 요인**: `target="_blank"`이라 최신 브라우저는 새 탭으로의 `javascript:` 내비게이션을 대체로 차단한다. `rel="noreferrer"`도 붙어 있어 리퍼러 유출·reverse tabnabbing은 막힌다. 그래서 "중간"이지 "높음"이 아니다. 다만 방어가 브라우저 동작에만 의존한다.
+  게다가 `ingestion.py:128`이 저장하는 값은 정규화된 `canonical`이 아니라 공급원이 준 **원문 그대로**(`raw.original_url`)다. 이 값이 `originalUrl`로 API에 실려 웹의 **유일한 동적 `href`**에 들어간다.
+- **차단 지점**: 이 저장소의 react-dom 19.2.8이 렌더 시점에 막는다. `sanitizeURL()`이 `/^[\u0000-\u001F ]*j[\r\n\t]*a…t[\r\n\t]*:/i`로 검사해 제어문자·개행을 끼워 넣은 변형까지 잡아내고, 걸리면 `href`를 오류를 던지는 스텁으로 바꿔치기한다. 개발 빌드와 운영 빌드 양쪽에 들어 있다(`react-dom/cjs/react-dom-client.production.js` 확인). **따라서 지금 웹에서는 위 payload를 눌러도 스크립트가 실행되지 않는다.** `rel="noreferrer"`도 붙어 있어 리퍼러 유출·reverse tabnabbing은 별도로 막힌다.
+- **그래도 남는 것**: 검증되지 않은 scheme이 그대로 저장되고 API 응답으로 나간다. 방어가 프레임워크 한 겹뿐이라 ⑴ React를 거치지 않는 소비자(메일 발송, `window.open`, 다른 클라이언트, 운영자 도구)가 생기면 바로 노출되고, ⑵ React가 막는 것은 `javascript:` 하나뿐이라 `data:`·`vbscript:`는 그대로 `href`에 들어간다. 저장 데이터 품질 문제이기도 하다.
+- **악용 조건**: 등록된 RSS 매체가 침해되거나 오염된 항목을 내보내면 `<link>javascript://x/%0a…</link>` 한 줄이 그대로 저장된다. 현재 화면에서 실행되지는 않는다.
 - **계약 쪽**: `contracts/schemas/stage0.schema.json:486`이 `{"type": "string", "format": "uri"}`인데, `format`은 기본적으로 주석이고 위 payload는 문법상 유효한 URI라 어느 쪽으로도 막지 못한다.
-- **권고(별도 작업)**: 수집 경계(`canonical_url`)에서 scheme을 `http`/`https`로 제한하고, 웹 렌더링에서도 같은 검사를 한 번 더 한다.
+- **권고(별도 작업)**: 수집 경계(`canonical_url`)에서 scheme을 `http`/`https`로 제한한다. 이게 본질이고, 웹 렌더링 검사는 React가 이미 `javascript:`를 막으므로 선택이다.
 
 ## 2. OpenDART API 키가 URL 쿼리로 나가고 예외 체인에 남는다 (중간)
 

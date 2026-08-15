@@ -8,14 +8,14 @@
 from __future__ import annotations
 
 import json
+import os
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from apps.api.config import ApiSettings
-from apps.api.production import FIXTURE_MODE, MEMORY_STORE, create_production_app
 from packages.identity import (
     FixtureGoogleOAuthProvider,
     GoogleIdentity,
@@ -34,16 +34,30 @@ NOW = datetime(2026, 8, 14, 6, 0, tzinfo=UTC)
 # 계약이 production 필수로 선언했지만 코드가 한 번도 읽지 않는 값.
 UNCONSUMED_SECRETS = ("SESSION_SIGNING_SECRET", "APPLICATION_ENCRYPTION_KEY")
 
+CODE_ROOTS = ("apps", "packages", "infra")
+CODE_SUFFIXES = frozenset({".py", ".ts", ".tsx", ".js", ".mjs"})
+SKIPPED_DIRECTORIES = frozenset({"node_modules", "dist", "build", ".venv", "__pycache__"})
+
 
 class FixedClock:
     def now(self) -> datetime:
         return NOW
 
 
-def test_contract_declares_secrets_the_assembly_never_reads() -> None:
-    """선언은 production 필수인데, 값을 바꿔도 조립 결과가 달라지지 않는다.
+def _code_files() -> Iterator[Path]:
+    for root in CODE_ROOTS:
+        for directory, subdirectories, filenames in os.walk(ROOT / root):
+            subdirectories[:] = [name for name in subdirectories if name not in SKIPPED_DIRECTORIES]
+            for filename in filenames:
+                if Path(filename).suffix in CODE_SUFFIXES:
+                    yield Path(directory) / filename
 
-    운영자가 이 값을 넣거나 회전해도 보호되는 대상이 없다는 뜻이다.
+
+def test_contract_declares_secrets_no_code_ever_reads() -> None:
+    """production 필수로 선언된 두 이름이 제품 코드 어디에도 등장하지 않는다.
+
+    읽는 곳이 없으니 운영자가 값을 넣거나 회전해도 보호되는 대상이 없다.
+    수리(실제로 연결하거나 계약에서 빼기)하면 이 테스트가 실패한다.
     """
 
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
@@ -51,20 +65,18 @@ def test_contract_declares_secrets_the_assembly_never_reads() -> None:
     for name in UNCONSUMED_SECRETS:
         assert declared[name]["production"] is True
 
-    settings = ApiSettings(app_base_url="https://dayjaview.vercel.app")
-    without = create_production_app({}, settings=settings, clock=FixedClock())
-    with_secrets = create_production_app(
-        {name: "rotated-secret-value" for name in UNCONSUMED_SECRETS},
-        settings=settings,
-        clock=FixedClock(),
-    )
-    try:
-        # 두 조립이 완전히 같다 = 선언된 secret이 어디에도 연결되어 있지 않다.
-        assert without.google_mode == with_secrets.google_mode == FIXTURE_MODE
-        assert without.identity_store == with_secrets.identity_store == MEMORY_STORE
-    finally:
-        without.close()
-        with_secrets.close()
+    scanned = 0
+    mentions: list[str] = []
+    for path in _code_files():
+        scanned += 1
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        mentions.extend(
+            f"{path.relative_to(ROOT)}: {name}" for name in UNCONSUMED_SECRETS if name in text
+        )
+
+    # 스캔이 비어 있으면 통과가 무의미하므로 대상이 실재했는지 먼저 본다.
+    assert scanned > 100
+    assert mentions == []
 
 
 def test_saved_cursor_secret_is_per_process_and_breaks_across_replicas() -> None:
