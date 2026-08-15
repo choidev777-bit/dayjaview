@@ -108,7 +108,7 @@
   - 방어가 확인된 축: OAuth state 브라우저 바인딩·1회 소비, CSRF 3중(Origin+double-submit+서버 해시), `__Host-` 쿠키, 원문 토큰 미저장, 운영자 필드 allowlist, SQL 전면 파라미터화, 위험 함수(`pickle`/`eval`/`os.system`/`yaml.load`/`lxml`/`verify=False`) 전무, 웹 XSS 싱크 전무.
   - **수리** 2026-08-16 `fb95950`: 13건 중 **12건을 고쳤다**(11번 `/api/health` 무인증만 표준 범위라 유지). 수집 URL scheme 제한(거부 사유 `INVALID_URL`), OpenDART 예외 체인 차단, 외부 응답 32MiB 스트리밍 상한·ZIP 64MiB 상한·리다이렉트 거부·`_slug` 점 제거, `/auth/*` 한도(5분 20회 → 429)와 만료 레코드 `purge_expired`, `SESSION_SIGNING_SECRET`을 커서 서명 키로 연결(공유 저장소인데 없으면 기동 실패), `apps/web/vercel.json` 보안 헤더, 운영자 repo `safeReturnTo`, `pytest` 9.0.3(`pip-audit` 0건). `tests/security/**`는 이제 고쳐진 동작을 고정한다.
   - 수리 중 **새로 드러난 것**: 계약이 production 필수로 선언한 `REDIS_URL`·`INFOSTOCK_SESSION_STATE_PATH`도 코드가 전혀 읽지 않았다(Redis는 저장소에 아예 없다). 8번과 같은 성격이라 함께 필수에서 내리고 "production 필수 = 코드가 읽는다"를 테스트로 고정했다. **F-25에서 이 3개 값은 주입하지 않아도 된다.**
-- [x] **F-24** 품질 점검 — 2026-08-16 `HEAD`
+- [x] **F-24** 품질 점검 — 2026-08-16 `372f749`
   - 결과: [qa_report.md](./release/qa_report.md). **제품 파일은 고치지 않았다**(수리는 별도 작업). 5건 발견 — 높음 1 · 중간 2 · 정보성 2.
   - 실행: 계약 검증(HTTP 30·WS 9·schema 79·fixture 43) · `uv run pytest -q` 518 passed·8 skipped · ruff·mypy(108 파일) · 웹 lint·typecheck·test(83)·build · compose config · 브라우저 E2E · axe-core 6화면 · 실규모 성능. **저장 market replay는 실행하지 않았다**(로드맵이 제외).
   - **높음(배포 차단)**: 핵심 종목을 전부 관측한 테마에서 `observed_weight_ratio`가 1을 2.16e-28만큼 넘겨 `CoveragePart`가 ValueError를 던진다. 분모는 기본 28자리로, 분자는 `prec=60`으로 더하기 때문이다(`theme_metrics.py:301-320`). dirty batch가 원자적이라 다음 주기도 같은 자리에서 죽고, 발행 루프에 예외 처리가 없어 **task가 조용히 멈춘 채 API는 마지막 스냅샷을 계속 서빙한다.** 실규모 우주 5주기 내 재현. 기존 테스트는 fixture 시총이 작아 못 잡았다.
