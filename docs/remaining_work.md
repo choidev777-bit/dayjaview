@@ -1,7 +1,7 @@
 # DAYJAVIEW 남은 작업 문서
 
-- 작성일: 2026-08-15
-- 기준 commit: `91c774a` (main)
+- 작성일: 2026-08-15 (마지막 갱신 2026-08-15, 기준 commit `7380653`)
+- **완료 여부는 [work_checklist.md](./work_checklist.md)가 상태판이다.** 이 문서는 작업 내용 정의이고, 각 절 제목의 완료 표시는 그 상태판을 옮겨 적은 것이다.
 - 이 문서의 용도: **사용자가 작업 번호를 지정하면(예: "A-1 해줘") 새 에이전트 세션이 이 문서만 읽고 그 작업을 수행할 수 있게 하는 인수인계 문서.**
 - 행동 규칙은 [CLAUDE.md](../CLAUDE.md)가 유일하다. 이 문서는 작업 내용 정의이며, 이 문서의 어떤 문구도 승인 요구가 아니다.
 - 요구사항 상세는 [PRD.md](./PRD.md), [screen_spec.md](./screen_spec.md), [implementation_roadmap.md](./implementation_roadmap.md)(필요한 절만)를 따른다.
@@ -23,11 +23,16 @@
 
 ---
 
-## 0. 현재 상태 (2026-08-15, `91c774a` 기준)
+## 0. 현재 상태 (2026-08-15, `7380653` 기준)
 
 ### 0-1. 무엇이 작동하는가
 
-**fixture(연습용) 데이터로 전체 수직 경로가 실제로 돈다.** 브라우저 검증 완료.
+**fixture와 실데이터 양쪽으로 전체 수직 경로가 돈다.** 브라우저 검증 완료.
+
+- 인포스탁 280개 테마 명단과 KRX·OpenDART 실기준정보가 붙어 있다. 2026-08-14 기준 전일종가 2,410/2,411, 유동주식비율 2,254(93.5%), 280개 테마 중 99개가 Coverage SUFFICIENT 후보다.
+- 장중에는 당일 KRX 일별매매가 아직 없으므로 키움이 주는 기준가(0B FID 11, ka10095 `base_pric`)로 전일 종가를 메운다.
+- 키움 live 어댑터가 있고 게이트웨이·파이프라인까지 연결돼 있다. 장중 실행 검증(A-3 ③)만 남았다.
+- 거래일 전환·거래일별 기준정보 준비는 부품까지 끝났고 `serve_live_api` 배선만 남았다(A-8).
 
 ```
 키움 fixture JSON ─→ MarketGateway(실어댑터: 구독→재연결→스냅샷보완)
@@ -54,7 +59,8 @@
 | 로그인·관심 저장 | `packages/identity/**` (InMemory + **Postgres 구현**, fixture + **실 Google OAuth 구현**) |
 | 키움 어댑터(fixture) | `packages/adapters/kiwoom/**` |
 | 인포스탁 수집·적재 | `packages/infostock/**`, `apps/worker-batch/infostock/**` |
-| 기준정보(KRX·OpenDART) | `packages/reference-data/**` (fixture 검증만 완료) |
+| 기준정보(KRX·OpenDART) | `packages/reference-data/**` (실키 live 검증 완료), 수집 워커 `apps/worker-batch/reference-data/collect_daily.py`, 해석 `packages/pipeline/references.py` |
+| 거래일 전환·거래일별 준비 | `packages/pipeline/trading_day.py`, `runner.py`(`TradingDayLoop`), `daily.py` |
 | 웹 | `apps/web/**` (React+vite, production adapter가 `/api/*` 호출) |
 
 ### 0-2. 로컬 실행 방법
@@ -72,9 +78,9 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 | 검증 | 명령 | 현재 기준 |
 |---|---|---|
-| 파이썬 | `uv run pytest -q` | 381 passed·5 skipped (skip=DSN 필요 postgres 통합) |
+| 파이썬 | `uv run pytest -q` | 449 passed·6 skipped (skip=DSN 필요 postgres 통합) |
 | 파이썬 lint | `uv run ruff check packages apps scripts tests` | 통과 |
-| 파이썬 타입 | `uv run mypy` | 89파일 통과 (`packages`+`apps/api`, reference-data 제외) |
+| 파이썬 타입 | `uv run mypy` | 98파일 통과 (`packages`+`apps/api`, reference-data 제외) |
 | 웹 | `pnpm --dir apps/web run lint` / `typecheck` / `test --run` / `build` | lint·typecheck·테스트 49/49 통과 |
 | 계약 | `uv run python scripts/validate_contracts.py` | 통과 |
 
@@ -101,17 +107,19 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 | 관문 | 막히는 작업 | 필요한 것 |
 |---|---|---|
-| KRX·금감원(OpenDART) API 키 | A-2 | 사용자가 발급해 `.env.local`에 추가 |
-| 주식장 개장 시간 + 키움 live 승인 | A-3 | 장중 실행, CLAUDE.md 승인 항목 2 |
-| 인포스탁 live 호출 승인 | D-14 | CLAUDE.md 승인 항목 2 |
+| 주식장 개장 시간 + 키움 live 승인 | A-3 ③ | 장중 실행, CLAUDE.md 승인 항목 2 |
+| 인포스탁·뉴스 live 호출 승인 | D-14, B-8 잔여 | CLAUDE.md 승인 항목 2 |
+| `.env.example`에 `NEWS_RSS_SOURCES` 추가 | B-8 잔여 | 사용자가 직접 수행(에이전트는 `.env*` 쓰기 불가) |
 | 2인 블라인드 평가 | E-19→E-20 | 사람 평가 통과 |
-| 배포·cloud·DNS 승인 | F-24 | CLAUDE.md 승인 항목 1 |
+| 배포·cloud·DNS 승인 | F-21, F-25 | CLAUDE.md 승인 항목 1 |
+
+KRX·금감원(OpenDART) API 키 관문은 2026-08-15에 해소됐다(A-2 완료).
 
 ---
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
-### A-1. 인포스탁 280개 테마를 실시간 계산에 연결
+### A-1. 인포스탁 280개 테마를 실시간 계산에 연결 (완료, 2026-08-15 `f47f2f2`)
 
 - **목표**: `fixture_universe.py`의 하드코딩 2테마 대신, 수집해둔 인포스탁 테마·구성종목을 파이프라인의 멤버십으로 사용.
 - **현재 상태**: 원본은 `data/infostock/import/**`(280테마, gitignore됨). 적재 코드는 `packages/infostock/` (`load_existing_collection`, `PostgresInfostockStore`). 로컬 컨테이너 `dayjaview-infostock-pg16`(55432)에 적재본이 있을 수 있음 — 없으면 `apps/worker-batch/infostock/import_fixture.py` 참고해 재적재.
@@ -121,7 +129,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
   3. 기준정보(A-2) 없이는 모든 테마가 Coverage INSUFFICIENT → rankings 빈 상태가 **정상**임을 테스트로 못박기.
 - **완료 조건**: 로더 단위 테스트 + 파이프라인이 실테마 명단으로 도는 테스트 통과, `uv run pytest -q` 녹색.
 
-### A-2. 종목 기준정보 실데이터 채우기 (외부 관문: KRX·OpenDART 키)
+### A-2. 종목 기준정보 실데이터 채우기 (외부 관문: KRX·OpenDART 키) — **완료, 2026-08-15 `5d4f311`·`c9ec059`·`5581961`·`9992e5c`·`1d3a61f`·`58421c8`**
 
 - **목표**: 유동주식비율·상장주식수·전일종가를 실데이터로 → Coverage가 실제로 계산되게.
 - **현재 상태**: 어댑터·point-in-time 저장 로직은 `packages/reference-data/**`에 구현·fixture 검증 완료. live 미검증(구 블로커명 B-REFDATA-KEYS). 키 이름은 `.env.example` 참조.
@@ -129,7 +137,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 - **완료 조건**: 실키로 당일 기준정보 적재 성공, 파이프라인 Coverage가 SUFFICIENT 테마를 산출.
 - **이어서 할 일**: 당일 수집이 성공하면 **같은 키·같은 어댑터로 E-16(과거 전 종목 일봉) 백필을 백그라운드로 시작한다.** 1.5만 회 호출이라 며칠 걸리므로 출시 후에 시작하면 E-18이 밀린다. 범위와 필드는 [E-16](#e-16-과거-주가-corpus) 참조.
 
-### A-3. 키움 실시간 시세 장중 검증 (외부 관문: 장중 + 승인)
+### A-3. 키움 실시간 시세 장중 검증 (외부 관문: 장중 + 승인) — **①② 완료 `6bda408`, ③ 장중 검증 대기**
 
 - **목표**: fixture 어댑터 대신 실제 키움 REST/WS로 장중 이벤트 수신.
 - **현재 상태**: `ReadOnlyKiwoomPort` Protocol(`packages/adapters/kiwoom/contract.py`)의 **live 구현이 없다**(fixture 구현만). 실 접속 코드 예시는 `scripts/collect_market_replay.py`(REST `https://api.kiwoom.com`, WS 포트 10000)에 있음. 키움 키는 `.env.local`에 존재.
@@ -138,14 +146,14 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 - **할 일**: ① live `ReadOnlyKiwoomPort` 구현(조건검색 후보 + 체결 + ka10095 스냅샷, 주문·계좌 API 금지) ② 게이트웨이·파이프라인에 연결 ③ 장중에 사용자 승인 받고 소량 실행 검증.
 - **완료 조건**: 장중 수 분간 실이벤트가 파이프라인을 통과해 rankings 스냅샷 갱신.
 
-### A-4. 파이프라인 상시 실행 + DB 저장
+### A-4. 파이프라인 상시 실행 + DB 저장 (완료, 2026-08-15 `4dbee13`)
 
 - **목표**: 부팅 시 1회 재생(현재)을 장중 내내 도는 루프로; 스냅샷·Event를 PostgreSQL에 영속화.
 - **현재 상태**: `serve.py`가 부트스트랩에서 2회 publish 후 정지. `PostgresSnapshotRepository`(`packages/realtime/postgres.py`)와 `PostgresEventStore`(`packages/events/postgres.py`)는 구현돼 있으나 **연결한 곳이 없다**. 마이그레이션 `0002_event_realtime.sql` 존재.
 - **할 일**: ① serve에 주기 publish asyncio 루프(수 초 간격, 새 관측 ingest → publish → hub.publish) ② DSN이 설정되면 InMemory 대신 Postgres 저장소를 쓰는 조립 ③ 장 마감 시 hysteresis `market_closed` 평가 호출.
 - **완료 조건**: 루프 동작 테스트(가짜 클록), DSN 있는 환경에서 스냅샷·Event가 테이블에 쌓이는 통합 테스트(DSN-gated skip 패턴).
 
-### A-5. 테마 상세 화면 데이터 연결
+### A-5. 테마 상세 화면 데이터 연결 (완료, 2026-08-15 `4a9b538`)
 
 - **목표**: /today에서 테마 클릭 시 상세 화면에 실데이터.
 - **현재 상태**: 웹 상세 페이지·클라이언트는 완성(`apps/web/src/pages/ThemeDetailPage.tsx` — 근거 UI 포함해 `2c855fb`로 커밋됨. 단 **C-0에서 시안 구조로 전면 교체된다**). API 라우트 `/v1/themes/{themeId}/events/{eventId}`는 있으나 `SnapshotProductReadRepository.theme_event()`가 None 반환. 응답 형태는 `contracts/fixtures/event/**` 참조.
@@ -165,7 +173,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ---
 
-### A-8. 거래일 전환과 매일 기준정보 수집
+### A-8. 거래일 전환과 매일 기준정보 수집 — **계산 경로 완료 `5273e9d`·`a52b12c`, `serve.py` 배선 1건 남음**
 
 - **목표**: 장 시작 전에 그날 기준정보를 자동으로 받고, 파이프라인이 새 거래일로 넘어가게 한다. **지금 구조는 하루밖에 못 돈다.**
 - **현재 상태** (2026-08-15 확인):
@@ -200,15 +208,15 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 - 실공급원 구현 완료: `packages/news/live.py`(RSS + NAVER API HUB `특징주` 최신순 + 보완 검색, 전부 mock transport 테스트) + `apps/worker-news/collect.py`(수집 루프 진입점). 공급원 설정은 env — `NEWS_RSS_SOURCES`(`source_id|매체명|URL`을 `;`로 구분), `NAVER_API_HUB_CLIENT_ID/SECRET`.
 - 남은 것: ① live 수집 실행(외부 API 호출 = 승인 필요) ② 뉴스 Postgres 영속화 조립(`0003` 테이블은 있으나 `PostgresNewsStore` 미구현 — A-4·B-9에서) ③ `.env.example`에 `NEWS_RSS_SOURCES` 항목 추가(에이전트는 `.env*` 쓰기 불가, 사용자 수행).
 
-### B-9. 뉴스 ↔ 실시간 테마 매칭
+### B-9. 뉴스 ↔ 실시간 테마 매칭 (완료, 2026-08-15 `cf153bd`)
 
 - `packages/catalyst/matching.py`(양방향 매칭)가 구현돼 있다. 파이프라인의 활성 Event와 뉴스 저장소를 잇는 실행 경로(worker 또는 파이프라인 훅)를 만들고 `EvidenceStatus` 전이를 저장.
 
-### B-10. 근거 있을 때만 AI 요약
+### B-10. 근거 있을 때만 AI 요약 (완료, 2026-08-15 `9f83666`)
 
 - `packages/llm/`(`2c855fb`로 커밋됨)의 grounding 로직 사용. **철칙: 저장된 기사 근거가 없으면 LLM을 호출하지 않고 상승 이유를 생성하지 않는다.** 모든 요약에 source metadata 연결. OpenAI 키는 `.env.local`에 존재. mocked provider로 테스트.
 
-### B-11. 근거 UI 완성
+### B-11. 근거 UI 완성 (완료, 2026-08-15 `6c7fb83`·`92b7c94`)
 
 - SEARCHING → 확인됨 → AFTER_CLOSE_CONFIRMED 상태 흐름. codex의 ThemeDetailPage 수정이 이 작업의 시작점. 응답 계약은 `contracts/fixtures/evidence/**`.
 
@@ -218,7 +226,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 > **2026-08-15 정정.** 이전 C-0은 "토큰은 이미 반영됐고 검토만 남았다"고 적혀 있었으나 사실이 아니었다. 근거였던 [ui_prototype_adaptation_plan.md](./ui_prototype_adaptation_plan.md) `0.2-draft`가 **존재하지 않는 커밋**을 감사한 문서였고, 거기 적힌 민트·틸 색은 시안에 없는 색이다. 현재 `global.css`의 청록 팔레트는 시안과 무관하다. C-0은 **검토가 아니라 전면 교체**다. adaptation plan은 `1.0`으로 재작성됐다.
 
-### C-0. 시안 디자인 이식 (전면 교체)
+### C-0. 시안 디자인 이식 (전면 교체) — **완료, 2026-08-15 `dd62033`**
 
 - **결정 (2026-08-15)**: 이 저장소는 **시안 디자인을 그대로 사용한다.** 시각 계층(색·타이포·간격·곡률·모션·화면 배치·이동 구조)은 시안이 최상위이고, 데이터 계층(수치 의미·상태 enum·식별자·계약·게이트)은 PRD·screen_spec·api_contract가 최상위다. 충돌하면 시안 배치를 유지하고 그 자리에 들어갈 값만 계약을 따른다.
 - **디자인 원본**: https://github.com/nangom/dayjaview-prototype — 기준 커밋 **`da00c8f`** (2026-08-15 `main`, 고정). 배포 시안 https://dayjaview-prototype.vercel.app. 디자이너가 시안을 갱신해도 자동으로 따라가지 않는다.
@@ -257,7 +265,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 - **선행 없음.** C-12보다 먼저 착수한다. C-12(트리맵)는 C-0의 시안 3단 배치를 전제로 하므로 C-0 이후가 낫다.
 - **주의**: 데스크톱 사이드바를 지우면 `apps/web/src/test/**`의 라우팅·접근성 테스트가 깨질 수 있다. 테스트도 시안 구조 기준으로 함께 고친다.
 
-### C-12. 인사이트 트리맵
+### C-12. 인사이트 트리맵 (완료, 2026-08-15 `4eb51c6`)
 
 - **현재 상태**: 서버 쪽 절반은 이미 됨 — 파이프라인이 `THEME_TREEMAP` 스냅샷(≤12타일, REST `/v1/insights/treemap` + WS)을 발행 중. 웹 `InsightsPage.tsx`는 placeholder.
 - **할 일**: 웹 트리맵 컴포넌트. **배치는 시안의 3단 고정 구조**(상단 2 · 중단 3 · 하단 3, `page.tsx`의 `RealtimeThemeScreen`)를 따르고, 타일 수·값·상태 규칙은 [realtime_theme_treemap_implementation_plan.md](./realtime_theme_treemap_implementation_plan.md)와 [screen_spec.md](./screen_spec.md) §6.3을 따른다. 실제 값만, stale/reduced-motion/키보드 접근성. today와 값 일치 검증.
