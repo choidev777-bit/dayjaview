@@ -7,12 +7,25 @@ EventWriter, SnapshotRepository)을 하나의 실행 경로로 조립만 한다.
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
-from packages.calculations import THEME_CALCULATION_POLICY_V1, ThemeMetrics
+from packages.calculations import (
+    ATTENTION_BASELINE_POLICY_V1,
+    ATTENTION_POLICY_V1,
+    RANKING_BASELINE_POLICY_V1,
+    THEME_CALCULATION_POLICY_V1,
+    AttentionDaySignal,
+    BaselineStatus,
+    ThemeMetrics,
+    ThemeTurnoverResult,
+    build_attention_timeline,
+    calculate_theme_turnover,
+    evaluate_attention_day,
+)
 from packages.catalyst import (
     DEFAULT_PAGE_LIMIT,
     CatalystEvidence,
@@ -25,8 +38,11 @@ from packages.catalyst import (
 from packages.domain import (
     DataStatus,
     LifecycleStatus,
+    QualityFlag,
     ReconciliationStatus,
     StockReference,
+    StockTradingValueObservation,
+    ThemeMembershipSnapshot,
 )
 from packages.events import (
     CanonicalEvent,
@@ -57,10 +73,22 @@ from packages.realtime import (
     evaluate_hysteresis,
 )
 
+from .history import IntradayHistory
+from .trading_day import KST
+
 RANKING_MODEL_VERSION = "theme-rank-2026.08.1"
 INTRADAY_CATALYST_KEY = "INTRADAY_STRENGTH"
 RANKINGS_PARAMS: dict[str, object] = {"limit": 10}
 TREEMAP_PARAMS: dict[str, object] = {"limit": 12}
+
+# 급부상 배지(realtime_theme_feature_spec.md 13.8): 최근 60초 순위 상승 폭과
+# 최근 5분 수익률 증가를 함께 본다. 홈의 기본 순위는 현재 수익률이고 급부상은
+# 별도 배지라, 1위와 방금 가장 빨라진 테마는 다를 수 있다. 상승 폭 임계값은
+# 백테스트 전 잠정값이다.
+RANK_CHANGE_WINDOW = timedelta(seconds=60)
+RISING_RETURN_WINDOW = timedelta(minutes=5)
+RISING_FAST_RANK_GAIN = 3
+RISING_FAST_BADGE = "RISING_FAST"
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,6 +116,7 @@ class MarketDataPipeline:
         stock_names: dict[str, str],
         event_store: EventStore,
         snapshot_repository: SnapshotRepository,
+        history: IntradayHistory | None = None,
         hysteresis_policy: HysteresisPolicy = HYSTERESIS_POLICY_V1,
     ) -> None:
         if not stream_id.strip():
@@ -117,6 +146,18 @@ class MarketDataPipeline:
         self._evidence: dict[str, dict[str, object]] = {}
         self._evidence_documents: dict[str, dict[str, object]] = {}
         self._latest_metrics: dict[str, ThemeMetricUpdate] = {}
+        self._history = history
+        self._observed_stock_ids: set[str] = set()
+        self._membership_recorded = False
+        self._recorded_bucket: time | None = None
+        self._baseline_key: tuple[time, tuple[str, ...]] | None = None
+        self._turnover: dict[str, ThemeTurnoverResult] = {}
+        self._attention_gap: dict[str, int | None] = {}
+        # (발행 시각, {event_id: (순위, 가중수익률)}) 오름차순. 60초 순위 변화와
+        # 5분 수익률 증가를 여기서 읽는다.
+        self._rank_history: deque[
+            tuple[datetime, dict[str, tuple[int, Decimal | None]]]
+        ] = deque()
         self._input_sequence = 0
         self._command_sequence = 0
         self._publication_index = 0
@@ -257,7 +298,8 @@ class MarketDataPipeline:
         """활성화된 Event 하나의 테마 상세 문서를 만든다.
 
         아직 공개 상태가 아닌 CANDIDATE·DISCARDED Event는 None을 돌려준다.
-        거래대금 배수·관심 공백은 기준선 이력이 쌓이기 전이라(A-6) null이다.
+        거래대금 배수·관심 공백은 축적된 장중 이력이 있어야 나온다. 이력이
+        모자란 기간에는 null로 두고 지어내지 않는다.
         """
 
         theme_id = self._theme_by_event.get(event_id)
@@ -275,6 +317,7 @@ class MarketDataPipeline:
             return None
         metrics = update.metrics
         evidence = self._evidence.get(event_id)
+        turnover = self._turnover.get(theme_id)
         return {
             "eventId": event.event_id,
             "marketDate": self._market_date.isoformat(),
@@ -282,8 +325,10 @@ class MarketDataPipeline:
             "reconciliationStatus": event.reconciliation_status.value,
             "classification": event.classification.to_public_dict(),
             "currentReaction": metrics.to_public_current_reaction(
-                turnover_multiple=None,
-                attention_gap_trading_days=None,
+                turnover_multiple=(
+                    None if turnover is None else turnover.turnover_multiple
+                ),
+                attention_gap_trading_days=self._attention_gap.get(theme_id),
             ),
             "coverage": metrics.coverage.to_public_dict(),
             "evidenceSummary": (
@@ -306,8 +351,24 @@ class MarketDataPipeline:
                 "reason": "ONTOLOGY_VALIDATION_REQUIRED",
             },
             "canonicalPath": f"/v1/themes/{theme_id}/events/{event_id}",
-            "qualityFlags": list(metrics.quality_flags),
+            "qualityFlags": sorted(
+                set(metrics.quality_flags) | self._baseline_flags(turnover)
+            ),
         }
+
+    def _baseline_flags(self, turnover: ThemeTurnoverResult | None) -> set[str]:
+        """기준선이 20거래일에 못 미치면 값을 내되 잠정임을 표시한다.
+
+        축적이 아예 모자라 배수가 없는 경우는 turnoverMultiple이 null인 것으로
+        이미 드러나므로 여기에 플래그를 더하지 않는다. 순위 자체는 거래대금
+        기준선과 무관하게 나오는 값이라 순위 품질 플래그를 오염시키지 않는다.
+        """
+
+        if turnover is None:
+            return set()
+        if turnover.baseline_status is not BaselineStatus.PROVISIONAL:
+            return set()
+        return {QualityFlag.PROVISIONAL_BASELINE.value}
 
     def apply_update(self, update: StockRealtimeUpdate) -> HotApplyResult:
         """정규화된 시장 관측 1건을 hot state와 dirty 테마 집계에 반영한다."""
@@ -316,6 +377,7 @@ class MarketDataPipeline:
             raise ValueError("pipeline의 market_date와 다른 관측은 적용할 수 없습니다")
         self._supplement_base_price(update)
         result = self._hot.apply(update)
+        self._observed_stock_ids.add(update.stock_id)
         if result.changed:
             self._aggregator.mark_stock(
                 stock_id=update.stock_id,
@@ -368,6 +430,172 @@ class MarketDataPipeline:
         self._aggregator.add_reference(supplemented)
         self._base_price_filled.add(update.stock_id)
 
+    def _accumulate(self, as_of: datetime) -> None:
+        """분 경계마다 누적 거래대금을 축적하고 기준선 지표를 다시 계산한다.
+
+        동일 시각 기준선은 과거 같은 분의 관측이 있어야 만들어진다. 승인된 과거
+        분봉이 없으므로 여기서 직접 쌓는다. 축적이 모자란 동안에는 배수와 관심
+        공백이 나오지 않고, 거래일이 차면 별도 조치 없이 값이 나오기 시작한다.
+        """
+
+        if self._history is None:
+            return
+        bucket = as_of.astimezone(KST).time().replace(second=0, microsecond=0)
+        if bucket != self._recorded_bucket:
+            self._recorded_bucket = bucket
+            self._record_bucket(bucket)
+        # 분이 바뀌었거나 공개 테마 구성이 바뀐 때만 다시 계산한다. 발행 주기
+        # 마다 20거래일치를 다시 읽으면 낭비다.
+        theme_ids = self._public_theme_ids()
+        if (bucket, theme_ids) == self._baseline_key:
+            return
+        self._baseline_key = (bucket, theme_ids)
+        self._recalculate_baselines(
+            theme_ids=theme_ids,
+            time_bucket=bucket,
+            as_of=as_of,
+        )
+
+    def _record_bucket(self, bucket: time) -> None:
+        if self._history is None:
+            return
+        if not self._membership_recorded:
+            # 과거 기준선은 그날 유효했던 명단으로 계산해야 한다. 오늘 명단으로
+            # 과거를 재구성하면 그 사이 편입·제외된 종목이 조용히 섞인다.
+            self._history.record_membership(
+                market_date=self._market_date,
+                snapshots=self._catalog.snapshots,
+            )
+            self._membership_recorded = True
+        states = self._hot.states_for(
+            market_date=self._market_date,
+            stock_ids=tuple(self._observed_stock_ids),
+        )
+        self._history.record_turnover(
+            market_date=self._market_date,
+            time_bucket=bucket,
+            observations=[
+                StockTradingValueObservation(
+                    stock_id=state.stock_id,
+                    market_date=self._market_date,
+                    observed_at=state.occurred_at,
+                    time_bucket=bucket,
+                    cumulative_trading_value=state.cumulative_trading_value,
+                    fresh=state.fresh,
+                    trading_halted=state.trading_halted,
+                    corporate_action_unresolved=state.corporate_action_unresolved,
+                )
+                for state in states
+            ],
+        )
+
+    def _recalculate_baselines(
+        self,
+        *,
+        theme_ids: tuple[str, ...],
+        time_bucket: time,
+        as_of: datetime,
+    ) -> None:
+        if self._history is None or not theme_ids:
+            return
+        stored = tuple(
+            day for day in self._history.trading_days() if day < self._market_date
+        )
+        turnover_days = stored[-RANKING_BASELINE_POLICY_V1.lookback_trading_days :]
+        attention_days = stored[-ATTENTION_BASELINE_POLICY_V1.lookback_trading_days :]
+        observations = self._history.load_turnover(
+            time_bucket=time_bucket,
+            trading_days=(*turnover_days, self._market_date),
+        )
+        snapshots: dict[str, list[ThemeMembershipSnapshot]] = {}
+        for snapshot in (
+            *self._history.load_membership(turnover_days),
+            *self._catalog.snapshots,
+        ):
+            snapshots.setdefault(snapshot.theme_id, []).append(snapshot)
+        stored_signals = self._history.load_attention(attention_days)
+        for theme_id in theme_ids:
+            turnover = calculate_theme_turnover(
+                theme_id=theme_id,
+                evaluation_date=self._market_date,
+                evaluation_at=as_of,
+                time_bucket=time_bucket,
+                trading_days=(*turnover_days, self._market_date),
+                membership_snapshots=snapshots.get(theme_id, ()),
+                observations=observations,
+            )
+            self._turnover[theme_id] = turnover
+            self._attention_gap[theme_id] = self._current_attention_gap(
+                theme_id,
+                turnover=turnover,
+                stored_signals=stored_signals.get(theme_id, ()),
+                trading_days=attention_days,
+            )
+
+    def _public_theme_ids(self) -> tuple[str, ...]:
+        """공개 화면이 보는 Event를 가진 테마."""
+
+        public: list[str] = []
+        for theme_id in sorted(self._latest_metrics):
+            event_id = self._event_ids.get(theme_id)
+            event = (
+                None if event_id is None else self._event_store.read_event(event_id)
+            )
+            if event is not None and event.lifecycle_status in (
+                LifecycleStatus.ACTIVE,
+                LifecycleStatus.WEAKENING,
+                LifecycleStatus.CLOSED,
+            ):
+                public.append(theme_id)
+        return tuple(public)
+
+    def _attention_signal(
+        self,
+        theme_id: str,
+        *,
+        turnover: ThemeTurnoverResult,
+    ) -> AttentionDaySignal | None:
+        update = self._latest_metrics.get(theme_id)
+        if update is None:
+            return None
+        return evaluate_attention_day(
+            market_date=self._market_date,
+            metrics=update.metrics,
+            turnover=turnover,
+        )
+
+    def _current_attention_gap(
+        self,
+        theme_id: str,
+        *,
+        turnover: ThemeTurnoverResult,
+        stored_signals: tuple[AttentionDaySignal, ...],
+        trading_days: tuple[date, ...],
+    ) -> int | None:
+        """직전 관심 구간이 끝난 뒤 몇 거래일 만에 다시 관심인지.
+
+        오늘 신호는 장중 값으로 그 자리에서 만들어 붙인다. 정책 버전이 다른
+        과거 신호는 같은 기준으로 판정된 것이 아니므로 뺀다. 중간에 판정을
+        못 한 날이 하나라도 있으면 `build_attention_timeline`이 공백을 세지
+        않고 None으로 둔다.
+        """
+
+        today = self._attention_signal(theme_id, turnover=turnover)
+        if today is None:
+            return None
+        timeline = build_attention_timeline(
+            signals=(
+                *(
+                    signal
+                    for signal in stored_signals
+                    if signal.attention_policy_version == ATTENTION_POLICY_V1.version
+                ),
+                today,
+            ),
+            trading_days=(*trading_days, self._market_date),
+        )
+        return timeline.current_gap_trading_days
+
     def publish(
         self,
         *,
@@ -387,7 +615,8 @@ class MarketDataPipeline:
 
         self._last_data_status = data_status
         as_of = self._last_as_of or now
-        items = self._ranking_items()
+        self._accumulate(as_of)
+        items = self._ranking_items(now=now)
         rankings = self._publish_snapshot(
             topic=SnapshotTopic.THEME_RANK,
             params=RANKINGS_PARAMS,
@@ -456,6 +685,22 @@ class MarketDataPipeline:
                 update=update,
                 now=now,
             )
+        self._record_attention_day()
+
+    def _record_attention_day(self) -> None:
+        """그날 테마별 관심 여부를 축적한다. 관심 공백은 이 기록으로 센다."""
+
+        if self._history is None or not self._turnover:
+            return
+        signals: dict[str, AttentionDaySignal] = {}
+        for theme_id, turnover in self._turnover.items():
+            signal = self._attention_signal(theme_id, turnover=turnover)
+            if signal is not None:
+                signals[theme_id] = signal
+        self._history.record_attention(
+            market_date=self._market_date,
+            signals=signals,
+        )
 
     def _evaluate_theme(self, update: ThemeMetricUpdate, *, now: datetime) -> None:
         theme_id = update.theme_id
@@ -561,7 +806,7 @@ class MarketDataPipeline:
             correlation_id=self._stream_id,
         )
 
-    def _ranking_items(self) -> list[dict[str, object]]:
+    def _ranking_items(self, *, now: datetime) -> list[dict[str, object]]:
         candidates: list[tuple[Decimal, str, CanonicalEvent, ThemeMetrics]] = []
         for theme_id, update in self._latest_metrics.items():
             event_id = self._event_ids.get(theme_id)
@@ -585,15 +830,23 @@ class MarketDataPipeline:
             )
         candidates.sort(key=lambda entry: (-entry[0], entry[1]))
         items: list[dict[str, object]] = []
+        current: dict[str, tuple[int, Decimal | None]] = {}
         for rank, (_, theme_id, event, metrics) in enumerate(candidates, start=1):
+            current[event.event_id] = (rank, metrics.weighted_return)
+            rank_change = self._rank_change(event.event_id, rank, now=now)
             item: dict[str, object] = {
                 "eventId": event.event_id,
                 "lifecycleStatus": event.lifecycle_status.value,
                 "reconciliationStatus": ReconciliationStatus.PENDING.value,
                 "classification": event.classification.to_public_dict(),
                 "rank": rank,
-                "rankChange60s": None,
-                "badges": [],
+                "rankChange60s": rank_change,
+                "badges": self._badges(
+                    event.event_id,
+                    rank_change=rank_change,
+                    weighted_return=metrics.weighted_return,
+                    now=now,
+                ),
             }
             item.update(metrics.to_public_ranking_fields())
             item["leader"] = self._leader(theme_id)
@@ -612,7 +865,65 @@ class MarketDataPipeline:
                 }
             )
             items.append(item)
+        self._remember_ranks(current, now=now)
         return items
+
+    def _remember_ranks(
+        self,
+        ranks: dict[str, tuple[int, Decimal | None]],
+        *,
+        now: datetime,
+    ) -> None:
+        """5분 창을 넘긴 발행 기록은 하나만 남기고 버린다.
+
+        경계보다 오래된 것 하나는 남겨야 "5분 전 값"을 고를 수 있다.
+        """
+
+        self._rank_history.append((now, ranks))
+        cutoff = now - RISING_RETURN_WINDOW
+        while len(self._rank_history) > 1 and self._rank_history[1][0] <= cutoff:
+            self._rank_history.popleft()
+
+    def _ranks_at(self, at: datetime) -> dict[str, tuple[int, Decimal | None]] | None:
+        """`at` 이전의 가장 최근 발행 기록. 그만큼 오래되지 않았으면 None."""
+
+        found: dict[str, tuple[int, Decimal | None]] | None = None
+        for stamp, ranks in self._rank_history:
+            if stamp > at:
+                break
+            found = ranks
+        return found
+
+    def _rank_change(self, event_id: str, rank: int, *, now: datetime) -> int | None:
+        """60초 전 대비 순위 변화. 양수가 상승이다.
+
+        60초 전 발행이 아직 없거나 그때 순위에 없던 테마는 변화를 알 수 없어
+        null이다. 0으로 채우면 "안 움직였다"는 다른 뜻이 된다.
+        """
+
+        previous = self._ranks_at(now - RANK_CHANGE_WINDOW)
+        if previous is None or (before := previous.get(event_id)) is None:
+            return None
+        return before[0] - rank
+
+    def _badges(
+        self,
+        event_id: str,
+        *,
+        rank_change: int | None,
+        weighted_return: Decimal | None,
+        now: datetime,
+    ) -> list[str]:
+        """급부상 배지(spec 13.8): 60초 순위 상승 폭 + 5분 수익률 증가."""
+
+        if rank_change is None or rank_change < RISING_FAST_RANK_GAIN:
+            return []
+        earlier = self._ranks_at(now - RISING_RETURN_WINDOW)
+        if earlier is None or (before := earlier.get(event_id)) is None:
+            return []
+        if weighted_return is None or before[1] is None:
+            return []
+        return [RISING_FAST_BADGE] if weighted_return > before[1] else []
 
     def _member_stock_ids(self, theme_id: str) -> tuple[str, ...]:
         update = self._latest_metrics.get(theme_id)

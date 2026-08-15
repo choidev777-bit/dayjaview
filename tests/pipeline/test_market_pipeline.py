@@ -220,7 +220,7 @@ def test_theme_detail_matches_contract_and_lists_top_three_leaders() -> None:
     assert detail["canonicalPath"] == f"/v1/themes/thm_full/events/{event_id}"
     assert detail["coverage"] == items[0]["coverage"]
     assert detail["currentReaction"]["weightedReturn"] == items[0]["weightedReturn"]
-    # 거래대금 배수·관심 공백 기준선은 A-6 전까지 없으므로 정직하게 null이다.
+    # 장중 이력을 축적하지 않는 조립에서는 기준선이 없어 정직하게 null이다.
     assert detail["currentReaction"]["turnoverMultiple"] is None
     assert detail["currentReaction"]["attentionGapTradingDays"] is None
     assert detail["evidenceSummary"] == {
@@ -247,6 +247,123 @@ def test_theme_detail_matches_contract_and_lists_top_three_leaders() -> None:
 
     assert pipeline.theme_id_for_event(event_id) == "thm_full"
     assert pipeline.theme_id_for_event("evt_unknown") is None
+
+
+def _rank_by_theme(view: object) -> dict[str, dict[str, object]]:
+    items = view.rankings.payload["items"]  # type: ignore[attr-defined]
+    assert isinstance(items, list)
+    return {item["classification"]["themeId"]: item for item in items}
+
+
+def test_rank_change_and_rising_badge_come_from_earlier_publications() -> None:
+    """60초 전 순위·5분 전 수익률과 비교해 순위 변화와 급부상 배지를 낸다."""
+
+    catalog = VersionedThemeCatalog(
+        tuple(
+            ThemeMembershipSnapshot(
+                theme_id=theme_id,
+                version=MEMBERSHIP_VERSION,
+                effective_from=MARKET_DATE,
+                known_at=KNOWN_AT,
+                members=tuple(
+                    ThemeMember(f"KRX:{theme_index}0000{offset}", MembershipRole.CORE)
+                    for offset in (1, 2, 3)
+                ),
+            )
+            for theme_index, theme_id in enumerate(("thm_a", "thm_b", "thm_c", "thm_d"))
+        )
+    )
+    stock_ids = tuple(
+        f"KRX:{theme_index}0000{offset}"
+        for theme_index in range(4)
+        for offset in (1, 2, 3)
+    )
+    pipeline = MarketDataPipeline(
+        market_date=MARKET_DATE,
+        stream_id="stream_rank_change",
+        schema_version="2026-08-14.1",
+        catalog=catalog,
+        references=tuple(
+            StockReference(
+                stock_id=stock_id,
+                effective_for=MARKET_DATE,
+                known_at=KNOWN_AT,
+                previous_adjusted_close=Decimal("10000"),
+                listed_shares=1_000_000,
+                free_float_ratio=Decimal("0.5"),
+                free_float_validated=True,
+                version="reference-test-1",
+            )
+            for stock_id in stock_ids
+        ),
+        membership_version=MEMBERSHIP_VERSION,
+        theme_names={
+            theme_id: theme_id for theme_id in ("thm_a", "thm_b", "thm_c", "thm_d")
+        },
+        stock_names={stock_id: stock_id for stock_id in stock_ids},
+        event_store=InMemoryEventStore(),
+        snapshot_repository=InMemorySnapshotRepository(),
+    )
+
+    def feed(prices: dict[str, str], *, seconds: int) -> None:
+        at = BASE + timedelta(seconds=seconds)
+        for theme_index, theme_id in enumerate(("thm_a", "thm_b", "thm_c", "thm_d")):
+            for offset in (1, 2, 3):
+                stock_id = f"KRX:{theme_index}0000{offset}"
+                pipeline.apply_update(
+                    StockRealtimeUpdate(
+                        message_id=f"msg_{stock_id}_{seconds}",
+                        stock_id=stock_id,
+                        market_date=MARKET_DATE,
+                        source="test-session",
+                        source_sequence=seconds,
+                        occurred_at=at,
+                        received_at=at,
+                        current_price=Decimal(prices[theme_id]),
+                        cumulative_trading_value=Decimal("1000000"),
+                    )
+                )
+
+    # thm_d가 꼴찌인 상태로 5분 넘게 발행한다.
+    feed(
+        {"thm_a": "10400", "thm_b": "10300", "thm_c": "10200", "thm_d": "10100"},
+        seconds=1,
+    )
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    first = pipeline.publish(
+        now=BASE + timedelta(seconds=20),
+        data_status=DataStatus.LIVE,
+    )
+    assert [item["rank"] for item in first.rankings.payload["items"]] == [1, 2, 3, 4]
+    # 첫 발행에는 비교할 60초 전 기록이 없다. 0이 아니라 null이다.
+    assert {item["rankChange60s"] for item in first.rankings.payload["items"]} == {None}
+    assert {tuple(item["badges"]) for item in first.rankings.payload["items"]} == {()}
+
+    pipeline.publish(now=BASE + timedelta(seconds=310), data_status=DataStatus.LIVE)
+
+    # thm_d가 1위로 올라선다: 순위 3계단 상승 + 5분 전보다 높은 수익률.
+    feed(
+        {"thm_a": "10400", "thm_b": "10300", "thm_c": "10200", "thm_d": "10900"},
+        seconds=320,
+    )
+    view = pipeline.publish(
+        now=BASE + timedelta(seconds=380),
+        data_status=DataStatus.LIVE,
+    )
+    ranked = _rank_by_theme(view)
+    assert ranked["thm_d"]["rank"] == 1
+    assert ranked["thm_d"]["rankChange60s"] == 3
+    assert ranked["thm_d"]["badges"] == ["RISING_FAST"]
+    # 밀려난 테마는 음수 변화만 남고 배지는 붙지 않는다.
+    assert ranked["thm_a"]["rankChange60s"] == -1
+    assert ranked["thm_a"]["badges"] == []
+
+    # 다음 발행에서는 순위가 그대로라 급부상이 아니다.
+    steady = _rank_by_theme(
+        pipeline.publish(now=BASE + timedelta(seconds=450), data_status=DataStatus.LIVE)
+    )
+    assert steady["thm_d"]["rankChange60s"] == 0
+    assert steady["thm_d"]["badges"] == []
 
 
 def test_theme_detail_is_hidden_before_the_event_becomes_public() -> None:

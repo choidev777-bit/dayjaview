@@ -52,6 +52,10 @@ class VersionedThemeCatalog:
     def theme_ids(self) -> tuple[str, ...]:
         return self._theme_ids
 
+    @property
+    def snapshots(self) -> tuple[ThemeMembershipSnapshot, ...]:
+        return self._snapshots
+
     def select(
         self,
         *,

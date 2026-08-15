@@ -39,6 +39,7 @@ from packages.events import (
 )
 from packages.identity import GoogleIdentity
 from packages.pipeline import (
+    IntradayHistory,
     LiveMarketRunner,
     MarketDataPipeline,
     MarketPublishLoop,
@@ -78,7 +79,9 @@ KIWOOM_MODE_ENV = "KIWOOM_MODE"
 KIWOOM_APP_KEY_ENV = "KIWOOM_APP_KEY"
 KIWOOM_APP_SECRET_ENV = "KIWOOM_APP_SECRET"
 KIWOOM_CONDITION_IDS_ENV = "KIWOOM_CONDITION_IDS"
+INTRADAY_HISTORY_ROOT_ENV = "INTRADAY_HISTORY_ROOT"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
+DEFAULT_INTRADAY_HISTORY_ROOT = "./data/intraday-history"
 PUBLISH_INTERVAL = timedelta(seconds=2)
 MARKET_CLOSE_KST = time(15, 30)
 
@@ -513,6 +516,15 @@ class LiveSessionController:
         self._hub = hub
         self._handle = handle
         self._event_store, self._snapshot_repository = create_pipeline_stores(env)
+        # 동일 시각 기준선(20거래일)과 관심 공백(60거래일)은 과거 장중 자료가
+        # 있어야 나온다. 승인된 과거 분봉이 없으므로 실서빙이 도는 동안 매일
+        # 직접 쌓는다. 축적이 찰 때까지는 배수·공백이 null로 남는다.
+        self._history = IntradayHistory(
+            Path(
+                env.get(INTRADAY_HISTORY_ROOT_ENV, "").strip()
+                or DEFAULT_INTRADAY_HISTORY_ROOT
+            )
+        )
         self._adapter: LiveKiwoomAdapter | None = None
 
     def build_session(self, market_date: date) -> MarketPublishLoop | None:
@@ -545,6 +557,7 @@ class LiveSessionController:
             stock_names=universe.stock_names,
             event_store=self._event_store,
             snapshot_repository=self._snapshot_repository,
+            history=self._history,
         )
         adapter = LiveKiwoomAdapter(
             mode=self._mode,

@@ -5,6 +5,7 @@ from .daily import (
     prepare_reference_data,
     reference_directory,
 )
+from .history import IntradayHistory
 from .live import LiveMarketRunner
 from .market import (
     RANKING_MODEL_VERSION,
@@ -37,6 +38,7 @@ __all__ = [
     "KST",
     "RANKING_MODEL_VERSION",
     "REFERENCE_POLICY_VERSION",
+    "IntradayHistory",
     "LiveMarketRunner",
     "MarketDataPipeline",
     "MarketPublishLoop",
