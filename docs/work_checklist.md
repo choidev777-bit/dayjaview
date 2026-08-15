@@ -106,6 +106,8 @@
   - **F-25에 직접 걸리는 것 2건**: 배포 env 계약이 코드가 안 읽는 `SESSION_SIGNING_SECRET`·`APPLICATION_ENCRYPTION_KEY`를 production 필수로 선언한다(회전해도 보호 대상 없음). 그리고 커서 서명 키가 프로세스마다 무작위라 **API를 2개 이상 띄우면 관심 목록 2페이지부터 실패한다**(fail-closed).
   - **의존성 취약점 조회**(최초판에서 미실시로 남겼던 것, 2026-08-16 실행): 웹 `pnpm audit` **0건**(dev 포함 267개), 파이썬 `pip-audit` **1건** — 개발 전용 `pytest 8.4.1`의 `PYSEC-2026-1845`(UNIX `/tmp/pytest-of-{user}` 경로, 수정본 9.0.3). 제품에 실리지 않아 정보성이고, major 상향이라 올리는 건 별도 작업이다.
   - 방어가 확인된 축: OAuth state 브라우저 바인딩·1회 소비, CSRF 3중(Origin+double-submit+서버 해시), `__Host-` 쿠키, 원문 토큰 미저장, 운영자 필드 allowlist, SQL 전면 파라미터화, 위험 함수(`pickle`/`eval`/`os.system`/`yaml.load`/`lxml`/`verify=False`) 전무, 웹 XSS 싱크 전무.
+  - **수리** 2026-08-16 `fb95950`: 13건 중 **12건을 고쳤다**(11번 `/api/health` 무인증만 표준 범위라 유지). 수집 URL scheme 제한(거부 사유 `INVALID_URL`), OpenDART 예외 체인 차단, 외부 응답 32MiB 스트리밍 상한·ZIP 64MiB 상한·리다이렉트 거부·`_slug` 점 제거, `/auth/*` 한도(5분 20회 → 429)와 만료 레코드 `purge_expired`, `SESSION_SIGNING_SECRET`을 커서 서명 키로 연결(공유 저장소인데 없으면 기동 실패), `apps/web/vercel.json` 보안 헤더, 운영자 repo `safeReturnTo`, `pytest` 9.0.3(`pip-audit` 0건). `tests/security/**`는 이제 고쳐진 동작을 고정한다.
+  - 수리 중 **새로 드러난 것**: 계약이 production 필수로 선언한 `REDIS_URL`·`INFOSTOCK_SESSION_STATE_PATH`도 코드가 전혀 읽지 않았다(Redis는 저장소에 아예 없다). 8번과 같은 성격이라 함께 필수에서 내리고 "production 필수 = 코드가 읽는다"를 테스트로 고정했다. **F-25에서 이 3개 값은 주입하지 않아도 된다.**
 - [ ] **F-24** 품질 점검 — `docs/release/qa_report.md` 없음.
 - [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
 
