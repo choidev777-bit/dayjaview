@@ -64,6 +64,7 @@ from .app import FixtureIdentityEnvironment, create_fixture_app
 from .app_types import JsonObject
 from .config import ApiSettings
 from .fixture_universe import FIXTURE_MARKET_DATE, fixture_universe
+from .production import ProductionIdentityEnvironment, create_production_app
 from .realtime import RealtimeSnapshotHub
 from .snapshot_product import SnapshotProductReadRepository
 from .snapshot_targets import SnapshotTargetCatalog
@@ -286,7 +287,7 @@ def build_fixture_environment(
 
 
 def create_asgi_app(
-    environment: FixtureIdentityEnvironment,
+    environment: FixtureIdentityEnvironment | ProductionIdentityEnvironment,
     *,
     health_payload: HealthPayload | None = None,
     publish_loop: MarketPublishLoop | TradingDayLoop | None = None,
@@ -652,21 +653,29 @@ def serve_live_api(
         _load_env_file(Path(env_file))
     settings = ApiSettings.from_environment(os.environ)
     handle = LivePipelineHandle()
-    environment = create_fixture_app(
+    environment = create_production_app(
+        os.environ,
         settings=settings,
         product_repository=SnapshotProductReadRepository(handle),
         target_catalog=SnapshotTargetCatalog(handle),
     )
-    # 실 구글 로그인(F-21) 전까지 로컬 확인용 데모 로그인을 유지한다.
-    environment.oauth_provider.register_code(
-        FIXTURE_DEMO_LOGIN_CODE,
-        GoogleIdentity(
-            subject="fixture-demo-user",
-            display_name="픽스처 사용자",
-            email="fixture@dayjaview.test",
-            email_verified=True,
-        ),
+    LOG.info(
+        "identity 조립: google=%s store=%s redirect_uri=%s",
+        environment.google_mode,
+        environment.identity_store,
+        settings.identity_policy().oauth_redirect_uri,
     )
+    if environment.fixture_oauth_provider is not None:
+        # 구글 키가 없는 로컬 실행용 데모 로그인. 실 provider일 때는 등록하지 않는다.
+        environment.fixture_oauth_provider.register_code(
+            FIXTURE_DEMO_LOGIN_CODE,
+            GoogleIdentity(
+                subject="fixture-demo-user",
+                display_name="픽스처 사용자",
+                email="fixture@dayjaview.test",
+                email_verified=True,
+            ),
+        )
     controller = LiveSessionController(
         settings=settings,
         hub=environment.realtime_hub,
@@ -685,4 +694,5 @@ def serve_live_api(
         uvicorn.run(application, host=host, port=port, log_level="info")
     finally:
         controller.close()
+        environment.close()
     return 0

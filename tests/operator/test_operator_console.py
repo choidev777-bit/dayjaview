@@ -11,16 +11,15 @@ from httpx import ASGITransport, AsyncClient, Response
 from apps.api import ApiSettings, create_fixture_app
 from packages.identity import GoogleIdentity
 from packages.operator import (
-    InMemoryOperatorRepository,
     InfostockAuthState,
     InfostockAuthStatus,
+    InMemoryOperatorRepository,
     JobStatus,
     OperatorJob,
     OperatorReview,
     ReviewStatus,
 )
 from scripts.validate_contracts import validate_instance
-
 from tests.identity.helpers import MutableClock, api_login
 
 _BASE = datetime(2026, 8, 14, 7, 0, tzinfo=UTC)
