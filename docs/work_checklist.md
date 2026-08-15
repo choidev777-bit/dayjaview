@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-15 · 기준 commit `32d1353` · `uv run pytest -q` 475 passed·7 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `775e1c0` · `uv run pytest -q` 485 passed·7 skipped
 
 ## 요약
 
@@ -11,11 +11,11 @@
 | A. 실데이터 연결 | 7 / 8 | A-3 |
 | B. 뉴스 근거 | 4 / 4 | (live 수집 실행·`.env.example` 항목만, B-8 참조) |
 | C. 화면 | 2 / 2 | — |
-| D. 매일 자동 운영 | 2 / 3 | D-15 |
+| D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 0 / 6 | E-16 ~ E-21 |
 | F. 출시 | 0 / 5 | F-21 ~ F-25 |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · D 1건 · F 5건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 5건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -69,7 +69,12 @@
   - `packages/infostock/increment.py` + worker `collect_increment.py`(매일 장후 스케줄러가 부르는 진입점). lookback 창(기본 7일)만 수집해 S1과 같은 schema·revision·lineage로 적재. 재실행은 input_hash로 reused(idempotent), 수정은 revision, 삭제는 **창 안으로 제한한** NOT_VISIBLE revision. `0005` 마이그레이션(INCREMENTAL run의 core SKIPPED).
   - 세션 설계 확정: Daily API는 무인증 공개 endpoint(S1 전체 4,655건이 무인증으로 수집된 실측 근거). 자동 로그인 없음 — 401/403이 오면 AUTH_REQUIRED로 멈춰 운영자에게 드러남(FR-10), 429는 RATE_LIMITED.
   - DSN 게이트 테스트는 일회용 PostgreSQL 16으로 통과(revision·창 내 숨김·reused, 0004·0005 실적용). **live 호출은 실행하지 않음** — 남은 것: 사용자 승인 아래 `--approved` 첫 실행과 배포 시 cron 등록(F-25).
-- [ ] **D-15** 운영자 콘솔 — `/v1/operator` 최소 라우트와 `operator_boundary.py`만 있다. 웹 화면 없음.
+- [x] **D-15** 운영자 콘솔 — 2026-08-16 `775e1c0`
+  - 계약이 이미 정의해 둔 운영자 surface 10개(status·jobs·job·retry·resume·reviews·review·resolve·audit·infostock auth-status)를 전부 구현. `packages/operator`(도메인·in-memory 저장소) + `apps/api/operator_boundary.py`(allowlist 투영).
+  - command 3개는 같은 순서를 지킨다: 같은 Idempotency-Key 재요청은 저장된 receipt 재생(중복 실행 없음) → 대상 없음 404 → expectedVersion 불일치 409 `STALE_VERSION` → 허용되지 않는 전이 409 `COMMAND_NOT_ALLOWED`. 실행한 command만 revision을 올리고 audit을 남긴다. retry는 FAILED·RATE_LIMITED·AUTH_REQUIRED, resume은 PARTIAL에서만.
+  - redaction: internal_context와 command 사유 원문은 어떤 응답에도 넣지 않고, 투영 값이 안전 패턴을 벗어나면 500으로 닫는다. `authorize_operator_command`가 role을 먼저 봐서 일반 사용자에게 CSRF 실패 대신 권한 없음으로 답한다.
+  - 화면은 `apps/web/operator.html` + `src/operator/**`로 사용자 SPA와 다른 entry다. 두 번들은 서로를 import하지 않고 사용자 router·navigation에도 없다.
+  - **job·review 데이터를 넣는 쪽은 아직 배선하지 않았다.** 저장소는 프로세스 in-memory이고 `record_job`·`open_review` 진입점만 있다. 수집 worker와 D-13 정합 실행을 여기에 연결하는 것과 Postgres 영속화는 별도 작업이다.
 
 ## E. 과거 연구 기능 (출시 후)
 
@@ -101,8 +106,7 @@
 ## 진행 순서 (remaining_work.md 기준, 완료분 제외)
 
 ```
-D-15
-→ A-3 (장중 승인 필요) → F-21 ~ F-25 (1차 출시)  [E-21 1단계 동반 가능]
+A-3 (장중 승인 필요) → F-21 ~ F-25 (1차 출시)  [E-21 1단계 동반 가능]
 → E-16 → E-17 → E-18 → E-19 → E-20 (출시 후)
 → E-21 2단계(E-16+E-17 후) → E-21 3단계(E-19 후)
 
