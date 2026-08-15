@@ -732,24 +732,37 @@ a:focus-visible,
 /* ------------------------------------------------------------- 실시간 */
 
 .treemap {
-  display: flex;
+  position: relative;
   min-height: 320px;
   flex: 1;
-  flex-direction: column;
-  gap: 5px;
   margin: 0 var(--djv-space-3);
   padding: 5px;
   overflow: hidden;
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
+  list-style: none;
+}
+
+/* 면적과 위치는 서버 수익률에서 계산한다. 값이 바뀔 때만 700ms로 이동한다. */
+.treemap__cell {
+  position: absolute;
+  transition:
+    left 700ms var(--djv-easing-standard),
+    top 700ms var(--djv-easing-standard),
+    width 700ms var(--djv-easing-standard),
+    height 700ms var(--djv-easing-standard);
+}
+
+.treemap[data-motion="off"] .treemap__cell,
+.treemap[data-motion="off"] .treemap__tile {
+  transition: none;
 }
 
 .treemap__tile {
+  position: absolute;
   display: flex;
-  min-width: 0;
-  min-height: 78px;
-  flex: 1;
+  inset: 0;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-end;
@@ -759,8 +772,21 @@ a:focus-visible,
   border: 1px solid var(--djv-color-border);
   border-radius: 18px;
   color: var(--djv-color-text);
-  background: var(--djv-color-brand-soft);
+  background: color-mix(
+    in srgb,
+    var(--djv-color-brand) calc(var(--tile-intensity, 0) * 42%),
+    var(--djv-color-surface-muted)
+  );
   text-align: left;
+  transition: background 700ms var(--djv-easing-standard);
+}
+
+.treemap__tile[data-tone="down"] {
+  background: color-mix(
+    in srgb,
+    var(--djv-color-market-down) calc(var(--tile-intensity, 0) * 30%),
+    var(--djv-color-surface-muted)
+  );
 }
 
 .treemap__tile strong {
@@ -780,8 +806,46 @@ a:focus-visible,
   font-size: 10px;
 }
 
-.treemap__tile:nth-child(even) {
+.treemap__tile[data-tier="compact"] {
+  padding: 10px;
+}
+
+.treemap__tile[data-tier="compact"] strong {
+  font-size: 13px;
+}
+
+.treemap__tile[data-tier="compact"] b {
+  font-size: 15px;
+}
+
+.treemap__tile[data-tier="minimal"] {
+  padding: 7px;
+  border-radius: 13px;
+}
+
+.treemap__tile[data-tier="minimal"] strong {
+  font-size: 11px;
+}
+
+.treemap--skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.treemap--skeleton li {
+  flex: 1;
+  border-radius: 18px;
   background: var(--djv-color-surface-muted);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.treemap--skeleton li:first-child {
+  flex: 1.35;
+}
+
+.treemap--skeleton li:last-child {
+  flex: .68;
 }
 
 .treemap-legend {
