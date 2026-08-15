@@ -72,7 +72,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 | 검증 | 명령 | 현재 기준 |
 |---|---|---|
-| 파이썬 | `uv run pytest -q` | 335 passed·5 skipped (skip=DSN 필요 postgres 통합) |
+| 파이썬 | `uv run pytest -q` | 381 passed·5 skipped (skip=DSN 필요 postgres 통합) |
 | 파이썬 lint | `uv run ruff check packages apps scripts tests` | 통과 |
 | 파이썬 타입 | `uv run mypy` | 89파일 통과 (`packages`+`apps/api`, reference-data 제외) |
 | 웹 | `pnpm --dir apps/web run lint` / `typecheck` / `test --run` / `build` | lint·typecheck·테스트 49/49 통과 |
@@ -80,13 +80,10 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 **pnpm 10.34.5가 전역 설치되어 있고 `apps/web/node_modules`도 설치돼 있다** (2026-08-15 설치, CLAUDE.md에도 반영됨).
 
-### 0-4. 워킹트리의 남의 파일 (건드리지 말 것 / B-8에서만 처리)
+### 0-4. 워킹트리의 남의 파일 (해소됨, 2026-08-15)
 
-- ` D PROMPTS.md` — **사용자 소유 변경. 복원·커밋·스테이지 금지.**
-- 아래는 **codex(다른 에이전트)의 Stage 4 미커밋 작업분**. B-8 작업에서만 리뷰 후 커밋하고, 그 전엔 어떤 커밋에도 섞지 않는다:
-  - modified: `apps/web/src/domain/contracts.ts`, `apps/web/src/domain/formatting.ts`, `apps/web/src/pages/ThemeDetailPage.tsx`, `apps/web/src/styles/global.css`, `apps/web/src/test/state-matrix.test.tsx`, `infra/deployment/migration-order.sha256`, `tests/infra/test_migration_fixture.py`
-  - untracked: `apps/worker-news/pipeline.py`, `infra/migrations/0003_news_catalyst.sql`, `packages/llm/**`, `tests/evidence/**` (테스트 35개, 08-15 00시 기준 통과)
-  - 참고: `packages/news`·`packages/catalyst`는 이미 커밋됨(`7a5c3bb`).
+- codex의 Stage 4 작업분은 `2c855fb`로 전부 커밋됐다 (worker-news pipeline, packages/llm, 0003 마이그레이션, evidence 테스트, ThemeDetailPage 근거 UI). 검증도 재확인됨.
+- `PROMPTS.md` 삭제도 같은 커밋에 포함돼 처리 완료.
 
 ### 0-5. 함정 목록 (모든 작업 공통)
 
@@ -167,10 +164,11 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ## B. "왜 오르는지" 뉴스 근거 (codex 작업 이어받기)
 
-### B-8. codex 미커밋분 리뷰·커밋 후 뉴스 수집 마무리
+### B-8. codex 미커밋분 리뷰·커밋 후 뉴스 수집 마무리 (완료, 2026-08-15)
 
-- **선행**: 0-4의 codex 파일 목록을 리뷰(품질·범위) → 검증 통과 확인(`tests/evidence` 포함해 pytest, 웹 lint/typecheck/test) → 논리 단위로 커밋. `0003_news_catalyst.sql` 커밋 시 함정 2번(manifest 해시) 확인 — codex가 이미 갱신해뒀다.
-- **그 다음**: `packages/news/`(수집·정규화·중복제거)와 `apps/worker-news/pipeline.py`를 실공급원과 연결. 허용 공급원·권리 범위는 PRD와 `packages/news/models.py`의 `RightsScope` 참조. 수집 실행은 외부 API 호출이면 승인 필요.
+- codex분은 `2c855fb`로 커밋·검증 완료 (0-4 참조).
+- 실공급원 구현 완료: `packages/news/live.py`(RSS + NAVER API HUB `특징주` 최신순 + 보완 검색, 전부 mock transport 테스트) + `apps/worker-news/collect.py`(수집 루프 진입점). 공급원 설정은 env — `NEWS_RSS_SOURCES`(`source_id|매체명|URL`을 `;`로 구분), `NAVER_API_HUB_CLIENT_ID/SECRET`.
+- 남은 것: ① live 수집 실행(외부 API 호출 = 승인 필요) ② 뉴스 Postgres 영속화 조립(`0003` 테이블은 있으나 `PostgresNewsStore` 미구현 — A-4·B-9에서) ③ `.env.example`에 `NEWS_RSS_SOURCES` 항목 추가(에이전트는 `.env*` 쓰기 불가, 사용자 수행).
 
 ### B-9. 뉴스 ↔ 실시간 테마 매칭
 
