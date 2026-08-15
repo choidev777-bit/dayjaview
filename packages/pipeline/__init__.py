@@ -5,9 +5,17 @@ from .market import (
     MarketDataPipeline,
     PublishedView,
 )
+from .membership import (
+    ThemeUniverse,
+    build_theme_universe,
+    load_theme_universe,
+)
 
 __all__ = [
     "RANKING_MODEL_VERSION",
     "MarketDataPipeline",
     "PublishedView",
+    "ThemeUniverse",
+    "build_theme_universe",
+    "load_theme_universe",
 ]

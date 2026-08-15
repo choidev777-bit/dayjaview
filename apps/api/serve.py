@@ -13,6 +13,7 @@ import json
 import os
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 from packages.adapters.kiwoom import (
@@ -28,27 +29,25 @@ from packages.adapters.kiwoom import (
 from packages.domain import DataStatus
 from packages.events import InMemoryEventStore, LineageRef
 from packages.identity import GoogleIdentity
-from packages.pipeline import MarketDataPipeline
+from packages.pipeline import MarketDataPipeline, ThemeUniverse, load_theme_universe
 from packages.pipeline.market import RANKINGS_PARAMS, TREEMAP_PARAMS
 from packages.realtime import InMemorySnapshotRepository, StockRealtimeUpdate
 
 from .app import FixtureIdentityEnvironment, create_fixture_app
 from .app_types import JsonObject
 from .config import ApiSettings
-from .fixture_universe import (
-    FIXTURE_MARKET_DATE,
-    FIXTURE_MEMBERSHIP_VERSION,
-    FIXTURE_STOCK_NAMES,
-    FIXTURE_THEME_NAMES,
-    fixture_catalog,
-    fixture_references,
-)
+from .fixture_universe import FIXTURE_MARKET_DATE, fixture_universe
 from .snapshot_product import SnapshotProductReadRepository
 
 KIWOOM_FIXTURE_PATH = "tests/market-gateway/fixtures/kiwoom-market-v1.json"
 FIXTURE_DEMO_LOGIN_CODE = "fixture-demo-login"
+THEME_UNIVERSE_MODE_ENV = "THEME_UNIVERSE_MODE"
+INFOSTOCK_IMPORT_DIR_ENV = "INFOSTOCK_IMPORT_DIR"
+DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 
 _BASE = datetime(2026, 8, 14, 0, 0, tzinfo=UTC)
+# 인포스탁 테마 명단은 장 시작 전에 확보된 것으로 취급한다.
+_INFOSTOCK_MEMBERSHIP_KNOWN_AT = datetime(2026, 8, 13, 23, 0, tzinfo=UTC)
 
 HealthPayload = Callable[[], dict[str, object]]
 Scope = Mapping[str, Any]
@@ -124,24 +123,50 @@ def _to_data_status(status: GatewayDataStatus) -> DataStatus:
         return DataStatus.DEGRADED
 
 
+def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniverse:
+    """`THEME_UNIVERSE_MODE`로 연습용 2테마와 인포스탁 실테마 명단을 고른다.
+
+    infostock 모드에는 기준정보(A-2)가 아직 없으므로 references가 비어 있다.
+    그래서 모든 테마가 Coverage INSUFFICIENT로 남고 rankings가 비는 것이 이
+    모드의 정상 상태다.
+    """
+
+    mode = environment.get(THEME_UNIVERSE_MODE_ENV, "fixture").strip().lower()
+    if mode == "fixture":
+        return fixture_universe()
+    if mode != "infostock":
+        raise ValueError(
+            f"{THEME_UNIVERSE_MODE_ENV}는 fixture 또는 infostock이어야 합니다: {mode}"
+        )
+    return load_theme_universe(
+        Path(
+            environment.get(INFOSTOCK_IMPORT_DIR_ENV, DEFAULT_INFOSTOCK_IMPORT_DIR)
+        ),
+        effective_from=FIXTURE_MARKET_DATE,
+        known_at=_INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+    )
+
+
 def build_fixture_environment(
     *,
     settings: ApiSettings | None = None,
+    universe: ThemeUniverse | None = None,
 ) -> tuple[FixtureIdentityEnvironment, MarketDataPipeline]:
     """게이트웨이 재생 → 파이프라인 발행 → hub 연결까지 끝낸 환경을 만든다."""
 
     effective_settings = settings or ApiSettings.from_environment(os.environ)
+    effective_universe = universe or theme_universe_from_environment(os.environ)
     events, gateway_status = replay_fixture_market_events()
     data_status = _to_data_status(gateway_status)
     pipeline = MarketDataPipeline(
         market_date=FIXTURE_MARKET_DATE,
         stream_id="stream_fixture_20260814",
         schema_version=effective_settings.schema_version,
-        catalog=fixture_catalog(),
-        references=fixture_references(),
-        membership_version=FIXTURE_MEMBERSHIP_VERSION,
-        theme_names=FIXTURE_THEME_NAMES,
-        stock_names=FIXTURE_STOCK_NAMES,
+        catalog=effective_universe.catalog(),
+        references=effective_universe.references,
+        membership_version=effective_universe.version,
+        theme_names=effective_universe.theme_names,
+        stock_names=effective_universe.stock_names,
         event_store=InMemoryEventStore(),
         snapshot_repository=InMemorySnapshotRepository(),
     )

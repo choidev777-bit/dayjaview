@@ -17,7 +17,7 @@ from packages.domain import (
     ThemeMember,
     ThemeMembershipSnapshot,
 )
-from packages.realtime import VersionedThemeCatalog
+from packages.pipeline import ThemeUniverse
 
 FIXTURE_MARKET_DATE = date(2026, 8, 14)
 FIXTURE_MEMBERSHIP_VERSION = "membership-fixture-2026-08-14T00:00:00Z"
@@ -63,10 +63,6 @@ def fixture_membership_snapshots() -> tuple[ThemeMembershipSnapshot, ...]:
     )
 
 
-def fixture_catalog() -> VersionedThemeCatalog:
-    return VersionedThemeCatalog(fixture_membership_snapshots())
-
-
 def fixture_references() -> tuple[StockReference, ...]:
     def reference(
         stock_id: str,
@@ -92,4 +88,14 @@ def fixture_references() -> tuple[StockReference, ...]:
         reference("KRX:000660", "189500", 728_002_365, "0.73"),
         # 207000/203500-1=+1.720%
         reference("KRX:035420", "203500", 164_000_000, "0.60"),
+    )
+
+
+def fixture_universe() -> ThemeUniverse:
+    return ThemeUniverse(
+        version=FIXTURE_MEMBERSHIP_VERSION,
+        snapshots=fixture_membership_snapshots(),
+        theme_names=dict(FIXTURE_THEME_NAMES),
+        stock_names=dict(FIXTURE_STOCK_NAMES),
+        references=fixture_references(),
     )
