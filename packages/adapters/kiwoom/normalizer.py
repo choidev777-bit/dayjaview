@@ -156,11 +156,16 @@ class KiwoomNormalizer:
         item_index: int,
     ) -> CanonicalMarketEvent:
         stock_code = _stock_code(item.get("item") or values.get("9001"))
+        current_price = _decimal(values.get("10"), absolute=True)
         observation = _observation(
             source=ObservationSource.REALTIME_0B,
             stock_code=stock_code,
-            current_price=_decimal(values.get("10"), absolute=True),
+            current_price=current_price,
             change_rate=_decimal(values.get("12")),
+            # 0B는 기준가를 직접 주지 않는다. FID 11(전일대비)의 부호를 살려
+            # 빼면 그날 기준가가 나온다. 권리락이면 키움이 조정된 기준가로
+            # 전일대비를 계산하므로 기업행위가 그대로 반영된다.
+            base_price=_base_price(current_price, _decimal(values.get("11"))),
             trade_volume=_integer(values.get("15"), absolute=True),
             cumulative_volume=_integer(values.get("13"), absolute=True),
             cumulative_trading_value=_decimal(values.get("14"), absolute=True),
@@ -191,6 +196,12 @@ class KiwoomNormalizer:
             stock_code=stock_code,
             current_price=_decimal(row.get("cur_prc"), absolute=True),
             change_rate=_decimal(row.get("flu_rt")),
+            # ka10095는 기준가를 그대로 준다. 없으면 현재가 - 전일대비로 만든다.
+            base_price=_decimal(row.get("base_pric"), absolute=True)
+            or _base_price(
+                _decimal(row.get("cur_prc"), absolute=True),
+                _decimal(row.get("pred_pre")),
+            ),
             trade_volume=_integer(row.get("trde_qty"), absolute=True),
             cumulative_volume=_integer(row.get("acc_trde_qty"), absolute=True),
             cumulative_trading_value=_decimal(
@@ -218,6 +229,7 @@ def _observation(
     stock_code: str,
     current_price: Decimal | None,
     change_rate: Decimal | None,
+    base_price: Decimal | None,
     trade_volume: int | None,
     cumulative_volume: int | None,
     cumulative_trading_value: Decimal | None,
@@ -237,6 +249,7 @@ def _observation(
         source_stock_code=stock_code,
         current_price=current_price,
         change_rate=change_rate,
+        base_price=base_price,
         trade_volume=trade_volume,
         cumulative_volume=cumulative_volume,
         cumulative_trading_value=cumulative_trading_value,
@@ -247,6 +260,17 @@ def _observation(
         market_cap=market_cap,
         missing_fields=missing_fields,
     )
+
+
+def _base_price(
+    current_price: Decimal | None, change_from_previous: Decimal | None
+) -> Decimal | None:
+    """현재가에서 전일대비를 빼 그날 기준가를 만든다. 0 이하면 값을 만들지 않는다."""
+
+    if current_price is None or change_from_previous is None:
+        return None
+    base = current_price - change_from_previous
+    return base if base > 0 else None
 
 
 def _make_event(

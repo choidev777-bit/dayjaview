@@ -100,6 +100,7 @@ class MarketDataPipeline:
         self._hysteresis_policy = hysteresis_policy
         self._hot = HotStateStore()
         self._references = references
+        self._base_price_filled: set[str] = set()
         self._aggregator = DirtyThemeAggregator(
             catalog=catalog,
             references=references,
@@ -266,6 +267,7 @@ class MarketDataPipeline:
 
         if update.market_date != self._market_date:
             raise ValueError("pipeline의 market_date와 다른 관측은 적용할 수 없습니다")
+        self._supplement_base_price(update)
         result = self._hot.apply(update)
         if result.changed:
             self._aggregator.mark_stock(
@@ -274,6 +276,50 @@ class MarketDataPipeline:
                 decision_at=update.received_at,
             )
         return result
+
+    def _supplement_base_price(self, update: StockRealtimeUpdate) -> None:
+        """장중 기준가로 전일 종가가 빈 기준정보를 채운다.
+
+        KRX 일별매매는 장 마감 후에야 나오므로 장중에는 전일 종가를 만들 수
+        없고, 기업행위 원천도 없어 전 종목이 계산에서 빠진다. 시세 공급원이
+        주는 기준가는 권리락·액면분할이 반영된 값이라 이 자리를 메운다.
+
+        이미 전일 종가가 있으면 손대지 않는다. 기존 값을 덮지 않고 known_at이
+        더 늦은 기준정보를 덧붙여, point-in-time 선택이 그대로 판단하게 한다.
+        """
+
+        if update.base_price is None or update.stock_id in self._base_price_filled:
+            return
+        for reference in self._references:
+            if (
+                reference.stock_id == update.stock_id
+                and reference.effective_for == self._market_date
+                and reference.previous_adjusted_close is not None
+            ):
+                self._base_price_filled.add(update.stock_id)
+                return
+        current = next(
+            (
+                reference
+                for reference in self._references
+                if reference.stock_id == update.stock_id
+                and reference.effective_for == self._market_date
+            ),
+            None,
+        )
+        supplemented = StockReference(
+            stock_id=update.stock_id,
+            effective_for=self._market_date,
+            known_at=update.received_at,
+            previous_adjusted_close=update.base_price,
+            listed_shares=current.listed_shares if current else None,
+            free_float_ratio=current.free_float_ratio if current else None,
+            free_float_validated=current.free_float_validated if current else False,
+            version=f"{current.version if current else 'reference'}+base-price",
+        )
+        self._references = (*self._references, supplemented)
+        self._aggregator.add_reference(supplemented)
+        self._base_price_filled.add(update.stock_id)
 
     def publish(
         self,

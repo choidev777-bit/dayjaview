@@ -139,6 +139,10 @@ class MarketObservation:
     source_stock_code: str
     current_price: Decimal | None
     change_rate: Decimal | None
+    # 그날의 기준가. 권리락·액면분할이 있으면 키움이 조정된 값을 준다.
+    # KRX 일별매매는 장 마감 후에야 나오므로 장중 전일종가는 이 값이 유일한
+    # 원천이다.
+    base_price: Decimal | None
     trade_volume: int | None
     cumulative_volume: int | None
     cumulative_trading_value: Decimal | None
@@ -154,6 +158,7 @@ class MarketObservation:
             raise ValueError("source_stock_code는 6자리 숫자여야 합니다")
         for name in (
             "current_price",
+            "base_price",
             "cumulative_trading_value",
             "open_price",
             "high_price",
@@ -228,6 +233,7 @@ class CanonicalMarketEvent:
                 "sourceStockCode": self.data.source_stock_code,
                 "currentPrice": _decimal_text(self.data.current_price),
                 "changeRate": _decimal_text(self.data.change_rate),
+                "basePrice": _decimal_text(self.data.base_price),
                 "tradeVolume": self.data.trade_volume,
                 "cumulativeVolume": self.data.cumulative_volume,
                 "cumulativeTradingValue": _decimal_text(

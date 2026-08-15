@@ -299,6 +299,7 @@ class LiveMarketRunner:
             received_at=event.received_at,
             current_price=event.data.current_price,
             cumulative_trading_value=event.data.cumulative_trading_value,
+            base_price=event.data.base_price,
             lineage=(
                 LineageRef(
                     kind="market-event",

@@ -179,6 +179,16 @@ class DirtyThemeAggregator:
         self._dirty: dict[tuple[str, date], DirtyTheme] = {}
         self._lock = RLock()
 
+    def add_reference(self, reference: StockReference) -> None:
+        """장중에 새로 알게 된 기준정보를 덧붙인다.
+
+        기존 값을 고치지 않는다. `_select_references`가 `known_at`이 가장 늦은
+        것을 고르므로, 나중에 안 사실이 자연스럽게 이긴다.
+        """
+
+        with self._lock:
+            self._references = (*self._references, reference)
+
     def mark_stock(
         self,
         *,

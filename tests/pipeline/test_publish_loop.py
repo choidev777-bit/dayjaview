@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
@@ -378,3 +379,84 @@ def test_trading_day_loop_skips_a_day_the_calendar_says_is_closed() -> None:
     assert loop.tick() is None
     assert loop.session is None
     assert built == []
+
+
+def test_intraday_base_price_fills_the_missing_previous_close() -> None:
+    """장중에는 당일 KRX row가 없어 전일종가가 빈다. 시세의 기준가가 그 자리를 메운다.
+
+    기준가가 없으면 유동시총을 못 구해 Coverage INSUFFICIENT로 순위가 빈다.
+    """
+
+    catalog = VersionedThemeCatalog(
+        (
+            ThemeMembershipSnapshot(
+                theme_id="thm_full",
+                version=MEMBERSHIP_VERSION,
+                effective_from=MARKET_DATE,
+                known_at=KNOWN_AT,
+                members=tuple(
+                    ThemeMember(stock_id, MembershipRole.CORE) for stock_id in STOCK_IDS
+                ),
+            ),
+        )
+    )
+    # 장중 기준정보: 유동주식비율은 공시로 확보했지만 전일종가는 아직 없다.
+    references = tuple(
+        StockReference(
+            stock_id=stock_id,
+            effective_for=MARKET_DATE,
+            known_at=KNOWN_AT,
+            previous_adjusted_close=None,
+            listed_shares=1_000_000,
+            free_float_ratio=Decimal("0.5"),
+            free_float_validated=True,
+            version="reference-intraday",
+        )
+        for stock_id in STOCK_IDS
+    )
+    pipeline = MarketDataPipeline(
+        market_date=MARKET_DATE,
+        stream_id="stream_base_price",
+        schema_version="2026-08-14.1",
+        catalog=catalog,
+        references=references,
+        membership_version=MEMBERSHIP_VERSION,
+        theme_names={"thm_full": "테스트 테마"},
+        stock_names={stock_id: stock_id for stock_id in STOCK_IDS},
+        event_store=InMemoryEventStore(),
+        snapshot_repository=InMemorySnapshotRepository(),
+    )
+
+    for index, stock_id in enumerate(STOCK_IDS):
+        pipeline.apply_update(
+            replace(
+                _update(stock_id, seconds=index + 1, current_price=Decimal("10500")),
+                base_price=Decimal("10000"),
+            )
+        )
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    view = pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+
+    items = view.rankings.payload["items"]
+    assert isinstance(items, list) and len(items) == 1
+    assert items[0]["weightedReturn"] == pytest.approx(0.05)
+
+
+def test_intraday_base_price_does_not_override_a_known_previous_close() -> None:
+    """전일종가가 이미 있으면 기준가로 덮지 않는다."""
+
+    pipeline = _pipeline()  # previous_adjusted_close=10,000
+    for index, stock_id in enumerate(STOCK_IDS):
+        pipeline.apply_update(
+            replace(
+                _update(stock_id, seconds=index + 1, current_price=Decimal("10500")),
+                base_price=Decimal("20000"),
+            )
+        )
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    view = pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+
+    items = view.rankings.payload["items"]
+    assert isinstance(items, list) and len(items) == 1
+    # 기준가 20,000을 썼다면 -47.5%가 됐을 것이다.
+    assert items[0]["weightedReturn"] == pytest.approx(0.05)

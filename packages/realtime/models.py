@@ -49,6 +49,9 @@ class StockRealtimeUpdate:
     received_at: datetime
     current_price: Decimal | None
     cumulative_trading_value: Decimal | None
+    # 그날 기준가(전일 종가). KRX 일별매매는 장 마감 후에야 나오므로 장중에는
+    # 시세 공급원이 주는 이 값이 유일한 전일 종가 원천이다.
+    base_price: Decimal | None = None
     fresh: bool = True
     trading_halted: bool = False
     corporate_action_unresolved: bool = False
@@ -67,6 +70,10 @@ class StockRealtimeUpdate:
         _require_aware(self.received_at, "received_at")
         if self.occurred_at > self.received_at:
             raise ValueError("occurred_at은 received_at 이후일 수 없습니다")
+        if self.base_price is not None and (
+            not self.base_price.is_finite() or self.base_price <= 0
+        ):
+            raise ValueError("base_price는 0보다 큰 유한한 Decimal이어야 합니다")
         # Reuse the S1 domain validator so null, zero, and invalid values have
         # exactly the same semantics on the hot and calculation paths.
         self.to_observation()
