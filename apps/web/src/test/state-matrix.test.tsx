@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { App } from '../app/App';
 import { createFixtureRepository, type RankingFixture } from '../adapters/fixtureRepository';
@@ -174,6 +175,116 @@ describe('근거 상태 matrix', () => {
 
     expect((await screen.findAllByText(/인포스탁 기준 확정/)).length).toBeGreaterThan(0);
     expect(screen.getByText('장후 확정', { selector: '.status-chip' })).toBeInTheDocument();
+  });
+
+  it('검색 중에는 저장된 요약 문장이 있어도 상승 이유를 만들지 않는다', async () => {
+    const fixture = createFixtureRepository({ detail: 'searching', evidence: 'searching' });
+    const repository = {
+      ...fixture,
+      async getThemeDetail(themeId: string, eventId: string) {
+        const response = await fixture.getThemeDetail(themeId, eventId);
+        const injected = structuredClone(response);
+        injected.data.evidenceSummary.summary = '근거 없이 남아 있던 이유 문장';
+        return injected;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
+
+    expect((await screen.findAllByText('상승 이유 확인 중')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('근거 없이 남아 있던 이유 문장')).not.toBeInTheDocument();
+  });
+
+  it('기사별 품질 flag와 발행 시각 미확인을 문구로 표시한다', async () => {
+    const fixture = createFixtureRepository({ detail: 'single', evidence: 'single' });
+    const repository = {
+      ...fixture,
+      async getEvidence(eventId: string) {
+        const response = await fixture.getEvidence(eventId);
+        const flagged = structuredClone(response);
+        flagged.data.items[0].publishedAt = null;
+        flagged.data.items[0].qualityFlags = ['PUBLISHED_AT_MISSING', 'RIGHTS_LIMITED'];
+        return flagged;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
+
+    expect(await screen.findByText('발행 시각 미확인')).toBeInTheDocument();
+    expect(screen.getByText('원문 제공 범위 제한')).toBeInTheDocument();
+    expect(screen.getByText(/발행 시각 미확인 · 수집 10:17/)).toBeInTheDocument();
+  });
+
+  it('다음 page cursor가 있으면 이전 근거를 이어서 불러온다', async () => {
+    const user = userEvent.setup();
+    const fixture = createFixtureRepository({ detail: 'multi', evidence: 'multi' });
+    const repository = {
+      ...fixture,
+      async getEvidence(eventId: string, cursor?: string | null) {
+        const response = await fixture.getEvidence(eventId);
+        const paged = structuredClone(response);
+        if (!cursor) {
+          paged.data.page = { nextCursor: 'news_2', hasMore: true, limit: 20 };
+          return paged;
+        }
+        const older = paged.data.items[0];
+        older.newsId = 'news_3';
+        older.title = '이전 시간대 보도';
+        paged.data.items = [older];
+        paged.data.page = { nextCursor: null, hasMore: false, limit: 20 };
+        return paged;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
+
+    expect(await screen.findByText('체코 신규 원전 관련 보도')).toBeInTheDocument();
+    expect(screen.queryByText('이전 시간대 보도')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '이전 근거 더 불러오기' }));
+
+    expect(await screen.findByText('이전 시간대 보도')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '이전 근거 더 불러오기' })).not.toBeInTheDocument();
+  });
+
+  it('장후 확정으로 바뀌면 장중에 표시했던 근거를 이력 탭으로 남긴다', async () => {
+    const user = userEvent.setup();
+    const fixture = createFixtureRepository({ detail: 'multi', evidence: 'multi' });
+    const listeners = new Set<() => void>();
+    let afterClose = false;
+    const repository = {
+      ...fixture,
+      subscribe(resource: Parameters<typeof fixture.subscribe>[0], listener: () => void) {
+        if (resource !== 'evidence') return fixture.subscribe(resource, listener);
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      async getEvidence(eventId: string) {
+        const response = await fixture.getEvidence(eventId);
+        if (!afterClose) return response;
+        const confirmed = structuredClone(response);
+        confirmed.data.evidenceStatus = 'AFTER_CLOSE_CONFIRMED';
+        confirmed.data.items = confirmed.data.items.slice(0, 1);
+        return confirmed;
+      },
+    };
+    render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
+
+    expect(await screen.findByText('신규 원전 협상 진전 보도')).toBeInTheDocument();
+
+    afterClose = true;
+    await act(async () => {
+      listeners.forEach((listener) => listener());
+    });
+
+    expect(
+      await screen.findByText('장중에 표시했던 내용과 달라졌습니다. 확정 사유를 기준으로 안내합니다.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('신규 원전 협상 진전 보도')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: '장중 분석 이력' }));
+
+    expect(await screen.findByText('신규 원전 협상 진전 보도')).toBeInTheDocument();
+    expect(
+      screen.getByText('장중에 표시했던 내용이며 현재 기준은 장 마감 후 분석입니다.'),
+    ).toBeInTheDocument();
   });
 });
 

@@ -75,6 +75,23 @@ export function evidenceStatusNote(status: EvidenceStatus): string {
   }[status];
 }
 
+/** 근거가 확인된 상태에서만 상승 이유 문장을 노출한다 (screen_spec 4.2·8.3). */
+export function hasConfirmedEvidence(status: EvidenceStatus): boolean {
+  return (
+    status === 'SINGLE_SOURCE' ||
+    status === 'MULTI_SOURCE_CONFIRMED' ||
+    status === 'REEMERGENCE' ||
+    status === 'AFTER_CLOSE_CONFIRMED'
+  );
+}
+
+/** 기사별 품질 flag. 내부 코드는 그대로 보여주지 않고 아는 것만 문구로 바꾼다. */
+export function evidenceFlagLabel(flag: string): string | null {
+  return (
+    { PUBLISHED_AT_MISSING: '발행 시각 미확인', RIGHTS_LIMITED: '원문 제공 범위 제한' }[flag] ?? null
+  );
+}
+
 export function matchBasisLabel(basis: MatchBasis): string {
   return { THEME: '테마 일치', STOCK: '종목 일치', TIME: '시각 근접' }[basis];
 }

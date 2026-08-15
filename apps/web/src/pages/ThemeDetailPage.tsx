@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
   IconArrowLeftLine,
   IconChevronRightSmallLine,
@@ -8,13 +8,21 @@ import {
 } from '@karrotmarket/react-monochrome-icon';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
-import type { EvidenceResponse, ResponseMeta, ThemeDetailResponse } from '../domain/contracts';
+import type {
+  EvidenceItem,
+  EvidenceResponse,
+  EvidenceStatus,
+  ResponseMeta,
+  ThemeDetailResponse,
+} from '../domain/contracts';
 import {
+  evidenceFlagLabel,
   evidenceStatusLabel,
   evidenceStatusNote,
   eventStatusLabel,
   formatReturn,
   formatTime,
+  hasConfirmedEvidence,
   matchBasisLabel,
   returnTone,
 } from '../domain/formatting';
@@ -24,6 +32,8 @@ import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 type ThemeDetail = ThemeDetailResponse['data'];
 type EvidenceSummary = ThemeDetail['evidenceSummary'];
+type EvidencePage = EvidenceResponse['data']['page'];
+type EvidencePhase = 'LIVE' | 'AFTER_CLOSE';
 
 const VISIBLE_EVIDENCE = 3;
 const NEWS_DELAY_FLAGS = ['SOURCE_DEGRADED', 'STALE_NEWS_DATA'];
@@ -98,9 +108,22 @@ function SaveThemeButton({
   );
 }
 
-function EvidenceList({ items }: { items: EvidenceResponse['data']['items'] }) {
+function EvidenceList({
+  items,
+  hasMore = false,
+  loadingMore = false,
+  loadMoreFailed = false,
+  onLoadMore,
+}: {
+  items: EvidenceItem[];
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  loadMoreFailed?: boolean;
+  onLoadMore?: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? items : items.slice(0, VISIBLE_EVIDENCE);
+  const hidden = items.length - visible.length;
 
   return (
     <>
@@ -111,47 +134,172 @@ function EvidenceList({ items }: { items: EvidenceResponse['data']['items'] }) {
             <a href={item.originalUrl} target="_blank" rel="noreferrer">
               <strong>{item.title}</strong>
               <span>
-                {item.sourceName} · {formatTime(item.publishedAt)} · 새 창에서 원문 보기
+                {item.sourceName} ·{' '}
+                {item.publishedAt
+                  ? formatTime(item.publishedAt)
+                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}{' '}
+                · 새 창에서 원문 보기
               </span>
             </a>
             <p>{item.summary}</p>
             <p className="evidence-list__basis">
               <span className="badge">자체 요약</span>
               {item.matchBasis.map(matchBasisLabel).join(' · ')}
+              {item.qualityFlags.map((flag) => {
+                const label = evidenceFlagLabel(flag);
+                return label ? (
+                  <span key={flag} className="badge">
+                    {label}
+                  </span>
+                ) : null;
+              })}
             </p>
           </li>
         ))}
       </ul>
-      {items.length > VISIBLE_EVIDENCE ? (
+      {hidden > 0 || expanded ? (
         <button
           type="button"
           className="expand-button"
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          <span>{expanded ? '근거 접기' : `근거 ${items.length - VISIBLE_EVIDENCE}건 더 보기`}</span>
+          <span>{expanded ? '근거 접기' : `근거 ${hidden.toLocaleString('ko-KR')}건 더 보기`}</span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
+      ) : null}
+      {hasMore && onLoadMore ? (
+        <button type="button" className="expand-button" onClick={onLoadMore} disabled={loadingMore}>
+          <span>{loadingMore ? '근거를 더 불러오는 중입니다' : '이전 근거 더 불러오기'}</span>
+          <i aria-hidden="true" data-open="false" />
+        </button>
+      ) : null}
+      {loadMoreFailed ? (
+        <p className="confirmation-note" role="alert">
+          이전 근거를 더 불러오지 못했습니다. 지금까지 확인된 근거만 표시합니다.
+        </p>
       ) : null}
     </>
   );
 }
 
+/** 장중에 표시했던 근거. 확정으로 바뀌어도 같은 화면에서 이력으로 남긴다. */
+interface LiveEvidenceHistory {
+  evidenceStatus: EvidenceStatus;
+  summary: string | null;
+  items: EvidenceItem[];
+  observedAt: string;
+}
+
+/** 첫 page 이후 사용자가 더 불러온 근거. 근거 응답이 갱신되면 처음부터 다시 센다. */
+interface EvidencePagination {
+  source: EvidenceResponse | null;
+  items: EvidenceItem[];
+  page: EvidencePage | null;
+  loading: boolean;
+  failed: boolean;
+}
+
+const EMPTY_PAGINATION: EvidencePagination = {
+  source: null,
+  items: [],
+  page: null,
+  loading: false,
+  failed: false,
+};
+
 function ReasonSection({ eventId, summary }: { eventId: string; summary: EvidenceSummary }) {
   const repository = useRepository();
-  const [requestedTab, setRequestedTab] = useState<'LIVE' | 'AFTER_CLOSE' | null>(null);
-  const resource = useRepositoryResource<EvidenceResponse>(
+  const [requestedTab, setRequestedTab] = useState<EvidencePhase | null>(null);
+  const [paginationState, setPaginationState] = useState<EvidencePagination>(EMPTY_PAGINATION);
+  const historyRef = useRef<LiveEvidenceHistory | null>(null);
+  const liveTabRef = useRef<HTMLButtonElement>(null);
+  const afterCloseTabRef = useRef<HTMLButtonElement>(null);
+  const resource = useRepositoryResource<{
+    response: EvidenceResponse;
+    history: LiveEvidenceHistory | null;
+  }>(
     repository,
     'evidence',
-    () => repository.getEvidence(eventId),
+    async () => {
+      const response = await repository.getEvidence(eventId);
+      // 장중 근거는 확정 뒤에도 이력으로 보여준다 (screen_spec 4.2 AFTER_CLOSE_CONFIRMED).
+      if (response.data.evidenceStatus === 'AFTER_CLOSE_CONFIRMED') {
+        return { response, history: historyRef.current };
+      }
+      historyRef.current = {
+        evidenceStatus: response.data.evidenceStatus,
+        summary: hasConfirmedEvidence(response.data.evidenceStatus) ? summary.summary : null,
+        items: response.data.items,
+        observedAt: response.meta.generatedAt,
+      };
+      return { response, history: null };
+    },
     [repository, eventId],
   );
 
-  const evidenceStatus =
-    resource.status === 'success' ? resource.data.data.evidenceStatus : summary.evidenceStatus;
-  const confirmed =
-    summary.evidenceStatus === 'AFTER_CLOSE_CONFIRMED' || evidenceStatus === 'AFTER_CLOSE_CONFIRMED';
+  const loaded = resource.status === 'success' ? resource.data.response : null;
+  const history = resource.status === 'success' ? resource.data.history : null;
+  const pagination = loaded && paginationState.source === loaded ? paginationState : EMPTY_PAGINATION;
+
+  const items = loaded ? [...loaded.data.items, ...pagination.items] : [];
+  // 근거 응답이 이 화면의 기준이다. 상세 문서의 요약 상태는 근거를 불러오기 전까지만 쓴다.
+  const evidenceStatus = loaded ? loaded.data.evidenceStatus : summary.evidenceStatus;
+  const confirmed = evidenceStatus === 'AFTER_CLOSE_CONFIRMED';
+
+  const page = pagination.page ?? loaded?.data.page ?? null;
+  const hasMore = page !== null && page.hasMore && page.nextCursor !== null;
+
+  async function loadMore() {
+    const cursor = page?.nextCursor;
+    if (!loaded || !cursor) return;
+    setPaginationState({ ...pagination, source: loaded, loading: true, failed: false });
+    try {
+      const next = await repository.getEvidence(eventId, cursor);
+      const known = new Set(items.map((item) => item.newsId));
+      setPaginationState((current) => ({
+        source: loaded,
+        items: [
+          ...(current.source === loaded ? current.items : []),
+          ...next.data.items.filter((item) => !known.has(item.newsId)),
+        ],
+        page: next.data.page,
+        loading: false,
+        failed: false,
+      }));
+    } catch {
+      setPaginationState((current) => ({
+        ...current,
+        source: loaded,
+        loading: false,
+        failed: true,
+      }));
+    }
+  }
+
   const tab = requestedTab ?? (confirmed ? 'AFTER_CLOSE' : 'LIVE');
+  const changedFromLive =
+    confirmed &&
+    history !== null &&
+    (history.summary !== summary.summary ||
+      history.items.map((item) => item.newsId).join(',') !==
+        items.map((item) => item.newsId).join(','));
+
+  function selectTab(next: EvidencePhase) {
+    setRequestedTab(next);
+    (next === 'LIVE' ? liveTabRef : afterCloseTabRef).current?.focus();
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'ArrowRight' || event.key === 'End') {
+      event.preventDefault();
+      selectTab('AFTER_CLOSE');
+    }
+    if (event.key === 'ArrowLeft' || event.key === 'Home') {
+      event.preventDefault();
+      selectTab('LIVE');
+    }
+  }
 
   return (
     <section aria-labelledby="reason-title">
@@ -159,14 +307,32 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
         <h2 id="reason-title">오늘 왜 올랐을까요?</h2>
       </div>
 
-      <div className="reason-tabs" role="tablist" aria-label="상승 이유 분석 시점">
-        <button type="button" role="tab" aria-selected={tab === 'LIVE'} onClick={() => setRequestedTab('LIVE')}>
-          실시간 분석
-        </button>
+      <div
+        className="reason-tabs"
+        role="tablist"
+        aria-label="상승 이유 분석 시점"
+        onKeyDown={handleTabKeyDown}
+      >
         <button
+          ref={liveTabRef}
           type="button"
           role="tab"
+          id="reason-tab-live"
+          aria-controls="reason-panel"
+          aria-selected={tab === 'LIVE'}
+          tabIndex={tab === 'LIVE' ? 0 : -1}
+          onClick={() => setRequestedTab('LIVE')}
+        >
+          {confirmed ? '장중 분석 이력' : '실시간 분석'}
+        </button>
+        <button
+          ref={afterCloseTabRef}
+          type="button"
+          role="tab"
+          id="reason-tab-after-close"
+          aria-controls="reason-panel"
           aria-selected={tab === 'AFTER_CLOSE'}
+          tabIndex={tab === 'AFTER_CLOSE' ? 0 : -1}
           onClick={() => setRequestedTab('AFTER_CLOSE')}
         >
           장 마감 후 분석
@@ -174,79 +340,130 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
       </div>
 
       <p className="section-note">
-        {evidenceStatusLabel(summary.evidenceStatus)}
+        {evidenceStatusLabel(evidenceStatus)}
         {summary.sourceCount > 0 ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳` : ''}
         {summary.latestPublishedAt ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}` : ''}
       </p>
 
-      {resource.status === 'loading' ? <LoadingState label="기사 근거를 확인하는 중입니다" /> : null}
-      {resource.status === 'error' ? <ErrorState error={resource.error} retry={resource.retry} /> : null}
+      <div
+        role="tabpanel"
+        id="reason-panel"
+        aria-labelledby={tab === 'LIVE' ? 'reason-tab-live' : 'reason-tab-after-close'}
+        tabIndex={0}
+      >
+        {resource.status === 'loading' ? <LoadingState label="기사 근거를 확인하는 중입니다" /> : null}
+        {resource.status === 'error' ? <ErrorState error={resource.error} retry={resource.retry} /> : null}
 
-      {resource.status === 'success'
-        ? (() => {
-            const { items } = resource.data.data;
-            const delayed = newsCollectionDelayed(resource.data.meta);
-            const lastHealthyAt = resource.data.meta.marketContext?.lastHealthyAt ?? null;
+        {loaded
+          ? (() => {
+              const delayed = newsCollectionDelayed(loaded.meta);
+              const lastHealthyAt = loaded.meta.marketContext?.lastHealthyAt ?? null;
 
-            if (tab === 'AFTER_CLOSE' && !confirmed) {
-              return (
-                <div className="after-close-pending">
-                  <strong>장 마감 후 오늘 하루를 다시 분석해요</strong>
-                  <p>
-                    장중 가격 움직임과 마감 후 확정된 시장 기록을 함께 살펴 상승 배경을 정리해 보여드려요.
-                  </p>
-                  <small>장중 분석과 달라진 내용이 있다면 마감 후 분석을 기준으로 안내합니다.</small>
-                </div>
-              );
-            }
+              if (tab === 'AFTER_CLOSE' && !confirmed) {
+                return (
+                  <div className="after-close-pending">
+                    <strong>장 마감 후 오늘 하루를 다시 분석해요</strong>
+                    <p>
+                      장중 가격 움직임과 마감 후 확정된 시장 기록을 함께 살펴 상승 배경을 정리해 보여드려요.
+                    </p>
+                    <small>장중 분석과 달라진 내용이 있다면 마감 후 분석을 기준으로 안내합니다.</small>
+                  </div>
+                );
+              }
 
-            return (
-              <>
-                <div className="source-status">
-                  <span className="live-dot" aria-hidden="true" />
-                  {evidenceStatusLabel(evidenceStatus)}
-                </div>
-
-                {delayed ? (
-                  <p className="confirmation-note" role="status">
-                    뉴스 수집이 지연되고 있습니다. 확인된 신규 소재 없음과 다른 상태입니다.
-                    {lastHealthyAt ? ` 마지막 정상 수집 ${formatTime(lastHealthyAt)}` : ''}
-                  </p>
-                ) : null}
-
-                {tab === 'AFTER_CLOSE' ? (
-                  <p className="confirmation-note">
-                    장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.
-                  </p>
-                ) : null}
-
-                {summary.summary ? <p className="reason-summary">{summary.summary}</p> : null}
-
-                {items.length ? (
+              if (tab === 'LIVE' && confirmed) {
+                if (!history) {
+                  return (
+                    <EmptyState
+                      title="장중 근거 이력이 남아 있지 않습니다"
+                      description="이 화면에서 장중 근거를 확인하기 전에 확정돼 확정 사유만 제공합니다."
+                    />
+                  );
+                }
+                return (
                   <>
-                    <p className="section-note">{evidenceStatusNote(evidenceStatus)}</p>
-                    <EvidenceList items={items} />
+                    <p className="section-note">
+                      {evidenceStatusLabel(history.evidenceStatus)} · 장중 마지막 확인{' '}
+                      {formatTime(history.observedAt)}
+                    </p>
+                    {history.summary ? <p className="reason-summary">{history.summary}</p> : null}
+                    {history.items.length ? (
+                      <EvidenceList items={history.items} />
+                    ) : (
+                      <EmptyState
+                        title={evidenceStatusLabel(history.evidenceStatus)}
+                        description={evidenceStatusNote(history.evidenceStatus)}
+                      />
+                    )}
+                    <p className="confirmation-note">
+                      장중에 표시했던 내용이며 현재 기준은 장 마감 후 분석입니다.
+                    </p>
                   </>
-                ) : (
-                  <EmptyState
-                    title={evidenceStatusLabel(evidenceStatus)}
-                    description={
-                      delayed
-                        ? '수집이 지연되는 동안에는 확인된 신규 소재가 없다고 단정하지 않습니다.'
-                        : evidenceStatusNote(evidenceStatus)
-                    }
-                  />
-                )}
+                );
+              }
 
-                {tab === 'LIVE' ? (
-                  <p className="confirmation-note">
-                    뉴스 근거는 장중 계속 갱신되며 이후 정정될 수 있습니다.
-                  </p>
-                ) : null}
-              </>
-            );
-          })()
-        : null}
+              return (
+                <>
+                  <div className="source-status">
+                    <span className="live-dot" aria-hidden="true" />
+                    {evidenceStatusLabel(evidenceStatus)}
+                  </div>
+
+                  {delayed ? (
+                    <p className="confirmation-note" role="status">
+                      뉴스 수집이 지연되고 있습니다. 확인된 신규 소재 없음과 다른 상태입니다.
+                      {lastHealthyAt ? ` 마지막 정상 수집 ${formatTime(lastHealthyAt)}` : ''}
+                    </p>
+                  ) : null}
+
+                  {tab === 'AFTER_CLOSE' ? (
+                    <p className="confirmation-note">
+                      장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.
+                    </p>
+                  ) : null}
+
+                  {changedFromLive ? (
+                    <p className="confirmation-note" role="status">
+                      장중에 표시했던 내용과 달라졌습니다. 확정 사유를 기준으로 안내합니다.
+                    </p>
+                  ) : null}
+
+                  {hasConfirmedEvidence(evidenceStatus) && summary.summary ? (
+                    <p className="reason-summary">{summary.summary}</p>
+                  ) : null}
+
+                  {items.length ? (
+                    <>
+                      <p className="section-note">{evidenceStatusNote(evidenceStatus)}</p>
+                      <EvidenceList
+                        items={items}
+                        hasMore={hasMore}
+                        loadingMore={pagination.loading}
+                        loadMoreFailed={pagination.failed}
+                        onLoadMore={loadMore}
+                      />
+                    </>
+                  ) : (
+                    <EmptyState
+                      title={evidenceStatusLabel(evidenceStatus)}
+                      description={
+                        delayed
+                          ? '수집이 지연되는 동안에는 확인된 신규 소재가 없다고 단정하지 않습니다.'
+                          : evidenceStatusNote(evidenceStatus)
+                      }
+                    />
+                  )}
+
+                  {tab === 'LIVE' ? (
+                    <p className="confirmation-note">
+                      뉴스 근거는 장중 계속 갱신되며 이후 정정될 수 있습니다.
+                    </p>
+                  ) : null}
+                </>
+              );
+            })()
+          : null}
+      </div>
     </section>
   );
 }

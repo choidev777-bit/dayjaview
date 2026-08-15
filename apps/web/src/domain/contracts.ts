@@ -313,7 +313,7 @@ export interface ProductRepository {
   getRankings(): Promise<RankingResponse>;
   getTreemap(): Promise<TreemapResponse>;
   getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse>;
-  getEvidence(eventId: string): Promise<EvidenceResponse>;
+  getEvidence(eventId: string, cursor?: string | null): Promise<EvidenceResponse>;
   getSaved(type: SavedType | 'ALL'): Promise<SavedResponse>;
   saveSaved(item: SavedTarget): Promise<void>;
   removeSaved(item: Pick<SavedItem, 'savedType' | 'targetId'>): Promise<void>;

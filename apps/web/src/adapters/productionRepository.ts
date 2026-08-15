@@ -339,13 +339,15 @@ class LiveProductRepository implements ProductRepository {
     return response;
   }
 
-  async getEvidence(eventId: string): Promise<EvidenceResponse> {
-    const cached = this.evidenceCache.get(eventId);
+  async getEvidence(eventId: string, cursor?: string | null): Promise<EvidenceResponse> {
+    const key = `${eventId}|${cursor ?? ''}`;
+    const cached = this.evidenceCache.get(key);
     if (cached) return cached;
+    const query = cursor ? `?limit=20&cursor=${encodeURIComponent(cursor)}` : '?limit=20';
     const response = await this.request<EvidenceResponse>(
-      `/api/v1/events/${encodeURIComponent(eventId)}/evidence?limit=20`,
+      `/api/v1/events/${encodeURIComponent(eventId)}/evidence${query}`,
     );
-    this.evidenceCache.set(eventId, response);
+    this.evidenceCache.set(key, response);
     return response;
   }
 
@@ -628,7 +630,9 @@ class LiveProductRepository implements ProductRepository {
       for (const key of this.detailCache.keys()) {
         if (key.endsWith(`:${message.payload.eventId}`)) this.detailCache.delete(key);
       }
-      this.evidenceCache.delete(message.payload.eventId);
+      for (const key of this.evidenceCache.keys()) {
+        if (key.startsWith(`${message.payload.eventId}|`)) this.evidenceCache.delete(key);
+      }
       this.emit('detail');
       this.emit('evidence');
     }
