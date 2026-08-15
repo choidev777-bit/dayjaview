@@ -174,6 +174,16 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ## C. 화면
 
+### C-0. 디자이너 프로토타입 디자인 정합 마무리
+
+- (번호 0 = 나중에 추가된 항목이며 C-12보다 먼저 착수 가능)
+- **디자인 원본**: https://github.com/nangom/dayjaview-prototype — 기준 커밋 `65324878db4ef92bb29c7fce21e63a1031c3be17`, 배포 시안 https://dayjaview-prototype.vercel.app
+- **적용 규칙**: [ui_prototype_adaptation_plan.md](./ui_prototype_adaptation_plan.md)를 따른다. 시안 그대로 복사가 아니라 유지·수정·폐기 표(§3)를 적용하고, 시안과 PRD·screen_spec이 충돌하면 기준 문서가 이긴다. wheel→테마 카드 목록 등 구조 전환도 이 문서에 정의돼 있다.
+- **현재 상태**: 시안의 디자인 토큰(민트·틸 강조, 상승/하락색, 카드 surface)은 `apps/web/src/styles/global.css`에 이미 반영됨(CSS 변수 124개). codex가 미커밋으로 확장 중이었음(0-4 참조 — B-8 선행).
+- **할 일**: ① 시안 저장소의 기준 커밋을 받아 화면별(오늘·테마 상세·인사이트·관심·로그인) 시각 정합 검토 ② 차이 나는 부분을 adaptation plan의 유지·교체 결정대로 반영 ③ 시안에만 있고 PRD상 조건부인 기능은 완성 기능처럼 노출 금지 ④ 모바일·데스크톱 반응형과 데모용 아이폰 프레임 분리(계획 §5) ⑤ 상승·하락 색과 강조색 의미 충돌 금지 규칙 유지.
+- **완료 조건**: 화면별 시안 대비 검토 기록, `pnpm --dir apps/web run lint`·`typecheck`·`test --run`·`build` 통과, 접근성 테스트 유지.
+- **주의**: 저장소가 비공개면 접근 권한(사용자 GitHub 계정)이 필요할 수 있다.
+
 ### C-12. 인사이트 트리맵
 
 - **현재 상태**: 서버 쪽 절반은 이미 됨 — 파이프라인이 `THEME_TREEMAP` 스냅샷(≤12타일, REST `/v1/insights/treemap` + WS)을 발행 중. 웹 `InsightsPage.tsx`는 placeholder.
@@ -252,7 +262,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 ```
 잔일(push 승인받아 백업) → B-8(codex분 정리; A-5보다 먼저)
 → A-1 → A-2(키 대기 중 B-9~11 병행) → A-4 → A-5 → A-3(장중)
-→ C-12 · D-13~15 · A-6~7 (병렬 가능)
+→ C-0(디자인 정합) · C-12 · D-13~15 · A-6~7 (병렬 가능; C-0은 F 출시 전 필수)
 → F-21~25 (1차 출시)
 → E-16 → E-17 → E-18(TOP3) → E-19 → E-20 (출시 후 업데이트)
 ```
