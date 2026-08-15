@@ -29,7 +29,7 @@
       }
     },
     {
-      "name": "GOOGLE_CLIENT_ID",
+      "name": "GOOGLE_OAUTH_CLIENT_ID",
       "required": {
         "localFixture": false,
         "ciFixture": false,
@@ -38,7 +38,7 @@
       }
     },
     {
-      "name": "GOOGLE_CLIENT_SECRET",
+      "name": "GOOGLE_OAUTH_CLIENT_SECRET",
       "required": {
         "localFixture": false,
         "ciFixture": false,

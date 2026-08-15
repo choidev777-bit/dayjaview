@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 import pytest
 import yaml
 
+from apps.api.production import (
+    GOOGLE_CLIENT_ID_ENV,
+    GOOGLE_CLIENT_SECRET_ENV,
+    IDENTITY_DATABASE_DSN_ENV,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 DEPLOYMENT = ROOT / "infra" / "deployment"
+ENVIRONMENT_CONTRACT = DEPLOYMENT / "environment.contract.json"
 COMPOSE_FILES = (
     DEPLOYMENT / "compose.local.yml",
     DEPLOYMENT / "compose.ci.yml",
@@ -122,7 +130,7 @@ def test_compose_environment_contains_no_secret_or_credential_values(path: Path)
     services = _load(path)["services"]
     forbidden_names = (
         "APPLICATION_ENCRYPTION_KEY",
-        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_OAUTH_CLIENT_SECRET",
         "INFOSTOCK_SESSION_STATE_PATH",
         "KRX_API_KEY",
         "OPENDART_API_KEY",
@@ -134,3 +142,28 @@ def test_compose_environment_contains_no_secret_or_credential_values(path: Path)
         environment = service.get("environment", {})
         for name in forbidden_names:
             assert name not in environment, f"{service_name}에 {name} 값이 포함됨"
+
+
+def test_environment_contract_declares_the_names_the_api_actually_reads() -> None:
+    """배포 env 계약과 코드가 같은 변수 이름을 써야 한다.
+
+    이 둘이 어긋나면 배포에서 계약대로 값을 넣어도 코드는 비어 있다고 보고
+    fixture provider로 떨어진다 — 그게 곧 인증 우회다. 계약 파일을 읽는 코드가
+    따로 없으므로 여기서 고정한다.
+    """
+
+    declared = {
+        variable["name"]
+        for variable in json.loads(ENVIRONMENT_CONTRACT.read_text(encoding="utf-8"))[
+            "variables"
+        ]
+    }
+    required_by_code = {
+        "APP_BASE_URL",
+        "OPERATOR_BOOTSTRAP_GOOGLE_EMAILS",
+        GOOGLE_CLIENT_ID_ENV,
+        GOOGLE_CLIENT_SECRET_ENV,
+        IDENTITY_DATABASE_DSN_ENV,
+    }
+
+    assert required_by_code <= declared, required_by_code - declared
