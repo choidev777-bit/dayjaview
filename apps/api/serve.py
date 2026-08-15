@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import secrets
 from collections.abc import Awaitable, Callable, Mapping
@@ -29,7 +30,6 @@ from packages.adapters.kiwoom import (
     SubscriptionDemand,
     SupplementReason,
 )
-from packages.adapters.kiwoom.live import KST as _KST
 from packages.domain import DataStatus
 from packages.events import (
     EventStore,
@@ -44,13 +44,17 @@ from packages.pipeline import (
     MarketPublishLoop,
     PublishedView,
     ThemeUniverse,
+    TradingDayLoop,
     load_collected_references,
     load_theme_universe,
+    prepare_reference_data,
+    session_close_at,
 )
 from packages.pipeline.market import RANKINGS_PARAMS, TREEMAP_PARAMS
 from packages.realtime import (
     InMemorySnapshotRepository,
     PostgresSnapshotRepository,
+    ReadSnapshot,
     SnapshotRepository,
     StockRealtimeUpdate,
 )
@@ -67,6 +71,7 @@ FIXTURE_DEMO_LOGIN_CODE = "fixture-demo-login"
 THEME_UNIVERSE_MODE_ENV = "THEME_UNIVERSE_MODE"
 INFOSTOCK_IMPORT_DIR_ENV = "INFOSTOCK_IMPORT_DIR"
 REFERENCE_DATA_DIR_ENV = "REFERENCE_DATA_DIR"
+REFERENCE_DATA_ROOT_ENV = "REFERENCE_DATA_ROOT"
 DATABASE_DSN_ENV = "DATABASE_URL"
 KIWOOM_MODE_ENV = "KIWOOM_MODE"
 KIWOOM_APP_KEY_ENV = "KIWOOM_APP_KEY"
@@ -75,6 +80,8 @@ KIWOOM_CONDITION_IDS_ENV = "KIWOOM_CONDITION_IDS"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 PUBLISH_INTERVAL = timedelta(seconds=2)
 MARKET_CLOSE_KST = time(15, 30)
+
+LOG = logging.getLogger("dayjaview.serve")
 
 _BASE = datetime(2026, 8, 14, 0, 0, tzinfo=UTC)
 # 인포스탁 테마 명단은 장 시작 전에 확보된 것으로 취급한다.
@@ -277,7 +284,7 @@ def create_asgi_app(
     environment: FixtureIdentityEnvironment,
     *,
     health_payload: HealthPayload | None = None,
-    publish_loop: MarketPublishLoop | None = None,
+    publish_loop: MarketPublishLoop | TradingDayLoop | None = None,
 ) -> Callable[[Scope, Receive, Send], Awaitable[None]]:
     """lifespan과 /api/health를 처리하고 나머지는 제품 앱에 넘긴다.
 
@@ -381,78 +388,244 @@ def _load_env_file(path: Path) -> None:
         os.environ.setdefault(key, value)
 
 
-def build_live_environment(
-    *,
-    settings: ApiSettings | None = None,
-) -> tuple[
-    FixtureIdentityEnvironment,
-    MarketDataPipeline,
-    LiveMarketRunner,
-    LiveKiwoomAdapter,
-]:
-    """실 키움 게이트웨이 → 당일 파이프라인 → hub 조립. 접속은 첫 tick에서 한다.
+def _report_period(market_date: date) -> tuple[int, str]:
+    """그 시점에 제출이 끝난 가장 최근 반기·사업보고서 조합.
 
-    A-3 live 검증 경로다. 실제 외부 호출(키움 REST/WS)이 발생하므로
-    CLAUDE.md 승인 항목 2에 따라 사용자 승인 아래에서만 실행한다.
+    분기보고서(11013·11014)는 주식총수·자기주식 표가 비어 와서 쓰지 않는다
+    (A-2 실측). 반기보고서 제출기한은 8월 중순, 사업보고서는 3월 말이다.
+    조합이 아직 없는 회사는 013(no data)으로 저장되고 Coverage가 드러낸다.
     """
 
-    mode = os.environ.get(KIWOOM_MODE_ENV, "").strip().lower()
-    if mode not in ("real", "demo"):
-        raise ValueError(
-            f"live 서빙은 {KIWOOM_MODE_ENV}=real 또는 demo가 필요합니다"
-            " (fixture 모드는 serve_fixture_api를 사용)"
+    year, month, day = market_date.year, market_date.month, market_date.day
+    if (month, day) >= (8, 15):
+        return year, "11012"
+    if month >= 4:
+        return year - 1, "11011"
+    return year - 1, "11012"
+
+
+class LivePipelineHandle:
+    """REST·WS가 현재 거래일 파이프라인을 보게 하는 얇은 전달자.
+
+    TradingDayLoop이 날짜를 넘기며 파이프라인을 갈아끼워도 repository는 이
+    handle 하나만 계속 잡는다. 비거래일이거나 그날 준비가 실패해 세션이
+    없으면 모든 조회가 값 없음으로 답해, 빈 상태가 정직하게 표시된다.
+    """
+
+    def __init__(self) -> None:
+        self._pipeline: MarketDataPipeline | None = None
+
+    def switch(self, pipeline: MarketDataPipeline | None) -> None:
+        self._pipeline = pipeline
+
+    @property
+    def latest_rankings(self) -> ReadSnapshot | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.latest_rankings
+
+    @property
+    def latest_treemap(self) -> ReadSnapshot | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.latest_treemap
+
+    @property
+    def last_data_status(self) -> DataStatus:
+        pipeline = self._pipeline
+        return DataStatus.PREOPEN if pipeline is None else pipeline.last_data_status
+
+    @property
+    def last_as_of(self) -> datetime | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.last_as_of
+
+    def theme_id_for_event(self, event_id: str) -> str | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.theme_id_for_event(event_id)
+
+    def theme_detail(self, event_id: str) -> dict[str, object] | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.theme_detail(event_id)
+
+    def evidence_document(self, event_id: str) -> dict[str, object] | None:
+        pipeline = self._pipeline
+        return None if pipeline is None else pipeline.evidence_document(event_id)
+
+
+class LiveSessionController:
+    """거래일마다 키움 접속·파이프라인 세션을 새로 조립한다.
+
+    키움 접속 토큰·WS·조건검색 등록과 조건검색 후보 상태는 그날 세션의
+    것이므로, 날짜가 바뀌면 이전 어댑터를 닫고 새로 접속한다. Event·스냅샷
+    저장소는 부팅 때 한 번 조립해 세션이 바뀌어도 유지한다(A-8).
+
+    실제 외부 호출(키움 REST/WS, 기준정보 수집)이 발생하므로 CLAUDE.md 승인
+    항목 2에 따라 사용자 승인 아래에서만 실행한다.
+    """
+
+    def __init__(
+        self,
+        *,
+        settings: ApiSettings,
+        hub: RealtimeSnapshotHub,
+        handle: LivePipelineHandle,
+        environment: Mapping[str, str] | None = None,
+    ) -> None:
+        env = dict(os.environ if environment is None else environment)
+        mode = env.get(KIWOOM_MODE_ENV, "").strip().lower()
+        if mode not in ("real", "demo"):
+            raise ValueError(
+                f"live 서빙은 {KIWOOM_MODE_ENV}=real 또는 demo가 필요합니다"
+                " (fixture 모드는 serve_fixture_api를 사용)"
+            )
+        app_key = env.get(KIWOOM_APP_KEY_ENV, "").strip()
+        app_secret = env.get(KIWOOM_APP_SECRET_ENV, "").strip()
+        if not app_key or not app_secret:
+            raise ValueError(
+                f"{KIWOOM_APP_KEY_ENV}/{KIWOOM_APP_SECRET_ENV}가 필요합니다"
+                " (.env.local)"
+            )
+        self._env = env
+        self._mode = mode
+        self._app_key = app_key
+        self._app_secret = app_secret
+        self._condition_ids = tuple(
+            part.strip()
+            for part in env.get(KIWOOM_CONDITION_IDS_ENV, "").split(",")
+            if part.strip()
         )
-    app_key = os.environ.get(KIWOOM_APP_KEY_ENV, "").strip()
-    app_secret = os.environ.get(KIWOOM_APP_SECRET_ENV, "").strip()
-    if not app_key or not app_secret:
-        raise ValueError(
-            f"{KIWOOM_APP_KEY_ENV}/{KIWOOM_APP_SECRET_ENV}가 필요합니다 (.env.local)"
+        self._settings = settings
+        self._hub = hub
+        self._handle = handle
+        self._event_store, self._snapshot_repository = create_pipeline_stores(env)
+        self._adapter: LiveKiwoomAdapter | None = None
+
+    def build_session(self, market_date: date) -> MarketPublishLoop | None:
+        """그날 기준정보 확보 → 파이프라인·키움 세션 조립. 실패하면 None.
+
+        기준정보를 확보하지 못한 날은 계산을 시작하지 않는다
+        (PD-001 10항 — 어제 값으로 조용히 대체하지 않는다).
+        """
+
+        self.close()
+        self._handle.switch(None)
+        try:
+            universe = self._load_universe(market_date)
+        except Exception:
+            LOG.exception(
+                "%s 기준정보 준비에 실패해 그날 계산을 시작하지 않습니다",
+                market_date,
+            )
+            return None
+        pipeline = MarketDataPipeline(
+            market_date=market_date,
+            stream_id=(
+                f"stream_live_{market_date.strftime('%Y%m%d')}_{secrets.token_hex(4)}"
+            ),
+            schema_version=self._settings.schema_version,
+            catalog=universe.catalog(),
+            references=universe.references,
+            membership_version=universe.version,
+            theme_names=universe.theme_names,
+            stock_names=universe.stock_names,
+            event_store=self._event_store,
+            snapshot_repository=self._snapshot_repository,
         )
-    condition_ids = tuple(
-        part.strip()
-        for part in os.environ.get(KIWOOM_CONDITION_IDS_ENV, "").split(",")
-        if part.strip()
-    )
-    effective_settings = settings or ApiSettings.from_environment(os.environ)
-    market_date = datetime.now(_KST).date()
-    boot_at = datetime.now(UTC)
-    universe = theme_universe_from_environment(
-        os.environ,
-        market_date=market_date,
-        membership_known_at=boot_at,
-    )
-    event_store, snapshot_repository = create_pipeline_stores(os.environ)
-    pipeline = MarketDataPipeline(
-        market_date=market_date,
-        stream_id=(
-            f"stream_live_{market_date.strftime('%Y%m%d')}_{secrets.token_hex(4)}"
-        ),
-        schema_version=effective_settings.schema_version,
-        catalog=universe.catalog(),
-        references=universe.references,
-        membership_version=universe.version,
-        theme_names=universe.theme_names,
-        stock_names=universe.stock_names,
-        event_store=event_store,
-        snapshot_repository=snapshot_repository,
-    )
-    adapter = LiveKiwoomAdapter(
-        mode=mode,
-        app_key=app_key,
-        app_secret=app_secret,
-        condition_ids=condition_ids,
-    )
-    runner = LiveMarketRunner(
-        gateway=MarketGateway(adapter),
-        market_date=market_date,
-        theme_members={
-            snapshot.theme_id: tuple(member.stock_id for member in snapshot.members)
-            for snapshot in universe.snapshots
-        },
-    )
+        adapter = LiveKiwoomAdapter(
+            mode=self._mode,
+            app_key=self._app_key,
+            app_secret=self._app_secret,
+            condition_ids=self._condition_ids,
+        )
+        runner = LiveMarketRunner(
+            gateway=MarketGateway(adapter),
+            market_date=market_date,
+            theme_members={
+                snapshot.theme_id: tuple(
+                    member.stock_id for member in snapshot.members
+                )
+                for snapshot in universe.snapshots
+            },
+        )
+        self._adapter = adapter
+        self._handle.switch(pipeline)
+        return MarketPublishLoop(
+            pipeline=pipeline,
+            on_published=lambda view: publish_view_to_hub(self._hub, view),
+            data_status=runner.data_status,
+            interval=PUBLISH_INTERVAL,
+            poll_updates=runner.poll_updates,
+            market_close_at=session_close_at(
+                market_date, close_time=MARKET_CLOSE_KST
+            ),
+        )
+
+    def _load_universe(self, market_date: date) -> ThemeUniverse:
+        now = datetime.now(UTC)
+        universe = theme_universe_from_environment(
+            self._env,
+            market_date=market_date,
+            membership_known_at=now,
+        )
+        root_raw = self._env.get(REFERENCE_DATA_ROOT_ENV, "").strip()
+        if not root_raw:
+            return universe
+        root = Path(root_raw)
+        root.mkdir(parents=True, exist_ok=True)
+        # OpenDART는 테마 구성종목만 호출하도록 대상 목록을 매 거래일 갱신한다.
+        stock_codes_file = root / "theme-stocks.txt"
+        stock_codes_file.write_text(
+            "\n".join(
+                sorted(
+                    stock_id.removeprefix("KRX:")
+                    for stock_id in universe.stock_names
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        business_year, report_code = _report_period(market_date)
+        prepared = prepare_reference_data(
+            market_date=market_date,
+            root=root,
+            stock_ids=universe.stock_names,
+            decision_at=now,
+            environment=self._env,
+            business_year=business_year,
+            report_code=report_code,
+            stock_codes_file=stock_codes_file,
+        )
+        return replace(universe, references=prepared.references)
+
+    def close(self) -> None:
+        adapter, self._adapter = self._adapter, None
+        if adapter is not None:
+            adapter.close()
+
+
+def serve_live_api(
+    *,
+    host: str,
+    port: int,
+    env_file: str | None = ".env.local",
+    health_payload: HealthPayload | None = None,
+) -> int:
+    """실 키움 접속으로 장중 이벤트를 파이프라인에 흘려보내며 서빙한다.
+
+    TradingDayLoop이 거래일마다 세션(기준정보 준비 → 키움 접속 → 파이프라인)
+    을 새로 세우고 비거래일에는 세우지 않는다. REST·WS는 LivePipelineHandle을
+    통해 항상 현재 세션을 본다. 프로세스를 다시 띄우지 않아도 다음 거래일로
+    넘어간다(A-8).
+    """
+
+    import uvicorn
+
+    if env_file:
+        _load_env_file(Path(env_file))
+    settings = ApiSettings.from_environment(os.environ)
+    handle = LivePipelineHandle()
     environment = create_fixture_app(
-        settings=effective_settings,
-        product_repository=SnapshotProductReadRepository(pipeline),
+        settings=settings,
+        product_repository=SnapshotProductReadRepository(handle),
     )
     # 실 구글 로그인(F-21) 전까지 로컬 확인용 데모 로그인을 유지한다.
     environment.oauth_provider.register_code(
@@ -464,42 +637,22 @@ def build_live_environment(
             email_verified=True,
         ),
     )
-    return environment, pipeline, runner, adapter
-
-
-def serve_live_api(
-    *,
-    host: str,
-    port: int,
-    env_file: str | None = ".env.local",
-    health_payload: HealthPayload | None = None,
-) -> int:
-    """실 키움 접속으로 장중 이벤트를 파이프라인에 흘려보내며 서빙한다."""
-
-    import uvicorn
-
-    if env_file:
-        _load_env_file(Path(env_file))
-    environment, pipeline, runner, adapter = build_live_environment()
-    publish_loop = MarketPublishLoop(
-        pipeline=pipeline,
-        on_published=lambda view: publish_view_to_hub(
-            environment.realtime_hub, view
-        ),
-        data_status=runner.data_status,
+    controller = LiveSessionController(
+        settings=settings,
+        hub=environment.realtime_hub,
+        handle=handle,
+    )
+    trading_day_loop = TradingDayLoop(
+        build_session=controller.build_session,
         interval=PUBLISH_INTERVAL,
-        poll_updates=runner.poll_updates,
-        market_close_at=datetime.combine(
-            pipeline.market_date, MARKET_CLOSE_KST, tzinfo=_KST
-        ),
     )
     application = create_asgi_app(
         environment,
         health_payload=health_payload,
-        publish_loop=publish_loop,
+        publish_loop=trading_day_loop,
     )
     try:
         uvicorn.run(application, host=host, port=port, log_level="info")
     finally:
-        adapter.close()
+        controller.close()
     return 0

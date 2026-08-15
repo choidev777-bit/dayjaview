@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from importlib import import_module
 from pathlib import Path
 from typing import Any
@@ -39,6 +39,10 @@ def reference_directory(root: Path, market_date: date) -> Path:
     return root / market_date.isoformat()
 
 
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
 def _worker() -> Any:
     return import_module("apps.worker-batch.reference-data.collect_daily")
 
@@ -54,6 +58,7 @@ def prepare_reference_data(
     report_code: str,
     stock_codes_file: Path | None = None,
     collect: Callable[..., dict[str, object]] | None = None,
+    clock: Callable[[], datetime] = _utc_now,
 ) -> ReferenceDataPreparation:
     """그날 수집본이 없으면 수집하고, 해석한 기준정보를 돌려준다.
 
@@ -82,6 +87,10 @@ def prepare_reference_data(
                 f"않습니다: {result}"
             )
         collected = True
+        # 방금 수집한 원문의 collected_at(=known_at)은 decision_at보다 늦다.
+        # point-in-time 필터가 방금 수집분을 통째로 걸러내지 않도록 결정
+        # 시각을 수집이 끝난 시각까지 민다.
+        decision_at = max(decision_at, clock())
 
     references = load_collected_references(
         directory,
