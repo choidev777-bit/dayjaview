@@ -1,6 +1,6 @@
 # DAYJAVIEW 남은 작업 문서
 
-- 작성일: 2026-08-15 (마지막 갱신 2026-08-15, 기준 commit `7380653`)
+- 작성일: 2026-08-15 (마지막 갱신 2026-08-15, 기준 commit `4672cd7`)
 - **완료 여부는 [work_checklist.md](./work_checklist.md)가 상태판이다.** 이 문서는 작업 내용 정의이고, 각 절 제목의 완료 표시는 그 상태판을 옮겨 적은 것이다.
 - 이 문서의 용도: **사용자가 작업 번호를 지정하면(예: "A-1 해줘") 새 에이전트 세션이 이 문서만 읽고 그 작업을 수행할 수 있게 하는 인수인계 문서.**
 - 행동 규칙은 [CLAUDE.md](../CLAUDE.md)가 유일하다. 이 문서는 작업 내용 정의이며, 이 문서의 어떤 문구도 승인 요구가 아니다.
@@ -23,7 +23,7 @@
 
 ---
 
-## 0. 현재 상태 (2026-08-15, `7380653` 기준)
+## 0. 현재 상태 (2026-08-15, `4672cd7` 기준)
 
 ### 0-1. 무엇이 작동하는가
 
@@ -32,7 +32,7 @@
 - 인포스탁 280개 테마 명단과 KRX·OpenDART 실기준정보가 붙어 있다. 2026-08-14 기준 전일종가 2,410/2,411, 유동주식비율 2,254(93.5%), 280개 테마 중 99개가 Coverage SUFFICIENT 후보다.
 - 장중에는 당일 KRX 일별매매가 아직 없으므로 키움이 주는 기준가(0B FID 11, ka10095 `base_pric`)로 전일 종가를 메운다.
 - 키움 live 어댑터가 있고 게이트웨이·파이프라인까지 연결돼 있다. 장중 실행 검증(A-3 ③)만 남았다.
-- 거래일 전환·거래일별 기준정보 준비는 부품까지 끝났고 `serve_live_api` 배선만 남았다(A-8).
+- `serve_live_api`가 거래일 세션 경로(`TradingDayLoop`)로 돈다. 날짜가 바뀌면 키움 세션을 새로 맺고 그날 기준정보를 준비하며, 비거래일에는 세우지 않는다(A-8 완료).
 
 ```
 키움 fixture JSON ─→ MarketGateway(실어댑터: 구독→재연결→스냅샷보완)
@@ -78,7 +78,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 | 검증 | 명령 | 현재 기준 |
 |---|---|---|
-| 파이썬 | `uv run pytest -q` | 449 passed·6 skipped (skip=DSN 필요 postgres 통합) |
+| 파이썬 | `uv run pytest -q` | 455 passed·6 skipped (skip=DSN 필요 postgres 통합) |
 | 파이썬 lint | `uv run ruff check packages apps scripts tests` | 통과 |
 | 파이썬 타입 | `uv run mypy` | 98파일 통과 (`packages`+`apps/api`, reference-data 제외) |
 | 웹 | `pnpm --dir apps/web run lint` / `typecheck` / `test --run` / `build` | lint·typecheck·테스트 49/49 통과 |
@@ -173,7 +173,7 @@ KRX·금감원(OpenDART) API 키 관문은 2026-08-15에 해소됐다(A-2 완료
 
 ---
 
-### A-8. 거래일 전환과 매일 기준정보 수집 — **계산 경로 완료 `5273e9d`·`a52b12c`, `serve.py` 배선 1건 남음**
+### A-8. 거래일 전환과 매일 기준정보 수집 (완료, 2026-08-15 `5273e9d`·`a52b12c`·`4672cd7`)
 
 - **목표**: 장 시작 전에 그날 기준정보를 자동으로 받고, 파이프라인이 새 거래일로 넘어가게 한다. **지금 구조는 하루밖에 못 돈다.**
 - **현재 상태** (2026-08-15 확인):
@@ -188,13 +188,13 @@ KRX·금감원(OpenDART) API 키 관문은 2026-08-15에 해소됐다(A-2 완료
   3. `market_date`를 상수에서 빼고 거래일 달력으로 결정한다. 달력은 `derive_trading_calendar`가 KRX 응답 유무로 만든다. 직전 거래일 판정에 lookback이 필요하다(A-2에서 10일로 검증).
   4. 거래일이 바뀌면 새 기준정보를 읽어 파이프라인을 재구성한다. Event·스냅샷 저장소는 유지한다.
   5. 비거래일에는 파이프라인을 세우지 않고 그 상태를 화면에 표시한다.
-- **진행 (2026-08-15)**: 1은 `a52b12c`, 2·3·4·5는 `5273e9d`로 완료. 계산 경로는 다 뚫렸고 `apps/api/serve.py` 배선 1건만 남았다.
+- **진행 (2026-08-15)**: 1은 `a52b12c`, 2·3·4·5는 `5273e9d`, serve 배선은 `4672cd7`로 완료.
   - 1 — `MarketObservation`·`StockRealtimeUpdate`에 `base_price`를 싣고, 파이프라인이 전일 종가가 **빈 종목에만** 채운다. 기존 값은 덮지 않고 `known_at`이 늦은 기준정보를 덧붙여 point-in-time 선택이 판단하게 한다. 2026-08-14 실시장 녹화분 체결 287,753건 중 287,752건에서 기준가 산출, FID 12(등락률) 교차 검산 불일치 0건.
-  - **배선 잔여**: `serve_live_api`가 아직 `MarketPublishLoop`을 직접 쓴다. `TradingDayLoop`으로 바꾸려면 `build_live_environment`를 "앱 1회 조립"과 "거래일별 세션 조립"으로 쪼개야 한다. 설계 판단 둘 — ⓐ `LiveMarketRunner`가 키움 WS 연결과 조건검색 후보 상태를 쥐고 있어 날짜 전환 때 연결을 끊고 다시 맺을지, ⓑ `SnapshotProductReadRepository`가 파이프라인을 잡고 있어 REST·WS가 새 세션을 보게 할 포인터를 어디에 둘지(`SnapshotSource` Protocol만 만족하면 되므로 얇은 forwarding 객체로 충분). **A-3 ③ 장중 검증이 이 경로를 실제로 통과시키므로 그 결과를 보고 정하는 편이 낫다.**
+  - **배선 (`4672cd7`)**: `serve_live_api`가 `TradingDayLoop`으로 돈다. 두 판단은 이렇게 정했다 — ⓐ 키움 접속은 날짜가 바뀌면 끊고 다시 맺는다(`LiveSessionController`; 토큰·WS·조건검색 후보가 그날 세션의 것이라 이월하면 전일 상태가 샌다). ⓑ REST·WS는 `LivePipelineHandle`(SnapshotSource를 위임으로 만족하는 얇은 전달자)을 잡고, 세션 교체는 `switch` 한 번이다. `REFERENCE_DATA_ROOT`가 설정되면 세션 빌드가 그날 기준정보 수집(`prepare_reference_data`)까지 포함하고, 실패한 날은 세션 없이 지나가 화면이 빈 상태로 정직하게 드러난다. 보고서 조합은 `_report_period`가 제출기한 기준으로 고른다(반기 8/15·사업 4/1).
   - `packages/pipeline/trading_day.py` — KST 거래일 판정. 주말 확정, 달력이 아는 과거 날짜는 그 판정, 나머지 평일은 거래일로 가정. **KRX에 달력 endpoint가 없고 일별매매가 마감 후에 나와 장 시작 전에 오늘이 공휴일인지 원천으로 확인할 방법이 없다.** 실제 휴장이면 장중 이벤트가 오지 않아 게이트웨이 health가 드러낸다.
   - `TradingDayLoop`(`packages/pipeline/runner.py`) — 날짜가 바뀌면 이전 장을 닫고 그날 파이프라인으로 교체, 비거래일에는 세우지 않음. `MarketPublishLoop.close()`를 더해 마감 시각 뒤 tick이 없었어도 전환 시 마감 시각으로 닫는다.
   - `prepare_reference_data`(`packages/pipeline/daily.py`) — 그날 수집본이 없으면 `collect_daily` 실행, `COMPLETE`가 아니면 예외로 그날 계산 미시작.
-- **완료 조건**: 가짜 클록으로 장 마감 → 다음 거래일 전환 → 새 전일종가로 계산되는 테스트 통과(완료), 비거래일 건너뜀 테스트(완료), 장중 기준가로 유동시총이 계산되는 테스트 통과(완료), **그리고 `serve_live_api`가 `TradingDayLoop`으로 도는 것**(미완).
+- **완료 조건**: 전부 충족 — 날짜 전환·비거래일·장중 기준가 테스트와 `serve_live_api`의 `TradingDayLoop` 배선(`tests/api/test_live_serving.py`). 실장중 통과 확인만 A-3 ③과 같은 날 이뤄진다.
 - **선행**: A-2(완료). **A-4와 맞물린다** — A-4가 하루 안의 상시 루프를 만들었고 이 항목이 그 위에 날짜 축을 얹는다.
 - **왜 필요한가**: 지금 배포하면 ① 장중 내내 순위가 비고 ② 다음 날 어제 전일종가로 계산해 모든 수익률이 틀린다. 둘 다 조용히 틀리므로 화면만 봐서는 알 수 없다. F 출시 전 필수.
 
@@ -377,15 +377,13 @@ Opus로 진행하다 판단이 어려워 보이면 그 작업만 Fable로 재시
 완료분은 [work_checklist.md](./work_checklist.md)가 상태판이다. 아래는 **남은 것만** 적는다.
 
 ```
-A-8 잔여(serve.py 배선) · A-3 ③(장중 검증)   ← 서로 맞물림. 아래 참조
-→ A-6 · A-7 (병렬 가능)
+A-3 ③(장중 검증, 개장일 + 승인) · A-6 · A-7 (병렬 가능)
 → D-13 → D-14 → D-15
 → F-21 ~ F-25 (1차 출시)
 → E-16 → E-17 → E-18(TOP3) → E-19 → E-20 (출시 후 업데이트)
 ```
 
-- **A-8 잔여와 A-3 ③은 같은 경로를 지난다.** A-8 배선(`serve_live_api`를 `TradingDayLoop`으로 교체)에 걸린 두 판단(날짜 전환 때 키움 WS를 다시 맺을지, REST가 새 세션을 볼 포인터를 어디 둘지)이 A-3 ③ 장중 실행에서 드러난다. 다만 `scripts/verify_live_replay.py`가 2026-08-14 녹화분을 실어댑터 transport에 그대로 흘리므로 **개장을 기다리지 않고 두 판단을 미리 검증할 수 있다.**
-- **A-8이 F 출시의 선행이다.** 배선 전까지는 프로세스가 하루밖에 못 돌아, 다음 거래일에 어제 전일종가로 조용히 틀린 값을 낸다.
+- **A-3 ③이 A-8 배선까지 실장중으로 확인한다.** `serve_live_api`가 이제 거래일 세션 경로(`TradingDayLoop`)로 돌므로, 장중 소량 실행이 곧 그 경로의 검증이다. `scripts/verify_live_replay.py`로 개장 전에 녹화분 재생 확인도 가능하다.
 - 1차 출시선: A+B+C+D+F (핵심 가치 = 실시간 테마 + 근거).
 - E는 출시 후 추가 가능하며, E-18(TOP3)이 E-19(유사사례)보다 먼저 나온다.
 - 지난 순서 결정 근거(참고): C-0을 앞으로 당긴 것은 화면 골격이 바뀌면 A-5·B-11·C-12를 두 번 만들게 되기 때문이었다.
