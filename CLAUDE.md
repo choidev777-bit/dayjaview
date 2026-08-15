@@ -50,7 +50,7 @@
 | 웹 테스트 | `pnpm --dir apps/web run test` |
 | 웹 빌드 | `pnpm --dir apps/web run build` |
 
-현재 이 머신에는 **pnpm이 PATH에 없고 `apps/web/node_modules`도 미설치**다. 웹 명령이 필요하면 pnpm 설치 여부를 먼저 확인하고, 없으면 실행하지 말고 사용자에게 알린다. npm으로 대체하지 않는다 (`pnpm-lock.yaml` 기준).
+이 머신에는 **pnpm 10이 전역 설치되어 있고 `apps/web/node_modules`도 설치돼 있다** (2026-08-15). npm으로 대체하지 않는다 (`pnpm-lock.yaml` 기준).
 
 ## 구조
 
