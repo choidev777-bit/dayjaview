@@ -35,6 +35,41 @@ def _by_stock(values: Iterable[Any]) -> dict[str, tuple[Any, ...]]:
     return {code: tuple(items) for code, items in grouped.items()}
 
 
+def _krx_listed_shares(
+    observations: Iterable[Any],
+    *,
+    market_date: date,
+    decision_at: datetime,
+) -> int | None:
+    """유동시가총액에 곱할 상장주식수는 그 시점에 알려진 가장 최근 KRX 값을 쓴다.
+
+    OpenDART 발행주식수는 결산기준일 기준이라 그 뒤의 증자·액면분할을 반영하지
+    못한다. 비율은 결산 시점 기준이라도 유효하지만 주식수는 최신이어야 시가총액이
+    맞는다. 장중에는 당일 일별매매 row가 아직 없으므로 직전 거래일 값이 최신이다.
+    """
+
+    eligible = [
+        observation
+        for observation in observations
+        if observation.market_date <= market_date
+        and observation.metadata.known_at <= decision_at
+    ]
+    if not eligible:
+        return None
+    latest_key = max(
+        (observation.market_date, observation.metadata.known_at, observation.metadata.revision)
+        for observation in eligible
+    )
+    latest = [
+        observation
+        for observation in eligible
+        if (observation.market_date, observation.metadata.known_at, observation.metadata.revision)
+        == latest_key
+    ]
+    values = {observation.listed_shares for observation in latest}
+    return values.pop() if len(values) == 1 else None
+
+
 def production_reference_policy() -> Any:
     """무료 공식 원천이 실제로 완결 선언을 주는 비유동 범주만 요구한다.
 
@@ -112,7 +147,11 @@ def resolve_stock_references(
                 effective_for=market_date,
                 known_at=decision_at,
                 previous_adjusted_close=price.previous_adjusted_close,
-                listed_shares=free_float.issued_common_shares,
+                listed_shares=_krx_listed_shares(
+                    price_by_stock.get(stock_code, ()),
+                    market_date=market_date,
+                    decision_at=decision_at,
+                ),
                 free_float_ratio=free_float.ratio,
                 free_float_validated=free_float.available,
                 version=version,

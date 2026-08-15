@@ -282,10 +282,11 @@ def test_missing_opendart_source_leaves_free_float_unvalidated() -> None:
     )
 
     reference = references[0]
-    # 전일 종가는 KRX만으로 나오지만 유동주식비율은 OpenDART 없이 만들지 않는다.
+    # 전일 종가와 상장주식수는 KRX만으로 나오지만, 유동주식비율은 비유동 차감분을
+    # 주는 OpenDART 없이 만들지 않는다. 비율이 없으면 유동시가총액도 없다.
     assert reference.previous_adjusted_close == Decimal(51_000)
+    assert reference.listed_shares == 100_000_000
     assert reference.free_float_ratio is None
-    assert reference.listed_shares is None
     assert reference.free_float_validated is False
     assert reference.free_float_market_cap(market_date=MARKET_DATE, as_of=BASE) is None
 

@@ -25,8 +25,11 @@ from .models import (
     require_aware,
 )
 
+# 유동주식비율의 분모는 차감분과 **같은 공시**의 발행주식수여야 자기완결이다.
+# KRX 상장주식수는 결산기준일보다 뒤인 거래일 기준이라 증자·액면분할이 있으면
+# 정상적으로 어긋난다. 실측 2,411종목 중 176종목이 그랬다. 비율 계산에는 쓰지
+# 않고, 유동시가총액을 곱할 주식수로만 쓴다(packages/pipeline/references.py).
 FIELD_SOURCE_PRIORITY: Final[tuple[SourceDataset, ...]] = (
-    SourceDataset.KRX_STOCK_DAILY,
     SourceDataset.OPENDART_STOCK_TOTAL,
 )
 
@@ -66,7 +69,7 @@ def resolve_listed_common_shares(
     decision_at: datetime,
     policy: ReferencePolicy,
 ) -> FieldResolution:
-    """KRX 상장주식수와 OpenDART 발행 보통주식수가 일치할 때만 확정한다."""
+    """비유동 차감분과 같은 공시의 발행 보통주식수를 비율 분모로 확정한다."""
 
     require_aware(decision_at, "decision_at")
     candidates = [

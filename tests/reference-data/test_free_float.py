@@ -91,21 +91,25 @@ def test_verified_ratio_deduplicates_same_treasury_stake_once(
     ]
 
 
-def test_source_conflict_is_unavailable_not_priority_fallback(
+def test_ratio_uses_the_disclosure_base_even_when_krx_count_differs(
     modules: dict[str, Any], load_fixture
 ) -> None:
+    """KRX 상장주식수는 결산기준일보다 뒤라 증자·액면분할이면 정상적으로 다르다.
+
+    비율의 분모는 차감분과 같은 공시의 발행주식수여야 자기완결이다.
+    """
+
     values = _inputs(modules, load_fixture)
-    dart = replace(values["shares"][1], value=99_000_000)
+    krx = replace(values["shares"][0], value=130_000_000)
     result = _calculate(
         modules,
         values,
-        share_observations=(values["shares"][0], dart),
+        share_observations=(krx, values["shares"][1]),
     )
 
-    assert result.available is False
-    assert result.ratio is None
-    assert result.state.value == "CONFLICT"
-    assert "FREE_FLOAT_SOURCE_CONFLICT" in {flag.value for flag in result.quality_flags}
+    assert result.available is True
+    assert result.issued_common_shares == 100_000_000
+    assert result.ratio == Decimal("0.55")
 
 
 def test_same_source_same_revision_conflict_is_not_order_dependent(
@@ -127,11 +131,13 @@ def test_same_source_same_revision_conflict_is_not_order_dependent(
 def test_missing_required_source_does_not_use_remaining_value(
     modules: dict[str, Any], load_fixture
 ) -> None:
+    """KRX 상장주식수만 있으면 차감분과 짝이 맞지 않아 비율을 만들지 않는다."""
+
     values = _inputs(modules, load_fixture)
     result = _calculate(
         modules,
         values,
-        share_observations=(values["shares"][1],),
+        share_observations=(values["shares"][0],),
     )
 
     assert result.ratio is None
@@ -257,8 +263,8 @@ def test_later_revision_is_not_applied_to_earlier_decision(
     )
 
     assert before.ratio == Decimal("0.55")
-    assert after.ratio is None
-    assert after.state.value == "CONFLICT"
+    assert after.issued_common_shares == 99_000_000
+    assert after.state.value == "VERIFIED"
 
 
 def test_coverage_has_separate_missing_conflict_and_stale_sets(
