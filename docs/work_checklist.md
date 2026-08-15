@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `4682549` · `uv run pytest -q` 491 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `5bf11e9` · `uv run pytest -q` 498 passed·8 skipped
 
 ## 요약
 
@@ -91,7 +91,12 @@
   - `create_production_app`(`apps/api/production.py`)이 env를 보고 고른다: 구글 키 둘 다 있으면 `HttpGoogleOAuthProvider`, 둘 다 없으면 fixture. **반쪽만 설정하면 즉시 실패** — fixture provider는 데모 code를 그대로 받으므로 실배포에서 fixture로 떨어지는 것이 인증 우회다. `DATABASE_URL`이 있으면 `PostgresIdentityRepository`(파이프라인과 connection 분리). `serve_live_api`가 이 조립을 쓰고, 데모 code 등록은 fixture provider일 때만 한다.
   - 일회용 PostgreSQL 16으로 확인: 같은 DSN으로 다시 조립해도 로그인 세션이 살아 있다(실제 영속). 조립된 앱의 `/auth/google`이 `accounts.google.com`으로 `redirect_uri=https://dayjaview.vercel.app/api/auth/google/callback`을 달고 나가는 것도 확인.
   - **① 사용자가 할 것**: 구글 클라우드 콘솔 → 해당 OAuth 2.0 클라이언트 ID → 승인된 리디렉션 URI에 `https://dayjaview.vercel.app/api/auth/google/callback` 추가. 로컬에서 실구글 로그인을 확인하려면 `.env.local`의 `APP_BASE_URL`을 웹 dev 서버와 같은 origin(`http://localhost:5173`)으로 바꾸고 `http://localhost:5173/api/auth/google/callback`도 함께 등록한다(지금 값은 `http://localhost:3000`이라 `/api` 프록시 origin과 다르다). 에이전트는 `.env*`를 쓸 수 없다.
-- [ ] **F-22** 운영자 계정 부트스트랩 — 코드 경로는 있음. 배포 env에 `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS` 설정 필요.
+- [ ] **F-22** 운영자 계정 부트스트랩 — 코드 경로 검증은 2026-08-16 `5bf11e9`로 완료. 남은 것: env에 실제 이메일 넣기(사용자가 직접 수행 — 에이전트는 `.env*` 쓰기 불가).
+  - `parse_operator_bootstrap_emails`·`ApiSettings.from_environment`에 테스트가 없어서 **환경변수 문자열이 역할로 이어지는지 확인된 적이 없었다.** env 값 → 로그인 → `/auth/session` roles에 OPERATOR → 운영자 API 200, 목록 밖·미검증 이메일·미설정은 403으로 고정했다.
+  - **역할은 로그인 시점에 부여된다.** 이미 로그인한 뒤 env를 켰다면 다시 로그인해야 운영자가 된다(테스트로 고정).
+  - 실행 중인 fixture 서버에서 데모 로그인이 `roles: [USER, OPERATOR]`를 받고, 브라우저 `/operator.html`이 운영자 5개 endpoint를 200으로 읽어 D-15 콘솔이 렌더되는 것까지 확인했다. local fixture 서버는 `.claude/launch.json`이 데모 계정을 운영자로 부트스트랩한다.
+  - **사용자가 할 것**: `.env.local`과 배포 env에 `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS=<로그인할 구글 계정 주소>` 한 줄. 콤마로 여러 개 가능. 구글이 검증한 이메일만 인정되며 F-21 ①(콘솔 등록)이 끝나야 실제 구글 계정으로 확인할 수 있다.
+  - **발견(F-22 밖, 고치지 않음)**: `infra/deployment/environment.contract.json`이 구글 키를 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`으로 선언하는데 코드·`.env.example`은 `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`을 읽는다. 배포에서 계약 이름대로 넣으면 구글 키가 비어 있는 것으로 보여 fixture provider로 떨어진다. F-25에서 이름을 맞춰야 한다.
 - [ ] **F-23** 보안 점검 — `tests/security/**` 없음.
 - [ ] **F-24** 품질 점검 — `docs/release/qa_report.md` 없음.
 - [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
@@ -104,6 +109,7 @@
 | 인포스탁·뉴스 live 호출 승인 | B-8 잔여, D-14 | CLAUDE.md 승인 항목 2 |
 | `.env.example` 항목 추가 | B-8 잔여 | 사용자가 직접 수행(에이전트는 `.env*` 쓰기 불가) |
 | 구글 콘솔 redirect URI 등록 | F-21 ① | 사용자 계정 작업 |
+| `.env` 값 입력(운영자 이메일) | F-22 잔여 | 사용자가 직접 수행(에이전트는 `.env*` 쓰기 불가) |
 | 2인 블라인드 평가 | E-19 → E-20 | 사람 평가 통과 |
 | 배포·cloud·DNS 승인 | F-25 | CLAUDE.md 승인 항목 1 |
 
