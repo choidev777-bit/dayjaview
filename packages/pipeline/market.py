@@ -263,6 +263,50 @@ class MarketDataPipeline:
             events=self.current_events(),
         )
 
+    def close_market(self, *, now: datetime) -> None:
+        """장 마감 시점에 남은 테마를 hysteresis market_closed 규칙으로 닫는다.
+
+        CANDIDATE는 DISCARDED, ACTIVE·WEAKENING은 CLOSED로 전이되고 같은
+        전이가 Event 저장소에도 기록된다. 이미 종결된 테마는 건너뛴다.
+        """
+
+        for theme_id in sorted(self._latest_metrics):
+            state = self._hysteresis.get(theme_id)
+            if state is None or state.lifecycle_status in (
+                LifecycleStatus.CLOSED,
+                LifecycleStatus.DISCARDED,
+            ):
+                continue
+            update = self._latest_metrics[theme_id]
+            self._input_sequence += 1
+            evaluation = ActivationEvaluation(
+                input_id=f"{self._stream_id}:{theme_id}:{self._input_sequence}",
+                sequence=self._input_sequence,
+                evaluated_at=now,
+                policy_version=self._hysteresis_policy.version,
+                coverage_status=update.metrics.coverage.status,
+                qualifies=None,
+                market_closed=True,
+            )
+            decision = evaluate_hysteresis(
+                state,
+                evaluation,
+                policy=self._hysteresis_policy,
+            )
+            self._hysteresis[theme_id] = decision.state
+            if decision.transition is None:
+                continue
+            event_id = self._event_ids.get(theme_id)
+            if event_id is None:
+                continue
+            self._transition_event(
+                event_id,
+                target=decision.transition.to_status,
+                reason=decision.transition.reason,
+                update=update,
+                now=now,
+            )
+
     def _evaluate_theme(self, update: ThemeMetricUpdate, *, now: datetime) -> None:
         theme_id = update.theme_id
         if self._last_as_of is None or update.as_of > self._last_as_of:

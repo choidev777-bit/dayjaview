@@ -17,12 +17,14 @@ from .references import (
     production_reference_policy,
     resolve_stock_references,
 )
+from .runner import MarketPublishLoop
 
 __all__ = [
     "ADJUSTED_PRICE_VERSION",
     "RANKING_MODEL_VERSION",
     "REFERENCE_POLICY_VERSION",
     "MarketDataPipeline",
+    "MarketPublishLoop",
     "PublishedView",
     "ThemeUniverse",
     "build_theme_universe",

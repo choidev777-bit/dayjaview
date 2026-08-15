@@ -187,6 +187,36 @@ def test_market_updates_flow_into_active_event_and_ranked_snapshot() -> None:
     assert statuses["thm_full"] == "ACTIVE"
 
 
+def test_close_market_discards_candidates_and_closes_active_events() -> None:
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(
+        ("KRX:000001", "KRX:000002", "KRX:000003", "KRX:000009")
+    ):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+
+    pipeline.close_market(now=BASE + timedelta(hours=7))
+    view = pipeline.publish(
+        now=BASE + timedelta(hours=7, seconds=1),
+        data_status=DataStatus.CLOSED,
+    )
+
+    statuses = {
+        event.canonical_theme_id: event.lifecycle_status.value
+        for event in view.events
+    }
+    assert statuses == {"thm_full": "CLOSED", "thm_thin": "DISCARDED"}
+    assert view.rankings.payload == {"items": []}
+
+    # 이미 종결된 테마는 다시 닫아도 상태가 변하지 않는다.
+    pipeline.close_market(now=BASE + timedelta(hours=8))
+    assert {
+        event.canonical_theme_id: event.lifecycle_status.value
+        for event in pipeline.current_events()
+    } == statuses
+
+
 def test_duplicate_updates_do_not_change_published_values() -> None:
     pipeline = _pipeline()
     update = _update("KRX:000001", seconds=1)

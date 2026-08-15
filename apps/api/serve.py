@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import secrets
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -28,21 +29,34 @@ from packages.adapters.kiwoom import (
     SupplementReason,
 )
 from packages.domain import DataStatus
-from packages.events import InMemoryEventStore, LineageRef
+from packages.events import (
+    EventStore,
+    InMemoryEventStore,
+    LineageRef,
+    PostgresEventStore,
+)
 from packages.identity import GoogleIdentity
 from packages.pipeline import (
     MarketDataPipeline,
+    MarketPublishLoop,
+    PublishedView,
     ThemeUniverse,
     load_collected_references,
     load_theme_universe,
 )
 from packages.pipeline.market import RANKINGS_PARAMS, TREEMAP_PARAMS
-from packages.realtime import InMemorySnapshotRepository, StockRealtimeUpdate
+from packages.realtime import (
+    InMemorySnapshotRepository,
+    PostgresSnapshotRepository,
+    SnapshotRepository,
+    StockRealtimeUpdate,
+)
 
 from .app import FixtureIdentityEnvironment, create_fixture_app
 from .app_types import JsonObject
 from .config import ApiSettings
 from .fixture_universe import FIXTURE_MARKET_DATE, fixture_universe
+from .realtime import RealtimeSnapshotHub
 from .snapshot_product import SnapshotProductReadRepository
 
 KIWOOM_FIXTURE_PATH = "tests/market-gateway/fixtures/kiwoom-market-v1.json"
@@ -50,7 +64,9 @@ FIXTURE_DEMO_LOGIN_CODE = "fixture-demo-login"
 THEME_UNIVERSE_MODE_ENV = "THEME_UNIVERSE_MODE"
 INFOSTOCK_IMPORT_DIR_ENV = "INFOSTOCK_IMPORT_DIR"
 REFERENCE_DATA_DIR_ENV = "REFERENCE_DATA_DIR"
+DATABASE_DSN_ENV = "DATABASE_URL"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
+PUBLISH_INTERVAL = timedelta(seconds=2)
 
 _BASE = datetime(2026, 8, 14, 0, 0, tzinfo=UTC)
 # 인포스탁 테마 명단은 장 시작 전에 확보된 것으로 취급한다.
@@ -166,6 +182,27 @@ def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniv
     )
 
 
+def create_pipeline_stores(
+    environment: Mapping[str, str],
+) -> tuple[EventStore, SnapshotRepository]:
+    """`DATABASE_URL`이 있으면 Postgres 영속 저장소, 없으면 InMemory를 조립한다."""
+
+    dsn = environment.get(DATABASE_DSN_ENV, "").strip()
+    if not dsn:
+        return InMemoryEventStore(), InMemorySnapshotRepository()
+    import psycopg
+
+    # 파이프라인은 단일 루프에서 순차로 쓰므로 두 저장소가 연결 하나를 공유한다.
+    # psycopg cursor overload가 저장소의 DbConnection Protocol과 이름만 다르다.
+    connection: Any = psycopg.connect(dsn)
+    return PostgresEventStore(connection), PostgresSnapshotRepository(connection)
+
+
+def publish_view_to_hub(hub: RealtimeSnapshotHub, view: PublishedView) -> None:
+    hub.publish(view.rankings, params=cast("JsonObject", RANKINGS_PARAMS))
+    hub.publish(view.treemap, params=cast("JsonObject", TREEMAP_PARAMS))
+
+
 def build_fixture_environment(
     *,
     settings: ApiSettings | None = None,
@@ -177,17 +214,21 @@ def build_fixture_environment(
     effective_universe = universe or theme_universe_from_environment(os.environ)
     events, gateway_status = replay_fixture_market_events()
     data_status = _to_data_status(gateway_status)
+    event_store, snapshot_repository = create_pipeline_stores(os.environ)
     pipeline = MarketDataPipeline(
         market_date=FIXTURE_MARKET_DATE,
-        stream_id="stream_fixture_20260814",
+        # Postgres 영속화에서 publication_id·command message_id가 stream_id로
+        # 만들어지므로, 재기동한 프로세스가 이전 실행과 충돌하지 않게
+        # 부팅마다 고유한 stream_id를 쓴다.
+        stream_id=f"stream_fixture_20260814_{secrets.token_hex(4)}",
         schema_version=effective_settings.schema_version,
         catalog=effective_universe.catalog(),
         references=effective_universe.references,
         membership_version=effective_universe.version,
         theme_names=effective_universe.theme_names,
         stock_names=effective_universe.stock_names,
-        event_store=InMemoryEventStore(),
-        snapshot_repository=InMemorySnapshotRepository(),
+        event_store=event_store,
+        snapshot_repository=snapshot_repository,
     )
     for event in events:
         update = _to_update(event)
@@ -204,14 +245,7 @@ def build_fixture_environment(
         settings=effective_settings,
         product_repository=SnapshotProductReadRepository(pipeline),
     )
-    environment.realtime_hub.publish(
-        view.rankings,
-        params=cast("JsonObject", RANKINGS_PARAMS),
-    )
-    environment.realtime_hub.publish(
-        view.treemap,
-        params=cast("JsonObject", TREEMAP_PARAMS),
-    )
+    publish_view_to_hub(environment.realtime_hub, view)
     environment.oauth_provider.register_code(
         FIXTURE_DEMO_LOGIN_CODE,
         GoogleIdentity(
@@ -228,16 +262,30 @@ def create_asgi_app(
     environment: FixtureIdentityEnvironment,
     *,
     health_payload: HealthPayload | None = None,
+    publish_loop: MarketPublishLoop | None = None,
 ) -> Callable[[Scope, Receive, Send], Awaitable[None]]:
-    """lifespan과 /api/health를 처리하고 나머지는 제품 앱에 넘긴다."""
+    """lifespan과 /api/health를 처리하고 나머지는 제품 앱에 넘긴다.
+
+    publish_loop가 있으면 lifespan startup에 상시 발행 task로 띄우고
+    shutdown에 취소한다.
+    """
 
     async def asgi(scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "lifespan":
+            loop_task: asyncio.Task[None] | None = None
             while True:
                 message = await receive()
                 if message["type"] == "lifespan.startup":
+                    if publish_loop is not None:
+                        loop_task = asyncio.create_task(publish_loop.run())
                     await send({"type": "lifespan.startup.complete"})
                 elif message["type"] == "lifespan.shutdown":
+                    if loop_task is not None:
+                        loop_task.cancel()
+                        try:
+                            await loop_task
+                        except asyncio.CancelledError:
+                            pass
                     await send({"type": "lifespan.shutdown.complete"})
                     return
         if (
@@ -283,7 +331,19 @@ def serve_fixture_api(
 ) -> int:
     import uvicorn
 
-    environment, _pipeline = build_fixture_environment()
-    application = create_asgi_app(environment, health_payload=health_payload)
+    environment, pipeline = build_fixture_environment()
+    publish_loop = MarketPublishLoop(
+        pipeline=pipeline,
+        on_published=lambda view: publish_view_to_hub(
+            environment.realtime_hub, view
+        ),
+        data_status=lambda: pipeline.last_data_status,
+        interval=PUBLISH_INTERVAL,
+    )
+    application = create_asgi_app(
+        environment,
+        health_payload=health_payload,
+        publish_loop=publish_loop,
+    )
     uvicorn.run(application, host=host, port=port, log_level="info")
     return 0

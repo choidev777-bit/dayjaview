@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 
 from httpx import ASGITransport, AsyncClient
 
@@ -8,7 +9,11 @@ from apps.api.serve import (
     FIXTURE_DEMO_LOGIN_CODE,
     build_fixture_environment,
     create_asgi_app,
+    create_pipeline_stores,
 )
+from packages.events import InMemoryEventStore
+from packages.pipeline import MarketPublishLoop, PublishedView
+from packages.realtime import InMemorySnapshotRepository
 
 BASE_URL = "https://dayjaview.vercel.app"
 
@@ -114,5 +119,47 @@ def test_asgi_wrapper_serves_health_and_delegates_product_routes() -> None:
             session = await client.get("/auth/session")
             assert session.status_code == 200
             assert session.json()["data"]["authenticated"] is False
+
+    asyncio.run(scenario())
+
+
+def test_pipeline_stores_default_to_memory_without_dsn() -> None:
+    event_store, snapshot_repository = create_pipeline_stores({})
+    assert isinstance(event_store, InMemoryEventStore)
+    assert isinstance(snapshot_repository, InMemorySnapshotRepository)
+
+
+def test_lifespan_starts_and_cancels_publish_loop() -> None:
+    async def scenario() -> None:
+        environment, pipeline = build_fixture_environment()
+        published: list[PublishedView] = []
+        publish_loop = MarketPublishLoop(
+            pipeline=pipeline,
+            on_published=published.append,
+            data_status=lambda: pipeline.last_data_status,
+            interval=timedelta(milliseconds=10),
+        )
+        application = create_asgi_app(environment, publish_loop=publish_loop)
+
+        messages: asyncio.Queue[dict[str, str]] = asyncio.Queue()
+        sent: list[dict[str, object]] = []
+
+        async def send(message: dict[str, object]) -> None:
+            sent.append(message)
+
+        await messages.put({"type": "lifespan.startup"})
+        lifespan = asyncio.create_task(
+            application({"type": "lifespan"}, messages.get, send)
+        )
+        await asyncio.sleep(0.1)
+        assert {"type": "lifespan.startup.complete"} in sent
+        assert len(published) >= 2  # 상시 루프가 주기적으로 발행한다
+
+        await messages.put({"type": "lifespan.shutdown"})
+        await lifespan
+        assert {"type": "lifespan.shutdown.complete"} in sent
+        count_after_shutdown = len(published)
+        await asyncio.sleep(0.05)
+        assert len(published) == count_after_shutdown  # 루프가 취소되었다
 
     asyncio.run(scenario())
