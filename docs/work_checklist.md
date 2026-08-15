@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `5e5b54f` · `uv run pytest -q` 499 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `d53793b` · `uv run pytest -q` 510 passed·8 skipped
 
 ## 요약
 
@@ -13,9 +13,9 @@
 | C. 화면 | 2 / 2 | — |
 | D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 0 / 6 | E-16 ~ E-21 |
-| F. 출시 | 1 / 5 | F-21, F-23 ~ F-25 |
+| F. 출시 | 2 / 5 | F-21, F-24, F-25 |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 4건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 3건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -98,7 +98,13 @@
   - **역할은 로그인 시점에 부여된다.** 이미 로그인한 뒤 env를 켰다면 다시 로그인해야 운영자가 된다(테스트로 고정).
   - 실행 중인 fixture 서버에서 데모 로그인이 `roles: [USER, OPERATOR]`를 받고, 브라우저 `/operator.html`이 운영자 5개 endpoint를 200으로 읽어 D-15 콘솔이 렌더되는 것까지 확인했다. local fixture 서버는 `.claude/launch.json`이 데모 계정을 운영자로 부트스트랩한다.
   - **부수 수정** 2026-08-16 `5e5b54f`: `infra/deployment/environment.contract.json`이 구글 키를 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`으로 선언하는데 코드·`.env.example`은 `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`을 읽고 있었다. 계약대로 배포하면 구글 키가 비어 보여 fixture provider(인증 우회)로 떨어진다. 계약 이름을 코드에 맞추고, compose secret 검사의 금지 이름도 고쳤다(이전 이름으로는 실제 변수를 못 잡았다). 계약 파일을 읽는 코드가 없어 아무도 못 잡던 것이라 `test_compose_contract.py`에 계약↔코드 이름 일치 검사를 넣어 고정했다.
-- [ ] **F-23** 보안 점검 — `tests/security/**` 없음.
+- [x] **F-23** 보안 점검 — 2026-08-16 `PENDING_HASH`
+  - 결과: [security_audit.md](./release/security_audit.md) · 재현 테스트 `tests/security/**` 11개. **제품 파일은 고치지 않았다**(로드맵이 수리를 별도 작업으로 못박음). 12건 발견 — 중간 2 · 낮음 5 · 정보성 5.
+  - **중간 ①** 근거 기사 URL의 scheme이 http(s)로 제한되지 않는다. `canonical_url`은 "절대 주소인가"만 봐서 `javascript://host/%0a…`가 통과하고, 저장되는 값은 정규화본이 아니라 공급원 원문이다. 그게 웹의 유일한 동적 `href`(`ThemeDetailPage.tsx:134`)에 들어간다. `target="_blank"` 덕에 실제 실행 가능성은 낮아 "높음"은 아니다.
+  - **중간 ②** OpenDART 키가 `?crtfc_key=`로 URL에 실려 httpx 예외 메시지에 박히고 `__cause__`에 보존된다. 바로 옆 KRX 어댑터는 헤더로 올바르게 보낸다. 지금은 worker가 최상위 메시지만 출력해 유출이 없지만 traceback을 로깅하면 새어 나온다.
+  - **낮음** 인증 진입점에 rate limit이 없고(무인증 `/auth/google`이 요청마다 행 생성) 만료 레코드를 지우는 경로가 없다 · 웹 정적 호스트에 보안 헤더 설정 파일이 없다(운영자 콘솔 clickjacking·CSP 부재) · OpenDART ZIP 무제한 해제 · 외부 응답 크기 상한 없음 · 인포스탁 `urlopen` 리다이렉트 추종.
+  - **F-25에 직접 걸리는 것 2건**: 배포 env 계약이 코드가 안 읽는 `SESSION_SIGNING_SECRET`·`APPLICATION_ENCRYPTION_KEY`를 production 필수로 선언한다(회전해도 보호 대상 없음). 그리고 커서 서명 키가 프로세스마다 무작위라 **API를 2개 이상 띄우면 관심 목록 2페이지부터 실패한다**(fail-closed).
+  - 방어가 확인된 축: OAuth state 브라우저 바인딩·1회 소비, CSRF 3중(Origin+double-submit+서버 해시), `__Host-` 쿠키, 원문 토큰 미저장, 운영자 필드 allowlist, SQL 전면 파라미터화, 위험 함수(`pickle`/`eval`/`os.system`/`yaml.load`/`lxml`/`verify=False`) 전무, 웹 XSS 싱크 전무.
 - [ ] **F-24** 품질 점검 — `docs/release/qa_report.md` 없음.
 - [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
 
