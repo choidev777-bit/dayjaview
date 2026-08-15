@@ -22,6 +22,16 @@ class InvalidApiRequest(ApiError):
         super().__init__(400, "INVALID_REQUEST", message)
 
 
+class RateLimited(ApiError):
+    def __init__(self) -> None:
+        super().__init__(
+            429,
+            "RATE_LIMITED",
+            "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요.",
+            retryable=True,
+        )
+
+
 class ProductResourceNotFound(ApiError):
     def __init__(self) -> None:
         super().__init__(404, "RESOURCE_NOT_FOUND", "요청한 항목을 찾을 수 없습니다.")

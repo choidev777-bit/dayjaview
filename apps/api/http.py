@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections import deque
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from typing import Any
 from urllib.parse import parse_qs
 
@@ -20,6 +22,7 @@ class ApiRequest:
     headers: Mapping[str, tuple[str, ...]]
     cookies: Mapping[str, str]
     body: bytes
+    client: str = "unknown"
 
     @classmethod
     async def from_asgi(
@@ -58,6 +61,7 @@ class ApiRequest:
             headers=frozen_headers,
             cookies=_parse_cookies(frozen_headers.get("cookie", ())),
             body=bytes(body),
+            client=_client_key(scope.get("client")),
         )
 
     def header(self, name: str) -> str | None:
@@ -136,6 +140,52 @@ class ApiResponse:
             }
         )
         await send({"type": "http.response.body", "body": self.body, "more_body": False})
+
+
+def _client_key(client: Any) -> str:
+    """요청 한도를 세는 단위. 프록시 header는 위조되므로 전송 계층 주소만 쓴다."""
+
+    if isinstance(client, (tuple, list)) and client:
+        return str(client[0])
+    return "unknown"
+
+
+@dataclass(slots=True)
+class RateLimiter:
+    """진입점 요청 한도.
+
+    프로세스 안에서만 센다. 인스턴스가 여러 개면 인스턴스마다 따로 걸리므로
+    실효 한도는 (한도 × 인스턴스 수)다. 저장소 행을 무제한으로 늘리는 것을
+    막는 것이 목적이라 그 정도면 충분하다.
+    """
+
+    limit: int
+    window: timedelta
+    maximum_clients: int = 4096
+    _hits: dict[str, deque[datetime]] = field(default_factory=dict)
+
+    def allow(self, client: str, now: datetime) -> bool:
+        if client not in self._hits and len(self._hits) >= self.maximum_clients:
+            self._make_room(now)
+        hits = self._hits.setdefault(client, deque())
+        threshold = now - self.window
+        while hits and hits[0] <= threshold:
+            hits.popleft()
+        if len(hits) >= self.limit:
+            return False
+        hits.append(now)
+        return True
+
+    def _make_room(self, now: datetime) -> None:
+        """한도 표 자체가 메모리를 무제한으로 먹지 않게 한다."""
+
+        threshold = now - self.window
+        for client in [
+            key for key, hits in self._hits.items() if not hits or hits[-1] <= threshold
+        ]:
+            del self._hits[client]
+        while len(self._hits) >= self.maximum_clients:
+            del self._hits[min(self._hits, key=lambda key: self._hits[key][-1])]
 
 
 def _parse_cookies(cookie_headers: tuple[str, ...]) -> dict[str, str]:

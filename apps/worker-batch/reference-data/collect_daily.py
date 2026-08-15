@@ -74,7 +74,8 @@ def _report(payload: Mapping[str, object]) -> None:
 
 
 def _slug(value: str) -> str:
-    return re.sub(r"[^0-9A-Za-z._-]", "_", value)
+    # `.`을 남기면 `..`가 살아남아 상위 경로로 나갈 수 있다. source_key에는 점이 없다.
+    return re.sub(r"[^0-9A-Za-z_-]", "_", value)
 
 
 def _stamp_settlement(snapshot: Any) -> Any:

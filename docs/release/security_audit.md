@@ -4,7 +4,7 @@
 - **범위**: auth·권한·secret·입력·의존성 경계. `apps/api`, `apps/web`, `apps/worker-*`, `packages/identity`, `packages/news`, `packages/infostock`, `packages/adapters`, `packages/reference-data`, `packages/operator`, `infra/**`
 - **원칙**: 제품 파일은 고치지 않았다. 재현 가능한 finding과 그것을 고정하는 테스트만 남긴다. **수리는 별도 작업이다.**
 - **재현 테스트**: `tests/security/**` (11개, `uv run pytest -q` 510 passed·8 skipped)
-- **주의**: `tests/security/**`의 테스트는 **현재의 취약한 동작을 고정한다.** 수리하면 실패하므로, 고칠 때 해당 테스트도 같이 고쳐야 한다.
+- **주의**: `tests/security/**`의 테스트는 이제 **수리된 동작을 고정한다.** 감사 시점에는 취약한 동작을 고정했고, 수리 작업에서 함께 바꿨다.
 - **정정(2026-08-16)**: 최초판이 발견 1을 "중간"으로 올린 근거는 "React는 `href`의 scheme을 검사하지 않는다"였는데 **사실이 아니었다.** 이 저장소의 react-dom 19.2.8은 렌더 시점에 `javascript:` href를 차단한다(1번 참조). 심각도를 낮음으로 내렸다.
 - **추가(2026-08-16)**: 최초판이 미실시로 남긴 의존성 알려진 취약점 조회(`pnpm audit`·`pip-audit`)를 실행해 13번으로 기록했다. 최종 **13건 — 중간 1 · 낮음 6 · 정보성 6.**
 
@@ -29,6 +29,32 @@
 | 11 | 정보성 | `/api/health`가 무인증이다 | 코드 확인 |
 | 12 | 정보성 | 운영자 repo만 `returnTo`를 내부에서 정화하지 않는다 | 코드 확인 |
 | 13 | 정보성 | 고정된 `pytest` 버전에 알려진 취약점이 있다 (개발 전용) | `pip-audit` 재실행 |
+
+---
+
+## 수리 상태 (2026-08-16)
+
+감사 뒤 **별도 수리 작업에서 12건을 고쳤다.** 아래 각 절의 본문은 *수리 전 상태* 설명이고, 무엇을 어떻게 고쳤는지는 이 표가 기준이다.
+
+| # | 상태 | 수리 |
+|---|---|---|
+| 1 | 수리 | `canonical_url`이 `http`/`https`만 통과시킨다. 오염된 항목은 예외가 아니라 `INVALID_URL` 거부 사유가 되어 배치 전체가 죽지 않는다 |
+| 2 | 수리 | OpenDART 경로가 httpx 상태 예외를 물고 가지 않는다. 상태코드만 담은 예외를 새로 만든다(체인 없음) |
+| 3 | 수리 | `/auth/*`에 클라이언트 주소 단위 한도(5분 20회 → 429 `RATE_LIMITED`). 만료 state·session·ticket은 로그인 시작마다 `purge_expired`로 지운다 |
+| 4 | 수리 | `apps/web/vercel.json`에 CSP·HSTS·`X-Frame-Options: DENY`·nosniff·`Referrer-Policy` |
+| 5 | 수리 | ZIP 해제에 상한 64MiB(선언 크기와 실제 읽은 양을 모두 검사) |
+| 6 | 수리 | 외부 응답을 스트리밍으로 읽고 32MiB를 넘으면 끊는다(reference-data·news·infostock) |
+| 7 | 수리 | 인포스탁 `urlopen`이 리다이렉트를 거부한다 |
+| 8 | 수리 | `SESSION_SIGNING_SECRET`을 커서 서명 키로 연결했다. 코드가 안 읽는 나머지는 필수 선언을 내렸다 |
+| 9 | 수리 | 커서 서명 키를 env에서 주입한다. 공유 저장소(`DATABASE_URL`)인데 키가 없으면 기동하지 않는다 |
+| 10 | 수리 | `_slug()`가 `.`을 남기지 않아 `..`가 생기지 않는다 |
+| 11 | 유지 | 표준 health endpoint 범위이고 secret이 없어 바꾸지 않았다 |
+| 12 | 수리 | 운영자 repo가 `safeReturnTo`를 내부에서 적용한다 |
+| 13 | 수리 | `pytest` 9.0.3으로 상향. `pip-audit` 재실행 결과 **0건** |
+
+- **수리 중 새로 드러난 것**: 계약이 production 필수로 선언한 값 중 `REDIS_URL`·`INFOSTOCK_SESSION_STATE_PATH`도 코드가 전혀 읽지 않았다(Redis는 저장소 어디에도 없다). 8번과 같은 성격이라 함께 필수 선언을 내렸고, "production 필수 = 코드가 읽는다"를 테스트로 고정했다.
+- **검증**: `uv run pytest -q` 518 passed·8 skipped · 웹 lint·typecheck·test(83)·build 통과.
+- **남은 것**: `/api/*` Vercel rewrite 설정은 넣지 않았다. 배포 조립이라 F-25에서 같은 파일에 붙인다.
 
 ---
 

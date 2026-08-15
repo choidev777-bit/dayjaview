@@ -131,6 +131,8 @@ class IdentityService:
             return_to,
             fallback=self.policy.default_return_to,
         )
+        # 만료 레코드를 지우는 유일한 경로. 로그인 시작마다 한 번 훑는다.
+        self._repository.purge_expired(now=now)
         raw_state = self._tokens.create(32)
         browser_nonce = self._tokens.create(32)
         expires_at = now + self.policy.oauth_state_ttl

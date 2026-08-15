@@ -12,7 +12,7 @@ from datetime import time as datetime_time
 from pathlib import Path
 from typing import Any, NoReturn, cast
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .daily import DAILY_LIST_URL, derive_daily_post_key, parse_daily_html_body
 from .errors import FixtureValidationError
@@ -32,6 +32,7 @@ DAILY_LIST_ENDPOINT = f"{DAILY_API_BASE_URL}/flash/list"
 DAILY_DETAIL_ENDPOINT = f"{DAILY_API_BASE_URL}/flash/html"
 DAILY_API_PARSER_VERSION = "infostock-daily-api/1.0.0"
 DAILY_DATASET = "infostock-daily-featured-theme-full-backfill"
+_MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 _DATE8_RE = re.compile(r"^\d{8}$")
 _SAFE_ID_RE = re.compile(r"^[0-9A-Za-z_-]+$")
 _SEOUL = timezone(timedelta(hours=9))
@@ -103,6 +104,24 @@ def _atomic_json(path: Path, value: Mapping[str, object]) -> None:
     _atomic_write(path, raw)
 
 
+class _RejectRedirect(HTTPRedirectHandler):
+    """endpoint가 고정 상수이므로 리다이렉트 유도를 따라가지 않는다."""
+
+    def redirect_request(
+        self,
+        req: Request,
+        fp: Any,
+        code: int,
+        msg: str,
+        headers: Any,
+        newurl: str,
+    ) -> Request | None:
+        raise URLError(f"리다이렉트 응답({code})은 따르지 않습니다.")
+
+
+_NO_REDIRECT_OPENER = build_opener(_RejectRedirect)
+
+
 def _default_transport(
     endpoint: str, payload: Mapping[str, object]
 ) -> DailyApiObservation:
@@ -118,8 +137,10 @@ def _default_transport(
         },
         method="POST",
     )
-    with urlopen(request, timeout=60) as response:
-        raw_bytes = response.read()
+    with _NO_REDIRECT_OPENER.open(request, timeout=60) as response:
+        raw_bytes = response.read(_MAX_RESPONSE_BYTES + 1)
+        if len(raw_bytes) > _MAX_RESPONSE_BYTES:
+            raise URLError(f"응답 본문 상한 {_MAX_RESPONSE_BYTES} bytes를 넘었습니다.")
         return DailyApiObservation(
             raw_bytes=raw_bytes,
             status_code=int(response.status),

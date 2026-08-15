@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import secrets
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from urllib.parse import unquote
@@ -44,10 +44,11 @@ from .errors import (
     InvalidApiRequest,
     ProductDataUnavailable,
     ProductResourceNotFound,
+    RateLimited,
     ResourceIdMismatch,
     UnsupportedMarketDate,
 )
-from .http import ApiRequest, ApiResponse, Receive, Send
+from .http import ApiRequest, ApiResponse, RateLimiter, Receive, Send
 from .operator_boundary import (
     OperatorBoundary,
     OperatorStatusSource,
@@ -69,6 +70,8 @@ _HISTORICAL_EVENT_PATH = re.compile(r"^/v1/events/([^/]+)$")
 _OPERATOR_JOB_PATH = re.compile(r"^/v1/operator/jobs/([^/]+)(?:/(retry|resume))?$")
 _OPERATOR_REVIEW_PATH = re.compile(r"^/v1/operator/reviews/([^/]+)(?:/(resolve))?$")
 _ROLE_ORDER = {Role.USER: 0, Role.HISTORICAL_PILOT: 1, Role.OPERATOR: 2}
+AUTH_RATE_LIMIT = 20
+AUTH_RATE_WINDOW = timedelta(minutes=5)
 
 
 class IdentityApiApp:
@@ -93,6 +96,12 @@ class IdentityApiApp:
             hub=self.realtime_hub,
             settings=settings,
             clock=self._clock,
+        )
+        # 무인증 인증 진입점은 요청마다 저장소 행을 만든다. 외부인이 행 수를
+        # 요청 수만큼 늘리지 못하게 클라이언트 주소 단위로 센다.
+        self._auth_rate_limiter = RateLimiter(
+            limit=AUTH_RATE_LIMIT,
+            window=AUTH_RATE_WINDOW,
         )
         if settings.app_base_url.rstrip("/") != identity_service.policy.allowed_origin:
             raise ValueError("API and identity origins must match")
@@ -120,6 +129,11 @@ class IdentityApiApp:
         await response.send_asgi(send)
 
     def _handle(self, request: ApiRequest, request_id: str) -> ApiResponse:
+        if request.path.startswith("/auth/") and not self._auth_rate_limiter.allow(
+            request.client,
+            self._clock.now(),
+        ):
+            raise RateLimited()
         if request.path == "/auth/google" and request.method == "GET":
             return self._begin_login(request)
         if request.path == "/auth/google/callback" and request.method == "GET":

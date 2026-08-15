@@ -26,6 +26,8 @@ from .sources import NewsSource, SourceCursor
 
 NAVER_API_HUB_NEWS_URL = "https://naverapihub.apigw.ntruss.com/search/v1/news"
 FEATURED_QUERY = "특징주"
+# 상류가 침해되거나 오작동해도 메모리를 고갈시키지 못하게 하는 상한.
+MAX_FEED_BYTES = 32 * 1024 * 1024
 FEATURED_POLL_DISPLAY = 30
 SUPPLEMENTAL_DISPLAY = 10
 SUPPLEMENTAL_MAX_TERMS = 3
@@ -108,9 +110,16 @@ class RssNewsSource:
         self._clock = clock
 
     def fetch(self, cursor: SourceCursor) -> Sequence[RawNewsItem]:
-        response = self._client.get(self._config.feed_url)
-        response.raise_for_status()
-        root = ElementTree.fromstring(response.content)
+        with self._client.stream("GET", self._config.feed_url) as response:
+            response.raise_for_status()
+            body = bytearray()
+            for chunk in response.iter_bytes():
+                body.extend(chunk)
+                if len(body) > MAX_FEED_BYTES:
+                    raise ValueError(
+                        f"RSS 응답 본문 상한 {MAX_FEED_BYTES} bytes를 넘었습니다"
+                    )
+        root = ElementTree.fromstring(bytes(body))
         retrieved_at = self._clock()
         items = [
             item

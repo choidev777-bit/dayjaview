@@ -1,7 +1,8 @@
-"""F-23 finding: 인증 경계에 요청 한도와 만료 레코드 정리가 없다.
+"""F-23 수리: 인증 경계에 요청 한도와 만료 레코드 정리가 생겼다.
 
-두 테스트 모두 **현재 동작을 그대로 고정한다**. 수리하면 실패하므로, 한도나
-정리 작업을 넣을 때 이 파일을 같이 고쳐야 한다.
+무인증 `GET /auth/google`은 호출마다 `identity.oauth_states` 행을 만든다. 이제
+클라이언트 주소 단위 한도가 걸리고, 만료된 state·session·ticket은 로그인
+시작 때 지워진다.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from urllib.parse import parse_qs, urlsplit
 from httpx import ASGITransport, AsyncClient
 
 from apps.api import create_fixture_app
+from apps.api.app import AUTH_RATE_LIMIT, AUTH_RATE_WINDOW
 from packages.identity import GoogleIdentity
 
 ORIGIN = "https://dayjaview.vercel.app"
@@ -30,50 +32,31 @@ class MutableClock:
         self.current += duration
 
 
-def test_unauthenticated_login_start_is_unlimited_and_keeps_every_state() -> None:
-    """`GET /auth/google`은 쿠키·CSRF 없이 oauth_state 행을 무제한으로 만든다.
-
-    호출마다 새 state가 저장되고 아무것도 밀려나지 않는다. 즉 외부인이 저장소
-    행 수를 요청 수만큼 늘릴 수 있고, 막는 한도가 없다.
-    """
+def test_unauthenticated_login_start_is_rate_limited_per_client() -> None:
+    """한도를 넘기면 429로 끊기고, 창이 지나면 다시 열린다."""
 
     async def scenario() -> None:
-        environment = create_fixture_app(clock=MutableClock())
+        clock = MutableClock()
+        environment = create_fixture_app(clock=clock)
         transport = ASGITransport(app=environment.app)
         async with AsyncClient(transport=transport, base_url=ORIGIN) as client:
-            states: list[tuple[str, str]] = []
-            for _ in range(40):
-                response = await client.get("/auth/google")
-                # 한도가 있다면 여기서 429가 나와야 한다. 지금은 전부 통과한다.
-                assert response.status_code == 302
-                location = response.headers["location"]
-                nonce = response.cookies["__Host-dayjaview_oauth_state"]
-                states.append((parse_qs(urlsplit(location).query)["state"][0], nonce))
+            for _ in range(AUTH_RATE_LIMIT):
+                assert (await client.get("/auth/google")).status_code == 302
 
-            assert len({state for state, _ in states}) == 40
+            blocked = await client.get("/auth/google")
+            assert blocked.status_code == 429
+            assert blocked.json()["error"]["code"] == "RATE_LIMITED"
+            # 한도에 걸린 요청은 state 행을 만들지 않는다.
+            assert "location" not in blocked.headers
 
-            # 40번째 요청 뒤에도 첫 state가 살아 있다 = 축출이 전혀 없다.
-            first_state, first_nonce = states[0]
-            environment.oauth_provider.register_code(
-                "code-first",
-                GoogleIdentity("sub-first", "첫 사용자"),
-            )
-            consumed = environment.service.complete_google_login(
-                code="code-first",
-                state=first_state,
-                browser_nonce=first_nonce,
-            )
-            assert consumed.return_to == "/today"
+            clock.advance(AUTH_RATE_WINDOW + timedelta(seconds=1))
+            assert (await client.get("/auth/google")).status_code == 302
 
     asyncio.run(scenario())
 
 
-def test_expired_sessions_are_revoked_but_never_removed() -> None:
-    """TTL이 지난 세션은 revoked 표시만 되고 저장소에 그대로 남는다.
-
-    만료 레코드를 지우는 경로가 코드 어디에도 없어서, 사용자마다 로그인 횟수
-    만큼 세션 행이 영구히 쌓인다.
-    """
+def test_expired_sessions_and_states_are_removed_on_the_next_login() -> None:
+    """TTL이 지난 레코드는 다음 로그인 시작 때 저장소에서 사라진다."""
 
     clock = MutableClock()
     environment = create_fixture_app(clock=clock)
@@ -91,12 +74,9 @@ def test_expired_sessions_are_revoked_but_never_removed() -> None:
             browser_nonce=started.browser_nonce,
         )
         user_id = completion.user.user_id
-        # 로그인마다 세션이 하나씩 늘어난다(이전 세션을 넘기지 않으므로 회전 없음).
         assert environment.repository.session_count_for_user(user_id) == index + 1
-        last_token = completion.session_token
 
     clock.advance(environment.service.policy.session_ttl + timedelta(seconds=1))
-    assert environment.service.authenticate(last_token) is None
+    environment.service.begin_google_login("/today")
 
-    # 인증 실패로 revoke까지 됐는데도 행 수는 그대로다.
-    assert environment.repository.session_count_for_user(user_id) == 5
+    assert environment.repository.session_count_for_user(user_id) == 0

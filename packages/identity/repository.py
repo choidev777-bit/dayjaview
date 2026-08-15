@@ -80,6 +80,8 @@ class IdentityRepository(Protocol):
 
     def delete_account(self, user_id: str) -> bool: ...
 
+    def purge_expired(self, *, now: datetime) -> int: ...
+
 
 class InMemoryIdentityRepository:
     """Thread-safe fixture repository with database-like atomic operations."""
@@ -97,6 +99,24 @@ class InMemoryIdentityRepository:
     def store_oauth_state(self, record: OAuthStateRecord) -> None:
         with self._lock:
             self._oauth_states[record.state_hash] = record
+
+    def purge_expired(self, *, now: datetime) -> int:
+        """만료된 state·session·ticket을 지운다. 남겨두면 무한히 쌓인다."""
+
+        with self._lock:
+            before = len(self._oauth_states) + len(self._sessions) + len(self._tickets)
+            self._oauth_states = {
+                key: record
+                for key, record in self._oauth_states.items()
+                if record.expires_at > now
+            }
+            self._sessions = {
+                key: record for key, record in self._sessions.items() if record.expires_at > now
+            }
+            self._tickets = {
+                key: record for key, record in self._tickets.items() if record.expires_at > now
+            }
+            return before - len(self._oauth_states) - len(self._sessions) - len(self._tickets)
 
     def consume_oauth_state(
         self,

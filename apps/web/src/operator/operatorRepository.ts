@@ -1,3 +1,4 @@
+import { safeReturnTo } from '../domain/formatting';
 import { RepositoryError } from '../domain/repositoryErrors';
 import type {
   InfostockAuthStatus,
@@ -144,7 +145,8 @@ class LiveOperatorRepository implements OperatorRepository {
   }
 
   startGoogleLogin(returnTo: string): void {
-    window.location.assign(`/api/auth/google?returnTo=${encodeURIComponent(returnTo)}`);
+    const target = safeReturnTo(returnTo);
+    window.location.assign(`/api/auth/google?returnTo=${encodeURIComponent(target)}`);
   }
 
   async getStatus(): Promise<OperatorStatus> {

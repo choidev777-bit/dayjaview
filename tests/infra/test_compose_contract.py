@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from apps.api.production import (
+    CURSOR_SIGNING_SECRET_ENV,
     GOOGLE_CLIENT_ID_ENV,
     GOOGLE_CLIENT_SECRET_ENV,
     IDENTITY_DATABASE_DSN_ENV,
@@ -161,6 +162,7 @@ def test_environment_contract_declares_the_names_the_api_actually_reads() -> Non
     required_by_code = {
         "APP_BASE_URL",
         "OPERATOR_BOOTSTRAP_GOOGLE_EMAILS",
+        CURSOR_SIGNING_SECRET_ENV,
         GOOGLE_CLIENT_ID_ENV,
         GOOGLE_CLIENT_SECRET_ENV,
         IDENTITY_DATABASE_DSN_ENV,

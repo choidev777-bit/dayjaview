@@ -23,6 +23,13 @@ from .models import (
 )
 from .security import constant_time_equal
 
+# 만료 시각으로 정리하는 테이블. 문자열 보간에는 이 상수만 들어간다.
+_EXPIRING_TABLES = (
+    "identity.oauth_states",
+    "identity.sessions",
+    "identity.realtime_tickets",
+)
+
 
 class DbCursor(Protocol):
     rowcount: int
@@ -564,6 +571,27 @@ class PostgresIdentityRepository:
             )
             self._connection.commit()
             return row is not None
+        except Exception:
+            self._connection.rollback()
+            raise
+
+    def purge_expired(self, *, now: datetime) -> int:
+        """만료된 state·session·ticket을 지운다. 남겨두면 무한히 쌓인다.
+
+        세 테이블 모두 `expires_at` 인덱스가 있다(`0001_identity_library.sql`).
+        """
+
+        removed = 0
+        try:
+            for table in _EXPIRING_TABLES:
+                row = self._fetch_one(
+                    f"WITH purged AS (DELETE FROM {table} WHERE expires_at <= %s RETURNING 1)"
+                    " SELECT count(*) FROM purged",
+                    (now,),
+                )
+                removed += int(row[0]) if row is not None else 0
+            self._connection.commit()
+            return removed
         except Exception:
             self._connection.rollback()
             raise

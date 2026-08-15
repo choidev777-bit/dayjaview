@@ -6,6 +6,7 @@ import hashlib
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+_ALLOWED_SCHEMES = frozenset({"http", "https"})
 _TRACKING_PREFIXES = ("utm_",)
 _TRACKING_KEYS = frozenset({"fbclid", "gclid", "igshid", "spm", "cmpid", "ref"})
 _BRACKET = re.compile(r"[\[\(【][^\]\)】]*[\]\)】]")
@@ -15,8 +16,8 @@ _FEATURED_MARKERS = ("특징주",)
 
 def canonical_url(url: str) -> str:
     parts = urlsplit(url.strip())
-    if not parts.scheme or not parts.netloc:
-        raise ValueError("원문 URL이 절대 주소가 아닙니다")
+    if parts.scheme not in _ALLOWED_SCHEMES or not parts.netloc:
+        raise ValueError("원문 URL이 http(s) 절대 주소가 아닙니다")
     host = parts.hostname or ""
     if host.startswith("www."):
         host = host[4:]

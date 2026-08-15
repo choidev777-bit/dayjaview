@@ -43,6 +43,7 @@ from .realtime import RealtimeSnapshotHub
 GOOGLE_CLIENT_ID_ENV = "GOOGLE_OAUTH_CLIENT_ID"
 GOOGLE_CLIENT_SECRET_ENV = "GOOGLE_OAUTH_CLIENT_SECRET"
 IDENTITY_DATABASE_DSN_ENV = "DATABASE_URL"
+CURSOR_SIGNING_SECRET_ENV = "SESSION_SIGNING_SECRET"
 
 GOOGLE_MODE = "GOOGLE"
 FIXTURE_MODE = "FIXTURE"
@@ -108,6 +109,7 @@ def create_production_app(
         target_catalog=target_catalog or InMemoryTargetCatalog(()),
         policy=policy,
         clock=effective_clock,
+        cursor_secret=_cursor_secret(environment, identity_store=identity_store),
     )
     effective_hub = realtime_hub or RealtimeSnapshotHub()
     effective_operator_repository = operator_repository or InMemoryOperatorRepository()
@@ -136,6 +138,33 @@ def create_production_app(
         fixture_provider,
         tuple(closers),
     )
+
+
+def _cursor_secret(
+    environment: Mapping[str, str],
+    *,
+    identity_store: str,
+) -> bytes | None:
+    """관심 목록 커서 서명 키.
+
+    없으면 `IdentityService`가 프로세스마다 무작위로 만든다. 인스턴스가 하나면
+    문제가 없지만, 같은 저장소를 보는 인스턴스가 둘 이상이면 한쪽이 발급한
+    커서를 다른 쪽이 거부해 목록 2페이지부터 실패한다. 그래서 공유 저장소를
+    쓰는 조립에서는 비어 있으면 조용히 넘어가지 않고 실패시킨다.
+    """
+
+    value = environment.get(CURSOR_SIGNING_SECRET_ENV, "").strip()
+    if not value:
+        if identity_store == POSTGRES_STORE:
+            raise ValueError(
+                f"{CURSOR_SIGNING_SECRET_ENV}가 비어 있습니다. "
+                "공유 저장소를 쓰면 인스턴스마다 커서 서명 키가 달라져 목록 넘김이 깨집니다."
+            )
+        return None
+    secret = value.encode("utf-8")
+    if len(secret) < 32:
+        raise ValueError(f"{CURSOR_SIGNING_SECRET_ENV}는 32바이트 이상이어야 합니다.")
+    return secret
 
 
 def _oauth_provider(

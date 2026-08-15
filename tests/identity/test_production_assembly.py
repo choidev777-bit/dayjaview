@@ -26,6 +26,8 @@ from .helpers import MutableClock
 _CLIENT_ID = "1234-production.apps.googleusercontent.com"
 _CLIENT_SECRET = "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eak"
 _DSN = "postgresql://identity:pw-must-not-leak@db.internal:5432/dayjaview"
+# 공유 저장소 조립은 커서 서명 키를 요구한다(32바이트 이상).
+_CURSOR_SECRET = "cursor-signing-secret-must-not-leak-0123"
 
 _TEST_DSN = os.environ.get("IDENTITY_TEST_DSN")
 _MIGRATION = (
@@ -117,7 +119,7 @@ def test_database_url_moves_identity_to_postgres_and_close_releases_it() -> None
         return connection
 
     environment = create_production_app(
-        {"DATABASE_URL": _DSN},
+        {"DATABASE_URL": _DSN, "SESSION_SIGNING_SECRET": _CURSOR_SECRET},
         settings=ApiSettings(),
         clock=MutableClock(),
         connect=connect,
@@ -175,6 +177,7 @@ def test_secrets_never_appear_in_settings_or_assembly_representations() -> None:
             "GOOGLE_OAUTH_CLIENT_ID": _CLIENT_ID,
             "GOOGLE_OAUTH_CLIENT_SECRET": _CLIENT_SECRET,
             "DATABASE_URL": _DSN,
+            "SESSION_SIGNING_SECRET": _CURSOR_SECRET,
         },
         settings=settings,
         clock=MutableClock(),
@@ -196,6 +199,7 @@ def test_secrets_never_appear_in_settings_or_assembly_representations() -> None:
     )
     assert _CLIENT_SECRET not in rendered
     assert "pw-must-not-leak" not in rendered
+    assert _CURSOR_SECRET not in rendered
     environment.close()
 
 
@@ -213,7 +217,10 @@ def test_postgres_identity_keeps_the_session_across_a_new_assembly() -> None:
         admin.execute(_MIGRATION.read_text(encoding="utf-8"))
 
     settings = ApiSettings()
-    environment_values = {"DATABASE_URL": str(_TEST_DSN)}
+    environment_values = {
+        "DATABASE_URL": str(_TEST_DSN),
+        "SESSION_SIGNING_SECRET": _CURSOR_SECRET,
+    }
 
     def assemble() -> ProductionIdentityEnvironment:
         return create_production_app(

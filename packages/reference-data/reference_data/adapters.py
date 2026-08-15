@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -24,6 +25,10 @@ from .models import (
 KRX_BASE_URL: Final = "https://data-dbg.krx.co.kr"
 OPENDART_BASE_URL: Final = "https://opendart.fss.or.kr"
 PARSER_VERSION: Final = "reference-source-2026.08.1"
+
+# 상류가 침해되거나 오작동해도 메모리를 고갈시키지 못하게 하는 상한.
+MAX_RESPONSE_BYTES: Final = 32 * 1024 * 1024
+MAX_ARCHIVE_ENTRY_BYTES: Final = 64 * 1024 * 1024
 
 KRX_MARKET_PATHS: Final[dict[str, str]] = {
     "KOSPI": "/svc/apis/sto/stk_bydd_trd",
@@ -77,12 +82,78 @@ def _required_key(value: str, name: str) -> str:
     return value
 
 
-def _json_object(response: httpx.Response, *, provider: str, endpoint: str) -> dict[str, Any]:
+def _fetch_bytes(
+    client: httpx.Client,
+    endpoint: str,
+    *,
+    provider: str,
+    params: Mapping[str, str] | None = None,
+    headers: Mapping[str, str] | None = None,
+    timeout: float,
+) -> bytes:
+    """상한 안에서만 본문을 읽고, 예외에 요청 URL을 남기지 않는다.
+
+    httpx가 만드는 상태 예외 메시지에는 요청 URL 전체가 들어간다. OpenDART는 API
+    키를 쿼리로 보내야 하므로(헤더 인증을 지원하지 않는다) 메시지를 직접 만들고
+    예외 체인을 잇지 않는다.
+    """
+
+    body = bytearray()
     try:
-        response.raise_for_status()
-        value = response.json()
-    except httpx.HTTPError as exc:
-        raise SourceTransportError(provider, endpoint, "HTTP 응답이 정상적이지 않습니다.") from exc
+        with client.stream(
+            "GET",
+            endpoint,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+        ) as response:
+            if response.status_code >= 400:
+                raise SourceTransportError(
+                    provider,
+                    endpoint,
+                    f"HTTP {response.status_code} 응답입니다.",
+                )
+            for chunk in response.iter_bytes():
+                body.extend(chunk)
+                if len(body) > MAX_RESPONSE_BYTES:
+                    raise SourceContractError(
+                        "OVERSIZED_SOURCE_RESPONSE",
+                        endpoint,
+                        f"응답 본문 상한 {MAX_RESPONSE_BYTES} bytes를 넘었습니다.",
+                    )
+    except httpx.HTTPError:
+        raise SourceTransportError(
+            provider,
+            endpoint,
+            "네트워크 조회에 실패했습니다.",
+        ) from None
+    return bytes(body)
+
+
+def _read_archive_entry(archive: ZipFile, name: str, *, endpoint: str) -> bytes:
+    """압축 해제 크기에 상한을 둔다. 선언값과 실제 읽은 양을 모두 본다."""
+
+    info = archive.getinfo(name)
+    if info.file_size > MAX_ARCHIVE_ENTRY_BYTES:
+        raise SourceContractError(
+            "OVERSIZED_SOURCE_RESPONSE",
+            endpoint,
+            f"압축 해제 상한 {MAX_ARCHIVE_ENTRY_BYTES} bytes를 넘었습니다.",
+        )
+    with archive.open(info) as entry:
+        data = entry.read(MAX_ARCHIVE_ENTRY_BYTES + 1)
+    if len(data) > MAX_ARCHIVE_ENTRY_BYTES:
+        raise SourceContractError(
+            "OVERSIZED_SOURCE_RESPONSE",
+            endpoint,
+            f"압축 해제 상한 {MAX_ARCHIVE_ENTRY_BYTES} bytes를 넘었습니다.",
+        )
+    return data
+
+
+def _json_object(body: bytes, *, endpoint: str) -> dict[str, Any]:
+    try:
+        value = json.loads(body)
     except ValueError as exc:
         raise SourceContractError(
             "MALFORMED_SOURCE_RESPONSE",
@@ -164,22 +235,15 @@ class KrxOpenApiAdapter:
         except KeyError as exc:
             raise ValueError("market은 KOSPI, KOSDAQ, KONEX 중 하나여야 합니다.") from exc
         endpoint = f"{KRX_BASE_URL}{path}"
-        try:
-            response = self._client.get(
+        payload = _json_object(
+            _fetch_bytes(
+                self._client,
                 endpoint,
+                provider=SourceProvider.KRX_OPEN_API.value,
                 headers={"AUTH_KEY": self._api_key},
                 params={"basDd": market_date.strftime("%Y%m%d")},
                 timeout=self._timeout,
-            )
-        except httpx.HTTPError as exc:
-            raise SourceTransportError(
-                SourceProvider.KRX_OPEN_API.value,
-                endpoint,
-                "네트워크 조회에 실패했습니다.",
-            ) from exc
-        payload = _json_object(
-            response,
-            provider=SourceProvider.KRX_OPEN_API.value,
+            ),
             endpoint=endpoint,
         )
         source_key = f"{market}:{market_date.isoformat()}"
@@ -221,21 +285,20 @@ class OpenDartAdapter:
         """종목코드 → 고유번호 대조표. 정기보고서 endpoint는 6자리를 받지 않는다."""
 
         endpoint = f"{OPENDART_BASE_URL}{OPENDART_CORP_CODE_PATH}"
+        body = _fetch_bytes(
+            self._client,
+            endpoint,
+            provider=SourceProvider.OPENDART.value,
+            params={"crtfc_key": self._api_key},
+            timeout=self._timeout,
+        )
         try:
-            response = self._client.get(
-                endpoint,
-                params={"crtfc_key": self._api_key},
-                timeout=self._timeout,
-            )
-            response.raise_for_status()
-            archive = ZipFile(BytesIO(response.content))
-            raw_text = archive.read(CORP_CODE_ENTRY_NAME).decode("utf-8")
-        except httpx.HTTPError as exc:
-            raise SourceTransportError(
-                SourceProvider.OPENDART.value,
-                endpoint,
-                "네트워크 조회에 실패했습니다.",
-            ) from exc
+            archive = ZipFile(BytesIO(body))
+            raw_text = _read_archive_entry(
+                archive,
+                CORP_CODE_ENTRY_NAME,
+                endpoint=endpoint,
+            ).decode("utf-8")
         except (BadZipFile, KeyError, UnicodeDecodeError) as exc:
             raise SourceContractError(
                 "MALFORMED_SOURCE_RESPONSE",
@@ -282,21 +345,14 @@ class OpenDartAdapter:
             "bsns_year": str(business_year),
             "reprt_code": report_code,
         }
-        try:
-            response = self._client.get(
+        payload = _json_object(
+            _fetch_bytes(
+                self._client,
                 endpoint,
+                provider=SourceProvider.OPENDART.value,
                 params=params,
                 timeout=self._timeout,
-            )
-        except httpx.HTTPError as exc:
-            raise SourceTransportError(
-                SourceProvider.OPENDART.value,
-                endpoint,
-                "네트워크 조회에 실패했습니다.",
-            ) from exc
-        payload = _json_object(
-            response,
-            provider=SourceProvider.OPENDART.value,
+            ),
             endpoint=endpoint,
         )
         source_key = f"{corp_code}:{business_year}:{report_code}"

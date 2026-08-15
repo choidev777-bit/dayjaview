@@ -94,6 +94,11 @@ class NewsIngestor:
     ) -> RejectionReason | None:
         if raw.source_type in FEATURED_SOURCE_TYPES and not is_featured_stock_title(raw.title):
             return RejectionReason.NOT_FEATURED_STOCK
+        try:
+            canonical_url(raw.original_url)
+        except ValueError:
+            # 오염된 공급원 한 항목이 배치 전체를 죽이지 않도록 여기서 거부한다.
+            return RejectionReason.INVALID_URL
         if not self._resolve_stocks(raw.title, raw.description):
             return RejectionReason.NO_LISTED_STOCK
         if raw.published_at is not None:
