@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Iterable
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from packages.domain import DataStatus
 from packages.realtime import StockRealtimeUpdate
 
 from .market import MarketDataPipeline, PublishedView
+from .trading_day import is_trading_day, market_date_for
 
 
 def _utc_now() -> datetime:
@@ -66,6 +67,82 @@ class MarketPublishLoop:
         view = self._pipeline.publish(now=now, data_status=self._data_status())
         self._on_published(view)
         return view
+
+    def close(self) -> None:
+        """장 마감을 아직 적용하지 않았으면 마감 시각으로 지금 적용한다."""
+
+        if self._market_close_applied or self._market_close_at is None:
+            return
+        self._pipeline.close_market(now=self._market_close_at)
+        self._market_close_applied = True
+
+    async def run(
+        self,
+        *,
+        sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    ) -> None:
+        while True:
+            self.tick()
+            await sleep(self._interval.total_seconds())
+
+
+class TradingDayLoop:
+    """거래일이 바뀌면 이전 장을 닫고 그날 파이프라인으로 갈아끼운다.
+
+    ``MarketPublishLoop``은 하루 안에서만 돈다. 이 루프가 그 위에 날짜 축을
+    얹어, 프로세스를 다시 띄우지 않아도 다음 거래일로 넘어가게 한다. 날짜를
+    갈지 않으면 다음 날 어제 전일종가로 계산해 모든 수익률이 조용히 틀린다.
+
+    ``build_session``은 그 거래일의 파이프라인과 발행 콜백을 만든다. 그날
+    기준정보를 확보하지 못하면 ``None``을 돌려 그날 계산을 시작하지 않는다
+    (product_decisions.md PD-001 10항 — 조용한 대체 금지).
+    """
+
+    def __init__(
+        self,
+        *,
+        build_session: Callable[[date], MarketPublishLoop | None],
+        interval: timedelta,
+        clock: Callable[[], datetime] = _utc_now,
+        known_trading_days: Callable[[date], bool | None] | None = None,
+    ) -> None:
+        if interval <= timedelta(0):
+            raise ValueError("publish interval은 0보다 커야 합니다")
+        self._build_session = build_session
+        self._interval = interval
+        self._clock = clock
+        self._known_trading_days = known_trading_days
+        self._market_date: date | None = None
+        self._session: MarketPublishLoop | None = None
+
+    @property
+    def market_date(self) -> date | None:
+        """지금 세워져 있는 거래일. 비거래일이면 None."""
+
+        return self._market_date
+
+    @property
+    def session(self) -> MarketPublishLoop | None:
+        return self._session
+
+    def tick(self) -> PublishedView | None:
+        today = market_date_for(self._clock())
+        if today != self._market_date:
+            self._roll_over(today)
+        if self._session is None:
+            return None
+        return self._session.tick()
+
+    def _roll_over(self, today: date) -> None:
+        # 넘어가기 전에 이전 거래일 장 마감을 반드시 적용한다. 마감 시각과
+        # 날짜 전환 사이에 tick이 한 번도 없었으면 아직 안 닫혀 있다.
+        if self._session is not None:
+            self._session.close()
+        self._market_date = today
+        if not is_trading_day(today, known_trading_days=self._known_trading_days):
+            self._session = None
+            return
+        self._session = self._build_session(today)
 
     async def run(
         self,

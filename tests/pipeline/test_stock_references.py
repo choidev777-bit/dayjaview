@@ -8,6 +8,8 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from packages.domain import (
     DataStatus,
     MembershipRole,
@@ -18,6 +20,8 @@ from packages.events import InMemoryEventStore
 from packages.pipeline import (
     MarketDataPipeline,
     load_collected_references,
+    prepare_reference_data,
+    reference_directory,
     resolve_stock_references,
 )
 from packages.realtime import (
@@ -351,3 +355,51 @@ def test_resolved_references_make_the_pipeline_rank_the_theme() -> None:
     assert item["validCount"] == 3
     assert item["advancingCount"] == 3
     assert item["qualityFlags"] == []
+
+
+# --- 거래일별 기준정보 준비 (A-8) ----------------------------------------
+
+
+def test_prepare_reference_data_reuses_an_already_collected_day(tmp_path: Path) -> None:
+    """그날 수집본이 있으면 외부 호출 없이 해석만 한다."""
+
+    directory = reference_directory(tmp_path, date(2026, 8, 13))
+    directory.mkdir(parents=True)
+    _write_collected_bundle(directory)
+    calls: list[object] = []
+
+    prepared = prepare_reference_data(
+        market_date=date(2026, 8, 13),
+        root=tmp_path,
+        stock_ids=("KRX:A00001",),
+        decision_at=datetime.fromisoformat("2026-08-14T09:00:00+09:00"),
+        environment={},
+        business_year=2026,
+        report_code="11012",
+        collect=lambda *args, **kwargs: calls.append(args) or {"status": "COMPLETE"},
+    )
+
+    assert calls == []
+    assert prepared.collected is False
+    assert prepared.references[0].free_float_ratio == Decimal("0.55")
+
+
+def test_prepare_reference_data_refuses_to_start_the_day_on_failed_collection(
+    tmp_path: Path,
+) -> None:
+    """수집이 끝나지 않으면 어제 기준정보로 조용히 대체하지 않고 멈춘다."""
+
+    def failing_collect(_arguments: Any, **_kwargs: Any) -> dict[str, object]:
+        return {"status": "BLOCKED", "blocker": "B-REFDATA-KEYS"}
+
+    with pytest.raises(RuntimeError, match="시작하지 않습니다"):
+        prepare_reference_data(
+            market_date=date(2026, 8, 17),
+            root=tmp_path,
+            stock_ids=("KRX:A00001",),
+            decision_at=datetime.fromisoformat("2026-08-17T09:00:00+09:00"),
+            environment={},
+            business_year=2026,
+            report_code="11012",
+            collect=failing_collect,
+        )

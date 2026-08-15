@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
 import pytest
@@ -14,7 +14,13 @@ from packages.domain import (
     ThemeMembershipSnapshot,
 )
 from packages.events import InMemoryEventStore
-from packages.pipeline import MarketDataPipeline, MarketPublishLoop, PublishedView
+from packages.pipeline import (
+    MarketDataPipeline,
+    MarketPublishLoop,
+    PublishedView,
+    TradingDayLoop,
+    session_close_at,
+)
 from packages.realtime import (
     InMemorySnapshotRepository,
     StockRealtimeUpdate,
@@ -39,13 +45,17 @@ class FakeClock:
         self.now += delta
 
 
-def _pipeline() -> MarketDataPipeline:
+def _pipeline(
+    market_date: date = MARKET_DATE,
+    *,
+    previous_close: Decimal = Decimal("10000"),
+) -> MarketDataPipeline:
     catalog = VersionedThemeCatalog(
         (
             ThemeMembershipSnapshot(
                 theme_id="thm_full",
                 version=MEMBERSHIP_VERSION,
-                effective_from=MARKET_DATE,
+                effective_from=market_date,
                 known_at=KNOWN_AT,
                 members=tuple(
                     ThemeMember(stock_id, MembershipRole.CORE)
@@ -57,9 +67,9 @@ def _pipeline() -> MarketDataPipeline:
     references = tuple(
         StockReference(
             stock_id=stock_id,
-            effective_for=MARKET_DATE,
+            effective_for=market_date,
             known_at=KNOWN_AT,
-            previous_adjusted_close=Decimal("10000"),
+            previous_adjusted_close=previous_close,
             listed_shares=1_000_000,
             free_float_ratio=Decimal("0.5"),
             free_float_validated=True,
@@ -68,7 +78,7 @@ def _pipeline() -> MarketDataPipeline:
         for stock_id in STOCK_IDS
     )
     return MarketDataPipeline(
-        market_date=MARKET_DATE,
+        market_date=market_date,
         stream_id="stream_loop_test",
         schema_version="2026-08-14.1",
         catalog=catalog,
@@ -81,17 +91,25 @@ def _pipeline() -> MarketDataPipeline:
     )
 
 
-def _update(stock_id: str, *, seconds: int) -> StockRealtimeUpdate:
-    at = BASE + timedelta(seconds=seconds)
+def _update(
+    stock_id: str,
+    *,
+    seconds: int,
+    market_date: date = MARKET_DATE,
+    current_price: Decimal = Decimal("10300"),
+) -> StockRealtimeUpdate:
+    at = datetime.combine(market_date, time(0, 0), tzinfo=UTC) + timedelta(
+        seconds=seconds
+    )
     return StockRealtimeUpdate(
-        message_id=f"msg_{stock_id}_{seconds}",
+        message_id=f"msg_{stock_id}_{market_date}_{seconds}",
         stock_id=stock_id,
-        market_date=MARKET_DATE,
+        market_date=market_date,
         source="test-session",
         source_sequence=seconds,
         occurred_at=at,
         received_at=at,
-        current_price=Decimal("10300"),
+        current_price=current_price,
         cumulative_trading_value=Decimal("1000000"),
     )
 
@@ -202,3 +220,161 @@ def test_market_close_is_evaluated_once_after_close_time() -> None:
     after = loop.tick()
     assert after.rankings.sequence == closed.rankings.sequence + 1
     assert {event.lifecycle_status.value for event in after.events} == {"CLOSED"}
+
+
+# --- 거래일 전환 (A-8) ---------------------------------------------------
+
+# 2026-08-14는 금요일, 08-15·08-16은 주말, 08-17은 월요일이다.
+FRIDAY = date(2026, 8, 14)
+SATURDAY = date(2026, 8, 15)
+MONDAY = date(2026, 8, 17)
+CLOSE_KST = time(15, 30)
+
+
+def _session_builder(
+    clock: FakeClock,
+    published: list[PublishedView],
+    built: list[date],
+    *,
+    previous_close_by_date: dict[date, Decimal] | None = None,
+    sessions: dict[date, MarketPublishLoop] | None = None,
+    pending: list[StockRealtimeUpdate] | None = None,
+):
+    def build(market_date: date) -> MarketPublishLoop:
+        built.append(market_date)
+        closes = previous_close_by_date or {}
+        loop = _loop(
+            _pipeline(
+                market_date,
+                previous_close=closes.get(market_date, Decimal("10000")),
+            ),
+            clock,
+            published,
+            pending=pending,
+            market_close_at=session_close_at(market_date, close_time=CLOSE_KST),
+        )
+        if sessions is not None:
+            sessions[market_date] = loop
+        return loop
+
+    return build
+
+
+def test_trading_day_loop_rolls_over_to_the_next_session() -> None:
+    """날짜가 바뀌면 이전 장을 닫고 그날 파이프라인으로 갈아끼운다."""
+
+    clock = FakeClock(datetime(2026, 8, 14, 1, 0, tzinfo=UTC))  # 금 10:00 KST
+    published: list[PublishedView] = []
+    built: list[date] = []
+    sessions: dict[date, MarketPublishLoop] = {}
+    loop = TradingDayLoop(
+        build_session=_session_builder(clock, published, built, sessions=sessions),
+        interval=timedelta(seconds=2),
+        clock=clock,
+    )
+
+    assert loop.tick() is not None
+    assert loop.market_date == FRIDAY
+    assert built == [FRIDAY]
+
+    # 주말에는 세션을 세우지 않는다.
+    clock.now = datetime(2026, 8, 15, 1, 0, tzinfo=UTC)
+    assert loop.tick() is None
+    assert loop.market_date == SATURDAY
+    assert loop.session is None
+    # 넘어가면서 금요일 장은 닫혔다.
+    assert sessions[FRIDAY].market_close_applied
+
+    # 월요일에는 그날 파이프라인을 새로 세운다.
+    clock.now = datetime(2026, 8, 17, 1, 0, tzinfo=UTC)
+    assert loop.tick() is not None
+    assert loop.market_date == MONDAY
+    assert built == [FRIDAY, MONDAY]
+
+
+def test_trading_day_loop_uses_the_new_days_previous_close() -> None:
+    """전환 뒤 수익률은 새 거래일 전일종가로 계산된다.
+
+    어제 전일종가(10,000)를 물고 있으면 같은 12,600원이 +26%로 잡힌다.
+    월요일 전일종가 12,000을 써야 +5%가 나온다.
+    """
+
+    clock = FakeClock(datetime(2026, 8, 14, 1, 0, tzinfo=UTC))
+    published: list[PublishedView] = []
+    built: list[date] = []
+    pending: list[StockRealtimeUpdate] = []
+    loop = TradingDayLoop(
+        build_session=_session_builder(
+            clock,
+            published,
+            built,
+            previous_close_by_date={
+                FRIDAY: Decimal("10000"),
+                MONDAY: Decimal("12000"),
+            },
+            pending=pending,
+        ),
+        interval=timedelta(seconds=2),
+        clock=clock,
+    )
+    loop.tick()
+
+    monday_open = datetime(2026, 8, 17, 1, 0, tzinfo=UTC)
+    clock.now = monday_open
+    pending.extend(
+        _update(
+            stock_id,
+            seconds=index + 1,
+            market_date=MONDAY,
+            current_price=Decimal("12600"),
+        )
+        for index, stock_id in enumerate(STOCK_IDS)
+    )
+    loop.tick()
+    # hysteresis activate_after(10초)가 지나야 ACTIVE가 되고 순위에 값이 실린다.
+    clock.now = monday_open + timedelta(seconds=20)
+    view = loop.tick()
+
+    assert view is not None
+    items = view.rankings.payload["items"]
+    assert isinstance(items, list) and len(items) == 1
+    assert items[0]["weightedReturn"] == pytest.approx(0.05)
+
+
+def test_trading_day_loop_closes_the_previous_session_without_a_late_tick() -> None:
+    """마감 시각 뒤 tick이 한 번도 없었어도 전환할 때 장이 닫힌다."""
+
+    clock = FakeClock(datetime(2026, 8, 14, 1, 0, tzinfo=UTC))
+    published: list[PublishedView] = []
+    built: list[date] = []
+    sessions: dict[date, MarketPublishLoop] = {}
+    loop = TradingDayLoop(
+        build_session=_session_builder(clock, published, built, sessions=sessions),
+        interval=timedelta(seconds=2),
+        clock=clock,
+    )
+    loop.tick()
+    assert not sessions[FRIDAY].market_close_applied
+
+    clock.now = datetime(2026, 8, 17, 1, 0, tzinfo=UTC)
+    loop.tick()
+
+    assert sessions[FRIDAY].market_close_applied
+
+
+def test_trading_day_loop_skips_a_day_the_calendar_says_is_closed() -> None:
+    """달력이 휴장으로 아는 평일에는 세션을 세우지 않는다."""
+
+    clock = FakeClock(datetime(2026, 8, 17, 1, 0, tzinfo=UTC))
+    published: list[PublishedView] = []
+    built: list[date] = []
+    loop = TradingDayLoop(
+        build_session=_session_builder(clock, published, built),
+        interval=timedelta(seconds=2),
+        clock=clock,
+        known_trading_days=lambda value: False if value == MONDAY else None,
+    )
+
+    assert loop.tick() is None
+    assert loop.session is None
+    assert built == []
