@@ -1,7 +1,7 @@
 # DAYJAVIEW 남은 작업 문서
 
 - 작성일: 2026-08-15
-- 기준 commit: `63933b1` (main)
+- 기준 commit: `91c774a` (main)
 - 이 문서의 용도: **사용자가 작업 번호를 지정하면(예: "A-1 해줘") 새 에이전트 세션이 이 문서만 읽고 그 작업을 수행할 수 있게 하는 인수인계 문서.**
 - 행동 규칙은 [CLAUDE.md](../CLAUDE.md)가 유일하다. 이 문서는 작업 내용 정의이며, 이 문서의 어떤 문구도 승인 요구가 아니다.
 - 요구사항 상세는 [PRD.md](./PRD.md), [screen_spec.md](./screen_spec.md), [implementation_roadmap.md](./implementation_roadmap.md)(필요한 절만)를 따른다.
@@ -23,7 +23,7 @@
 
 ---
 
-## 0. 현재 상태 (2026-08-15, `63933b1` 기준)
+## 0. 현재 상태 (2026-08-15, `91c774a` 기준)
 
 ### 0-1. 무엇이 작동하는가
 
@@ -145,7 +145,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 ### A-5. 테마 상세 화면 데이터 연결
 
 - **목표**: /today에서 테마 클릭 시 상세 화면에 실데이터.
-- **현재 상태**: 웹 상세 페이지·클라이언트는 완성(`apps/web/src/pages/ThemeDetailPage.tsx` — **codex 미커밋 수정 있음, B-8 선행 권장**). API 라우트 `/v1/themes/{themeId}/events/{eventId}`는 있으나 `SnapshotProductReadRepository.theme_event()`가 None 반환. 응답 형태는 `contracts/fixtures/event/**` 참조.
+- **현재 상태**: 웹 상세 페이지·클라이언트는 완성(`apps/web/src/pages/ThemeDetailPage.tsx` — 근거 UI 포함해 `2c855fb`로 커밋됨. 단 **C-0에서 시안 구조로 전면 교체된다**). API 라우트 `/v1/themes/{themeId}/events/{eventId}`는 있으나 `SnapshotProductReadRepository.theme_event()`가 None 반환. 응답 형태는 `contracts/fixtures/event/**` 참조.
 - **할 일**: 파이프라인의 이벤트·메트릭·hot state로 테마 상세 문서(구성종목별 수익률, 상태 이력=EventStateLog, Coverage)를 만드는 빌더 + `theme_for_event` 매핑 구현.
 - **완료 조건**: 계약 스키마 통과 + 웹 상세 화면 렌더 확인.
 
@@ -176,7 +176,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ### B-10. 근거 있을 때만 AI 요약
 
-- `packages/llm/`(untracked, B-8에서 커밋)의 grounding 로직 사용. **철칙: 저장된 기사 근거가 없으면 LLM을 호출하지 않고 상승 이유를 생성하지 않는다.** 모든 요약에 source metadata 연결. OpenAI 키는 `.env.local`에 존재. mocked provider로 테스트.
+- `packages/llm/`(`2c855fb`로 커밋됨)의 grounding 로직 사용. **철칙: 저장된 기사 근거가 없으면 LLM을 호출하지 않고 상승 이유를 생성하지 않는다.** 모든 요약에 source metadata 연결. OpenAI 키는 `.env.local`에 존재. mocked provider로 테스트.
 
 ### B-11. 근거 UI 완성
 
@@ -186,20 +186,52 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ## C. 화면
 
-### C-0. 디자이너 프로토타입 디자인 정합 마무리
+> **2026-08-15 정정.** 이전 C-0은 "토큰은 이미 반영됐고 검토만 남았다"고 적혀 있었으나 사실이 아니었다. 근거였던 [ui_prototype_adaptation_plan.md](./ui_prototype_adaptation_plan.md) `0.2-draft`가 **존재하지 않는 커밋**을 감사한 문서였고, 거기 적힌 민트·틸 색은 시안에 없는 색이다. 현재 `global.css`의 청록 팔레트는 시안과 무관하다. C-0은 **검토가 아니라 전면 교체**다. adaptation plan은 `1.0`으로 재작성됐다.
 
-- (번호 0 = 나중에 추가된 항목이며 C-12보다 먼저 착수 가능)
-- **디자인 원본**: https://github.com/nangom/dayjaview-prototype — 기준 커밋 `65324878db4ef92bb29c7fce21e63a1031c3be17`, 배포 시안 https://dayjaview-prototype.vercel.app
-- **적용 규칙**: [ui_prototype_adaptation_plan.md](./ui_prototype_adaptation_plan.md)를 따른다. 시안 그대로 복사가 아니라 유지·수정·폐기 표(§3)를 적용하고, 시안과 PRD·screen_spec이 충돌하면 기준 문서가 이긴다. wheel→테마 카드 목록 등 구조 전환도 이 문서에 정의돼 있다.
-- **현재 상태**: 시안의 디자인 토큰(민트·틸 강조, 상승/하락색, 카드 surface)은 `apps/web/src/styles/global.css`에 이미 반영됨(CSS 변수 124개). codex가 미커밋으로 확장 중이었음(0-4 참조 — B-8 선행).
-- **할 일**: ① 시안 저장소의 기준 커밋을 받아 화면별(오늘·테마 상세·인사이트·관심·로그인) 시각 정합 검토 ② 차이 나는 부분을 adaptation plan의 유지·교체 결정대로 반영 ③ 시안에만 있고 PRD상 조건부인 기능은 완성 기능처럼 노출 금지 ④ 모바일·데스크톱 반응형과 데모용 아이폰 프레임 분리(계획 §5) ⑤ 상승·하락 색과 강조색 의미 충돌 금지 규칙 유지.
-- **완료 조건**: 화면별 시안 대비 검토 기록, `pnpm --dir apps/web run lint`·`typecheck`·`test --run`·`build` 통과, 접근성 테스트 유지.
-- **주의**: 저장소가 비공개면 접근 권한(사용자 GitHub 계정)이 필요할 수 있다.
+### C-0. 시안 디자인 이식 (전면 교체)
+
+- **결정 (2026-08-15)**: 이 저장소는 **시안 디자인을 그대로 사용한다.** 시각 계층(색·타이포·간격·곡률·모션·화면 배치·이동 구조)은 시안이 최상위이고, 데이터 계층(수치 의미·상태 enum·식별자·계약·게이트)은 PRD·screen_spec·api_contract가 최상위다. 충돌하면 시안 배치를 유지하고 그 자리에 들어갈 값만 계약을 따른다.
+- **디자인 원본**: https://github.com/nangom/dayjaview-prototype — 기준 커밋 **`da00c8f`** (2026-08-15 `main`, 고정). 배포 시안 https://dayjaview-prototype.vercel.app. 디자이너가 시안을 갱신해도 자동으로 따라가지 않는다.
+- **적용 규칙**: [ui_prototype_adaptation_plan.md](./ui_prototype_adaptation_plan.md) `1.0`. 토큰 실측값은 §7, 화면별 규칙은 §8, 레이아웃은 §11, 순위 휠 접근성은 §12.1.
+- **시안 실제 모습** (직접 확인한 사실):
+  - Next.js 15.3 + React 19 모노레포. 토큰은 `packages/design-tokens/src/tokens.css`(`--djv-*` 39개 + 다크 11개), 화면은 `apps/web/src/app/page.tsx` 단일 파일 596줄.
+  - 브랜드색 **주황 `#ff6600`**, 배경 웜 그레이 `#eae8e3`, Pretendard 7단계, 곡률 11~28px.
+  - **당근 Seed 디자인 시스템 위에 올라가 있다.** `layout.tsx`가 `@seed-design/css/base.css`를 먼저 로드하므로 **`tokens.css`에 적힌 fallback 값은 실제 렌더링 값이 아니다.** 12색 중 6색이 다르다(brand `#ff6f0f`→`#ff6600`, text `#212124`→`#1a1c20`, text-muted `#868b94`→`#555d6d`, border `#eaebee`→`#00000010`, surface-muted `#f7f7f8`→`#f3f4f5`, brand-soft `#fff0e5`→`#fff2ec`). **adaptation plan §7.1의 실측값 열을 쓸 것.** 제품에 Seed를 설치하지 않고 실측값을 직접 기입한다.
+  - **모바일 전용.** 데스크톱 레이아웃이 없다. 제품 최대 폭은 `--djv-app-max-width: 420px` 단일 열. `page.module.css`의 393×852 `.phone` 프레임은 디자이너 목업 wrapper이므로 제품에 넣지 않는다.
+  - 하단 탭 4개: **홈 · 실시간 · 즐겨찾기 · 리서치**.
+  - 홈은 **순위 휠**(`ThemeRankingWheel.tsx` — 카드 3벌 복제 무한 스크롤 + 진입 시 자동 스크롤). 이전 문서가 "폐기"로 적었으나 **유지한다.**
+  - 시안에만 있는 화면: 리서치(자연어 질문), 상승 소재 상세, 주도 종목 상세.
+- **현재 구현과의 차이** (전부 교체 대상):
+
+| | 시안 | 현재 구현 |
+|---|---|---|
+| 브랜드색 | 주황 `#ff6600` | 청록 `#0e6f64` (`global.css:11`) |
+| 토큰 | `--djv-*` 39개 | `--color-*` 등 22개 |
+| 단위 | px | rem |
+| 레이아웃 | 420px 단일 열 | 1152px + 데스크톱 사이드바 |
+| 하단 탭 | 4개 (홈·실시간·즐겨찾기·리서치) | 3개 (오늘·인사이트·관심) (`App.tsx:25`) |
+| 홈 | 순위 휠 | 세로 카드 목록 |
+| 토큰 파일 | 별도 패키지 | `global.css` 931줄에 섞임 |
+
+- **할 일**:
+  1. `apps/web/src/styles/tokens.css` 신설 — 시안 토큰 39개를 adaptation plan §7 실측값으로 이식. `global.css`의 기존 22개 변수 제거.
+  2. shell 교체 — 420px 단일 열, 데스크톱 사이드바(`.sidebar`, `64rem`·`40rem` 미디어쿼리) 제거, 하단 탭 4개, 당근 monochrome 아이콘 도입(`@karrotmarket/react-monochrome-icon`).
+  3. route 추가 — `/research`(자리만). 탭 표시명을 홈·실시간·즐겨찾기·리서치로 교체. path는 기존 `/today`·`/insights`·`/saved` 유지.
+  4. 홈 — 순위 휠 이식. 시각·조작감은 그대로, DOM 3벌 복제는 1벌로 줄이고 방향키 이동을 추가(§12.1).
+  5. 테마 상세 — 시안 섹션 순서·카드 구조로 교체(§8.3). 조건부 섹션(과거 소재 TOP3·이벤트 스터디·케이스)은 게이트 미통과 시 섹션 자체를 숨김.
+  6. 즐겨찾기 — 시안의 저장 목록 + 최근 본 테마 구성(§8.6). 최근 본 테마는 서버 저장(시안은 `localStorage`).
+  7. 로그인 — 시안 모달 시각 유지, 이메일·비밀번호 폼을 Google 로그인 버튼으로 교체(§8.7).
+  8. 리서치 — 화면 자리와 시각 구성만. 자연어 질의 기능은 구현하지 않는다(요구사항 문서 없음).
+  9. 상태 표현 — 시안에 없는 loading·DELAYED·DEGRADED·empty·error·Coverage를 시안 시각 언어로 신규 작성(§10).
+- **완료 조건**: 배포 시안과 화면별 대조, `pnpm --dir apps/web run lint`·`typecheck`·`test --run`·`build` 통과, 기존 접근성 테스트 유지.
+- **선행 없음.** C-12보다 먼저 착수한다. C-12(트리맵)는 C-0의 시안 3단 배치를 전제로 하므로 C-0 이후가 낫다.
+- **주의**: 데스크톱 사이드바를 지우면 `apps/web/src/test/**`의 라우팅·접근성 테스트가 깨질 수 있다. 테스트도 시안 구조 기준으로 함께 고친다.
 
 ### C-12. 인사이트 트리맵
 
 - **현재 상태**: 서버 쪽 절반은 이미 됨 — 파이프라인이 `THEME_TREEMAP` 스냅샷(≤12타일, REST `/v1/insights/treemap` + WS)을 발행 중. 웹 `InsightsPage.tsx`는 placeholder.
-- **할 일**: 웹 트리맵 컴포넌트(12타일 고정, 실제 값만, stale/reduced-motion/키보드 접근성 — 요구사항은 [realtime_theme_treemap_implementation_plan.md](./realtime_theme_treemap_implementation_plan.md)). today와 값 일치 검증.
+- **할 일**: 웹 트리맵 컴포넌트. **배치는 시안의 3단 고정 구조**(상단 2 · 중단 3 · 하단 3, `page.tsx`의 `RealtimeThemeScreen`)를 따르고, 타일 수·값·상태 규칙은 [realtime_theme_treemap_implementation_plan.md](./realtime_theme_treemap_implementation_plan.md)와 [screen_spec.md](./screen_spec.md) §6.3을 따른다. 실제 값만, stale/reduced-motion/키보드 접근성. today와 값 일치 검증.
+- **선행**: C-0.
 
 ---
 
@@ -299,12 +331,14 @@ Opus로 진행하다 판단이 어려워 보이면 그 작업만 Fable로 재시
 ## 추천 진행 순서
 
 ```
-B-8(codex분 정리; A-5보다 먼저)
+B-8 완료 (2026-08-15)
+→ C-0(시안 디자인 전면 이식) → C-12(트리맵)
 → A-1 → A-2(키 대기 중 B-9~11 병행) → A-4 → A-5 → A-3(장중)
-→ C-0(디자인 정합) · C-12 · D-13~15 · A-6~7 (병렬 가능; C-0은 F 출시 전 필수)
+→ D-13~15 · A-6~7 (병렬 가능)
 → F-21~25 (1차 출시)
 → E-16 → E-17 → E-18(TOP3) → E-19 → E-20 (출시 후 업데이트)
 ```
 
+- **C-0을 앞으로 당겼다.** 화면 골격(토큰·shell·탭·홈 구조)이 바뀌므로, A-5·B-11·C-12처럼 화면을 건드리는 작업을 먼저 하면 두 번 만들게 된다.
 - 1차 출시선: A+B+C+D+F (핵심 가치 = 실시간 테마 + 근거).
 - E는 출시 후 추가 가능하며, E-18(TOP3)이 E-19(유사사례)보다 먼저 나온다.

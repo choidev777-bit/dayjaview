@@ -16,7 +16,7 @@
 1. 디자이너의 `nangom/dayjaview-prototype` 저장소와 기준 commit은 변경하지 않는 참고 원본으로 유지한다.
 2. 현재 `C:\dayjaview` 작업물을 팀 소유의 새로운 비공개 production GitHub 저장소로 승격한다.
 3. 프론트엔드·백엔드·계약·infra·운영 문서·연구 코드는 ADR-001의 단일 monorepo에 둔다.
-4. 디자이너 원본에서는 승인된 시각 자산·token·layout·motion만 선별 이식한다. `App.jsx`, 하드코딩 데이터와 기존 화면 구조를 제품 기반으로 사용하지 않는다.
+4. 디자이너 원본의 시각 자산·token·layout·motion·화면 구성을 그대로 이식한다. 하드코딩 데이터와 화면 전환 방식은 제품 계약·router로 교체한다. 이식 범위와 기준 커밋은 [ui_prototype_adaptation_plan.md](../ui_prototype_adaptation_plan.md)를 따른다.
 5. 제품 기능은 production 저장소에서만 구현하며 두 저장소에 같은 기능을 병렬 구현하지 않는다.
 6. 저장소 생성 시 실제 GitHub owner·URL, 관리자, reviewer, branch protection, CI와 OCI 배포 권한을 설정한다.
 7. production secret, `.env.local`, SSH private key, browser storage state, 운영 데이터는 commit하지 않는다.
