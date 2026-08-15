@@ -28,6 +28,12 @@ from .existing_collection import (
     machine_quality_report,
 )
 from .importer import ImportResult, import_bundle
+from .increment import (
+    INCREMENT_DATASET,
+    build_daily_increment_bundle,
+    classify_collection_error,
+    import_daily_increment,
+)
 from .models import ImportBundle
 from .parser import load_committed_fixture, parse_fixture_payload
 from .policy import (
@@ -48,6 +54,7 @@ __all__ = [
     "DataRightsBlockedError",
     "ExistingCollectionPolicy",
     "FixtureValidationError",
+    "INCREMENT_DATASET",
     "ImportBundle",
     "ImportResult",
     "InfostockAccessPolicy",
@@ -55,10 +62,13 @@ __all__ = [
     "PostgresInfostockStore",
     "SnapshotConflictError",
     "TemporalConflictError",
+    "build_daily_increment_bundle",
+    "classify_collection_error",
     "collect_daily_api_backfill",
     "collect_daily_browser_backfill",
     "human_quality_report",
     "import_bundle",
+    "import_daily_increment",
     "load_committed_fixture",
     "load_daily_api_backfill",
     "load_existing_collection",

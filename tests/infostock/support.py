@@ -6,7 +6,7 @@ import copy
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from packages.infostock.errors import SnapshotConflictError
@@ -146,8 +146,10 @@ class _ReferenceTransaction:
         run_id: int,
         bundle: ImportBundle,
         snapshot_ids: dict[tuple[str, str | None], int],
+        *,
+        missing_window: tuple[date, date] | None = None,
     ) -> ApplyCounts:
-        del snapshot_ids
+        del snapshot_ids, missing_window
         self.state.checkpoints.add(run_id)
         return ApplyCounts(
             daily_list_entries=len(bundle.daily.entries),
@@ -193,6 +195,47 @@ class _ReferenceTransaction:
             history_revisions_created=counts.history_revisions,
             history_leaders_created=counts.history_leaders,
             history_memberships_created=counts.history_memberships,
+            quality_issues_created=counts.quality_issues,
+            daily_post_revisions_created=counts.daily_post_revisions,
+        )
+        self.state.runs[bundle.input_hash] = stored
+        return stored
+
+    def create_daily_increment_run(self, bundle: ImportBundle) -> int:
+        return self.create_import_run(bundle)
+
+    def complete_daily_increment_run(
+        self,
+        run_id: int,
+        bundle: ImportBundle,
+        *,
+        snapshots_linked: int,
+        counts: ApplyCounts,
+    ) -> StoredImport:
+        status = (
+            "SUCCEEDED" if bundle.daily.component_status == "COMPLETE" else "PARTIAL"
+        )
+        stored = StoredImport(
+            run_id=run_id,
+            status=status,
+            core_status="SKIPPED",
+            daily_status=bundle.daily.component_status,
+            blockers=bundle.daily.blockers,
+            themes_imported=0,
+            snapshots_linked=snapshots_linked,
+            history_rows_seen=0,
+            related_stocks_seen=0,
+            leaders_seen=0,
+            historical_memberships_seen=0,
+            daily_list_entries_seen=len(bundle.daily.entries),
+            daily_posts_seen=len(bundle.daily.posts),
+            daily_bodies_seen=bundle.daily.body_count,
+            daily_relations_seen=bundle.daily.relation_count,
+            theme_revisions_created=0,
+            membership_revisions_created=0,
+            history_revisions_created=0,
+            history_leaders_created=0,
+            history_memberships_created=0,
             quality_issues_created=counts.quality_issues,
             daily_post_revisions_created=counts.daily_post_revisions,
         )

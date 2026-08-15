@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
+from datetime import date
 from typing import Protocol
 
 from .models import ImportBundle, QualityIssue, RawSnapshot, ThemeDetail, ThemeIndexItem
@@ -98,6 +99,8 @@ class ImportTransaction(Protocol):
         run_id: int,
         bundle: ImportBundle,
         snapshot_ids: dict[tuple[str, str | None], int],
+        *,
+        missing_window: tuple[date, date] | None = None,
     ) -> ApplyCounts: ...
 
     def record_quality_issues(
@@ -107,6 +110,17 @@ class ImportTransaction(Protocol):
     ) -> int: ...
 
     def complete_import_run(
+        self,
+        run_id: int,
+        bundle: ImportBundle,
+        *,
+        snapshots_linked: int,
+        counts: ApplyCounts,
+    ) -> StoredImport: ...
+
+    def create_daily_increment_run(self, bundle: ImportBundle) -> int: ...
+
+    def complete_daily_increment_run(
         self,
         run_id: int,
         bundle: ImportBundle,

@@ -34,7 +34,10 @@ from .support import move_observation_time, rehash_fixture
 TEST_DSN = os.environ.get("INFOSTOCK_TEST_DSN")
 COLLECTION_DIR = os.environ.get("INFOSTOCK_EXISTING_IMPORT_DIR")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-MIGRATION = REPOSITORY_ROOT / "infra/migrations/0001_infostock_store.sql"
+MIGRATIONS = tuple(
+    REPOSITORY_ROOT / "infra/migrations" / name
+    for name in ("0001_infostock_store.sql", "0005_infostock_increment.sql")
+)
 FIXTURE = Path(__file__).parent / "fixtures" / "infostock-280.synthetic.json"
 
 pytestmark = pytest.mark.skipif(
@@ -222,7 +225,8 @@ def test_postgres16_actual_full_import_daily_boundary_and_revision_contract() ->
         )
         if not role_exists:
             migration_connection.execute("CREATE ROLE dayjaview_infostock_writer NOLOGIN")
-        migration_connection.execute(MIGRATION.read_text(encoding="utf-8"))
+        for migration in MIGRATIONS:
+            migration_connection.execute(migration.read_text(encoding="utf-8"))
         privileges = migration_connection.execute(
             """
             SELECT has_schema_privilege(

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Protocol, cast
 
 from .errors import SnapshotConflictError, TemporalConflictError
@@ -1165,9 +1165,12 @@ class _PostgresImportTransaction:
         incoming_keys: set[str],
         observed_at: datetime,
         snapshot_id: int,
+        *,
+        window: tuple[date, date] | None = None,
     ) -> int:
-        self._cursor.execute(
-            """
+        # 증분 run은 수집 구간 안의 게시물만 관측했으므로 구간 밖 visibility는
+        # 판단하지 않는다. window 없는 FULL run은 전체를 본다.
+        query = """
             SELECT post.daily_post_id, post.source_post_key,
                    revision.daily_post_revision_id, revision.revision_no,
                    revision.title, revision.published_date,
@@ -1179,9 +1182,13 @@ class _PostgresImportTransaction:
                 ON revision.daily_post_id = post.daily_post_id
                AND revision.observed_to IS NULL
              WHERE post.visibility_status = 'VISIBLE'
-             FOR UPDATE OF post, revision
             """
-        )
+        params: tuple[object, ...] = ()
+        if window is not None:
+            query += " AND post.published_date BETWEEN %s AND %s"
+            params = (window[0], window[1])
+        query += " FOR UPDATE OF post, revision"
+        self._cursor.execute(query, params or None)
         created = 0
         for row in self._cursor.fetchall():
             key = str(row[1])
@@ -1247,9 +1254,27 @@ class _PostgresImportTransaction:
         run_id: int,
         bundle: ImportBundle,
         snapshot_ids: dict[tuple[str, str | None], int],
+        *,
+        missing_window: tuple[date, date] | None = None,
     ) -> ApplyCounts:
         daily = bundle.daily
         if not daily.posts:
+            empty_sweep_revisions = 0
+            if daily.coverage_complete and missing_window is not None:
+                # 구간을 다 봤는데 게시물이 없으면, 구간 안에 남아 있던
+                # VISIBLE 게시물은 사라진 것이다.
+                empty_list_ids = [
+                    value
+                    for (page_type, _), value in snapshot_ids.items()
+                    if page_type == "DAILY_LIST"
+                ]
+                if empty_list_ids:
+                    empty_sweep_revisions = self._mark_missing_daily_posts(
+                        set(),
+                        min(snapshot.collected_at for snapshot in daily.pages),
+                        empty_list_ids[0],
+                        window=missing_window,
+                    )
             self._cursor.execute(
                 """
                 INSERT INTO ingest.infostock_daily_backfill_checkpoints (
@@ -1271,7 +1296,7 @@ class _PostgresImportTransaction:
                     list(daily.blockers),
                 ),
             )
-            return ApplyCounts()
+            return ApplyCounts(daily_post_revisions=empty_sweep_revisions)
         list_snapshot_ids = [
             value for (page_type, _), value in snapshot_ids.items() if page_type == "DAILY_LIST"
         ]
@@ -1338,7 +1363,10 @@ class _PostgresImportTransaction:
         list_entries_created = self._cursor.rowcount
         if daily.coverage_complete:
             revisions += self._mark_missing_daily_posts(
-                set(post_ids), observed_at, list_snapshot_id
+                set(post_ids),
+                observed_at,
+                list_snapshot_id,
+                window=missing_window,
             )
         self._cursor.execute(
             """
@@ -1543,3 +1571,132 @@ class _PostgresImportTransaction:
             (run_id,),
         )
         return _stored(_required_row(self._cursor, "read completed import"))
+
+    def create_daily_increment_run(self, bundle: ImportBundle) -> int:
+        """Daily만 갱신하는 INCREMENTAL run. theme 컴포넌트는 SKIPPED로 남긴다."""
+
+        self._cursor.execute(
+            """
+            INSERT INTO ingest.infostock_import_runs (
+                input_hash, dataset_hash, dataset, source_provider,
+                parser_version, rights_scope, run_type, status,
+                core_status, daily_status, blockers, expected_theme_count
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, 'INCREMENTAL', 'RUNNING',
+                    'SKIPPED', %s, %s, 0)
+            RETURNING import_run_id
+            """,
+            (
+                bundle.input_hash,
+                bundle.dataset_hash,
+                bundle.dataset,
+                bundle.source_provider,
+                bundle.parser_version,
+                bundle.rights_scope,
+                bundle.daily.component_status,
+                list(bundle.daily.blockers),
+            ),
+        )
+        return int(_required_row(self._cursor, "create increment run")[0])
+
+    def complete_daily_increment_run(
+        self,
+        run_id: int,
+        bundle: ImportBundle,
+        *,
+        snapshots_linked: int,
+        counts: ApplyCounts,
+    ) -> StoredImport:
+        daily = bundle.daily
+        status = "SUCCEEDED" if daily.component_status == "COMPLETE" else "PARTIAL"
+        quality_summary = {
+            "dailyFeaturedTheme": {
+                "coverageComplete": daily.coverage_complete,
+                "nextPage": daily.next_page,
+            }
+        }
+        human_summary = (
+            f"DailyFeaturedTheme 증분 {daily.component_status}: 목록 "
+            f"{len(daily.entries):,}건, 본문 {daily.body_count:,}건, revision "
+            f"{counts.daily_post_revisions:,}건; blocker="
+            f"{','.join(daily.blockers) or '없음'}."
+        )
+        self._cursor.execute(
+            """
+            UPDATE ingest.infostock_import_runs
+               SET status = %s, finished_at = now(),
+                   daily_status = %s, blockers = %s,
+                   snapshots_linked = %s,
+                   daily_list_entries_seen = %s, daily_posts_seen = %s,
+                   daily_bodies_seen = %s, daily_relations_seen = %s,
+                   quality_issues_created = %s,
+                   daily_post_revisions_created = %s,
+                   quality_summary = %s::jsonb, human_summary = %s
+             WHERE import_run_id = %s AND status = 'RUNNING'
+               AND run_type = 'INCREMENTAL'
+            """,
+            (
+                status,
+                daily.component_status,
+                list(daily.blockers),
+                snapshots_linked,
+                len(daily.entries),
+                len(daily.posts),
+                daily.body_count,
+                daily.relation_count,
+                counts.quality_issues,
+                counts.daily_post_revisions,
+                canonical_json(quality_summary),
+                human_summary,
+                run_id,
+            ),
+        )
+        if self._cursor.rowcount != 1:
+            raise RuntimeError(
+                "증분 run 완료 상태 전이가 정확히 한 row에 적용되지 않았습니다."
+            )
+        self._cursor.execute(
+            """
+            INSERT INTO ingest.infostock_sync_components (
+                import_run_id, component, status, expected_count,
+                discovered_count, imported_count, page_count, body_count,
+                relation_count, pagination_range, blockers,
+                quality_summary, human_summary
+            ) VALUES (%s, 'DAILY_FEATURED_THEME', %s, NULL, %s, %s, %s, %s, %s,
+                      %s::jsonb, %s, %s::jsonb, %s)
+            """,
+            (
+                run_id,
+                daily.component_status,
+                len(daily.entries),
+                len(daily.posts),
+                len(
+                    [
+                        page
+                        for page in daily.pages
+                        if page.page_type == "DAILY_LIST"
+                    ]
+                ),
+                daily.body_count,
+                daily.relation_count,
+                canonical_json(
+                    {
+                        "firstPage": daily.first_page,
+                        "lastPage": daily.last_page,
+                        "nextPage": daily.next_page,
+                        "coverageComplete": daily.coverage_complete,
+                    }
+                ),
+                list(daily.blockers),
+                canonical_json(quality_summary["dailyFeaturedTheme"]),
+                (
+                    f"DailyFeaturedTheme 증분 {daily.component_status}: 목록 "
+                    f"{len(daily.entries):,}건, 본문 {daily.body_count:,}건."
+                ),
+            ),
+        )
+        self._cursor.execute(
+            f"SELECT {_RUN_RESULT_COLUMNS} FROM ingest.infostock_import_runs WHERE import_run_id = %s",
+            (run_id,),
+        )
+        return _stored(_required_row(self._cursor, "read completed increment"))
