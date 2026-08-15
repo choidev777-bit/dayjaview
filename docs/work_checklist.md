@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-15 · 기준 commit `5273e9d` · `uv run pytest -q` 444 passed·6 skipped
+- **마지막 갱신**: 2026-08-15 · 기준 commit `a52b12c` · `uv run pytest -q` 446 passed·6 skipped
 
 ## 요약
 
@@ -33,9 +33,10 @@
   - `theme_detail` 빌더 + `theme_for_event` 매핑. 계약 스키마 통과 + 브라우저 렌더 확인.
 - [ ] **A-6** 랭킹 부가 지표 살리기 — `rankChange60s: null`, `badges: []` 유지 중. 분단위 거래대금 이력 축적이 선행.
 - [ ] **A-7** 관심 목록에 실데이터 연결 — `InMemoryTargetCatalog`가 fixture 타깃만 안다. `SavedCurrentState` 미채움.
-- [ ] **A-8** 거래일 전환과 매일 기준정보 수집 — ②③④는 2026-08-15 `5273e9d`로 완료. `packages/pipeline/trading_day.py`(거래일 판정), `TradingDayLoop`(날짜 전환·비거래일 미가동·전환 시 이전 장 마감), `prepare_reference_data`(그날 수집본 없으면 수집, 실패 시 그날 계산 미시작).
-  - **남은 것 ① 장중 기준가**: 장중에는 당일 KRX 일별매매 row가 없어 **전일종가 0/2,411**, 기업행위 원천이 없어 **기업행위 해소 1/2,411**이다(2026-08-15 실측). 이대로면 장중 내내 전 테마 Coverage INSUFFICIENT로 순위가 빈다. 해법은 확인됨 — 키움 체결에 FID 11(전일대비)이 실제로 오고 `현재가 − 전일대비 = 기준가`이며 권리락도 자동 반영된다. `packages/adapters/kiwoom/normalizer.py`가 FID 11을 읽지 않아 못 쓰고 있다(fixture에 11이 없어 여태 드러나지 않음). A-3와 같은 파일이라 A-3 종료 후 착수.
-  - 배선 잔여: `apps/api/serve.py`가 아직 `MarketPublishLoop`을 직접 쓴다. `TradingDayLoop`으로 바꾸는 것은 ①과 함께 한다.
+- [ ] **A-8** 거래일 전환과 매일 기준정보 수집 — 계산 경로는 전부 완료. **`serve.py` 배선 1건만 남았다.**
+  - ①(장중 기준가) 2026-08-15 `a52b12c`. 장중에는 당일 KRX row가 없어 전일종가 0/2,411·기업행위 해소 1/2,411이었다(실측). 키움 0B의 FID 11(전일대비)과 ka10095의 `base_pric`로 그날 기준가를 얻고, 전일 종가가 빈 종목에만 채운다(기존 값은 안 덮고 known_at이 늦은 기준정보를 덧붙임). 권리락은 키움이 조정된 기준가로 전일대비를 계산해 자동 반영된다. 2026-08-14 실시장 녹화분 체결 287,753건 중 287,752건 산출, 등락률 교차 검산 불일치 0건.
+  - ②③④⑤ 2026-08-15 `5273e9d`. `trading_day.py`(거래일 판정), `TradingDayLoop`(날짜 전환·비거래일 미가동·전환 시 이전 장 마감), `prepare_reference_data`(그날 수집본 없으면 수집, 실패 시 그날 계산 미시작).
+  - **남은 것 — `apps/api/serve.py` 배선**: `serve_live_api`가 아직 `MarketPublishLoop`을 직접 쓴다. `TradingDayLoop`으로 바꾸려면 `build_live_environment`를 "앱 1회 조립"과 "거래일별 세션 조립"으로 쪼개야 하고, 그 과정에 설계 판단이 두 개 있다 — ⓐ `LiveMarketRunner`가 키움 WS 연결과 조건검색 후보 상태를 쥐고 있어 **날짜가 바뀔 때 연결을 끊고 다시 맺을지** ⓑ `SnapshotProductReadRepository`가 파이프라인 객체를 잡고 있어 **REST·WS가 새 세션을 보게 할 포인터**(`SnapshotSource` 프로토콜만 만족하면 되므로 얇은 forwarding 객체면 충분)를 어디에 둘지. A-3 ③ 장중 검증이 이 경로를 실제로 통과시키므로 그 결과를 보고 정하는 편이 낫다.
 
 ## B. "왜 오르는지" 뉴스 근거
 

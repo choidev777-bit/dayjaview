@@ -180,13 +180,14 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
   3. `market_date`를 상수에서 빼고 거래일 달력으로 결정한다. 달력은 `derive_trading_calendar`가 KRX 응답 유무로 만든다. 직전 거래일 판정에 lookback이 필요하다(A-2에서 10일로 검증).
   4. 거래일이 바뀌면 새 기준정보를 읽어 파이프라인을 재구성한다. Event·스냅샷 저장소는 유지한다.
   5. 비거래일에는 파이프라인을 세우지 않고 그 상태를 화면에 표시한다.
-- **진행 (2026-08-15, `5273e9d`)**: 2·3·4·5 완료.
+- **진행 (2026-08-15)**: 1은 `a52b12c`, 2·3·4·5는 `5273e9d`로 완료. 계산 경로는 다 뚫렸고 `apps/api/serve.py` 배선 1건만 남았다.
+  - 1 — `MarketObservation`·`StockRealtimeUpdate`에 `base_price`를 싣고, 파이프라인이 전일 종가가 **빈 종목에만** 채운다. 기존 값은 덮지 않고 `known_at`이 늦은 기준정보를 덧붙여 point-in-time 선택이 판단하게 한다. 2026-08-14 실시장 녹화분 체결 287,753건 중 287,752건에서 기준가 산출, FID 12(등락률) 교차 검산 불일치 0건.
+  - **배선 잔여**: `serve_live_api`가 아직 `MarketPublishLoop`을 직접 쓴다. `TradingDayLoop`으로 바꾸려면 `build_live_environment`를 "앱 1회 조립"과 "거래일별 세션 조립"으로 쪼개야 한다. 설계 판단 둘 — ⓐ `LiveMarketRunner`가 키움 WS 연결과 조건검색 후보 상태를 쥐고 있어 날짜 전환 때 연결을 끊고 다시 맺을지, ⓑ `SnapshotProductReadRepository`가 파이프라인을 잡고 있어 REST·WS가 새 세션을 보게 할 포인터를 어디에 둘지(`SnapshotSource` Protocol만 만족하면 되므로 얇은 forwarding 객체로 충분). **A-3 ③ 장중 검증이 이 경로를 실제로 통과시키므로 그 결과를 보고 정하는 편이 낫다.**
   - `packages/pipeline/trading_day.py` — KST 거래일 판정. 주말 확정, 달력이 아는 과거 날짜는 그 판정, 나머지 평일은 거래일로 가정. **KRX에 달력 endpoint가 없고 일별매매가 마감 후에 나와 장 시작 전에 오늘이 공휴일인지 원천으로 확인할 방법이 없다.** 실제 휴장이면 장중 이벤트가 오지 않아 게이트웨이 health가 드러낸다.
   - `TradingDayLoop`(`packages/pipeline/runner.py`) — 날짜가 바뀌면 이전 장을 닫고 그날 파이프라인으로 교체, 비거래일에는 세우지 않음. `MarketPublishLoop.close()`를 더해 마감 시각 뒤 tick이 없었어도 전환 시 마감 시각으로 닫는다.
   - `prepare_reference_data`(`packages/pipeline/daily.py`) — 그날 수집본이 없으면 `collect_daily` 실행, `COMPLETE`가 아니면 예외로 그날 계산 미시작.
-  - **미착수 1**, 그리고 `apps/api/serve.py`가 아직 `MarketPublishLoop`을 직접 쓴다. 배선은 1과 같은 파일들을 건드리므로 함께 한다.
-- **완료 조건**: 가짜 클록으로 장 마감 → 다음 거래일 전환 → 새 전일종가로 계산되는 테스트 통과(완료), 비거래일 건너뜀 테스트(완료), **그리고 장중 시점에 유동시총이 실제로 계산되는 것**(미완).
-- **선행**: A-2(완료). **A-4와 맞물린다** — A-4가 하루 안의 상시 루프를 만들었고 이 항목이 그 위에 날짜 축을 얹는다. **1은 A-3 종료 후.**
+- **완료 조건**: 가짜 클록으로 장 마감 → 다음 거래일 전환 → 새 전일종가로 계산되는 테스트 통과(완료), 비거래일 건너뜀 테스트(완료), 장중 기준가로 유동시총이 계산되는 테스트 통과(완료), **그리고 `serve_live_api`가 `TradingDayLoop`으로 도는 것**(미완).
+- **선행**: A-2(완료). **A-4와 맞물린다** — A-4가 하루 안의 상시 루프를 만들었고 이 항목이 그 위에 날짜 축을 얹는다.
 - **왜 필요한가**: 지금 배포하면 ① 장중 내내 순위가 비고 ② 다음 날 어제 전일종가로 계산해 모든 수익률이 틀린다. 둘 다 조용히 틀리므로 화면만 봐서는 알 수 없다. F 출시 전 필수.
 
 ---
