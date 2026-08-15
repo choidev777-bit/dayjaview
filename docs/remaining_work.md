@@ -127,11 +127,14 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 - **현재 상태**: 어댑터·point-in-time 저장 로직은 `packages/reference-data/**`에 구현·fixture 검증 완료. live 미검증(구 블로커명 B-REFDATA-KEYS). 키 이름은 `.env.example` 참조.
 - **할 일**: 사용자가 키 발급 후 → live 호출로 소량 검증 → `apps/worker-batch/reference-data/` 경로로 적재 → 파이프라인 `references` 입력을 이 저장소에서 읽게 연결.
 - **완료 조건**: 실키로 당일 기준정보 적재 성공, 파이프라인 Coverage가 SUFFICIENT 테마를 산출.
+- **이어서 할 일**: 당일 수집이 성공하면 **같은 키·같은 어댑터로 E-16(과거 전 종목 일봉) 백필을 백그라운드로 시작한다.** 1.5만 회 호출이라 며칠 걸리므로 출시 후에 시작하면 E-18이 밀린다. 범위와 필드는 [E-16](#e-16-과거-주가-corpus) 참조.
 
 ### A-3. 키움 실시간 시세 장중 검증 (외부 관문: 장중 + 승인)
 
 - **목표**: fixture 어댑터 대신 실제 키움 REST/WS로 장중 이벤트 수신.
 - **현재 상태**: `ReadOnlyKiwoomPort` Protocol(`packages/adapters/kiwoom/contract.py`)의 **live 구현이 없다**(fixture 구현만). 실 접속 코드 예시는 `scripts/collect_market_replay.py`(REST `https://api.kiwoom.com`, WS 포트 10000)에 있음. 키움 키는 `.env.local`에 존재.
+- **이미 확보된 검증 자산 (장중 관문 없이 쓸 수 있다)**: `data/market-replay/2026-08-14/`에 2026-08-14 **09:00~10:39 KST** 실시장 입력이 저장돼 있다(체결 156만 건 포함 180만 event, 종목 2,182개, 인포스탁 281개 테마 명단 동결, 5.7GB). 보조 수집 `data/market-replay-supplemental/2026-08-14/`는 10:09~10:39 구간 `ka10095` 30초 snapshot 13.4만 건. **둘 다 `.gitignore`된 로컬 전용이고 이 PC에만 있다.** 이 fixture에 Market Gateway를 연결하면 장중 승인 없이 후보 발견 → 구독 → 테마 집계 → CANDIDATE/ACTIVE 승격 → 순위 → 홈화면까지 재생 검증이 된다. 목적과 설계는 [one_time_market_replay_collection_plan.md](./one_time_market_replay_collection_plan.md) 0절, 실제 확보 범위와 미달 게이트는 [market_replay_2026-08-14_completion_report.md](./market_replay_2026-08-14_completion_report.md).
+- **fixture로 검증 안 되는 것**: 장 후반이 없어 **WEAKENING/CLOSED 소멸 전이**, 종가 기준 지표, D-13 장후 정합은 못 본다. 1분봉은 0행이라 후보 밖 사후 분석도 불가. 동시 구독 상한이 180이라 초 단위 체결은 조건검색 후보 위주다. 이 항목들은 A-3에서 실제 장중 실행으로만 닫힌다.
 - **할 일**: ① live `ReadOnlyKiwoomPort` 구현(조건검색 후보 + 체결 + ka10095 스냅샷, 주문·계좌 API 금지) ② 게이트웨이·파이프라인에 연결 ③ 장중에 사용자 승인 받고 소량 실행 검증.
 - **완료 조건**: 장중 수 분간 실이벤트가 파이프라인을 통과해 rankings 스냅샷 갱신.
 
@@ -159,6 +162,32 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 - **현재 상태**: 저장 API·웹은 완성. `InMemoryTargetCatalog`가 fixture 타깃만 안다. `TargetCatalog` Protocol은 `packages/identity/targets.py`.
 - **할 일**: 실테마(A-1)·실이벤트를 조회하는 TargetCatalog 구현 + 저장 항목의 `SavedCurrentState`(현재 수익률·상태)를 파이프라인에서 채우기.
+
+---
+
+### A-8. 거래일 전환과 매일 기준정보 수집
+
+- **목표**: 장 시작 전에 그날 기준정보를 자동으로 받고, 파이프라인이 새 거래일로 넘어가게 한다. **지금 구조는 하루밖에 못 돈다.**
+- **현재 상태** (2026-08-15 확인):
+  - 거래일이 상수다. `apps/api/fixture_universe.py:22`의 `FIXTURE_MARKET_DATE = date(2026, 8, 14)`로 `serve.py`가 파이프라인을 만들고(219행), 기준정보도 이 날짜로 **부팅 때 한 번만** 읽는다(171행).
+  - `MarketPublishLoop`(`packages/pipeline/runner.py`)는 하루 안에서만 돈다. `close_market`을 적용하면 `_market_close_applied`가 True로 남고 다음 거래일로 넘어가는 코드가 없다.
+  - 수집기 `apps/worker-batch/reference-data/collect_daily.py`는 완성됐지만 **수동 실행**이다. 스케줄이 없다. A-2에서 2026-08-14 하루치만 받았다.
+  - D-14는 인포스탁 테마 명단 수집이라 이 항목과 다르다. **기준정보 매일 수집을 맡은 작업 항목이 지금까지 없었다.**
+- **장중에는 기준정보가 아예 안 나온다 (착수 후 실측으로 드러남)**: 당일 KRX 일별매매 row는 그날 장이 끝나야 나온다. 그래서 장중 시점에는 **전일종가 0/2,411**, **기업행위 해소 1/2,411**이다. A-2에서 확보한 93.5%는 **장 마감 후** 데이터 기준이고, 장중에는 전 테마 Coverage INSUFFICIENT로 순위가 하루 종일 빈다. 원인은 두 단계다 — ⓐ 직전 거래일을 알려면 그 사이 날짜의 KRX 응답이 있어야 하고(수집 lookback으로 해결), ⓑ 그걸 넘겨도 기업행위(권리락·액면분할) 원천이 없어 `resolve_previous_adjusted_close`가 fail-closed로 값을 만들지 않는다. `CorporateActionReference` 타입만 있고 이걸 만드는 수집기가 없다.
+- **할 일**:
+  1. **장중 기준가 확보.** 키움 실시간 체결에 **FID 11(전일대비)**이 실제로 온다(실 replay 데이터에서 확인: `10=+92,500`, `11=+1,400`, `12=+1.54` → 기준가 91,100). `현재가 − 전일대비`가 그날 기준가이고, 권리락 당일이면 키움이 조정된 기준가로 전일대비를 계산하므로 **기업행위가 자동 반영된다.** 별도 원천이 필요 없다. 지금 `packages/adapters/kiwoom/normalizer.py`가 FID 11을 읽지 않는다(fixture에 11이 없어 여태 드러나지 않음). ka10095 스냅샷에도 대응 필드가 있는지 함께 확인한다. **A-3와 같은 파일이라 A-3 종료 후 착수한다.**
+  2. 장 시작 전 `collect_daily.py`를 그날 거래일로 실행하는 스케줄. 실패하면 그날 계산을 시작하지 않는다([product_decisions.md](./product_decisions.md) PD-001 10항 — 조용한 대체 금지).
+  3. `market_date`를 상수에서 빼고 거래일 달력으로 결정한다. 달력은 `derive_trading_calendar`가 KRX 응답 유무로 만든다. 직전 거래일 판정에 lookback이 필요하다(A-2에서 10일로 검증).
+  4. 거래일이 바뀌면 새 기준정보를 읽어 파이프라인을 재구성한다. Event·스냅샷 저장소는 유지한다.
+  5. 비거래일에는 파이프라인을 세우지 않고 그 상태를 화면에 표시한다.
+- **진행 (2026-08-15, `5273e9d`)**: 2·3·4·5 완료.
+  - `packages/pipeline/trading_day.py` — KST 거래일 판정. 주말 확정, 달력이 아는 과거 날짜는 그 판정, 나머지 평일은 거래일로 가정. **KRX에 달력 endpoint가 없고 일별매매가 마감 후에 나와 장 시작 전에 오늘이 공휴일인지 원천으로 확인할 방법이 없다.** 실제 휴장이면 장중 이벤트가 오지 않아 게이트웨이 health가 드러낸다.
+  - `TradingDayLoop`(`packages/pipeline/runner.py`) — 날짜가 바뀌면 이전 장을 닫고 그날 파이프라인으로 교체, 비거래일에는 세우지 않음. `MarketPublishLoop.close()`를 더해 마감 시각 뒤 tick이 없었어도 전환 시 마감 시각으로 닫는다.
+  - `prepare_reference_data`(`packages/pipeline/daily.py`) — 그날 수집본이 없으면 `collect_daily` 실행, `COMPLETE`가 아니면 예외로 그날 계산 미시작.
+  - **미착수 1**, 그리고 `apps/api/serve.py`가 아직 `MarketPublishLoop`을 직접 쓴다. 배선은 1과 같은 파일들을 건드리므로 함께 한다.
+- **완료 조건**: 가짜 클록으로 장 마감 → 다음 거래일 전환 → 새 전일종가로 계산되는 테스트 통과(완료), 비거래일 건너뜀 테스트(완료), **그리고 장중 시점에 유동시총이 실제로 계산되는 것**(미완).
+- **선행**: A-2(완료). **A-4와 맞물린다** — A-4가 하루 안의 상시 루프를 만들었고 이 항목이 그 위에 날짜 축을 얹는다. **1은 A-3 종료 후.**
+- **왜 필요한가**: 지금 배포하면 ① 장중 내내 순위가 비고 ② 다음 날 어제 전일종가로 계산해 모든 수익률이 틀린다. 둘 다 조용히 틀리므로 화면만 봐서는 알 수 없다. F 출시 전 필수.
 
 ---
 
@@ -256,7 +285,12 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ### E-16. 과거 주가 corpus
 
-- 과거 사건 당시 주도주들의 T-1·T0 종가(수정주가). 원천 후보: KRX(A-2 키 재사용). point-in-time·leakage 금지 원칙은 [historical_event_matching_engine_research_spec.md](./historical_event_matching_engine_research_spec.md). 위치: `research/data/**`, `packages/historical-data/**`(하이픈 함정 주의 — `historical_data` 권장).
+- **범위**: 주도주 T-1·T0가 아니라 **전 종목 일봉**이다. KRX 일별매매정보 엔드포인트(`stk_bydd_trd`·`ksq_bydd_trd`·`knx_bydd_trd`)는 **1회 호출 = 1거래일 = 그 시장 전 종목**이라 종목을 골라 받는 옵션 자체가 없다. 골라 담는 쪽이 더 번거롭고, 전 종목 21년치라도 인덱스 포함 1~2GB에 그친다.
+- **기간·대상**: 2005-03(인포스탁 사건 기록 시작) ~ 현재, 코스피·코스닥·코넥스. **상장폐지 종목을 반드시 포함한다** — 빼면 과거 통계가 생존 편향으로 낙관 쪽으로 왜곡되고, 테마주는 폐지 비율이 특히 높다.
+- **필드**: 리서치 스펙 6.4 `daily_prices` 그대로 — 원주가 OHLC + **수정주가 OHLC + `adjustment_version`**. 액면분할·무상증자로 과거 주가가 소급 조정되므로 원주가와 조정주가를 함께 남기고 조정 버전을 찍어야 같은 질문에 같은 답이 재현된다.
+- **왜 T-1·T0로 부족한가**: E-18(TOP3)만 보면 T-1·T0로 충분하지만, 리서치 스펙 8절 지표(20거래일 내 최고 종가 발생일, 양의 수익률이 끊길 때까지 연속 거래일 수 등)와 시장 대비 초과수익은 **T+20까지·전 종목**이 있어야 계산된다. E-19와 자연어 질의도 같은 전제다.
+- **수집 시작 시점**: 열쇠가 A-2와 같은 KRX 키이고 어댑터(`packages/reference-data/reference_data/adapters.py`)와 수정주가 로직(`adjusted_price.py`)이 이미 fixture 검증 완료라, **A-2에서 당일 수집이 성공하면 그 자리에서 과거 백필을 백그라운드로 시작한다.** 21년 × 거래일 245 × 3시장 ≈ 1.5만 회 호출이라 레이트리밋 때문에 며칠 걸린다. 출시 후에 시작하면 E-18이 그만큼 밀린다. 순서(E는 출시 후)를 바꾸는 게 아니라 **수집만 앞당기는 것**이다.
+- point-in-time·leakage 금지 원칙은 [historical_event_matching_engine_research_spec.md](./historical_event_matching_engine_research_spec.md). 위치: `research/data/**`, `packages/historical-data/**`(하이픈 함정 주의 — `historical_data` 권장).
 
 ### E-17. 사건·소재 온톨로지
 
@@ -308,6 +342,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 | 작업 | 모델 | 추론 |
 |---|---|---|
 | A-1, A-2, A-5, A-6, A-7 | Opus 5 | max |
+| A-8 거래일 전환·매일 수집 | **Fable 5** | **max** |
 | A-3 키움 live 어댑터 | **Fable 5** | **max** |
 | A-4 상시 파이프라인·영속화 | **Fable 5** | **max** |
 | B-8 codex분 정리·뉴스 수집 | **Fable 5** | high |
