@@ -14,7 +14,7 @@ import os
 import secrets
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -23,11 +23,13 @@ from packages.adapters.kiwoom import (
     DemandPriority,
     FixtureKiwoomAdapter,
     GatewayDataStatus,
+    LiveKiwoomAdapter,
     MarketGateway,
     MarketObservation,
     SubscriptionDemand,
     SupplementReason,
 )
+from packages.adapters.kiwoom.live import KST as _KST
 from packages.domain import DataStatus
 from packages.events import (
     EventStore,
@@ -37,6 +39,7 @@ from packages.events import (
 )
 from packages.identity import GoogleIdentity
 from packages.pipeline import (
+    LiveMarketRunner,
     MarketDataPipeline,
     MarketPublishLoop,
     PublishedView,
@@ -65,8 +68,13 @@ THEME_UNIVERSE_MODE_ENV = "THEME_UNIVERSE_MODE"
 INFOSTOCK_IMPORT_DIR_ENV = "INFOSTOCK_IMPORT_DIR"
 REFERENCE_DATA_DIR_ENV = "REFERENCE_DATA_DIR"
 DATABASE_DSN_ENV = "DATABASE_URL"
+KIWOOM_MODE_ENV = "KIWOOM_MODE"
+KIWOOM_APP_KEY_ENV = "KIWOOM_APP_KEY"
+KIWOOM_APP_SECRET_ENV = "KIWOOM_APP_SECRET"
+KIWOOM_CONDITION_IDS_ENV = "KIWOOM_CONDITION_IDS"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 PUBLISH_INTERVAL = timedelta(seconds=2)
+MARKET_CLOSE_KST = time(15, 30)
 
 _BASE = datetime(2026, 8, 14, 0, 0, tzinfo=UTC)
 # 인포스탁 테마 명단은 장 시작 전에 확보된 것으로 취급한다.
@@ -146,12 +154,18 @@ def _to_data_status(status: GatewayDataStatus) -> DataStatus:
         return DataStatus.DEGRADED
 
 
-def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniverse:
+def theme_universe_from_environment(
+    environment: Mapping[str, str],
+    *,
+    market_date: date = FIXTURE_MARKET_DATE,
+    membership_known_at: datetime = _INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+) -> ThemeUniverse:
     """`THEME_UNIVERSE_MODE`로 연습용 2테마와 인포스탁 실테마 명단을 고른다.
 
     infostock 모드에는 기준정보(A-2)가 아직 없으므로 references가 비어 있다.
     그래서 모든 테마가 Coverage INSUFFICIENT로 남고 rankings가 비는 것이 이
-    모드의 정상 상태다.
+    모드의 정상 상태다. live 서빙은 `market_date`에 당일을 넘겨 같은 로더를
+    재사용한다.
     """
 
     mode = environment.get(THEME_UNIVERSE_MODE_ENV, "fixture").strip().lower()
@@ -165,8 +179,8 @@ def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniv
         Path(
             environment.get(INFOSTOCK_IMPORT_DIR_ENV, DEFAULT_INFOSTOCK_IMPORT_DIR)
         ),
-        effective_from=FIXTURE_MARKET_DATE,
-        known_at=_INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+        effective_from=market_date,
+        known_at=membership_known_at,
     )
     directory = environment.get(REFERENCE_DATA_DIR_ENV, "").strip()
     if not directory:
@@ -175,8 +189,8 @@ def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniv
         universe,
         references=load_collected_references(
             Path(directory),
-            market_date=FIXTURE_MARKET_DATE,
-            decision_at=_INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+            market_date=market_date,
+            decision_at=membership_known_at,
             stock_ids=universe.stock_names,
         ),
     )
@@ -346,4 +360,145 @@ def serve_fixture_api(
         publish_loop=publish_loop,
     )
     uvicorn.run(application, host=host, port=port, log_level="info")
+    return 0
+
+
+def _load_env_file(path: Path) -> None:
+    """`.env.local`의 키움 키를 process 환경에 채운다. 기존 환경값이 우선한다."""
+
+    if not path.exists():
+        return
+    for raw_line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if value and value[:1] == value[-1:] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        os.environ.setdefault(key, value)
+
+
+def build_live_environment(
+    *,
+    settings: ApiSettings | None = None,
+) -> tuple[
+    FixtureIdentityEnvironment,
+    MarketDataPipeline,
+    LiveMarketRunner,
+    LiveKiwoomAdapter,
+]:
+    """실 키움 게이트웨이 → 당일 파이프라인 → hub 조립. 접속은 첫 tick에서 한다.
+
+    A-3 live 검증 경로다. 실제 외부 호출(키움 REST/WS)이 발생하므로
+    CLAUDE.md 승인 항목 2에 따라 사용자 승인 아래에서만 실행한다.
+    """
+
+    mode = os.environ.get(KIWOOM_MODE_ENV, "").strip().lower()
+    if mode not in ("real", "demo"):
+        raise ValueError(
+            f"live 서빙은 {KIWOOM_MODE_ENV}=real 또는 demo가 필요합니다"
+            " (fixture 모드는 serve_fixture_api를 사용)"
+        )
+    app_key = os.environ.get(KIWOOM_APP_KEY_ENV, "").strip()
+    app_secret = os.environ.get(KIWOOM_APP_SECRET_ENV, "").strip()
+    if not app_key or not app_secret:
+        raise ValueError(
+            f"{KIWOOM_APP_KEY_ENV}/{KIWOOM_APP_SECRET_ENV}가 필요합니다 (.env.local)"
+        )
+    condition_ids = tuple(
+        part.strip()
+        for part in os.environ.get(KIWOOM_CONDITION_IDS_ENV, "").split(",")
+        if part.strip()
+    )
+    effective_settings = settings or ApiSettings.from_environment(os.environ)
+    market_date = datetime.now(_KST).date()
+    boot_at = datetime.now(UTC)
+    universe = theme_universe_from_environment(
+        os.environ,
+        market_date=market_date,
+        membership_known_at=boot_at,
+    )
+    event_store, snapshot_repository = create_pipeline_stores(os.environ)
+    pipeline = MarketDataPipeline(
+        market_date=market_date,
+        stream_id=(
+            f"stream_live_{market_date.strftime('%Y%m%d')}_{secrets.token_hex(4)}"
+        ),
+        schema_version=effective_settings.schema_version,
+        catalog=universe.catalog(),
+        references=universe.references,
+        membership_version=universe.version,
+        theme_names=universe.theme_names,
+        stock_names=universe.stock_names,
+        event_store=event_store,
+        snapshot_repository=snapshot_repository,
+    )
+    adapter = LiveKiwoomAdapter(
+        mode=mode,
+        app_key=app_key,
+        app_secret=app_secret,
+        condition_ids=condition_ids,
+    )
+    runner = LiveMarketRunner(
+        gateway=MarketGateway(adapter),
+        market_date=market_date,
+        theme_members={
+            snapshot.theme_id: tuple(member.stock_id for member in snapshot.members)
+            for snapshot in universe.snapshots
+        },
+    )
+    environment = create_fixture_app(
+        settings=effective_settings,
+        product_repository=SnapshotProductReadRepository(pipeline),
+    )
+    # 실 구글 로그인(F-21) 전까지 로컬 확인용 데모 로그인을 유지한다.
+    environment.oauth_provider.register_code(
+        FIXTURE_DEMO_LOGIN_CODE,
+        GoogleIdentity(
+            subject="fixture-demo-user",
+            display_name="픽스처 사용자",
+            email="fixture@dayjaview.test",
+            email_verified=True,
+        ),
+    )
+    return environment, pipeline, runner, adapter
+
+
+def serve_live_api(
+    *,
+    host: str,
+    port: int,
+    env_file: str | None = ".env.local",
+    health_payload: HealthPayload | None = None,
+) -> int:
+    """실 키움 접속으로 장중 이벤트를 파이프라인에 흘려보내며 서빙한다."""
+
+    import uvicorn
+
+    if env_file:
+        _load_env_file(Path(env_file))
+    environment, pipeline, runner, adapter = build_live_environment()
+    publish_loop = MarketPublishLoop(
+        pipeline=pipeline,
+        on_published=lambda view: publish_view_to_hub(
+            environment.realtime_hub, view
+        ),
+        data_status=runner.data_status,
+        interval=PUBLISH_INTERVAL,
+        poll_updates=runner.poll_updates,
+        market_close_at=datetime.combine(
+            pipeline.market_date, MARKET_CLOSE_KST, tzinfo=_KST
+        ),
+    )
+    application = create_asgi_app(
+        environment,
+        health_payload=health_payload,
+        publish_loop=publish_loop,
+    )
+    try:
+        uvicorn.run(application, host=host, port=port, log_level="info")
+    finally:
+        adapter.close()
     return 0

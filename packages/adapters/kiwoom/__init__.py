@@ -45,6 +45,7 @@ from .gateway import (
     SupplementOutcome,
     SupplementReason,
 )
+from .live import LiveKiwoomAdapter
 from .normalizer import KiwoomNormalizer, NormalizationError
 from .recovery import (
     ReconnectController,
@@ -88,6 +89,7 @@ __all__ = [
     "KiwoomConnectionLost",
     "KiwoomNormalizer",
     "KiwoomSourceEnvelope",
+    "LiveKiwoomAdapter",
     "LiveValidationStatus",
     "MarketGateway",
     "MarketObservation",
