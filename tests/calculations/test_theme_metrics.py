@@ -189,6 +189,50 @@ def test_missing_free_float_never_falls_back_to_total_market_cap() -> None:
     assert result.to_public_ranking_fields()["weightedReturn"] is None
 
 
+def test_full_core_observation_keeps_weight_ratio_at_one_with_real_scale_caps() -> None:
+    """유동시총 합이 기본 정밀도(28자리)를 넘어도 전량 관측은 정확히 1이다.
+
+    실데이터 규모(조 단위 시총 × 소수 유동비율)에서는 시총 합이 28자리를 넘는다.
+    분모만 기본 정밀도로 더하면 몫이 1을 아주 조금 넘어 CoveragePart가 거부한다.
+    """
+
+    stock_ids = ("A", "B", "C")
+    membership = make_membership(core=stock_ids)
+    references = [
+        make_reference(
+            stock_id,
+            previous_close=close,
+            listed_shares=shares,
+            free_float_ratio=Decimal("0.7412345678901234567890123456"),
+        )
+        for stock_id, close, shares in zip(
+            stock_ids,
+            (Decimal(71_700), Decimal(238_500), Decimal(196_300)),
+            (5_969_782_550, 728_002_365, 164_263_395),
+            strict=True,
+        )
+    ]
+    observations = [
+        make_market_observation(stock_id, current_price=price)
+        for stock_id, price in zip(
+            stock_ids,
+            (Decimal(72_400), Decimal(240_000), Decimal(197_500)),
+            strict=True,
+        )
+    ]
+
+    result = calculate_theme_metrics(
+        market_date=MARKET_DATE,
+        as_of=AS_OF,
+        membership=membership,
+        references=references,
+        observations=observations,
+    )
+
+    assert result.coverage.core.observed_count == 3
+    assert result.coverage.core.observed_weight_ratio == Decimal(1)
+
+
 def test_observed_zero_is_not_conflated_with_missing() -> None:
     membership = make_membership(core=("A", "B"), related=("C",))
     references = [make_reference(stock_id) for stock_id in ("A", "B", "C")]

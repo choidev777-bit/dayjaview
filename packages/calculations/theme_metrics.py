@@ -300,13 +300,15 @@ def calculate_theme_metrics(
     ]
     observed_weight_ratio: Decimal | None = None
     if core_members and not missing_cap_stock_ids:
-        total_capitalization = sum(
-            capitalization_by_stock.values(),
-            start=Decimal(0),
-        )
-        if total_capitalization > 0:
-            with localcontext() as context:
-                context.prec = 60
+        # 분자와 분모를 같은 정밀도로 더한다. 분모만 기본 28자리로 깎이면
+        # 전 종목을 관측한 테마에서 몫이 1을 아주 조금 넘어 Coverage가 거부된다.
+        with localcontext() as context:
+            context.prec = 60
+            total_capitalization = sum(
+                capitalization_by_stock.values(),
+                start=Decimal(0),
+            )
+            if total_capitalization > 0:
                 observed_weight_ratio = sum(
                     (
                         capitalization_by_stock[stock_id]
