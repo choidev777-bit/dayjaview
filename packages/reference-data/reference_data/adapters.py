@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime
+from io import BytesIO
 from typing import Any, Final, cast
+from zipfile import BadZipFile, ZipFile
 
 import httpx
 
@@ -34,6 +36,10 @@ OPENDART_PATHS: Final[dict[SourceDataset, str]] = {
     SourceDataset.OPENDART_LARGEST_SHAREHOLDER: "/api/hyslrSttus.json",
     SourceDataset.OPENDART_TREASURY_STATUS: "/api/tesstkAcqsDspsSttus.json",
 }
+
+# 정기보고서 endpoint와 달리 회사 고유번호 대조표는 ZIP 안의 XML로 온다.
+OPENDART_CORP_CODE_PATH: Final = "/api/corpCode.xml"
+CORP_CODE_ENTRY_NAME: Final = "CORPCODE.xml"
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,9 +109,14 @@ def _snapshot(
     revision: int,
     lineage: tuple[str, ...],
     source_document_ids: tuple[str, ...],
-    payload: Mapping[str, Any],
+    payload: Mapping[str, Any] | None = None,
+    raw_text: str | None = None,
 ) -> SourceSnapshot:
-    raw_text = canonical_json(payload)
+    if (payload is None) == (raw_text is None):
+        raise ValueError("payload와 raw_text 중 정확히 하나가 필요합니다.")
+    if raw_text is None:
+        assert payload is not None
+        raw_text = canonical_json(payload)
     return SourceSnapshot(
         metadata=SourceMetadata(
             provider=provider,
@@ -199,6 +210,51 @@ class OpenDartAdapter:
         self._api_key = _required_key(api_key, "OPENDART_API_KEY")
         self._client = client or httpx.Client()
         self._timeout = timeout_seconds
+
+    def fetch_corp_code_index(
+        self,
+        *,
+        as_of: datetime,
+        collected_at: datetime,
+        revision: int = 1,
+    ) -> SourceSnapshot:
+        """종목코드 → 고유번호 대조표. 정기보고서 endpoint는 6자리를 받지 않는다."""
+
+        endpoint = f"{OPENDART_BASE_URL}{OPENDART_CORP_CODE_PATH}"
+        try:
+            response = self._client.get(
+                endpoint,
+                params={"crtfc_key": self._api_key},
+                timeout=self._timeout,
+            )
+            response.raise_for_status()
+            archive = ZipFile(BytesIO(response.content))
+            raw_text = archive.read(CORP_CODE_ENTRY_NAME).decode("utf-8")
+        except httpx.HTTPError as exc:
+            raise SourceTransportError(
+                SourceProvider.OPENDART.value,
+                endpoint,
+                "네트워크 조회에 실패했습니다.",
+            ) from exc
+        except (BadZipFile, KeyError, UnicodeDecodeError) as exc:
+            raise SourceContractError(
+                "MALFORMED_SOURCE_RESPONSE",
+                "$corpCode",
+                f"{CORP_CODE_ENTRY_NAME}을 담은 ZIP 응답이 필요합니다.",
+            ) from exc
+        source_key = f"corp-code:{as_of.date().isoformat()}"
+        return _snapshot(
+            provider=SourceProvider.OPENDART,
+            dataset=SourceDataset.OPENDART_CORP_CODE,
+            endpoint=endpoint,
+            source_key=source_key,
+            as_of=as_of,
+            collected_at=collected_at,
+            revision=revision,
+            lineage=(f"opendart:{source_key}",),
+            source_document_ids=(),
+            raw_text=raw_text,
+        )
 
     def fetch_periodic_report(
         self,

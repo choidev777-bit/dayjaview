@@ -12,6 +12,7 @@ import asyncio
 import json
 import os
 from collections.abc import Awaitable, Callable, Mapping
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -29,7 +30,12 @@ from packages.adapters.kiwoom import (
 from packages.domain import DataStatus
 from packages.events import InMemoryEventStore, LineageRef
 from packages.identity import GoogleIdentity
-from packages.pipeline import MarketDataPipeline, ThemeUniverse, load_theme_universe
+from packages.pipeline import (
+    MarketDataPipeline,
+    ThemeUniverse,
+    load_collected_references,
+    load_theme_universe,
+)
 from packages.pipeline.market import RANKINGS_PARAMS, TREEMAP_PARAMS
 from packages.realtime import InMemorySnapshotRepository, StockRealtimeUpdate
 
@@ -43,6 +49,7 @@ KIWOOM_FIXTURE_PATH = "tests/market-gateway/fixtures/kiwoom-market-v1.json"
 FIXTURE_DEMO_LOGIN_CODE = "fixture-demo-login"
 THEME_UNIVERSE_MODE_ENV = "THEME_UNIVERSE_MODE"
 INFOSTOCK_IMPORT_DIR_ENV = "INFOSTOCK_IMPORT_DIR"
+REFERENCE_DATA_DIR_ENV = "REFERENCE_DATA_DIR"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 
 _BASE = datetime(2026, 8, 14, 0, 0, tzinfo=UTC)
@@ -138,12 +145,24 @@ def theme_universe_from_environment(environment: Mapping[str, str]) -> ThemeUniv
         raise ValueError(
             f"{THEME_UNIVERSE_MODE_ENV}는 fixture 또는 infostock이어야 합니다: {mode}"
         )
-    return load_theme_universe(
+    universe = load_theme_universe(
         Path(
             environment.get(INFOSTOCK_IMPORT_DIR_ENV, DEFAULT_INFOSTOCK_IMPORT_DIR)
         ),
         effective_from=FIXTURE_MARKET_DATE,
         known_at=_INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+    )
+    directory = environment.get(REFERENCE_DATA_DIR_ENV, "").strip()
+    if not directory:
+        return universe
+    return replace(
+        universe,
+        references=load_collected_references(
+            Path(directory),
+            market_date=FIXTURE_MARKET_DATE,
+            decision_at=_INFOSTOCK_MEMBERSHIP_KNOWN_AT,
+            stock_ids=universe.stock_names,
+        ),
     )
 
 

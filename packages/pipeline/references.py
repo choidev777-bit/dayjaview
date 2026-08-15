@@ -8,10 +8,12 @@ None으로 남기고 지어내지 않는다.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from importlib import import_module
+from pathlib import Path
 from typing import Any
 
 from packages.domain import StockReference
@@ -24,6 +26,13 @@ _PACKAGE = "packages." + "reference-data.reference_data"
 
 def _module(name: str) -> Any:
     return import_module(f"{_PACKAGE}.{name}")
+
+
+def _by_stock(values: Iterable[Any]) -> dict[str, tuple[Any, ...]]:
+    grouped: dict[str, list[Any]] = {}
+    for value in values:
+        grouped.setdefault(value.stock_code, []).append(value)
+    return {code: tuple(items) for code, items in grouped.items()}
 
 
 def production_reference_policy() -> Any:
@@ -67,11 +76,13 @@ def resolve_stock_references(
 
     models = _module("models")
     effective_policy = policy or production_reference_policy()
-    price_values = tuple(daily_prices)
-    share_values = tuple(share_observations)
-    holding_values = tuple(holdings)
-    declaration_values = tuple(coverage_declarations)
-    action_values = tuple(corporate_actions)
+    # 종목 수가 2천 단위라 매 종목마다 전체 관측을 훑지 않도록 먼저 나눠 둔다.
+    # 해석 함수들이 어차피 같은 조건으로 다시 거르므로 결과는 같다.
+    price_by_stock = _by_stock(daily_prices)
+    share_by_stock = _by_stock(share_observations)
+    holding_by_stock = _by_stock(holdings)
+    declaration_by_stock = _by_stock(coverage_declarations)
+    action_by_stock = _by_stock(corporate_actions)
     version = f"reference-{market_date.isoformat()}-{effective_policy.version}"
 
     references: list[StockReference] = []
@@ -82,17 +93,17 @@ def resolve_stock_references(
             market_date=market_date,
             decision_at=decision_at,
             calendar=calendar,
-            daily_prices=price_values,
-            corporate_actions=action_values,
+            daily_prices=price_by_stock.get(stock_code, ()),
+            corporate_actions=action_by_stock.get(stock_code, ()),
             version=ADJUSTED_PRICE_VERSION,
         )
         free_float = _module("free_float").calculate_free_float(
             stock_code=stock_code,
             market_date=market_date,
             decision_at=decision_at,
-            share_observations=share_values,
-            holdings=holding_values,
-            coverage_declarations=declaration_values,
+            share_observations=share_by_stock.get(stock_code, ()),
+            holdings=holding_by_stock.get(stock_code, ()),
+            coverage_declarations=declaration_by_stock.get(stock_code, ()),
             policy=effective_policy,
         )
         references.append(
@@ -111,3 +122,74 @@ def resolve_stock_references(
             )
         )
     return tuple(references)
+
+
+def load_collected_references(
+    directory: Path,
+    *,
+    market_date: date,
+    decision_at: datetime,
+    stock_ids: Iterable[str],
+    policy: Any | None = None,
+) -> tuple[StockReference, ...]:
+    """수집 워커가 적재한 원문 봉투를 읽어 그대로 기준정보로 해석한다.
+
+    기업행위 원천이 아직 없으므로, 전일 종가는 해당 거래일의 KRX 일별매매 row가
+    이미 확보된 경우(장 마감 이후·재생)에만 나온다. 장중 시점은 그 거래일의
+    기업행위 상태를 확인할 방법이 없어 값 없이 남는다.
+    """
+
+    models = _module("models")
+    parsers = _module("parsers")
+    by_dataset: dict[Any, list[Any]] = {}
+    for path in sorted(directory.glob("*.json")):
+        snapshot = parsers.load_collected_snapshot(
+            json.loads(path.read_text(encoding="utf-8"))
+        )
+        by_dataset.setdefault(snapshot.metadata.dataset, []).append(snapshot)
+
+    krx_snapshots = by_dataset.get(models.SourceDataset.KRX_STOCK_DAILY, [])
+    calendar = _module("calendar").TradingCalendar(
+        parsers.derive_trading_calendar(
+            krx_snapshots,
+            version=f"krx-calendar-derived-{market_date.isoformat()}",
+        )
+    )
+    prices = tuple(
+        observation
+        for snapshot in krx_snapshots
+        for observation in parsers.parse_krx_stock_daily(snapshot)
+    )
+    shares = [observation.listed_share_observation() for observation in prices]
+    holdings: list[Any] = []
+    declarations: list[Any] = []
+    stock_by_corp = {
+        corp_code: stock_code
+        for snapshot in by_dataset.get(models.SourceDataset.OPENDART_CORP_CODE, [])
+        for stock_code, corp_code in parsers.parse_corp_code_index(snapshot).items()
+    }
+    for dataset in (
+        models.SourceDataset.OPENDART_STOCK_TOTAL,
+        models.SourceDataset.OPENDART_LARGEST_SHAREHOLDER,
+        models.SourceDataset.OPENDART_TREASURY_STATUS,
+    ):
+        for snapshot in by_dataset.get(dataset, []):
+            stock_code = stock_by_corp.get(snapshot.metadata.source_key.partition(":")[0])
+            if stock_code is None:
+                continue
+            normalized = parsers.parse_open_dart(snapshot, stock_code=stock_code)
+            shares.extend(normalized.issued_share_observations)
+            holdings.extend(normalized.non_float_holdings)
+            declarations.extend(normalized.coverage_declarations)
+
+    return resolve_stock_references(
+        stock_ids,
+        market_date=market_date,
+        decision_at=decision_at,
+        calendar=calendar,
+        daily_prices=prices,
+        share_observations=tuple(shares),
+        holdings=tuple(holdings),
+        coverage_declarations=tuple(declarations),
+        policy=policy,
+    )

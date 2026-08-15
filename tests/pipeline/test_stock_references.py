@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
@@ -16,6 +17,7 @@ from packages.domain import (
 from packages.events import InMemoryEventStore
 from packages.pipeline import (
     MarketDataPipeline,
+    load_collected_references,
     resolve_stock_references,
 )
 from packages.realtime import (
@@ -126,6 +128,87 @@ def _resolve(stock_ids: tuple[str, ...], **overrides: Any) -> tuple[Any, ...]:
     }
     arguments.update(overrides)
     return resolve_stock_references(stock_ids, **arguments)
+
+
+def _write_collected_bundle(directory: Path) -> None:
+    """수집 워커가 적재한 것과 같은 원문 봉투를 만든다."""
+
+    models = _reference_module("models")
+    parsers = _reference_module("parsers")
+    krx = _fixture("krx-stock-daily.json")
+    payload = json.loads(krx.raw_payload_text)
+    snapshots = [krx, _fixture("opendart-stock-total.json")]
+    snapshots.append(_fixture("opendart-largest-shareholder.json"))
+    snapshots.append(_fixture("opendart-treasury.json"))
+
+    previous_payload = {
+        "OutBlock_1": [
+            {**payload["OutBlock_1"][0], "BAS_DD": "20260812", "TDD_CLSPRC": "50,000"}
+        ]
+    }
+    previous_text = _reference_module("hashing").canonical_json(previous_payload)
+    snapshots.append(
+        models.SourceSnapshot(
+            metadata=replace(
+                krx.metadata,
+                source_key="KOSPI:2026-08-12",
+                as_of=datetime.fromisoformat("2026-08-12T15:30:00+09:00"),
+                collected_at=datetime.fromisoformat("2026-08-12T18:00:00+09:00"),
+                lineage=("krx-open-api:KOSPI:2026-08-12",),
+            ),
+            raw_payload_text=previous_text,
+            raw_hash=_reference_module("hashing").sha256_text(previous_text),
+        )
+    )
+    corp_code_xml = (
+        '<?xml version="1.0" encoding="UTF-8"?><result><list>'
+        "<corp_code>00000001</corp_code><corp_name>예시전자</corp_name>"
+        "<stock_code>A00001</stock_code><modify_date>20260801</modify_date>"
+        "</list></result>"
+    )
+    snapshots.append(
+        models.SourceSnapshot(
+            metadata=replace(
+                _fixture("opendart-stock-total.json").metadata,
+                dataset=models.SourceDataset.OPENDART_CORP_CODE,
+                endpoint="https://opendart.fss.or.kr/api/corpCode.xml",
+                source_key="corp-code:2026-08-14",
+                source_document_ids=(),
+                lineage=("opendart:corp-code:2026-08-14",),
+            ),
+            raw_payload_text=corp_code_xml,
+            raw_hash=_reference_module("hashing").sha256_text(corp_code_xml),
+        )
+    )
+    for index, snapshot in enumerate(snapshots):
+        (directory / f"{index}.json").write_text(
+            json.dumps(
+                parsers.dump_collected_snapshot(snapshot),
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+
+
+def test_collected_bundle_resolves_references_through_the_corp_code_index(
+    tmp_path: Path,
+) -> None:
+    _write_collected_bundle(tmp_path)
+
+    references = load_collected_references(
+        tmp_path,
+        market_date=date(2026, 8, 13),
+        decision_at=datetime.fromisoformat("2026-08-14T09:00:00+09:00"),
+        stock_ids=("KRX:A00001",),
+    )
+
+    reference = references[0]
+    # 08-13 KRX row의 전일대비(+1,000)로 직전 거래일(08-12) 종가 50,000이 나온다.
+    assert reference.previous_adjusted_close == Decimal(50_000)
+    assert reference.listed_shares == 100_000_000
+    assert reference.free_float_ratio == Decimal("0.55")
+    assert reference.free_float_validated is True
 
 
 def test_official_sources_resolve_a_usable_stock_reference() -> None:

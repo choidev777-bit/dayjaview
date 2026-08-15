@@ -13,6 +13,7 @@ from .membership import (
 from .references import (
     ADJUSTED_PRICE_VERSION,
     REFERENCE_POLICY_VERSION,
+    load_collected_references,
     production_reference_policy,
     resolve_stock_references,
 )
@@ -25,6 +26,7 @@ __all__ = [
     "PublishedView",
     "ThemeUniverse",
     "build_theme_universe",
+    "load_collected_references",
     "load_theme_universe",
     "production_reference_policy",
     "resolve_stock_references",

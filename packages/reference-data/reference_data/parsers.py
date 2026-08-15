@@ -3,17 +3,25 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
-from dataclasses import dataclass
-from datetime import date, datetime
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, replace
+from datetime import date, datetime, time
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Never, cast
+from xml.etree import ElementTree
 
-from .adapters import KRX_BASE_URL, KRX_MARKET_PATHS, OPENDART_BASE_URL, OPENDART_PATHS
+from .adapters import (
+    KRX_BASE_URL,
+    KRX_MARKET_PATHS,
+    OPENDART_BASE_URL,
+    OPENDART_CORP_CODE_PATH,
+    OPENDART_PATHS,
+)
 from .errors import SourceContractError
 from .hashing import canonical_json, parse_json_object, sha256_text
 from .models import (
+    STOCK_CODE_RE,
     CoverageDeclarationStatus,
     DailyPriceObservation,
     EconomicField,
@@ -27,6 +35,7 @@ from .models import (
     SourceMetadata,
     SourceProvider,
     SourceSnapshot,
+    TradingDayObservation,
 )
 
 INTEGER_RE = re.compile(r"^[+-]?\d+$")
@@ -115,6 +124,8 @@ def _decimal(value: object, path: str) -> Decimal:
 def _allowed_endpoint(provider: SourceProvider, dataset: SourceDataset) -> str:
     if provider is SourceProvider.KRX_OPEN_API and dataset is SourceDataset.KRX_STOCK_DAILY:
         return KRX_BASE_URL
+    if provider is SourceProvider.OPENDART and dataset is SourceDataset.OPENDART_CORP_CODE:
+        return f"{OPENDART_BASE_URL}{OPENDART_CORP_CODE_PATH}"
     if provider is SourceProvider.OPENDART and dataset in OPENDART_PATHS:
         return f"{OPENDART_BASE_URL}{OPENDART_PATHS[dataset]}"
     _fail(
@@ -262,6 +273,157 @@ def parse_krx_stock_daily(snapshot: SourceSnapshot) -> tuple[DailyPriceObservati
             )
         except ValueError as exc:
             _fail("MALFORMED_SOURCE_RESPONSE", path, str(exc))
+    return tuple(observations)
+
+
+COLLECTION_ENVELOPE_VERSION = "reference-collection-2026.08.1"
+
+
+def dump_collected_snapshot(snapshot: SourceSnapshot) -> dict[str, Any]:
+    """수집 process와 서빙 process 사이에 원문 그대로 넘기는 봉투.
+
+    JSON 응답도 XML 응답도 담을 수 있어야 하므로 raw는 항상 text로 보존한다.
+    """
+
+    metadata = snapshot.metadata
+    return {
+        "envelopeVersion": COLLECTION_ENVELOPE_VERSION,
+        "provider": metadata.provider.value,
+        "dataset": metadata.dataset.value,
+        "endpoint": metadata.endpoint,
+        "sourceKey": metadata.source_key,
+        "asOf": metadata.as_of.isoformat(),
+        "collectedAt": metadata.collected_at.isoformat(),
+        "parserVersion": metadata.parser_version,
+        "revision": metadata.revision,
+        "lineage": list(metadata.lineage),
+        "sourceDocumentIds": list(metadata.source_document_ids),
+        "liveValidationStatus": metadata.live_validation_status.value,
+        "rawPayloadText": snapshot.raw_payload_text,
+        "rawHash": snapshot.raw_hash,
+    }
+
+
+def load_collected_snapshot(payload: Mapping[str, Any]) -> SourceSnapshot:
+    if _text(payload.get("envelopeVersion"), "$.envelopeVersion") != (
+        COLLECTION_ENVELOPE_VERSION
+    ):
+        _fail("UNSUPPORTED_FIXTURE_VERSION", "$.envelopeVersion", "지원하지 않는 봉투입니다.")
+    try:
+        provider = SourceProvider(_text(payload.get("provider"), "$.provider"))
+        dataset = SourceDataset(_text(payload.get("dataset"), "$.dataset"))
+    except ValueError:
+        _fail("MALFORMED_SOURCE_RESPONSE", "$.provider", "알 수 없는 source 또는 dataset입니다.")
+    # 원문은 공백 하나까지 그대로여야 hash가 맞으므로 strip하지 않는다.
+    raw_text = payload.get("rawPayloadText")
+    if not isinstance(raw_text, str) or not raw_text:
+        _fail("MALFORMED_SOURCE_RESPONSE", "$.rawPayloadText", "원문 문자열이 필요합니다.")
+    declared_hash = _text(payload.get("rawHash"), "$.rawHash")
+    if sha256_text(raw_text) != declared_hash:
+        _fail("HASH_MISMATCH", "$.rawHash", "rawPayloadText와 rawHash가 다릅니다.")
+    revision = payload.get("revision")
+    if isinstance(revision, bool) or not isinstance(revision, int) or revision <= 0:
+        _fail("MALFORMED_SOURCE_RESPONSE", "$.revision", "1 이상의 정수가 필요합니다.")
+    try:
+        metadata = SourceMetadata(
+            provider=provider,
+            dataset=dataset,
+            endpoint=_text(payload.get("endpoint"), "$.endpoint"),
+            source_key=_text(payload.get("sourceKey"), "$.sourceKey"),
+            as_of=_datetime(payload.get("asOf"), "$.asOf"),
+            collected_at=_datetime(payload.get("collectedAt"), "$.collectedAt"),
+            parser_version=_text(payload.get("parserVersion"), "$.parserVersion"),
+            revision=revision,
+            lineage=tuple(
+                _text(value, f"$.lineage[{index}]")
+                for index, value in enumerate(_sequence(payload.get("lineage"), "$.lineage"))
+            ),
+            source_document_ids=tuple(
+                _text(value, f"$.sourceDocumentIds[{index}]")
+                for index, value in enumerate(
+                    _sequence(payload.get("sourceDocumentIds", []), "$.sourceDocumentIds")
+                )
+            ),
+            live_validation_status=LiveValidationStatus.UNVERIFIED,
+        )
+    except ValueError as exc:
+        _fail("MALFORMED_SOURCE_RESPONSE", "$", str(exc))
+    return SourceSnapshot(metadata=metadata, raw_payload_text=raw_text, raw_hash=declared_hash)
+
+
+def parse_corp_code_index(snapshot: SourceSnapshot) -> dict[str, str]:
+    """상장 종목만 남긴 6자리 종목코드 → 8자리 고유번호 대조표."""
+
+    metadata = snapshot.metadata
+    if (
+        metadata.provider is not SourceProvider.OPENDART
+        or metadata.dataset is not SourceDataset.OPENDART_CORP_CODE
+    ):
+        _fail("SOURCE_DATASET_MISMATCH", "$snapshot", "OpenDART 고유번호 대조표가 아닙니다.")
+    try:
+        root = ElementTree.fromstring(snapshot.raw_payload_text)
+    except ElementTree.ParseError as exc:
+        _fail("MALFORMED_SOURCE_RESPONSE", "$corpCode", str(exc))
+    index: dict[str, str] = {}
+    for position, element in enumerate(root.findall("list")):
+        path = f"$corpCode.list[{position}]"
+        stock_code = (element.findtext("stock_code") or "").strip()
+        if not stock_code:
+            continue
+        corp_code = _text(element.findtext("corp_code"), f"{path}.corp_code")
+        if len(corp_code) != 8 or not corp_code.isdigit():
+            _fail("MALFORMED_SOURCE_RESPONSE", f"{path}.corp_code", "숫자 8자리가 필요합니다.")
+        if not STOCK_CODE_RE.fullmatch(stock_code):
+            _fail("MALFORMED_SOURCE_RESPONSE", f"{path}.stock_code", "6자리 종목코드가 필요합니다.")
+        existing = index.get(stock_code)
+        if existing is not None and existing != corp_code:
+            _fail(
+                "SOURCE_REFERENCE_CONFLICT",
+                f"{path}.stock_code",
+                "같은 종목코드에 서로 다른 고유번호가 있습니다.",
+            )
+        index[stock_code] = corp_code
+    return index
+
+
+def derive_trading_calendar(
+    snapshots: Iterable[SourceSnapshot],
+    *,
+    version: str,
+    session_open: time = time(9, 0),
+    session_close: time = time(15, 30),
+) -> tuple[TradingDayObservation, ...]:
+    """KRX 일별매매 응답 유무로 거래일 여부를 만든다. row가 있으면 거래일이다.
+
+    KRX Open API에는 거래일 달력 endpoint가 없다. 조회한 날짜만 판정하며,
+    조회하지 않은 날짜는 아예 만들지 않아 calendar가 fail-closed로 남는다.
+    """
+
+    observations: list[TradingDayObservation] = []
+    for snapshot in snapshots:
+        metadata = snapshot.metadata
+        if metadata.dataset is not SourceDataset.KRX_STOCK_DAILY:
+            _fail("SOURCE_DATASET_MISMATCH", "$snapshot", "KRX 일별매매 snapshot이 아닙니다.")
+        market_date = _date(metadata.source_key.partition(":")[2], "$metadata.sourceKey")
+        payload = parse_json_object(snapshot.raw_payload_text)
+        is_trading_day = bool(_sequence(payload.get("OutBlock_1"), "$.OutBlock_1"))
+        observations.append(
+            TradingDayObservation(
+                market_date=market_date,
+                is_trading_day=is_trading_day,
+                session_open=session_open if is_trading_day else None,
+                session_close=session_close if is_trading_day else None,
+                version=version,
+                metadata=replace(
+                    metadata,
+                    dataset=SourceDataset.KRX_CALENDAR_DERIVED,
+                    source_key=market_date.isoformat(),
+                    lineage=tuple(
+                        f"krx-calendar-derived:{item}" for item in metadata.lineage
+                    ),
+                ),
+            )
+        )
     return tuple(observations)
 
 
