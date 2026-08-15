@@ -253,3 +253,71 @@ def test_evidence_status_transitions_are_kept_as_revisions() -> None:
         "summary": None,
         "publishedAt": None,
     }
+
+
+def test_public_event_serves_a_searching_evidence_document_before_judgement() -> None:
+    market = _active_market()
+    event_id = str(_ranking_item(market, now=at(9, 1))["eventId"])
+
+    document = market.evidence_document(event_id)
+
+    assert document is not None
+    validate_instance(document, "EvidenceListData", label="evidence")
+    assert document["eventId"] == event_id
+    assert document["evidenceStatus"] == "SEARCHING"
+    assert document["items"] == []
+    # 공개되지 않은 Event는 근거도 공개하지 않는다.
+    assert market.evidence_document("evt_unknown") is None
+
+
+def test_recorded_evidence_becomes_the_served_evidence_document() -> None:
+    market = _active_market()
+    revisions = EvidenceRevisionStore()
+    store = InMemoryNewsStore()
+    evidence = _evidence_pipeline(revisions, store)
+    NewsIngestor(
+        store,
+        stock_directory=STOCK_DIRECTORY,
+        entity_vocabulary=ENTITY_VOCABULARY,
+    ).ingest(
+        [raw(published_at=at(9, 3), retrieved_at=at(9, 4))],
+        now=at(9, 4),
+        window_start=WINDOW_START,
+    )
+    outcome = refresh_market_evidence(
+        evidence, market, now=at(9, 5), window_start=WINDOW_START
+    )[0]
+
+    document = market.evidence_document(outcome.event_id)
+
+    assert document is not None
+    validate_instance(document, "EvidenceListData", label="evidence")
+    assert document["evidenceStatus"] == "SINGLE_SOURCE"
+    items = document["items"]
+    assert isinstance(items, list) and len(items) == 1
+    item = items[0]
+    assert isinstance(item, dict)
+    assert item["summary"] == "신규 원전 수주 기대 관련 보도"
+    assert item["publishedAt"] == at(9, 3).isoformat()
+
+
+def test_snapshot_repository_serves_the_evidence_route() -> None:
+    """B 잔여: /v1/events/{eventId}/evidence가 파이프라인 근거로 응답한다."""
+
+    from importlib import import_module as _import_module
+
+    snapshot_product = _import_module("apps.api.snapshot_product")
+    market = _active_market()
+    event_id = str(_ranking_item(market, now=at(9, 1))["eventId"])
+    repository = snapshot_product.SnapshotProductReadRepository(market)
+
+    document = repository.evidence(event_id, None)
+
+    assert document is not None
+    assert document.data["eventId"] == event_id
+    assert document.data["evidenceStatus"] == "SEARCHING"
+    assert document.market_context is not None
+    assert document.market_context["marketDate"] == MARKET_DATE.isoformat()
+    # 이 저장소는 단일 페이지만 발행하므로 어떤 cursor도 다음 페이지가 아니다.
+    assert repository.evidence(event_id, "cursor_1") is None
+    assert repository.evidence("evt_unknown", None) is None

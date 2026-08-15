@@ -38,6 +38,8 @@ class SnapshotSource(Protocol):
 
     def theme_detail(self, event_id: str) -> dict[str, object] | None: ...
 
+    def evidence_document(self, event_id: str) -> dict[str, object] | None: ...
+
 
 def _utc_iso(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="milliseconds").replace(
@@ -74,9 +76,9 @@ def _snapshot_document(snapshot: ReadSnapshot) -> ProductDocument:
 
 
 class SnapshotProductReadRepository(EmptyProductReadRepository):
-    """rankings·treemap·market session을 스냅샷 소스에서 읽는다.
+    """rankings·treemap·market session·근거를 스냅샷 소스에서 읽는다.
 
-    근거·유사사례·과거 Event는 Stage 4/9 범위라 기본값(None)을 유지한다.
+    유사사례·과거 Event는 온톨로지 재검증(E-19) 전이라 기본값(None)을 유지한다.
     """
 
     def __init__(self, source: SnapshotSource) -> None:
@@ -155,6 +157,28 @@ class SnapshotProductReadRepository(EmptyProductReadRepository):
         base = _snapshot_document(snapshot)
         return ProductDocument(
             cast(JsonObject, detail),
+            base.copy_market_context(),
+            base.copy_versions(),
+        )
+
+    def evidence(
+        self,
+        event_id: str,
+        cursor: str | None,
+    ) -> ProductDocument | None:
+        # 파이프라인 근거 문서는 단일 페이지로 발행되고 nextCursor를 만들지
+        # 않으므로, 어떤 cursor 값도 유효한 다음 페이지가 아니다.
+        if cursor is not None:
+            return None
+        snapshot = self._source.latest_rankings
+        if snapshot is None:
+            return None
+        document = self._source.evidence_document(event_id)
+        if document is None:
+            return None
+        base = _snapshot_document(snapshot)
+        return ProductDocument(
+            cast(JsonObject, document),
             base.copy_market_context(),
             base.copy_versions(),
         )

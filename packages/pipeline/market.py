@@ -14,10 +14,12 @@ from decimal import Decimal
 
 from packages.calculations import THEME_CALCULATION_POLICY_V1, ThemeMetrics
 from packages.catalyst import (
+    DEFAULT_PAGE_LIMIT,
     CatalystEvidence,
     EvidenceRevision,
     EvidenceStatus,
     ThemeContext,
+    evidence_list_data,
     evidence_summary,
 )
 from packages.domain import (
@@ -113,6 +115,7 @@ class MarketDataPipeline:
         self._theme_by_event: dict[str, str] = {}
         self._activated_at: dict[str, datetime] = {}
         self._evidence: dict[str, dict[str, object]] = {}
+        self._evidence_documents: dict[str, dict[str, object]] = {}
         self._latest_metrics: dict[str, ThemeMetricUpdate] = {}
         self._input_sequence = 0
         self._command_sequence = 0
@@ -197,9 +200,36 @@ class MarketDataPipeline:
         revision: EvidenceRevision,
         evidence: Sequence[CatalystEvidence] = (),
     ) -> None:
-        """판정된 근거 상태를 다음 발행부터 rankings에 싣는다."""
+        """판정된 근거 상태를 다음 발행부터 rankings·근거 목록에 싣는다."""
 
         self._evidence[revision.event_id] = evidence_summary(revision, evidence)
+        self._evidence_documents[revision.event_id] = evidence_list_data(
+            revision, evidence
+        )
+
+    def evidence_document(self, event_id: str) -> dict[str, object] | None:
+        """공개 Event의 근거 목록 문서를 만든다. 판정 전이면 SEARCHING 빈 목록.
+
+        상세(theme_detail)가 공개하지 않는 Event는 근거도 공개하지 않는다.
+        상승 이유는 저장된 기사 근거가 확인된 범위에서만 제시하므로, 여기서
+        돌려주는 items가 그 확인된 전부다.
+        """
+
+        if self.theme_detail(event_id) is None:
+            return None
+        document = self._evidence_documents.get(event_id)
+        if document is not None:
+            return dict(document)
+        return {
+            "eventId": event_id,
+            "evidenceStatus": EvidenceStatus.SEARCHING.value,
+            "items": [],
+            "page": {
+                "nextCursor": None,
+                "hasMore": False,
+                "limit": DEFAULT_PAGE_LIMIT,
+            },
+        }
 
     def theme_id_for_event(self, event_id: str) -> str | None:
         """이 파이프라인이 만든 Event가 속한 테마."""
