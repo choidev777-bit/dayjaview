@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `5bf11e9` · `uv run pytest -q` 498 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `5e5b54f` · `uv run pytest -q` 499 passed·8 skipped
 
 ## 요약
 
@@ -96,7 +96,7 @@
   - **역할은 로그인 시점에 부여된다.** 이미 로그인한 뒤 env를 켰다면 다시 로그인해야 운영자가 된다(테스트로 고정).
   - 실행 중인 fixture 서버에서 데모 로그인이 `roles: [USER, OPERATOR]`를 받고, 브라우저 `/operator.html`이 운영자 5개 endpoint를 200으로 읽어 D-15 콘솔이 렌더되는 것까지 확인했다. local fixture 서버는 `.claude/launch.json`이 데모 계정을 운영자로 부트스트랩한다.
   - **사용자가 할 것**: `.env.local`과 배포 env에 `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS=<로그인할 구글 계정 주소>` 한 줄. 콤마로 여러 개 가능. 구글이 검증한 이메일만 인정되며 F-21 ①(콘솔 등록)이 끝나야 실제 구글 계정으로 확인할 수 있다.
-  - **발견(F-22 밖, 고치지 않음)**: `infra/deployment/environment.contract.json`이 구글 키를 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`으로 선언하는데 코드·`.env.example`은 `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`을 읽는다. 배포에서 계약 이름대로 넣으면 구글 키가 비어 있는 것으로 보여 fixture provider로 떨어진다. F-25에서 이름을 맞춰야 한다.
+  - **부수 수정** 2026-08-16 `5e5b54f`: `infra/deployment/environment.contract.json`이 구글 키를 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`으로 선언하는데 코드·`.env.example`은 `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET`을 읽고 있었다. 계약대로 배포하면 구글 키가 비어 보여 fixture provider(인증 우회)로 떨어진다. 계약 이름을 코드에 맞추고, compose secret 검사의 금지 이름도 고쳤다(이전 이름으로는 실제 변수를 못 잡았다). 계약 파일을 읽는 코드가 없어 아무도 못 잡던 것이라 `test_compose_contract.py`에 계약↔코드 이름 일치 검사를 넣어 고정했다.
 - [ ] **F-23** 보안 점검 — `tests/security/**` 없음.
 - [ ] **F-24** 품질 점검 — `docs/release/qa_report.md` 없음.
 - [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
