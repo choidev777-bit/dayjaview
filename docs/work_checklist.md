@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `d53793b` · `uv run pytest -q` 510 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `ba88b66` · `uv run pytest -q` 518 passed·8 skipped
 
 ## 요약
 
@@ -13,9 +13,9 @@
 | C. 화면 | 2 / 2 | — |
 | D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 0 / 6 | E-16 ~ E-21 |
-| F. 출시 | 2 / 5 | F-21, F-24, F-25 |
+| F. 출시 | 3 / 5 | F-21, F-25 |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 3건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 2건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있고, E-17은 외부 관문이 없어 지금도 착수 가능하다.**
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -108,7 +108,13 @@
   - 방어가 확인된 축: OAuth state 브라우저 바인딩·1회 소비, CSRF 3중(Origin+double-submit+서버 해시), `__Host-` 쿠키, 원문 토큰 미저장, 운영자 필드 allowlist, SQL 전면 파라미터화, 위험 함수(`pickle`/`eval`/`os.system`/`yaml.load`/`lxml`/`verify=False`) 전무, 웹 XSS 싱크 전무.
   - **수리** 2026-08-16 `fb95950`: 13건 중 **12건을 고쳤다**(11번 `/api/health` 무인증만 표준 범위라 유지). 수집 URL scheme 제한(거부 사유 `INVALID_URL`), OpenDART 예외 체인 차단, 외부 응답 32MiB 스트리밍 상한·ZIP 64MiB 상한·리다이렉트 거부·`_slug` 점 제거, `/auth/*` 한도(5분 20회 → 429)와 만료 레코드 `purge_expired`, `SESSION_SIGNING_SECRET`을 커서 서명 키로 연결(공유 저장소인데 없으면 기동 실패), `apps/web/vercel.json` 보안 헤더, 운영자 repo `safeReturnTo`, `pytest` 9.0.3(`pip-audit` 0건). `tests/security/**`는 이제 고쳐진 동작을 고정한다.
   - 수리 중 **새로 드러난 것**: 계약이 production 필수로 선언한 `REDIS_URL`·`INFOSTOCK_SESSION_STATE_PATH`도 코드가 전혀 읽지 않았다(Redis는 저장소에 아예 없다). 8번과 같은 성격이라 함께 필수에서 내리고 "production 필수 = 코드가 읽는다"를 테스트로 고정했다. **F-25에서 이 3개 값은 주입하지 않아도 된다.**
-- [ ] **F-24** 품질 점검 — `docs/release/qa_report.md` 없음.
+- [x] **F-24** 품질 점검 — 2026-08-16 `HEAD`
+  - 결과: [qa_report.md](./release/qa_report.md). **제품 파일은 고치지 않았다**(수리는 별도 작업). 5건 발견 — 높음 1 · 중간 2 · 정보성 2.
+  - 실행: 계약 검증(HTTP 30·WS 9·schema 79·fixture 43) · `uv run pytest -q` 518 passed·8 skipped · ruff·mypy(108 파일) · 웹 lint·typecheck·test(83)·build · compose config · 브라우저 E2E · axe-core 6화면 · 실규모 성능. **저장 market replay는 실행하지 않았다**(로드맵이 제외).
+  - **높음(배포 차단)**: 핵심 종목을 전부 관측한 테마에서 `observed_weight_ratio`가 1을 2.16e-28만큼 넘겨 `CoveragePart`가 ValueError를 던진다. 분모는 기본 28자리로, 분자는 `prec=60`으로 더하기 때문이다(`theme_metrics.py:301-320`). dirty batch가 원자적이라 다음 주기도 같은 자리에서 죽고, 발행 루프에 예외 처리가 없어 **task가 조용히 멈춘 채 API는 마지막 스냅샷을 계속 서빙한다.** 실규모 우주 5주기 내 재현. 기존 테스트는 fixture 시총이 작아 못 잡았다.
+  - **중간**: `/auth/*` 요청 한도(20회/5분·전송 계층 주소)가 인증된 `/auth/session`까지 함께 세서, 프록시 뒤 배포에서는 전 사용자가 한 통을 공유해 정상 사용자가 429를 받는다(이번 E2E 중 브라우저 하나로 발생) · 색상 대비 WCAG AA 미달 23곳(최악 2.03:1, 브랜드 오렌지 토큰 문제. 운영자 콘솔은 0건).
+  - **정보성**: 웹 a11y 테스트가 `color-contrast` 규칙을 끄고 통과해 대비 문제는 CI가 구조적으로 못 본다 · publish 한 주기의 85%가 `_select_references` 선형 스캔(테마×멤버×2,411 참조).
+  - 성능 판정: 체결→종목 상태 반영 P95 **6.2ms**(목표 500ms) · 테마 재계산+발행 P95 **393~996ms**(목표 1초, 전 종목 확산에서 목표선에 붙음) · REST P95 2.6~4.6ms · WS 스냅샷 간격 2,006ms(발행 주기 2초와 일치) · 사용자 SPA JS 294kB(gzip 94.5kB).
 - [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
 
 ## 남은 외부 관문 (에이전트가 못 여는 것)
