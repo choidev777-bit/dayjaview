@@ -29,7 +29,12 @@ export default defineConfig(({ command, mode }) => ({
   },
   build: {
     rollupOptions: {
-      input: fileURLToPath(new URL('./index.html', import.meta.url)),
+      // 운영자 콘솔은 일반 사용자 SPA와 다른 entry다. 두 번들은 서로를 import하지 않고
+      // 사용자 navigation·sitemap에도 나타나지 않는다. 접근 통제는 서버 role gate가 한다.
+      input: [
+        fileURLToPath(new URL('./index.html', import.meta.url)),
+        fileURLToPath(new URL('./operator.html', import.meta.url)),
+      ],
     },
   },
   test: {

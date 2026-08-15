@@ -37,6 +37,24 @@ class ResourceIdMismatch(ApiError):
         )
 
 
+class StaleOperatorVersion(ApiError):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "STALE_VERSION",
+            "화면의 상태가 최신이 아닙니다. 새로고침 후 다시 시도해 주세요.",
+        )
+
+
+class OperatorCommandNotAllowed(ApiError):
+    def __init__(self) -> None:
+        super().__init__(
+            409,
+            "COMMAND_NOT_ALLOWED",
+            "현재 상태에서는 이 작업을 실행할 수 없습니다.",
+        )
+
+
 class UnsupportedMarketDate(ApiError):
     def __init__(self) -> None:
         super().__init__(

@@ -24,6 +24,7 @@ from packages.identity import (
     TargetRecord,
 )
 from packages.identity.security import Clock
+from packages.operator import InMemoryOperatorRepository, OperatorRepository
 
 from .app_types import JsonObject, JsonValue
 from .config import ApiSettings
@@ -65,6 +66,8 @@ _THEME_EVENT_PATH = re.compile(r"^/v1/themes/([^/]+)/events/([^/]+)$")
 _EVENT_EVIDENCE_PATH = re.compile(r"^/v1/events/([^/]+)/evidence$")
 _SIMILAR_EVENTS_PATH = re.compile(r"^/v1/events/([^/]+)/similar-events$")
 _HISTORICAL_EVENT_PATH = re.compile(r"^/v1/events/([^/]+)$")
+_OPERATOR_JOB_PATH = re.compile(r"^/v1/operator/jobs/([^/]+)(?:/(retry|resume))?$")
+_OPERATOR_REVIEW_PATH = re.compile(r"^/v1/operator/reviews/([^/]+)(?:/(resolve))?$")
 _ROLE_ORDER = {Role.USER: 0, Role.HISTORICAL_PILOT: 1, Role.OPERATOR: 2}
 
 
@@ -632,6 +635,123 @@ class IdentityApiApp:
             request.require_empty_body()
             status = self._operator_boundary.status(session_token)
             return self._success(200, status, request_id)
+        if request.path == "/v1/operator/jobs" and request.method == "GET":
+            request.require_query_keys({"status", "cursor", "limit"})
+            request.require_empty_body()
+            jobs = self._operator_boundary.list_jobs(
+                session_token,
+                status=request.query_value("status"),
+                cursor=self._query_cursor(request),
+                limit=self._query_limit(request, default=10, maximum=50),
+            )
+            return self._success(200, jobs, request_id)
+        if request.path == "/v1/operator/reviews" and request.method == "GET":
+            request.require_query_keys({"type", "status", "cursor", "limit"})
+            request.require_empty_body()
+            reviews = self._operator_boundary.list_reviews(
+                session_token,
+                review_type=request.query_value("type"),
+                review_status=request.query_value("status"),
+                cursor=self._query_cursor(request),
+                limit=self._query_limit(request, default=10, maximum=50),
+            )
+            return self._success(200, reviews, request_id)
+        if request.path == "/v1/operator/audit" and request.method == "GET":
+            request.require_query_keys({"cursor", "limit"})
+            request.require_empty_body()
+            audit = self._operator_boundary.audit(
+                session_token,
+                cursor=self._query_cursor(request),
+                limit=self._query_limit(request, default=10, maximum=50),
+            )
+            return self._success(200, audit, request_id)
+        if (
+            request.path == "/v1/operator/infostock/auth-status"
+            and request.method == "GET"
+        ):
+            request.require_query_keys(set())
+            request.require_empty_body()
+            auth_status = self._operator_boundary.infostock_auth_status(session_token)
+            return self._success(200, auth_status, request_id)
+        match = _OPERATOR_JOB_PATH.fullmatch(request.path)
+        if match is not None:
+            return self._operator_job(
+                request,
+                request_id,
+                session_token,
+                unquote(match.group(1)),
+                match.group(2),
+            )
+        match = _OPERATOR_REVIEW_PATH.fullmatch(request.path)
+        if match is not None:
+            return self._operator_review(
+                request,
+                request_id,
+                session_token,
+                unquote(match.group(1)),
+                match.group(2),
+            )
+        return self._not_found(request_id)
+
+    def _operator_job(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        session_token: str | None,
+        run_id: str,
+        command: str | None,
+    ) -> ApiResponse:
+        self._validate_identifier(run_id)
+        request.require_query_keys(set())
+        if command is None and request.method == "GET":
+            request.require_empty_body()
+            job = self._operator_boundary.job(session_token, run_id)
+            return self._success(200, job, request_id)
+        if command is not None and request.method == "POST":
+            handler = (
+                self._operator_boundary.retry_job
+                if command == "retry"
+                else self._operator_boundary.resume_job
+            )
+            receipt = handler(
+                session_token,
+                run_id,
+                origin=request.header("origin"),
+                csrf_token=request.header("x-csrf-token"),
+                csrf_cookie=request.cookies.get(CSRF_COOKIE),
+                idempotency_key=request.header("idempotency-key"),
+                body=request.body,
+                now=self._clock.now(),
+            )
+            return self._success(200, receipt, request_id)
+        return self._not_found(request_id)
+
+    def _operator_review(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        session_token: str | None,
+        review_id: str,
+        command: str | None,
+    ) -> ApiResponse:
+        self._validate_identifier(review_id)
+        request.require_query_keys(set())
+        if command is None and request.method == "GET":
+            request.require_empty_body()
+            review = self._operator_boundary.review(session_token, review_id)
+            return self._success(200, review, request_id)
+        if command is not None and request.method == "POST":
+            receipt = self._operator_boundary.resolve_review(
+                session_token,
+                review_id,
+                origin=request.header("origin"),
+                csrf_token=request.header("x-csrf-token"),
+                csrf_cookie=request.cookies.get(CSRF_COOKIE),
+                idempotency_key=request.header("idempotency-key"),
+                body=request.body,
+                now=self._clock.now(),
+            )
+            return self._success(200, receipt, request_id)
         return self._not_found(request_id)
 
     def _success(
@@ -722,6 +842,7 @@ class FixtureIdentityEnvironment:
     target_catalog: TargetCatalog
     product_repository: ProductReadRepository
     realtime_hub: RealtimeSnapshotHub
+    operator_repository: InMemoryOperatorRepository
 
 
 def create_app(
@@ -731,6 +852,7 @@ def create_app(
     settings: ApiSettings,
     product_repository: ProductReadRepository | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
+    operator_repository: OperatorRepository | None = None,
     clock: Clock | None = None,
 ) -> IdentityApiApp:
     return IdentityApiApp(
@@ -738,6 +860,7 @@ def create_app(
         operator_boundary=OperatorBoundary(
             identity_service=identity_service,
             status_source=operator_status_source,
+            repository=operator_repository,
         ),
         settings=settings,
         product_repository=product_repository,
@@ -755,6 +878,7 @@ def create_fixture_app(
     operator_status: RuntimeOperatorStatus | None = None,
     product_repository: ProductReadRepository | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
+    operator_repository: InMemoryOperatorRepository | None = None,
 ) -> FixtureIdentityEnvironment:
     effective_settings = settings or ApiSettings()
     effective_clock = clock or SystemClock()
@@ -782,12 +906,14 @@ def create_fixture_app(
         product_repository or InMemoryProductReadRepository()
     )
     effective_realtime_hub = realtime_hub or RealtimeSnapshotHub()
+    effective_operator_repository = operator_repository or InMemoryOperatorRepository()
     app = create_app(
         identity_service=service,
         operator_status_source=StaticOperatorStatusSource(runtime_status),
         settings=effective_settings,
         product_repository=effective_product_repository,
         realtime_hub=effective_realtime_hub,
+        operator_repository=effective_operator_repository,
         clock=effective_clock,
     )
     return FixtureIdentityEnvironment(
@@ -798,6 +924,7 @@ def create_fixture_app(
         effective_target_catalog,
         effective_product_repository,
         effective_realtime_hub,
+        effective_operator_repository,
     )
 
 

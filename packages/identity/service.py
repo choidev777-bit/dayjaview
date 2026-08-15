@@ -271,6 +271,30 @@ class IdentityService:
             raise FeatureNotEntitled
         return principal
 
+    def authorize_operator_command(
+        self,
+        *,
+        session_token: str | None,
+        origin: str | None,
+        csrf_token: str | None,
+        csrf_cookie: str | None,
+    ) -> SessionPrincipal:
+        """상태를 바꾸는 운영자 command의 role과 CSRF를 함께 검증한다.
+
+        role을 먼저 본다 — 일반 사용자에게는 CSRF 실패가 아니라 권한 없음으로
+        답해야 운영자 surface의 존재를 CSRF 오류로 유추할 수 없다.
+        """
+
+        principal = self.require_operator(session_token)
+        self._validate_origin_and_csrf(
+            principal=principal,
+            origin=origin,
+            csrf_token=csrf_token,
+            csrf_cookie=csrf_cookie,
+            allow_without_session=False,
+        )
+        return principal
+
     def logout(
         self,
         *,

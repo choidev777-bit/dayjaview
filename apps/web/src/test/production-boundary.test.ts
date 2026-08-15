@@ -16,4 +16,16 @@ describe('production fixture 경계', () => {
     expect(productionHtml).not.toContain('main.fixture');
     expect(fixtureHtml).toContain('/src/main.fixture.tsx');
   });
+
+  it('운영자 콘솔은 사용자 entry와 분리된 별도 HTML로만 연결된다', async () => {
+    const productionHtml = await readFile(resolve(process.cwd(), 'index.html'), 'utf8');
+    const operatorHtml = await readFile(resolve(process.cwd(), 'operator.html'), 'utf8');
+    const operatorEntry = await readFile(resolve(process.cwd(), 'src/main.operator.tsx'), 'utf8');
+    const userShell = await readFile(resolve(process.cwd(), 'src/app/App.tsx'), 'utf8');
+    expect(productionHtml).not.toContain('main.operator');
+    expect(operatorHtml).toContain('/src/main.operator.tsx');
+    expect(operatorHtml).toContain('noindex');
+    expect(operatorEntry).not.toContain('fixtureRepository');
+    expect(userShell).not.toContain('operator');
+  });
 });
