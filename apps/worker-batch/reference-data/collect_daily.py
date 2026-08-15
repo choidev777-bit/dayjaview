@@ -12,6 +12,7 @@ import json
 import os
 import re
 from collections.abc import Mapping
+from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from importlib import import_module
 from pathlib import Path
@@ -74,6 +75,39 @@ def _report(payload: Mapping[str, object]) -> None:
 
 def _slug(value: str) -> str:
     return re.sub(r"[^0-9A-Za-z._-]", "_", value)
+
+
+def _stamp_settlement(snapshot: Any) -> Any:
+    """정기보고서 as_of를 응답이 실제로 말한 결산기준일(stlm_dt)로 맞춘다.
+
+    보고서코드에서 계산한 날짜는 12월 결산 회사에만 맞는다. 3월·6월 결산 회사는
+    같은 보고서코드라도 stlm_dt가 다르고, 파서는 as_of가 stlm_dt와 같기를
+    요구하므로 가정한 날짜로 저장하면 나중에 읽히지 않는다.
+    """
+
+    models = _package("models")
+    rows = json.loads(snapshot.raw_payload_text).get("list")
+    if not isinstance(rows, list) or not rows:
+        return snapshot
+    settlements = {
+        row.get("stlm_dt") for row in rows if isinstance(row, dict) and row.get("stlm_dt")
+    }
+    if len(settlements) != 1:
+        return snapshot
+    try:
+        settlement = date.fromisoformat(str(settlements.pop()))
+    except ValueError:
+        return snapshot
+    if settlement == snapshot.metadata.as_of.date():
+        return snapshot
+    return models.SourceSnapshot(
+        metadata=replace(
+            snapshot.metadata,
+            as_of=datetime(settlement.year, settlement.month, settlement.day, tzinfo=UTC),
+        ),
+        raw_payload_text=snapshot.raw_payload_text,
+        raw_hash=snapshot.raw_hash,
+    )
 
 
 def _store(snapshot: Any, *, output_dir: Path) -> Path:
@@ -216,13 +250,15 @@ def collect(
                 continue
             dart_calls += 1
             _store(
-                dart.fetch_periodic_report(
-                    dataset=models.SourceDataset(dataset_name),
-                    corp_code=corp_code,
-                    business_year=arguments.business_year,
-                    report_code=arguments.report_code,
-                    as_of=settlement_as_of,
-                    collected_at=collected_at,
+                _stamp_settlement(
+                    dart.fetch_periodic_report(
+                        dataset=models.SourceDataset(dataset_name),
+                        corp_code=corp_code,
+                        business_year=arguments.business_year,
+                        report_code=arguments.report_code,
+                        as_of=settlement_as_of,
+                        collected_at=collected_at,
+                    )
                 ),
                 output_dir=output_dir,
             )

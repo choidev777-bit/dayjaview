@@ -90,7 +90,10 @@ def _worker() -> Any:
 
 def _reference_modules() -> dict[str, Any]:
     prefix = "packages." + "reference-data.reference_data"
-    return {name: import_module(f"{prefix}.{name}") for name in ("parsers", "models")}
+    return {
+        name: import_module(f"{prefix}.{name}")
+        for name in ("parsers", "models", "hashing")
+    }
 
 
 def _arguments(output_dir: Path, **overrides: Any) -> argparse.Namespace:
@@ -175,6 +178,42 @@ def test_trading_calendar_is_derived_from_krx_response_presence(
     assert {item.metadata.dataset.value for item in calendar} == {
         "KRX_CALENDAR_DERIVED"
     }
+
+
+def test_settlement_stamp_follows_the_response_not_the_report_code() -> None:
+    """3월·6월 결산 회사는 같은 보고서코드라도 stlm_dt가 다르다."""
+
+    modules = _reference_modules()
+    payload = {
+        "status": "000",
+        "list": [_dart_row(se="보통주", istc_totqy="1,000", tesstk_co="-", stlm_dt="2026-03-31")],
+    }
+    raw_text = modules["hashing"].canonical_json(payload)
+    models = modules["models"]
+    # 보고서코드 11012로 계산한 결산기준일(6/30)로 일단 저장된 snapshot.
+    assumed = models.SourceSnapshot(
+        metadata=models.SourceMetadata(
+            provider=models.SourceProvider.OPENDART,
+            dataset=models.SourceDataset.OPENDART_STOCK_TOTAL,
+            endpoint="https://opendart.fss.or.kr/api/stockTotqySttus.json",
+            source_key="00000001:2026:11012",
+            as_of=aware("2026-06-30T00:00:00+00:00"),
+            collected_at=aware("2026-08-15T09:00:00+09:00"),
+            parser_version="reference-source-2026.08.1",
+            revision=1,
+            lineage=("opendart:stock-total:00000001:2026:11012",),
+            source_document_ids=("20260814000001",),
+        ),
+        raw_payload_text=raw_text,
+        raw_hash=modules["hashing"].sha256_text(raw_text),
+    )
+
+    stamped = _worker()._stamp_settlement(assumed)
+
+    assert stamped.metadata.as_of.date() == date(2026, 3, 31)
+    assert stamped.raw_hash == assumed.raw_hash
+    normalized = modules["parsers"].parse_open_dart(stamped, stock_code="A00001")
+    assert normalized.issued_share_observations[0].effective_on == date(2026, 3, 31)
 
 
 def test_collect_daily_stops_before_transport_without_keys(tmp_path: Path) -> None:
