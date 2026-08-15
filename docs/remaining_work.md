@@ -105,11 +105,10 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 | 관문 | 막히는 작업 | 필요한 것 |
 |---|---|---|
 | KRX·금감원(OpenDART) API 키 | A-2 | 사용자가 발급해 `.env.local`에 추가 |
-| 주식장 개장 시간 + 키움 live 승인 | A-3 | 장중 실행, CLAUDE.md 승인 항목 3 |
-| 인포스탁 live 호출 승인 | D-14 | CLAUDE.md 승인 항목 3 |
+| 주식장 개장 시간 + 키움 live 승인 | A-3 | 장중 실행, CLAUDE.md 승인 항목 2 |
+| 인포스탁 live 호출 승인 | D-14 | CLAUDE.md 승인 항목 2 |
 | 2인 블라인드 평가 | E-19→E-20 | 사람 평가 통과 |
 | 배포·cloud·DNS 승인 | F-24 | CLAUDE.md 승인 항목 1 |
-| git push | 전체 | CLAUDE.md 승인 항목 2 |
 
 ---
 
@@ -268,7 +267,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 
 ### F-25. 실제 배포 (승인 필요)
 
-- OCI(API·worker·PostgreSQL·Redis, ARM64 이미지 — `infra/images/runtime.Dockerfile`·compose 준비됨) + Vercel(웹) + DNS + 비밀키 주입 + 백업/복구 runbook. **실제 리소스 생성 전 반드시 사용자 승인.** 배포 전 git push도 승인 필요.
+- OCI(API·worker·PostgreSQL·Redis, ARM64 이미지 — `infra/images/runtime.Dockerfile`·compose 준비됨) + Vercel(웹) + DNS + 비밀키 주입 + 백업/복구 runbook. **실제 리소스 생성 전 반드시 사용자 승인.**
 
 ---
 
@@ -302,7 +301,7 @@ Opus로 진행하다 판단이 어려워 보이면 그 작업만 Fable로 재시
 ## 추천 진행 순서
 
 ```
-잔일(push 승인받아 백업) → B-8(codex분 정리; A-5보다 먼저)
+B-8(codex분 정리; A-5보다 먼저)
 → A-1 → A-2(키 대기 중 B-9~11 병행) → A-4 → A-5 → A-3(장중)
 → C-0(디자인 정합) · C-12 · D-13~15 · A-6~7 (병렬 가능; C-0은 F 출시 전 필수)
 → F-21~25 (1차 출시)
