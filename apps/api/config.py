@@ -6,6 +6,20 @@ from datetime import timedelta
 
 from packages.identity import IdentityPolicy, parse_operator_bootstrap_emails
 
+TRUSTED_PROXY_HOPS_ENV = "TRUSTED_PROXY_HOPS"
+
+
+def _parse_trusted_proxy_hops(raw: str | None) -> int:
+    if raw is None or not raw.strip():
+        return 0
+    try:
+        hops = int(raw.strip())
+    except ValueError as error:
+        raise ValueError(f"{TRUSTED_PROXY_HOPS_ENV}는 정수여야 합니다: {raw}") from error
+    if hops < 0:
+        raise ValueError(f"{TRUSTED_PROXY_HOPS_ENV}는 음수일 수 없습니다: {hops}")
+    return hops
+
 
 @dataclass(frozen=True, slots=True)
 class ApiSettings:
@@ -18,12 +32,16 @@ class ApiSettings:
     realtime_maximum_message_bytes: int = 65_536
     recent_authentication_window: timedelta = timedelta(minutes=10)
     operator_bootstrap_emails: frozenset[str] = frozenset()
+    # API 앞에 선 프록시 수. 0이면 전송 계층 주소만 믿는다.
+    trusted_proxy_hops: int = 0
 
     def __post_init__(self) -> None:
         if self.realtime_auth_deadline <= timedelta(0):
             raise ValueError("realtime_auth_deadline must be positive")
         if not 1 <= self.realtime_maximum_message_bytes <= 1_048_576:
             raise ValueError("realtime_maximum_message_bytes is outside the safe range")
+        if self.trusted_proxy_hops < 0:
+            raise ValueError("trusted_proxy_hops must not be negative")
 
     @classmethod
     def from_environment(cls, environment: Mapping[str, str]) -> ApiSettings:
@@ -36,6 +54,9 @@ class ApiSettings:
             ).rstrip("/"),
             operator_bootstrap_emails=parse_operator_bootstrap_emails(
                 environment.get("OPERATOR_BOOTSTRAP_GOOGLE_EMAILS")
+            ),
+            trusted_proxy_hops=_parse_trusted_proxy_hops(
+                environment.get(TRUSTED_PROXY_HOPS_ENV)
             ),
         )
 

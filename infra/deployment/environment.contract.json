@@ -99,6 +99,15 @@
         "staging": true,
         "production": true
       }
+    },
+    {
+      "name": "TRUSTED_PROXY_HOPS",
+      "required": {
+        "localFixture": false,
+        "ciFixture": false,
+        "staging": false,
+        "production": false
+      }
     }
   ]
 }

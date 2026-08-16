@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 import yaml
 
+from apps.api.config import TRUSTED_PROXY_HOPS_ENV
 from apps.api.production import (
     CURSOR_SIGNING_SECRET_ENV,
     GOOGLE_CLIENT_ID_ENV,
@@ -166,6 +167,7 @@ def test_environment_contract_declares_the_names_the_api_actually_reads() -> Non
         GOOGLE_CLIENT_ID_ENV,
         GOOGLE_CLIENT_SECRET_ENV,
         IDENTITY_DATABASE_DSN_ENV,
+        TRUSTED_PROXY_HOPS_ENV,
     }
 
     assert required_by_code <= declared, required_by_code - declared

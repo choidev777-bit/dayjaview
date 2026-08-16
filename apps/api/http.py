@@ -64,6 +64,27 @@ class ApiRequest:
             client=_client_key(scope.get("client")),
         )
 
+    def client_key(self, *, trusted_proxy_hops: int) -> str:
+        """요청 한도를 세는 단위.
+
+        API 앞에 프록시가 서면 전송 계층 주소는 전부 그 프록시가 되어 모든
+        사용자가 한 통을 공유한다. 앞단 프록시 수를 운영자가 선언한 경우에만
+        `X-Forwarded-For`의 그 자리 값을 쓴다. 선언이 없거나 항목 수가 모자라면
+        위조 가능한 header 대신 전송 계층 주소로 남는다.
+        """
+
+        if trusted_proxy_hops <= 0:
+            return self.client
+        forwarded = [
+            entry.strip()
+            for value in self.headers.get("x-forwarded-for", ())
+            for entry in value.split(",")
+            if entry.strip()
+        ]
+        if len(forwarded) < trusted_proxy_hops:
+            return self.client
+        return forwarded[-trusted_proxy_hops]
+
     def header(self, name: str) -> str | None:
         values = self.headers.get(name.casefold(), ())
         if len(values) > 1:

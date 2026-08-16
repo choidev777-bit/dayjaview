@@ -72,6 +72,10 @@ _OPERATOR_REVIEW_PATH = re.compile(r"^/v1/operator/reviews/([^/]+)(?:/(resolve))
 _ROLE_ORDER = {Role.USER: 0, Role.HISTORICAL_PILOT: 1, Role.OPERATOR: 2}
 AUTH_RATE_LIMIT = 20
 AUTH_RATE_WINDOW = timedelta(minutes=5)
+# 한도가 걸리는 경로. 무인증으로 저장소를 건드리는 OAuth 진입점만이다.
+# 세션 조회·로그아웃은 쿠키가 있어야 하고 행을 만들지 않으므로 세지 않는다.
+# 여기에 `/auth/session`을 넣으면 화면이 뜰 때마다 한도를 먹어 정상 사용자가 막힌다.
+RATE_LIMITED_AUTH_PATHS = ("/auth/google", "/auth/google/callback")
 
 
 class IdentityApiApp:
@@ -103,6 +107,7 @@ class IdentityApiApp:
             limit=AUTH_RATE_LIMIT,
             window=AUTH_RATE_WINDOW,
         )
+        self._trusted_proxy_hops = settings.trusted_proxy_hops
         if settings.app_base_url.rstrip("/") != identity_service.policy.allowed_origin:
             raise ValueError("API and identity origins must match")
 
@@ -129,8 +134,8 @@ class IdentityApiApp:
         await response.send_asgi(send)
 
     def _handle(self, request: ApiRequest, request_id: str) -> ApiResponse:
-        if request.path.startswith("/auth/") and not self._auth_rate_limiter.allow(
-            request.client,
+        if request.path in RATE_LIMITED_AUTH_PATHS and not self._auth_rate_limiter.allow(
+            request.client_key(trusted_proxy_hops=self._trusted_proxy_hops),
             self._clock.now(),
         ):
             raise RateLimited()

@@ -16,6 +16,7 @@ from httpx import ASGITransport, AsyncClient
 
 from apps.api import create_fixture_app
 from apps.api.app import AUTH_RATE_LIMIT, AUTH_RATE_WINDOW
+from apps.api.config import ApiSettings
 from packages.identity import GoogleIdentity
 
 ORIGIN = "https://dayjaview.vercel.app"
@@ -51,6 +52,78 @@ def test_unauthenticated_login_start_is_rate_limited_per_client() -> None:
 
             clock.advance(AUTH_RATE_WINDOW + timedelta(seconds=1))
             assert (await client.get("/auth/google")).status_code == 302
+
+    asyncio.run(scenario())
+
+
+def test_session_read_does_not_consume_the_login_start_budget() -> None:
+    """F-24 발견 2: 세션 조회는 한도를 먹지 않는다.
+
+    웹은 앱이 뜰 때마다 `/auth/session`을 부른다. 이것까지 세면 화면을 몇 번
+    새로 열기만 해도 정상 사용자가 429로 막힌다.
+    """
+
+    async def scenario() -> None:
+        environment = create_fixture_app(clock=MutableClock())
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(transport=transport, base_url=ORIGIN) as client:
+            for _ in range(AUTH_RATE_LIMIT * 3):
+                assert (await client.get("/auth/session")).status_code == 200
+
+            # 예산은 그대로 남아 있어야 한다.
+            assert (await client.get("/auth/google")).status_code == 302
+
+    asyncio.run(scenario())
+
+
+def test_rate_limit_separates_clients_behind_a_declared_proxy() -> None:
+    """F-24 발견 2: 프록시 뒤에서도 사용자마다 따로 센다.
+
+    앞단 프록시 수를 선언하지 않으면 header는 위조 가능하므로 무시한다.
+    """
+
+    async def scenario() -> None:
+        behind_proxy = create_fixture_app(
+            clock=MutableClock(),
+            settings=ApiSettings(trusted_proxy_hops=1),
+        )
+        transport = ASGITransport(app=behind_proxy.app)
+        async with AsyncClient(transport=transport, base_url=ORIGIN) as client:
+            for _ in range(AUTH_RATE_LIMIT):
+                first = await client.get(
+                    "/auth/google",
+                    headers={"X-Forwarded-For": "203.0.113.7"},
+                )
+                assert first.status_code == 302
+
+            blocked = await client.get(
+                "/auth/google",
+                headers={"X-Forwarded-For": "203.0.113.7"},
+            )
+            assert blocked.status_code == 429
+            # 같은 프록시를 지나온 다른 사용자는 자기 예산을 그대로 쓴다.
+            other = await client.get(
+                "/auth/google",
+                headers={"X-Forwarded-For": "203.0.113.8"},
+            )
+            assert other.status_code == 302
+
+        default = create_fixture_app(clock=MutableClock())
+        transport = ASGITransport(app=default.app)
+        async with AsyncClient(transport=transport, base_url=ORIGIN) as client:
+            for _ in range(AUTH_RATE_LIMIT):
+                assert (
+                    await client.get(
+                        "/auth/google",
+                        headers={"X-Forwarded-For": f"198.51.100.{_}"},
+                    )
+                ).status_code == 302
+
+            forged = await client.get(
+                "/auth/google",
+                headers={"X-Forwarded-For": "198.51.100.250"},
+            )
+            assert forged.status_code == 429
 
     asyncio.run(scenario())
 
