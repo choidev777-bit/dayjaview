@@ -380,7 +380,11 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
       <section aria-labelledby="cases-title">
         <div className="section-heading">
           <div>
-            <h2 id="cases-title">DAY-JA-VIEW 케이스</h2>
+            {/* 제품 이름 부분만 포인트 색으로 둔다. `케이스`까지 물들이면 제목이 아니라
+                배지처럼 읽힌다. */}
+            <h2 id="cases-title">
+              <em className="brand-mark">DAY-JA-VIEW</em> 케이스
+            </h2>
             <small>오늘과 비슷했던 과거</small>
           </div>
           <Link

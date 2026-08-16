@@ -1840,9 +1840,19 @@ a:focus-visible,
   gap: 8px;
 }
 
+ /* 데자뷰 케이스는 `언제 있었던 일인가`가 먼저 읽혀야 한다. 회색 캡션으로 두면
+    제목에 묻힌다. 포인트 색으로 올리고 글자도 키운다. */
 .case-list__copy small {
-  color: var(--djv-color-text-muted);
-  font-size: var(--djv-font-size-caption);
+  color: var(--djv-brand-contrast);
+  font-size: var(--djv-font-size-label);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+/* 제품 이름 강조. 이탤릭이 아니라 색으로만 구분한다. */
+.brand-mark {
+  color: var(--djv-color-brand);
+  font-style: normal;
 }
 
 /* 제목은 줄바꿈을 허용한다. 한 줄로 자르면 사건 이름이 통째로 사라진다. */
