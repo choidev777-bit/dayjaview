@@ -3,9 +3,17 @@ import { Link } from 'react-router-dom';
 import type { RankingItem } from '../domain/contracts';
 import { formatReturn, returnTone } from '../domain/formatting';
 import { CoverageIndicator } from './CoverageIndicator';
+import { readViewState, writeViewState } from './viewState';
 
 const CARD_GAP = 8;
 const INTRO_STEP_MS = 800;
+/** 끌어 옮긴 거리를 그대로 스크롤에 주면 카드가 손보다 빨리 지나간다 (팀 요청). */
+const DRAG_DAMPING = 0.55;
+/** 휠 한 번에 카드 여러 장이 넘어가지 않게 줄인다. */
+const WHEEL_DAMPING = 0.45;
+/** 손을 뗀 뒤 가장 가까운 카드로 맞추기까지 기다리는 시간. */
+const SNAP_DELAY_MS = 90;
+const WHEEL_INDEX_KEY = 'today.wheelIndex';
 
 function badgeLabel(item: RankingItem): string | null {
   if (item.badges.includes('RISING_FAST')) return '급부상';
@@ -24,6 +32,9 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
   const frameRef = useRef<number | undefined>(undefined);
   const introTimersRef = useRef<number[]>([]);
   const introPlayedRef = useRef(false);
+  // 가장 가까운 카드로 맞추는 동작. effect 안에서 만들어 두고 포인터 처리에서 부른다.
+  const snapRef = useRef<(() => void) | null>(null);
+  const snapTimerRef = useRef<number | undefined>(undefined);
 
   useLayoutEffect(() => {
     const wheel = wheelRef.current;
@@ -98,9 +109,38 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
       schedulePaint();
     };
 
+    // 지금 화면 가운데에 가장 가까운 카드의 순서. 위치를 기억하고 되살릴 때 쓴다.
+    const currentIndex = () =>
+      ((Math.round((wheel.scrollTop - baseTop) / step) % items.length) + items.length) % items.length;
+
+    const snapToNearest = () => {
+      const top = baseTop + Math.round((wheel.scrollTop - baseTop) / step) * step;
+      if (Math.abs(top - wheel.scrollTop) < 1) return;
+      wheel.scrollTo({ top, behavior: 'smooth' });
+    };
+    snapRef.current = snapToNearest;
+
+    // 휠은 브라우저 기본 속도가 빨라 한 번에 여러 장이 넘어간다. 직접 굴리고 멈추면 맞춘다.
+    const handleWheelEvent = (event: globalThis.WheelEvent) => {
+      cancelIntro();
+      event.preventDefault();
+      wheel.scrollTop += event.deltaY * WHEEL_DAMPING;
+      window.clearTimeout(snapTimerRef.current);
+      snapTimerRef.current = window.setTimeout(snapToNearest, SNAP_DELAY_MS * 2);
+    };
+
     paint();
     wheel.addEventListener('scroll', handleScroll, { passive: true });
+    wheel.addEventListener('wheel', handleWheelEvent, { passive: false });
     window.addEventListener('resize', applyPadding);
+
+    // 뒤로 가기로 돌아왔으면 보던 카드로 되돌리고 첫 진입 연출은 건너뛴다 (팀 요청).
+    const remembered = readViewState<number>(WHEEL_INDEX_KEY);
+    if (remembered !== undefined && remembered > 0 && remembered < items.length) {
+      wheel.scrollTop = baseTop + step * remembered;
+      introPlayedRef.current = true;
+      paint();
+    }
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!introPlayedRef.current && !reducedMotion && items.length > 1) {
@@ -122,8 +162,12 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
     }
 
     return () => {
+      writeViewState(WHEEL_INDEX_KEY, currentIndex());
       wheel.removeEventListener('scroll', handleScroll);
+      wheel.removeEventListener('wheel', handleWheelEvent);
       window.removeEventListener('resize', applyPadding);
+      window.clearTimeout(snapTimerRef.current);
+      snapRef.current = null;
       if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
       timers.forEach((timer) => window.clearTimeout(timer));
       timers.length = 0;
@@ -179,7 +223,7 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
       wheel.setPointerCapture(event.pointerId);
       wheel.dataset.dragging = 'true';
     }
-    if (drag.moved) wheel.scrollTop = drag.startTop - delta;
+    if (drag.moved) wheel.scrollTop = drag.startTop - delta * DRAG_DAMPING;
   }
 
   function handlePointerUp(event: PointerEvent<HTMLUListElement>) {
@@ -188,6 +232,9 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
     if (wheel.hasPointerCapture(event.pointerId)) wheel.releasePointerCapture(event.pointerId);
     delete wheel.dataset.dragging;
     dragRef.current.pointerId = -1;
+    // 카드 사이에 걸쳐 멈추지 않게 손을 뗀 뒤 가장 가까운 카드로 맞춘다.
+    window.clearTimeout(snapTimerRef.current);
+    snapTimerRef.current = window.setTimeout(() => snapRef.current?.(), SNAP_DELAY_MS);
   }
 
   return (
@@ -201,7 +248,6 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
-      onWheel={cancelIntro}
     >
       {/* 3벌 중 가운데 벌만 실제 목록이다. 앞뒤 복제본은 이어져 보이게 하는 장식이라
           보조기술과 키보드에서 감춘다. 그래야 같은 테마가 세 번 읽히지 않는다.

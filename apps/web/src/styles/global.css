@@ -1381,10 +1381,26 @@ a:focus-visible,
 }
 
 .metric-grid strong {
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   margin-top: var(--djv-space-2);
   color: var(--djv-brand-contrast);
   font-size: 18px;
   font-weight: 800;
+  /* `+22.6%`가 칸 폭보다 넓어도 줄을 접지 않고 글자를 좁혀 칸 높이를 지킨다. */
+  white-space: nowrap;
+}
+
+/* `중앙`은 값이 아니라 값의 성격이라 작게 윗줄에 둔다. */
+.metric-grid strong > i {
+  color: var(--djv-color-text-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 /* 수익률을 담는 칸은 등락 색을 유지한다. 기본 브랜드색이 이기면 하락과 상승이 같아 보인다. */
@@ -1664,8 +1680,18 @@ a:focus-visible,
   font-weight: 700;
 }
 
+/* 과거 사례 결과는 값에 따라 칸 배경도 같이 바뀐다. 배경을 분홍으로 고정하면
+   하락한 사례도 오른 것처럼 읽히고, 관찰 중인 칸까지 붉게 보인다. */
 .page--case-detail .metric-grid article {
+  background: var(--djv-color-surface-muted);
+}
+
+.page--case-detail .metric-grid article[data-tone="market-up"] {
   background: var(--djv-color-market-up-soft);
+}
+
+.page--case-detail .metric-grid article[data-tone="market-down"] {
+  background: var(--djv-color-market-down-soft);
 }
 
 .page--case-detail .metric-grid span {
@@ -1688,6 +1714,34 @@ a:focus-visible,
 .page--case-detail .page-intro,
 .page--catalyst .page-intro {
   border-bottom: 0;
+}
+
+/* 실시간 중계는 제목 바로 아래에 데이터 상태 박스가 온다. 구분선이 그 박스와 겹쳐
+   반쯤 걸친 줄처럼 보인다. 박스 자체가 이미 구역을 나눈다. */
+.page--insights .page-intro {
+  border-bottom: 0;
+}
+
+/* 계산 기준 바텀시트. 항목명은 작게, 설명은 본문 크기로 둔다. */
+.calculation-basis {
+  margin: 0;
+}
+
+.calculation-basis dt {
+  margin-top: var(--djv-space-4);
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
+  font-weight: 700;
+}
+
+.calculation-basis dt:first-of-type {
+  margin-top: var(--djv-space-2);
+}
+
+.calculation-basis dd {
+  margin: 4px 0 0;
+  font-size: var(--djv-font-size-label);
+  line-height: 1.55;
 }
 
 /* 시안 `.horizonToggle`. 낱개 pill이 아니라 한 트랙 안에서 3등분되는 세그먼트 토글이다. */
@@ -1799,12 +1853,8 @@ a:focus-visible,
 }
 
 .case-list__more {
-  margin: var(--djv-space-3) var(--djv-space-4) 0;
-}
-
-.detail-card .case-list__more {
-  margin-left: 0;
-  margin-right: 0;
+  margin-top: var(--djv-space-3);
+  margin-bottom: var(--djv-space-2);
 }
 
 .reason-tags {

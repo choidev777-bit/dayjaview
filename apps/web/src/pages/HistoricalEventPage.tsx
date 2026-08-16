@@ -84,7 +84,7 @@ export function HistoricalEventPage() {
                 detail.outcomes.find((row) => row.horizonTradingDays === horizon),
               );
               return (
-                <article key={horizon}>
+                <article key={horizon} data-tone={outcome.tone}>
                   <span>{horizonLabel(horizon)}</span>
                   <strong className={outcome.tone}>{outcome.text}</strong>
                 </article>

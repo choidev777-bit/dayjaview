@@ -33,6 +33,7 @@ import {
 import { CoverageIndicator } from '../shared/CoverageIndicator';
 import { EmptyState, ErrorPage, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
+import { readViewState, writeViewState } from '../shared/viewState';
 
 type ThemeDetail = ThemeDetailResponse['data'];
 type EvidenceSummary = ThemeDetail['evidenceSummary'];
@@ -247,8 +248,17 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
               <span>{horizonLabel(row.horizonTradingDays)}</span>
               {/* 시안 `.metrics strong`은 등락 색이 아니라 브랜드 대비색을 쓴다. 과거 집계는
                   오늘의 등락이 아니라 기록 요약이라 빨강·파랑으로 읽히면 안 된다. */}
+              {/* `중앙 +22.6%`처럼 한 덩어리로 두면 폭이 모자란 칸만 두 줄로 접혀 칸 높이가
+                  제각각이 된다. `중앙`을 항상 윗줄에 따로 두어 세 칸 높이를 맞춘다. */}
               <strong>
-                {row.medianReturn === null ? '기록 없음' : `중앙 ${formatReturn(row.medianReturn)}`}
+                {row.medianReturn === null ? (
+                  '기록 없음'
+                ) : (
+                  <>
+                    <i>중앙</i>
+                    {formatReturn(row.medianReturn)}
+                  </>
+                )}
               </strong>
               <small>
                 {row.positiveCount.toLocaleString('ko-KR')}/{row.observedCount.toLocaleString('ko-KR')}건 상승
@@ -637,7 +647,11 @@ export function ThemeDetailPage() {
   const location = useLocation();
   const { themeId = '', eventId = '' } = useParams();
   const [saveFailed, setSaveFailed] = useState(false);
-  const [requestedTab, setRequestedTab] = useState<'dejavu' | 'today' | null>(null);
+  // 뒤로 갔다 돌아와도 보던 탭을 유지한다 (ui_prototype_adaptation_plan §5.1).
+  const tabKey = `detail.tab:${themeId}`;
+  const [requestedTab, setRequestedTab] = useState<'dejavu' | 'today' | null>(
+    () => readViewState<'dejavu' | 'today'>(tabKey) ?? null,
+  );
   const [calculationOpen, setCalculationOpen] = useState(false);
   const calculationTriggerRef = useRef<HTMLButtonElement>(null);
   const calculationCloseRef = useRef<HTMLButtonElement>(null);
@@ -652,6 +666,14 @@ export function ThemeDetailPage() {
   const closeCalculation = useCallback(() => {
     setCalculationOpen(false);
   }, []);
+
+  const selectDetailTab = useCallback(
+    (tab: 'dejavu' | 'today') => {
+      setRequestedTab(tab);
+      writeViewState(tabKey, tab);
+    },
+    [tabKey],
+  );
 
   useEffect(() => {
     if (!calculationOpen) {
@@ -688,6 +710,7 @@ export function ThemeDetailPage() {
   // 시안 기본 탭은 DAY-JA-VIEW다. 다만 게이트가 닫혀 있으면 그 탭에 보여줄 게 없으므로
   // 사용자가 직접 고르기 전까지는 오늘 현황을 먼저 편다.
   const detailTab = requestedTab ?? (historicalAvailable ? 'dejavu' : 'today');
+  const calculationContext = resource.data.meta.marketContext ?? null;
 
   return (
     <div className="page page--detail">
@@ -791,7 +814,7 @@ export function ThemeDetailPage() {
             id="detail-tab-dejavu"
             aria-selected={detailTab === 'dejavu'}
             aria-controls="detail-panel-dejavu"
-            onClick={() => setRequestedTab('dejavu')}
+            onClick={() => selectDetailTab('dejavu')}
           >
             DAY-JA-VIEW
           </button>
@@ -801,7 +824,7 @@ export function ThemeDetailPage() {
             id="detail-tab-today"
             aria-selected={detailTab === 'today'}
             aria-controls="detail-panel-today"
-            onClick={() => setRequestedTab('today')}
+            onClick={() => selectDetailTab('today')}
           >
             오늘 현황
           </button>
@@ -904,8 +927,35 @@ export function ThemeDetailPage() {
                 <IconXmarkLine size={20} aria-hidden="true" />
               </button>
             </div>
-            <p>테마 수익률은 전일 기준 상한형 유동시가총액 가중 결과입니다.</p>
-            <p>결측값은 0으로 바꾸지 않으며 Coverage 상태를 함께 표시합니다.</p>
+            {/* screen_spec 3.4가 요구하는 여섯 가지를 모두 적는다.
+                값이 답하는 질문 · 계산 대상과 기간 · 가중 방식 · 기준 시각 · 제외·결측 규칙 · 예측 아님. */}
+            <dl className="calculation-basis">
+              <dt>무엇을 답하는 값인가</dt>
+              <dd>이 테마에 속한 종목들이 오늘 전체적으로 얼마나 움직였는지를 봅니다.</dd>
+              <dt>계산 대상과 기간</dt>
+              <dd>
+                핵심 {detail.coverage.core.totalCount.toLocaleString('ko-KR')}종목의 전일 종가 대비
+                오늘 가격 변화입니다.
+              </dd>
+              <dt>가중 방식</dt>
+              <dd>
+                종목별 비중은 전일 기준 상한형 유동시가총액 가중입니다. 검증된 유동주식비율이 없으면
+                다른 방식으로 대신 계산하지 않고 계산할 수 없음으로 표시합니다.
+              </dd>
+              <dt>데이터 기준 시각</dt>
+              <dd>
+                {calculationContext
+                  ? `${formatDate(calculationContext.asOf)} ${formatTime(calculationContext.asOf)} 기준`
+                  : '기준 시각을 확인할 수 없습니다.'}
+              </dd>
+              <dt>제외·결측 규칙</dt>
+              <dd>
+                값이 없는 종목은 0으로 바꾸지 않고 계산에서 빼며, 몇 종목이 반영됐는지를 Coverage
+                상태로 함께 표시합니다.
+              </dd>
+              <dt>고지</dt>
+              <dd>관측된 값이며 미래 수익률 예측이 아닙니다.</dd>
+            </dl>
           </section>
         </div>
       ) : null}

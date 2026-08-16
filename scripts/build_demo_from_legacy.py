@@ -213,7 +213,8 @@ def main() -> int:
                 ev_cur = conn.cursor()
                 ev_cur.execute(
                     """
-                    select o.occurrence_id, o.session_date, o.content, o.lead_stock_raw, e.ret_t1
+                    select o.occurrence_id, o.session_date, o.content, o.lead_stock_raw,
+                           e.ret_t1, e.ret_t5, e.ret_t20
                     from theme.occurrences o
                     join keyword.occurrence_keyword_links l on l.occurrence_id = o.occurrence_id
                     join keyword.keywords k on k.keyword_id = l.keyword_id
@@ -227,11 +228,33 @@ def main() -> int:
                     {
                         "matchedEventId": f"evt_{oid}",
                         "marketDate": d.isoformat(),
+                        "displayNameAtEvent": name,
                         "normalizedCatalystSummary": (c or "").split("(주도주")[0].strip()[:60],
                         "sameDayReturn": _pct(r1),
                         "leaderName": (lead or "").split("|")[0].strip().partition("-")[2] or None,
+                        "similarityReasons": [kw],
+                        "outcomes": [
+                            {
+                                "horizonTradingDays": h,
+                                "return": _pct(v),
+                                "status": "OBSERVED" if v is not None else "PENDING",
+                                "unavailableReason": None,
+                            }
+                            for h, v in zip(HORIZONS, (r1, r5, r20), strict=True)
+                        ],
+                        "leaders": [
+                            {
+                                "stockId": f"stk_{x.strip().partition('-')[0]}",
+                                "symbol": x.strip().partition("-")[0],
+                                "name": x.strip().partition("-")[2] or x.strip(),
+                                "return": 0.0,
+                                "role": "LEADER",
+                            }
+                            for x in (lead or "").split("|")[:3]
+                            if x.strip()
+                        ],
                     }
-                    for oid, d, c, lead, r1 in ev_cur.fetchall()
+                    for oid, d, c, lead, r1, r5, r20 in ev_cur.fetchall()
                 ]
                 ev_cur.close()
                 catalysts.append(

@@ -27,6 +27,7 @@ import { SavedPage } from '../pages/SavedPage';
 import { SimilarEventsPage } from '../pages/SimilarEventsPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
 import { TodayPage } from '../pages/TodayPage';
+import { ScrollMemory } from '../shared/ScrollMemory';
 import { ErrorState, SplashScreen } from '../shared/StatePanel';
 import { useAsyncResource } from '../shared/useAsyncResource';
 import { RepositoryProvider, useRepository } from './RepositoryContext';
@@ -41,6 +42,7 @@ const navigation = [
 function AppShell() {
   return (
     <div className="app-shell">
+      <ScrollMemory />
       <main className="app-content" id="main-content">
         <Outlet />
       </main>

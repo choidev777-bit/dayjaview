@@ -61,9 +61,13 @@ interface LegacyCatalyst {
   events: Array<{
     matchedEventId: string;
     marketDate: string;
+    displayNameAtEvent: string;
     normalizedCatalystSummary: string;
     sameDayReturn: number | null;
     leaderName: string | null;
+    similarityReasons: string[];
+    outcomes: LegacyOutcome[];
+    leaders: Array<{ stockId: string; symbol: string; name: string; return: number; role: string }>;
   }>;
 }
 
@@ -284,32 +288,49 @@ export const demoSimilarEvents: SimilarEventsResponse =
     meta,
   };
 
-export const demoHistoricalEvents: Record<string, HistoricalEventResponse> = Object.fromEntries(
-  story.themes.flatMap((theme) =>
-    theme.similar.map((item) => [
-      item.matchedEventId,
-      {
-        data: {
-          eventId: item.matchedEventId,
-          marketDate: item.marketDate,
-          displayNameAtEvent: item.displayNameAtEvent,
-          catalystSummary: item.normalizedCatalystSummary || '기록된 사유 없음',
-          similarityReasons: item.similarityReasons,
-          leaders: item.leaders.map((leader) => ({
-            stockId: leader.stockId,
-            symbol: leader.symbol,
-            name: leader.name,
-            return: leader.return,
-            role: 'LEADER' as const,
-          })),
-          outcomes: outcomes(item.outcomes),
-          futureOutcomeExcludedFromSelection: true as const,
-        },
-        meta,
+/** 사건 상세. 유사사례와 소재 상세에서 들어오는 사건을 모두 같은 형태로 만든다. */
+function historicalEvent(item: {
+  matchedEventId: string;
+  marketDate: string;
+  displayNameAtEvent: string;
+  normalizedCatalystSummary: string;
+  similarityReasons: string[];
+  outcomes: LegacyOutcome[];
+  leaders: Array<{ stockId: string; symbol: string; name: string; return: number; role: string }>;
+}): [string, HistoricalEventResponse] {
+  return [
+    item.matchedEventId,
+    {
+      data: {
+        eventId: item.matchedEventId,
+        marketDate: item.marketDate,
+        displayNameAtEvent: item.displayNameAtEvent,
+        catalystSummary: item.normalizedCatalystSummary || '기록된 사유 없음',
+        similarityReasons: item.similarityReasons,
+        leaders: item.leaders.map((leader) => ({
+          stockId: leader.stockId,
+          symbol: leader.symbol,
+          name: leader.name,
+          return: leader.return,
+          role: 'LEADER' as const,
+        })),
+        outcomes: outcomes(item.outcomes),
+        futureOutcomeExcludedFromSelection: true as const,
       },
-    ]),
+      meta,
+    },
+  ];
+}
+
+export const demoHistoricalEvents: Record<string, HistoricalEventResponse> = Object.fromEntries([
+  ...story.themes.flatMap((theme) =>
+    theme.similar.map((item) => historicalEvent({ ...item, displayNameAtEvent: item.displayNameAtEvent })),
   ),
-);
+  // 소재 상세에서 들어오는 사건도 같은 실데이터로 잇는다. 없으면 계약 fixture로 빠진다.
+  ...story.themes.flatMap((theme) =>
+    theme.catalysts.flatMap((catalyst) => catalyst.events.map((item) => historicalEvent(item))),
+  ),
+]);
 
 /**
  * 소재 유형. 온톨로지 라벨(E-17)은 아직 없어서, 그 테마의 과거 사건에 실제로 붙어 있던
