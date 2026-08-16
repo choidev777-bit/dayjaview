@@ -69,8 +69,6 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
         </div>
       ) : item.currentState ? (
         <div className="saved-row__state">
-          {/* 저장한 때가 아니라 지금 상태다. 무슨 값인지 이름을 붙여 준다. */}
-          <span className="saved-row__state-label">지금</span>
           {/* 사건 수명 상태는 테마·이벤트에만 있는 개념이다. 종목에 붙이면 뜻이 없다. */}
           {item.savedType === 'STOCK' ? null : (
             <strong>{eventStatusLabel(item.currentState.eventState, 'PENDING')}</strong>
@@ -85,8 +83,7 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
       ) : item.savedType === 'EVENT' ? (
         // 과거 사례는 오늘의 등락이 없다. 접근 가능 여부만 알려 준다 (screen_spec 12.1).
         <div className="saved-row__state">
-          <span className="saved-row__state-label">과거 사례</span>
-          <span>{reachable ? '지금 열어볼 수 있습니다' : '지금은 열 수 없습니다'}</span>
+          <span>{reachable ? '지금 열어볼 수 있는 과거 사례' : '지금은 열 수 없는 과거 사례'}</span>
         </div>
       ) : null}
       <div className="saved-row__actions">
@@ -207,7 +204,10 @@ export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
         <p>기기에만 남기지 않고 계정에 저장하도록 준비 중이에요.</p>
       </div>
 
-      <p className="section-note notice">저장 여부는 시장 순위·계산·공용 결과에 영향을 주지 않습니다.</p>
+      <p className="section-note notice">
+        각 항목의 상태와 수익률은 저장한 때가 아니라 지금 기준입니다. 저장 여부는 시장 순위·계산·공용
+        결과에 영향을 주지 않습니다.
+      </p>
     </div>
   );
 }

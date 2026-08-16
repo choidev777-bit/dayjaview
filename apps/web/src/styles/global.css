@@ -2164,16 +2164,6 @@ a:focus-visible,
   font-size: var(--djv-font-size-caption);
 }
 
-/* 이 줄이 저장 당시가 아니라 지금 상태라는 것을 앞에서 밝힌다. */
-.saved-row__state-label {
-  padding: 2px 7px;
-  border-radius: var(--djv-radius-pill);
-  background: var(--djv-color-surface-muted);
-  color: var(--djv-color-text-muted);
-  font-size: 10px;
-  font-weight: 700;
-}
-
 .saved-row__state strong {
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-caption);
