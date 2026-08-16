@@ -90,8 +90,15 @@ def test_evidence_spans_point_into_raw_text() -> None:
 
 def test_versions_are_stamped() -> None:
     result = classify_catalyst("정부 지원 소식에 상승")
-    assert result.vocabulary_version == "1.0.0"
+    assert result.vocabulary_version == "1.1.0"
     assert result.transform_version == "catalyst-transform/1.0.0"
+
+
+def test_substring_collisions_do_not_fire() -> None:
+    # "중국산"의 국산, "방송사"의 송사, "10억달러"의 달러가 새지 않는다.
+    assert "PRODUCT_TECH" not in classify_catalyst("중국산 타이어 반덤핑 관세 결정에 상승").type_ids
+    assert "LEGAL_RISK" not in classify_catalyst("방송사 광고영업 기대감에 상승").type_ids
+    assert "MACRO_RATES_FX" not in classify_catalyst("GE 10억달러 투자 소식에 급등").type_ids
 
 
 def test_deterministic_output() -> None:

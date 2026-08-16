@@ -39,7 +39,7 @@ def test_certainty_marker_families_do_not_overlap() -> None:
 
 
 def test_content_hash_is_stable_and_versioned() -> None:
-    assert VOCABULARY_VERSION == "1.0.0"
+    assert VOCABULARY_VERSION == "1.1.0"
     first = vocabulary_content_hash()
     assert first == vocabulary_content_hash()
     assert len(first) == 64

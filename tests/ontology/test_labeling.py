@@ -34,7 +34,7 @@ def test_rows_carry_labels_and_report_counts_match() -> None:
     assert report["totalByYear"] == {"2024": 2, "unknown": 1}
     assert report["unclassifiedByYear"] == {"unknown": 1}
     assert report["typeCounts"]["ORDER_CONTRACT"] == 1
-    assert report["vocabularyVersion"] == "1.0.0"
+    assert report["vocabularyVersion"] == "1.1.0"
 
 
 def test_gate_thresholds() -> None:
