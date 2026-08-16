@@ -22,6 +22,7 @@ EXPECTED_ORDER = (
     "0004_event_reconciliation.sql",
     "0005_infostock_increment.sql",
     "0006_operator_runtime.sql",
+    "0007_theme_catalyst_labels.sql",
 )
 
 

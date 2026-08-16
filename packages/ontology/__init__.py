@@ -15,6 +15,11 @@ from .models import (
     EvidenceSpan,
     ParsedCauseSentence,
 )
+from .postgres import (
+    LoadCounts,
+    PostgresCatalystLabelStore,
+    VocabularyConflictError,
+)
 from .transform import TRANSFORM_VERSION, classify_catalyst, parse_cause_sentence
 from .vocabulary import VOCABULARY, VOCABULARY_VERSION, vocabulary_content_hash
 
@@ -30,7 +35,10 @@ __all__ = [
     "Direction",
     "EvidenceSpan",
     "HistoryRecord",
+    "LoadCounts",
     "ParsedCauseSentence",
+    "PostgresCatalystLabelStore",
+    "VocabularyConflictError",
     "classify_catalyst",
     "label_history_records",
     "parse_cause_sentence",
