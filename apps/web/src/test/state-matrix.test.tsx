@@ -148,10 +148,11 @@ describe('근거 상태 matrix', () => {
     };
     render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
 
+    // 이력 보존은 탭으로 안내한다. 같은 말을 문단으로 한 번 더 적으면 확정 사유 요약과 겹친다.
     expect(
-      await screen.findByText('장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.'),
+      await screen.findByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: '장중 분석 이력' })).toBeInTheDocument();
   });
 
   it('복수 근거 확정과 출처를 함께 표시한다', async () => {

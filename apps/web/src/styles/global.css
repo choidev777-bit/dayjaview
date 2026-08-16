@@ -590,13 +590,6 @@ a:focus-visible,
   border-radius: 50%;
   background: var(--djv-color-brand);
   box-shadow: 0 0 0 4px var(--djv-color-brand-soft);
-  animation: live-dot-pulse 1.35s ease-in-out infinite;
-}
-
-.source-status[data-live="false"] .live-dot {
-  background: var(--djv-color-text-muted);
-  box-shadow: 0 0 0 4px var(--djv-color-surface-muted);
-  animation: none;
 }
 
 .data-status--delayed .live-dot,
@@ -1636,35 +1629,12 @@ a:focus-visible,
 }
 
 /* 건수 바로 아래에 붙는 경고. 옅은 경고색 띠로 감싸 본문 글과 구분한다. */
- /* 연한 주황 바탕에 주황 글씨라 눈에 안 들어왔다. 왼쪽에 굵은 띠를 세우고 글자는
-    본문 색으로 내려 대비를 올린다. 경고 자체는 배경과 띠 색으로 읽힌다. */
+/* 상자에 넣으면 오히려 묻힌다. 배경 없이 주의색 글자만 둔다. */
 .historical-summary__warning {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin: var(--djv-space-2) 0 0;
-  padding: 10px 12px;
-  border-left: 3px solid var(--djv-color-warning);
-  border-radius: var(--djv-radius-sm);
-  background: var(--djv-color-warning-soft);
-  color: var(--djv-color-text);
+  color: var(--djv-color-warning);
   font-size: var(--djv-font-size-label);
   font-weight: 700;
-}
-
-.historical-summary__warning::before {
-  content: "!";
-  display: grid;
-  width: 16px;
-  height: 16px;
-  flex: none;
-  align-content: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: var(--djv-color-surface);
-  background: var(--djv-color-warning);
-  font-size: 11px;
-  line-height: 1;
 }
 
 .historical-summary__rows {
@@ -2259,11 +2229,6 @@ a:focus-visible,
 @keyframes live-pulse {
   0%, 100% { opacity: .62; }
   50% { opacity: 1; }
-}
-
-@keyframes live-dot-pulse {
-  0%, 100% { opacity: .45; transform: scale(.82); }
-  50% { opacity: 1; transform: scale(1); }
 }
 
 /* 시안의 유일한 화면 경계. 이보다 넓은 화면에서는 420px 열이 가운데 정렬된다. */

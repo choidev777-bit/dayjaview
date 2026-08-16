@@ -590,8 +590,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
               return (
                 <>
-                  {/* 깜빡임은 지금 들어오는 중이라는 뜻이다. 마감 후 확정 사유는 더 변하지 않는다. */}
-                  <div className="source-status" data-live={confirmed ? 'false' : 'true'}>
+                  <div className="source-status">
                     <span className="live-dot" aria-hidden="true" />
                     {evidenceStatusLabel(evidenceStatus)}
                   </div>
@@ -600,12 +599,6 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                     <p className="confirmation-note" role="status">
                       뉴스 수집이 지연되고 있습니다. 확인된 신규 소재 없음과 다른 상태입니다.
                       {lastHealthyAt ? ` 마지막 정상 수집 ${formatTime(lastHealthyAt)}` : ''}
-                    </p>
-                  ) : null}
-
-                  {tab === 'AFTER_CLOSE' ? (
-                    <p className="confirmation-note">
-                      장중에 표시했던 근거는 이력으로 남기고 확정 사유를 기본으로 표시합니다.
                     </p>
                   ) : null}
 
