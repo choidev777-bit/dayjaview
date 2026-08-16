@@ -1,5 +1,5 @@
 import { IconArrowLeftLine } from '@karrotmarket/react-monochrome-icon';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { HistoricalHorizon } from '../domain/contracts';
 import {
@@ -11,17 +11,30 @@ import {
 } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
+import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const HORIZONS: readonly HistoricalHorizon[] = [1, 5, 20];
 
 export function HistoricalEventPage() {
   const repository = useRepository();
-  const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
   const matchedEventId = params.matchedEventId ?? '';
-  const contextEventId = (location.state as { contextEventId?: string } | null)?.contextEventId;
+  const state = location.state as {
+    contextEventId?: string;
+    themeId?: string;
+    catalystId?: string;
+  } | null;
+  const contextEventId = state?.contextEventId;
+  // 공유 링크로 바로 들어오면 되돌아갈 기록이 없다. 들어온 맥락이 있으면 그 화면으로,
+  // 없으면 홈으로 보낸다.
+  const fallback = state?.catalystId
+    ? `/catalysts/${encodeURIComponent(state.catalystId)}`
+    : state?.themeId && contextEventId
+      ? `/themes/${encodeURIComponent(state.themeId)}/events/${encodeURIComponent(contextEventId)}`
+      : '/today';
+  const goBack = useGoBack(fallback);
   const resource = useRepositoryResource(
     repository,
     'historical',
@@ -36,7 +49,7 @@ export function HistoricalEventPage() {
     if (asRepositoryError(resource.error)?.kind === 'permission') {
       return (
         <div className="page page--gate">
-          <EventHeader onBack={() => navigate(-1)} />
+          <EventHeader onBack={goBack} />
           <PermissionState />
         </div>
       );
@@ -49,7 +62,7 @@ export function HistoricalEventPage() {
 
   return (
     <div className="page page--case-detail">
-      <EventHeader onBack={() => navigate(-1)} />
+      <EventHeader onBack={goBack} />
 
       <div className="page-intro">
         <small>

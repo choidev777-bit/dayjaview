@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRepository } from '../app/RepositoryContext';
 import type { DataStatus, TreemapResponse } from '../domain/contracts';
+import { dataStatusLabel } from '../domain/formatting';
 import { isSnapshotStale, selectTreemapItems } from '../domain/treemap';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorPage } from '../shared/StatePanel';
@@ -72,7 +73,10 @@ function InsightsScreen({ response }: { response: TreemapResponse }) {
           <i aria-hidden="true" />
           면적: 테마 수익률
         </span>
-        <span>수치는 장중 갱신</span>
+        {/* 장이 끝났는데 `장중 갱신`이라고 적으면 화면 위 상태 띠와 어긋난다. */}
+        <span>
+          {displayContext.dataStatus === 'LIVE' ? '수치는 장중 갱신' : `수치는 ${dataStatusLabel(displayContext.dataStatus)} 기준`}
+        </span>
       </div>
       <p className="section-note notice">
         면적과 색상은 같은 테마 수익률 원값을 사용합니다. 내부 순위 점수는 사용하지 않습니다.

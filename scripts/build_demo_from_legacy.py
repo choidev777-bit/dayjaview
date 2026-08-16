@@ -23,10 +23,69 @@ CURRENT = "2026-08-10"
 PREVIOUS = "2026-08-07"
 TOP_N = 10
 HORIZONS = (1, 5, 20)
+# `engine.event_outcomes`는 사건 하나에 버전 두 벌을 갖고 있다.
+#  - leader_ew_v1 : 당시 기록된 주도주 동일가중 (16,575건)
+#  - stocks_ew_v1 : 주도주 표기가 없을 때의 전 종목 폴백 (39,530건)
+# 그냥 join하면 같은 사건이 두 번 나오고 수익률도 서로 달라진다. 정본 바스켓 정의
+# (screen_spec 10.5 `사건 당시 인포스탁이 기록한 주도주를 동일가중한다`)에 따라
+# 주도주 버전을 먼저 쓰고 없을 때만 폴백을 쓴다.
+OUTCOME = """
+        left join lateral (
+          select e.ret_t1, e.ret_t5, e.ret_t20
+          from engine.event_outcomes e
+          where e.occurrence_id = o.occurrence_id
+          order by (e.outcome_version = 'leader_ew_v1') desc, e.outcome_version
+          limit 1
+        ) e on true
+"""
 
 
 def _pct(value: Decimal | None) -> float | None:
     return None if value is None else round(float(value), 4)
+
+
+def _leaders(cur, raw: str | None, day) -> list[dict[str, object]]:
+    """사건 당시 주도주와 그날 등락률(T-1 종가 대비 T0 종가).
+
+    가격을 못 찾은 종목은 `0.0%`로 적지 않고 목록에서 뺀다. 0은 보합이라는 뜻이라
+    계산 불가와 구분되지 않는다 (screen_spec 8.9 `계산 불가는 —, 0 표시 금지`).
+    """
+    rows: list[dict[str, object]] = []
+    for chunk in (raw or "").split("|"):
+        code, _, name = chunk.strip().partition("-")
+        code, name = code.strip(), name.strip()
+        if not code or not name:
+            continue
+        # `prices_daily`에는 같은 (종목, 날짜)가 두 번 들어 있는 행이 50만 개 있다(수집 원천 2벌).
+        # 그냥 최근 2행을 뽑으면 같은 날이 두 번 잡혀 등락률이 0%로 나온다. 날짜당 한 행만 쓴다.
+        cur.execute(
+            """
+            select distinct on (p.session_date) p.adjusted_close
+            from market.prices_daily p
+            where p.security_id = (
+                select m.security_id from theme.occurrence_members m
+                where m.source_security_code = %s limit 1)
+              and p.session_date <= %s
+            order by p.session_date desc, p.adjusted_close
+            limit 2
+            """,
+            (code, day),
+        )
+        closes = [r[0] for r in cur.fetchall()]
+        if len(closes) < 2 or not closes[1]:
+            continue
+        rows.append(
+            {
+                "stockId": f"stk_{code}",
+                "symbol": code,
+                "name": name,
+                "return": _pct(closes[0] / closes[1] - 1),
+                "role": "LEADER",
+            }
+        )
+        if len(rows) >= 3:
+            break
+    return rows
 
 
 def main() -> int:
@@ -91,50 +150,27 @@ def main() -> int:
             )
             today_keywords = {r[0] for r in cur.fetchall()}
 
-            leaders: list[dict[str, object]] = []
-            for order, chunk in enumerate((lead_raw or "").split("|")):
-                code, _, stock_name = chunk.strip().partition("-")
-                if not stock_name.strip():
-                    continue
-                cur.execute(
-                    """
-                    with px as (
-                      select security_id,
-                             max(adjusted_close) filter (where session_date = %s) c,
-                             max(adjusted_close) filter (where session_date = %s) p0
-                      from market.prices_daily where session_date in (%s, %s) group by 1)
-                    select px.c / nullif(px.p0, 0) - 1
-                    from market.securities s join px on px.security_id = s.security_id
-                    join theme.occurrence_members m on m.security_id = s.security_id
-                    where m.source_security_code = %s limit 1
-                    """,
-                    (CURRENT, PREVIOUS, CURRENT, PREVIOUS, code.strip()),
-                )
-                got = cur.fetchone()
-                leaders.append(
-                    {
-                        "stockId": f"stk_{code.strip()}",
-                        "symbol": code.strip(),
-                        "name": stock_name.strip(),
-                        "return": _pct(got[0]) if got and got[0] is not None else 0.0,
-                    }
-                )
-                if len(leaders) >= 3:
-                    break
+            # 오늘의 주도 종목. 가격을 못 찾은 종목은 0%로 적지 않고 뺀다.
+            leaders = [
+                {k: v for k, v in row.items() if k != "role"}
+                for row in _leaders(cur, lead_raw, CURRENT)
+            ]
 
             # 과거 유사사례: 같은 테마의 지난 사건 + 이미 계산된 T+N 결과
             cur.execute(
                 """
                 select o.occurrence_id, o.session_date, o.content, o.lead_stock_raw,
                        e.ret_t1, e.ret_t5, e.ret_t20
-                from theme.occurrences o
-                left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                from theme.occurrences o"""
+                + OUTCOME
+                + """
                 where o.theme_code = %s and o.session_date < %s
                 order by o.session_date desc limit 6
                 """,
                 (theme_code, CURRENT),
             )
             similar = []
+            lead_cur = conn.cursor()
             for occ_id, day, text, lead, r1, r5, r20 in list(cur.fetchall()):
                 tag_cur = conn.cursor()
                 tag_cur.execute(
@@ -166,24 +202,15 @@ def main() -> int:
                         "normalizedCatalystSummary": (text or "").split("(주도주")[0].strip()[:60],
                         "similarityReasons": tags,
                         "outcomes": outcomes,
-                        "leaders": [
-                            {
-                                "stockId": f"stk_{c.strip().partition('-')[0]}",
-                                "symbol": c.strip().partition("-")[0],
-                                "name": c.strip().partition("-")[2] or c.strip(),
-                                "return": 0.0,
-                                "role": "LEADER",
-                            }
-                            for c in (lead or "").split("|")[:3]
-                            if c.strip()
-                        ],
+                        "leaders": _leaders(lead_cur, lead, day),
                     }
                 )
+            lead_cur.close()
 
             # 소재 유형: 온톨로지 라벨이 아직 없어 그 테마 과거 사건에 붙은 키워드로 대신한다.
             cur.execute(
                 """
-                select k.display_name, count(*) as eligible,
+                select k.display_name, count(distinct o.occurrence_id) as eligible,
                        count(e.ret_t1) as observed_1,
                        count(*) filter (where e.ret_t1 > 0) as up_1,
                        percentile_cont(0.5) within group (order by e.ret_t1) as med_1,
@@ -195,11 +222,12 @@ def main() -> int:
                        percentile_cont(0.5) within group (order by e.ret_t20) as med_20
                 from theme.occurrences o
                 join keyword.occurrence_keyword_links l on l.occurrence_id = o.occurrence_id
-                join keyword.keywords k on k.keyword_id = l.keyword_id
-                left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                join keyword.keywords k on k.keyword_id = l.keyword_id"""
+                + OUTCOME
+                + """
                 where o.theme_code = %s and o.session_date < %s
                 group by k.display_name
-                order by count(*) desc, k.display_name limit 3
+                order by count(distinct o.occurrence_id) desc, k.display_name limit 3
                 """,
                 (theme_code, CURRENT),
             )
@@ -217,13 +245,15 @@ def main() -> int:
                            e.ret_t1, e.ret_t5, e.ret_t20
                     from theme.occurrences o
                     join keyword.occurrence_keyword_links l on l.occurrence_id = o.occurrence_id
-                    join keyword.keywords k on k.keyword_id = l.keyword_id
-                    left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                    join keyword.keywords k on k.keyword_id = l.keyword_id"""
+                    + OUTCOME
+                    + """
                     where o.theme_code = %s and o.session_date < %s and k.display_name = %s
                     order by o.session_date desc limit 8
                     """,
                     (theme_code, CURRENT, kw),
                 )
+                px_cur = conn.cursor()
                 events = [
                     {
                         "matchedEventId": f"evt_{oid}",
@@ -242,20 +272,11 @@ def main() -> int:
                             }
                             for h, v in zip(HORIZONS, (r1, r5, r20), strict=True)
                         ],
-                        "leaders": [
-                            {
-                                "stockId": f"stk_{x.strip().partition('-')[0]}",
-                                "symbol": x.strip().partition("-")[0],
-                                "name": x.strip().partition("-")[2] or x.strip(),
-                                "return": 0.0,
-                                "role": "LEADER",
-                            }
-                            for x in (lead or "").split("|")[:3]
-                            if x.strip()
-                        ],
+                        "leaders": _leaders(px_cur, lead, d),
                     }
                     for oid, d, c, lead, r1, r5, r20 in ev_cur.fetchall()
                 ]
+                px_cur.close()
                 ev_cur.close()
                 catalysts.append(
                     {

@@ -1,18 +1,26 @@
 import { IconArrowLeftLine, IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { formatDate, formatReturn, horizonLabel, returnTone } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
+import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const VISIBLE_EVENTS = 3;
 
 export function CatalystDetailPage() {
   const repository = useRepository();
+  const location = useLocation();
   const [expanded, setExpanded] = useState(false);
-  const navigate = useNavigate();
+  const from = (location.state as { themeId?: string; eventId?: string } | null) ?? null;
+  // 소재 상세는 테마 상세에서 들어온다. 공유 링크로 바로 열면 그 테마로, 모르면 홈으로.
+  const goBack = useGoBack(
+    from?.themeId && from?.eventId
+      ? `/themes/${encodeURIComponent(from.themeId)}/events/${encodeURIComponent(from.eventId)}`
+      : '/today',
+  );
   const params = useParams();
   const catalystId = params.catalystId ?? '';
   const resource = useRepositoryResource(
@@ -30,7 +38,7 @@ export function CatalystDetailPage() {
     if (asRepositoryError(resource.error)?.kind === 'permission') {
       return (
         <div className="page page--gate">
-          <CatalystHeader onBack={() => navigate(-1)} />
+          <CatalystHeader onBack={goBack} />
           <PermissionState />
         </div>
       );
@@ -43,7 +51,7 @@ export function CatalystDetailPage() {
   if (detail.availability !== 'AVAILABLE') {
     return (
       <div className="page page--gate">
-        <CatalystHeader onBack={() => navigate(-1)} />
+        <CatalystHeader onBack={goBack} />
         <PermissionState />
       </div>
     );
@@ -51,7 +59,7 @@ export function CatalystDetailPage() {
 
   return (
     <div className="page page--catalyst">
-      <CatalystHeader onBack={() => navigate(-1)} />
+      <CatalystHeader onBack={goBack} />
 
       <div className="page-intro">
         <small>{detail.themeDisplayName} · 과거 상승 소재</small>
@@ -116,7 +124,16 @@ export function CatalystDetailPage() {
             <ul className="case-list">
               {(expanded ? detail.events : detail.events.slice(0, VISIBLE_EVENTS)).map((event) => (
                 <li key={event.matchedEventId}>
-                  <Link to={`/events/${encodeURIComponent(event.matchedEventId)}`}>
+                  {/* 어느 사건에서 들어왔는지 넘겨야 사건 상세가 `오늘과 비슷한 이유`를
+                      같은 기준으로 계산한다. 뒤로 가기 목적지도 여기서 정해진다. */}
+                  <Link
+                    to={`/events/${encodeURIComponent(event.matchedEventId)}`}
+                    state={{
+                      contextEventId: from?.eventId ?? detail.themeId,
+                      themeId: detail.themeId,
+                      catalystId,
+                    }}
+                  >
                     <span className="case-list__copy">
                       <small>
                         {formatDate(`${event.marketDate}T00:00:00+09:00`)}

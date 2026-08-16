@@ -1,13 +1,14 @@
 import { IconArrowLeftLine } from '@karrotmarket/react-monochrome-icon';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
+import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 export function HistoricalGatePage() {
   const repository = useRepository();
-  const navigate = useNavigate();
   const params = useParams();
+  const goBack = useGoBack('/today');
   const eventId = params.eventId ?? params.matchedEventId ?? '';
   const resource = useRepositoryResource(
     repository,
@@ -22,7 +23,7 @@ export function HistoricalGatePage() {
   return (
     <div className="page page--gate">
       <header className="app-bar">
-        <button type="button" onClick={() => navigate(-1)} aria-label="이전 화면으로 돌아가기">
+        <button type="button" onClick={goBack} aria-label="이전 화면으로 돌아가기">
           <IconArrowLeftLine size={24} aria-hidden="true" />
         </button>
         <strong>과거 사례</strong>

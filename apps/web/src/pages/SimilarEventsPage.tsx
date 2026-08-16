@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { IconArrowLeftLine, IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { HistoricalHorizon, HistoricalSummary } from '../domain/contracts';
 import { formatDate, formatReturn, horizonLabel, outcomeText, returnTone } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
+import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const HORIZONS: readonly HistoricalHorizon[] = [1, 5, 20];
@@ -18,12 +19,30 @@ function isSmallSample(summary: HistoricalSummary | undefined): boolean {
 
 export function SimilarEventsPage() {
   const repository = useRepository();
-  const navigate = useNavigate();
   const params = useParams();
   const themeId = params.themeId ?? '';
   const eventId = params.eventId ?? '';
-  const [horizon, setHorizon] = useState<HistoricalHorizon>(5);
-  const [expanded, setExpanded] = useState(false);
+  const goBack = useGoBack(
+    `/themes/${encodeURIComponent(themeId)}/events/${encodeURIComponent(eventId)}`,
+  );
+  // 기간과 펼침 상태를 주소에 남긴다. 새로고침·공유·뒤로 가기에서 보던 그대로 열린다.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = Number(searchParams.get('horizon'));
+  const horizon: HistoricalHorizon = HORIZONS.includes(requested as HistoricalHorizon)
+    ? (requested as HistoricalHorizon)
+    : 5;
+  const expanded = searchParams.get('cases') === 'all';
+  const patchParams = useCallback(
+    (patch: Record<string, string | null>) => {
+      const next = new URLSearchParams(searchParams);
+      Object.entries(patch).forEach(([key, value]) => {
+        if (value === null) next.delete(key);
+        else next.set(key, value);
+      });
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
   const resource = useRepositoryResource(
     repository,
     'historical',
@@ -39,7 +58,7 @@ export function SimilarEventsPage() {
     if (asRepositoryError(resource.error)?.kind === 'permission') {
       return (
         <div className="page page--gate">
-          <GateHeader onBack={() => navigate(-1)} />
+          <GateHeader onBack={goBack} />
           <PermissionState />
         </div>
       );
@@ -52,7 +71,7 @@ export function SimilarEventsPage() {
   if (data.availability !== 'AVAILABLE') {
     return (
       <div className="page page--gate">
-        <GateHeader onBack={() => navigate(-1)} />
+        <GateHeader onBack={goBack} />
         <PermissionState />
       </div>
     );
@@ -63,7 +82,7 @@ export function SimilarEventsPage() {
 
   return (
     <div className="page page--cases">
-      <GateHeader onBack={() => navigate(-1)} title="과거 사례 전체보기" />
+      <GateHeader onBack={goBack} title="과거 사례 전체보기" />
 
       <div className="page-intro">
         <small>과거 관측 요약</small>
@@ -104,11 +123,10 @@ export function SimilarEventsPage() {
             type="button"
             role="tab"
             aria-selected={horizon === value}
-            onClick={() => {
-              setHorizon(value);
+            onClick={() =>
               // 기간을 바꾸면 목록이 통째로 달라진다. 펼쳐 둔 채로 두면 어디를 보고 있었는지 잃는다.
-              setExpanded(false);
-            }}
+              patchParams({ horizon: String(value), cases: null })
+            }
           >
             {horizonLabel(value)}
           </button>
@@ -163,7 +181,7 @@ export function SimilarEventsPage() {
           type="button"
           className="expand-button case-list__more"
           aria-expanded={expanded}
-          onClick={() => setExpanded((current) => !current)}
+          onClick={() => patchParams({ cases: expanded ? null : 'all' })}
         >
           <span>
             {expanded

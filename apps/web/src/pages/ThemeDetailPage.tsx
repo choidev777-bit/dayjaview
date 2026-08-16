@@ -6,7 +6,7 @@ import {
   IconStarLine,
   IconXmarkLine,
 } from '@karrotmarket/react-monochrome-icon';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type {
   EvidenceItem,
@@ -32,6 +32,7 @@ import {
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
 import { EmptyState, ErrorPage, ErrorState, LoadingState } from '../shared/StatePanel';
+import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 import { readViewState, writeViewState } from '../shared/viewState';
 
@@ -363,7 +364,10 @@ function CatalystTop3Section({
       <ol className="catalyst-list">
         {items.slice(0, 3).map((item, index) => (
           <li key={item.catalystId}>
-            <Link to={`/catalysts/${encodeURIComponent(item.catalystId)}`}>
+            <Link
+              to={`/catalysts/${encodeURIComponent(item.catalystId)}`}
+              state={{ themeId, eventId }}
+            >
               <b>{index + 1}</b>
               <span>
                 <strong>{item.catalystName}</strong>
@@ -389,7 +393,21 @@ function CatalystTop3Section({
 
 function ReasonSection({ eventId, summary }: { eventId: string; summary: EvidenceSummary }) {
   const repository = useRepository();
-  const [requestedTab, setRequestedTab] = useState<EvidencePhase | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab: EvidencePhase | null =
+    searchParams.get('reason') === 'live'
+      ? 'LIVE'
+      : searchParams.get('reason') === 'after'
+        ? 'AFTER_CLOSE'
+        : null;
+  const setRequestedTab = useCallback(
+    (next: EvidencePhase) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('reason', next === 'LIVE' ? 'live' : 'after');
+      setSearchParams(params, { replace: true });
+    },
+    [searchParams, setSearchParams],
+  );
   const [paginationState, setPaginationState] = useState<EvidencePagination>(EMPTY_PAGINATION);
   // 장중 이력은 화면을 떠나도 남긴다. 상세를 나갔다 오면 사라져 `이력이 없습니다`가 되던 문제.
   // 장 마감 뒤에도 그날 안에는 계속 볼 수 있어야 한다.
@@ -652,15 +670,17 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
 export function ThemeDetailPage() {
   const repository = useRepository();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { themeId = '', eventId = '' } = useParams();
   const [saveFailed, setSaveFailed] = useState(false);
-  // 뒤로 갔다 돌아와도 보던 탭을 유지한다 (ui_prototype_adaptation_plan §5.1).
-  const tabKey = `detail.tab:${themeId}`;
-  const [requestedTab, setRequestedTab] = useState<'dejavu' | 'today' | null>(
-    () => readViewState<'dejavu' | 'today'>(tabKey) ?? null,
-  );
+  // 보던 탭은 URL에 남긴다. 새로고침·공유·뒤로 가기에서 그대로 열린다
+  // (ui_prototype_adaptation_plan §5.1). 화면 안에서만 쓰는 상태를 주소에 두는 것이라
+  // 히스토리를 늘리지 않도록 replace로 바꾼다.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab') === 'today'
+    ? ('today' as const)
+    : searchParams.get('tab') === 'dejavu'
+      ? ('dejavu' as const)
+      : null;
   const [calculationOpen, setCalculationOpen] = useState(false);
   const calculationTriggerRef = useRef<HTMLButtonElement>(null);
   const calculationCloseRef = useRef<HTMLButtonElement>(null);
@@ -672,16 +692,19 @@ export function ThemeDetailPage() {
     [repository, themeId, eventId],
   );
 
+  const goBack = useGoBack('/today');
+
   const closeCalculation = useCallback(() => {
     setCalculationOpen(false);
   }, []);
 
   const selectDetailTab = useCallback(
     (tab: 'dejavu' | 'today') => {
-      setRequestedTab(tab);
-      writeViewState(tabKey, tab);
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', tab);
+      setSearchParams(next, { replace: true });
     },
-    [tabKey],
+    [searchParams, setSearchParams],
   );
 
   useEffect(() => {
@@ -708,7 +731,6 @@ export function ThemeDetailPage() {
 
   const detail = resource.data.data;
   const reaction = detail.currentReaction;
-  const from = (location.state as { from?: string } | null)?.from;
   const advancingRatio =
     reaction.advancingCount !== null && reaction.validCount
       ? Math.round((reaction.advancingCount / reaction.validCount) * 100)
@@ -726,7 +748,7 @@ export function ThemeDetailPage() {
       <header className="detail-app-bar">
         <button
           type="button"
-          onClick={() => (from ? navigate(from) : navigate(-1))}
+          onClick={goBack}
           aria-label="이전 화면으로 돌아가기"
         >
           <IconArrowLeftLine size={24} aria-hidden="true" />
