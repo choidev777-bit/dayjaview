@@ -1798,6 +1798,15 @@ a:focus-visible,
   font-weight: 700;
 }
 
+.case-list__more {
+  margin: var(--djv-space-3) var(--djv-space-4) 0;
+}
+
+.detail-card .case-list__more {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .reason-tags {
   display: flex;
   flex-wrap: wrap;

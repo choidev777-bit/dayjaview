@@ -2,8 +2,10 @@ import type { DataStatus, TreemapItem } from './contracts';
 
 /** 한 화면에 올리는 최대 블록 수 (treemap plan §2, screen_spec §6.3). */
 export const TREEMAP_LIMIT = 12;
-/** 시안 실시간 화면의 3단 고정 배치: 상단 2 · 중단 3 · 하단 나머지. */
+/** 시안 실시간 화면의 3단 고정 배치: 상단 2 · 중단 3. 그 아래는 한 줄 3개씩 이어 붙인다. */
 export const TREEMAP_ROW_PLAN = [2, 3] as const;
+/** 남은 블록을 한 줄에 몰면 타일이 세로로 길쭉해진다. 아래 줄도 3개까지만 넣는다. */
+export const TREEMAP_TAIL_ROW = 3;
 export const TREEMAP_GAP = 5;
 /** 숫자·색상은 500ms, 레이아웃은 1초 (treemap plan §5.4, screen_spec §6.4). */
 export const TREEMAP_VALUE_INTERVAL_MS = 500;
@@ -46,7 +48,10 @@ export function treemapRows(items: TreemapItem[]): TreemapItem[][] {
     rows.push(rest.slice(0, size));
     rest = rest.slice(size);
   }
-  if (rest.length) rows.push(rest);
+  while (rest.length) {
+    rows.push(rest.slice(0, TREEMAP_TAIL_ROW));
+    rest = rest.slice(TREEMAP_TAIL_ROW);
+  }
   return rows;
 }
 

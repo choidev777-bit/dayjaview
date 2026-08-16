@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-16T09:42:04.772521Z",
+ "generatedAt": "2026-08-16T10:20:35.017125Z",
  "marketDate": "2026-08-10",
  "previousDate": "2026-08-07",
  "weightMethod": "EQUAL_WEIGHT_LEGACY",
@@ -7,6 +7,7 @@
  "themes": [
   {
    "rank": 1,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_586",
    "eventId": "evt_day_586",
    "displayName": "광통신(광케이블/광섬유 등)",
@@ -34,15 +35,273 @@
      "return": 0.1752
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_586_ai",
+     "catalystName": "ai",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 25,
+       "observedCount": 25,
+       "positiveCount": 13,
+       "medianReturn": 0.0123
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 25,
+       "observedCount": 25,
+       "positiveCount": 14,
+       "medianReturn": 0.0157
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 25,
+       "observedCount": 21,
+       "positiveCount": 13,
+       "medianReturn": 0.1325
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_5c3be980-94f5-4f89-ada7-a7527cd0cdd5",
+       "marketDate": "2026-07-31",
+       "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+       "sameDayReturn": 0.0446,
+       "leaderName": "RFHIC"
+      },
+      {
+       "matchedEventId": "evt_5c3be980-94f5-4f89-ada7-a7527cd0cdd5",
+       "marketDate": "2026-07-31",
+       "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+       "sameDayReturn": 0.0361,
+       "leaderName": "RFHIC"
+      },
+      {
+       "matchedEventId": "evt_88ce95a6-b2b6-44d2-9c38-3ad0d62585cc",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "AI 인프라 병목에 따른 대안으로 광시장 확대 기대감 등에 상승",
+       "sameDayReturn": 0.0174,
+       "leaderName": "티엠씨"
+      },
+      {
+       "matchedEventId": "evt_88ce95a6-b2b6-44d2-9c38-3ad0d62585cc",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "AI 인프라 병목에 따른 대안으로 광시장 확대 기대감 등에 상승",
+       "sameDayReturn": 0.0123,
+       "leaderName": "티엠씨"
+      },
+      {
+       "matchedEventId": "evt_db71c7de-9a02-49c8-b177-62625805420b",
+       "marketDate": "2026-05-20",
+       "normalizedCatalystSummary": "엔비디아 실적 컨퍼런스 앞두고 AI 병목 해결책으로 광통신 기술 중요성 확대 분석 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0154,
+       "leaderName": "한국첨단소재"
+      },
+      {
+       "matchedEventId": "evt_db71c7de-9a02-49c8-b177-62625805420b",
+       "marketDate": "2026-05-20",
+       "normalizedCatalystSummary": "엔비디아 실적 컨퍼런스 앞두고 AI 병목 해결책으로 광통신 기술 중요성 확대 분석 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0059,
+       "leaderName": "한국첨단소재"
+      },
+      {
+       "matchedEventId": "evt_2cc8a12d-7443-4bbd-85d5-aec5d615b79f",
+       "marketDate": "2026-05-04",
+       "normalizedCatalystSummary": "AI 데이터센터향 고부가 광섬유 수요 증가로 광섬유 가격 상승 분석 등에 상승",
+       "sameDayReturn": 0.0851,
+       "leaderName": "서울바이오시스"
+      },
+      {
+       "matchedEventId": "evt_2cc8a12d-7443-4bbd-85d5-aec5d615b79f",
+       "marketDate": "2026-05-04",
+       "normalizedCatalystSummary": "AI 데이터센터향 고부가 광섬유 수요 증가로 광섬유 가격 상승 분석 등에 상승",
+       "sameDayReturn": 0.0153,
+       "leaderName": "서울바이오시스"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_586_광통신",
+     "catalystName": "광통신",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 22,
+       "observedCount": 22,
+       "positiveCount": 6,
+       "medianReturn": -0.0162
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 22,
+       "observedCount": 22,
+       "positiveCount": 12,
+       "medianReturn": 0.0134
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 22,
+       "observedCount": 20,
+       "positiveCount": 10,
+       "medianReturn": 0.0518
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_e3daf3e5-53d4-46a1-902d-40d1bfd5a104",
+       "marketDate": "2026-07-22",
+       "normalizedCatalystSummary": "루멘텀홀딩스(+9.41%) 등 美 광통신 관련주 급등 및 美 주파수 경매 기대감 등에 상승",
+       "sameDayReturn": 0.0665,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_e3daf3e5-53d4-46a1-902d-40d1bfd5a104",
+       "marketDate": "2026-07-22",
+       "normalizedCatalystSummary": "루멘텀홀딩스(+9.41%) 등 美 광통신 관련주 급등 및 美 주파수 경매 기대감 등에 상승",
+       "sameDayReturn": 0.0695,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_c3e1ed99-f85c-440d-8406-5ef437fa4141",
+       "marketDate": "2026-07-10",
+       "normalizedCatalystSummary": "루멘텀홀딩스(+11.13%) 등 美 광통신 관련주 강세 영향 등에 상승",
+       "sameDayReturn": -0.0845,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_c3e1ed99-f85c-440d-8406-5ef437fa4141",
+       "marketDate": "2026-07-10",
+       "normalizedCatalystSummary": "루멘텀홀딩스(+11.13%) 등 美 광통신 관련주 강세 영향 등에 상승",
+       "sameDayReturn": -0.0943,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_196560ea-81ac-4691-a14f-e77e1882aa3f",
+       "marketDate": "2026-06-09",
+       "normalizedCatalystSummary": "아마존, 코닝과 광 섬유·케이블 공급 계약 체결 소식 속 美 광통신 업체 주가 강세 등에 상승",
+       "sameDayReturn": -0.101,
+       "leaderName": "성호전자"
+      },
+      {
+       "matchedEventId": "evt_196560ea-81ac-4691-a14f-e77e1882aa3f",
+       "marketDate": "2026-06-09",
+       "normalizedCatalystSummary": "아마존, 코닝과 광 섬유·케이블 공급 계약 체결 소식 속 美 광통신 업체 주가 강세 등에 상승",
+       "sameDayReturn": -0.0536,
+       "leaderName": "성호전자"
+      },
+      {
+       "matchedEventId": "evt_db71c7de-9a02-49c8-b177-62625805420b",
+       "marketDate": "2026-05-20",
+       "normalizedCatalystSummary": "엔비디아 실적 컨퍼런스 앞두고 AI 병목 해결책으로 광통신 기술 중요성 확대 분석 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0154,
+       "leaderName": "한국첨단소재"
+      },
+      {
+       "matchedEventId": "evt_db71c7de-9a02-49c8-b177-62625805420b",
+       "marketDate": "2026-05-20",
+       "normalizedCatalystSummary": "엔비디아 실적 컨퍼런스 앞두고 AI 병목 해결책으로 광통신 기술 중요성 확대 분석 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0059,
+       "leaderName": "한국첨단소재"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_586_인프라",
+     "catalystName": "인프라",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 13,
+       "observedCount": 13,
+       "positiveCount": 9,
+       "medianReturn": 0.0123
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 13,
+       "observedCount": 13,
+       "positiveCount": 5,
+       "medianReturn": -0.0373
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 13,
+       "observedCount": 11,
+       "positiveCount": 5,
+       "medianReturn": -0.0138
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_88ce95a6-b2b6-44d2-9c38-3ad0d62585cc",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "AI 인프라 병목에 따른 대안으로 광시장 확대 기대감 등에 상승",
+       "sameDayReturn": 0.0174,
+       "leaderName": "티엠씨"
+      },
+      {
+       "matchedEventId": "evt_88ce95a6-b2b6-44d2-9c38-3ad0d62585cc",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "AI 인프라 병목에 따른 대안으로 광시장 확대 기대감 등에 상승",
+       "sameDayReturn": 0.0123,
+       "leaderName": "티엠씨"
+      },
+      {
+       "matchedEventId": "evt_64d21af5-23a2-4194-8f29-ef762664c403",
+       "marketDate": "2026-05-07",
+       "normalizedCatalystSummary": "엔비디아, 코닝과 4.6조원 규모 광섬유 인프라 구축 협력 소식 등에 상승",
+       "sameDayReturn": 0.009,
+       "leaderName": "대한광통신"
+      },
+      {
+       "matchedEventId": "evt_64d21af5-23a2-4194-8f29-ef762664c403",
+       "marketDate": "2026-05-07",
+       "normalizedCatalystSummary": "엔비디아, 코닝과 4.6조원 규모 광섬유 인프라 구축 협력 소식 등에 상승",
+       "sameDayReturn": 0.0066,
+       "leaderName": "대한광통신"
+      },
+      {
+       "matchedEventId": "evt_b8b6c1b2-0bd9-4f2a-b61a-d25925aea15a",
+       "marketDate": "2026-04-14",
+       "normalizedCatalystSummary": "5G SA·6G 투자 기대감 및 AI 시대 필수 인프라 광통신 수혜 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0349,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_b8b6c1b2-0bd9-4f2a-b61a-d25925aea15a",
+       "marketDate": "2026-04-14",
+       "normalizedCatalystSummary": "5G SA·6G 투자 기대감 및 AI 시대 필수 인프라 광통신 수혜 기대감 지속 등에 상승",
+       "sameDayReturn": -0.003,
+       "leaderName": "빛과전자"
+      },
+      {
+       "matchedEventId": "evt_a4e8b164-f72f-4239-b009-7d4baa9e0f59",
+       "marketDate": "2026-04-13",
+       "normalizedCatalystSummary": "AI 인프라 수혜 기대감 지속 등에 상승",
+       "sameDayReturn": 0.0522,
+       "leaderName": "우리넷"
+      },
+      {
+       "matchedEventId": "evt_a4e8b164-f72f-4239-b009-7d4baa9e0f59",
+       "marketDate": "2026-04-13",
+       "normalizedCatalystSummary": "AI 인프라 수혜 기대감 지속 등에 상승",
+       "sameDayReturn": 0.058,
+       "leaderName": "우리넷"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_1a516377-e551-4248-8441-149e53cde798",
      "marketDate": "2026-08-07",
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "美 행정부, 中 광트랜시버 수입금지 추진에 따른 반사수혜 기대감 지속 등에 일부 관련주 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -92,9 +351,7 @@
      "marketDate": "2026-08-07",
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "美 행정부, 中 광트랜시버 수입금지 추진에 따른 반사수혜 기대감 지속 등에 일부 관련주 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -144,9 +401,7 @@
      "marketDate": "2026-08-05",
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 소식 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -196,9 +451,7 @@
      "marketDate": "2026-08-05",
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 소식 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -249,7 +502,7 @@
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai"
      ],
      "outcomes": [
       {
@@ -301,7 +554,7 @@
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
      "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai"
      ],
      "outcomes": [
       {
@@ -347,10 +600,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_586",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 모멘텀 지속 등에 상승",
+     "summary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 모멘텀 지속 등에 상승(주도주 : 대한광통신, 성호전자, 서울바이오시스, RF머트리얼즈, 파이버프로)"
+    }
    ]
   },
   {
    "rank": 2,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_584",
    "eventId": "evt_day_584",
    "displayName": "스페이스X(SpaceX)",
@@ -378,6 +640,266 @@
      "return": 0.1453
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_584_스페이스",
+     "catalystName": "스페이스",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 87,
+       "observedCount": 87,
+       "positiveCount": 37,
+       "medianReturn": -0.0042
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 87,
+       "observedCount": 84,
+       "positiveCount": 50,
+       "medianReturn": 0.0213
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 87,
+       "observedCount": 84,
+       "positiveCount": 49,
+       "medianReturn": 0.0724
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
+       "marketDate": "2026-08-07",
+       "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+       "sameDayReturn": 0.0667,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
+       "marketDate": "2026-08-07",
+       "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+       "sameDayReturn": 0.0596,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_b27ef011-e8c6-4788-95f5-352f9af9034a",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
+       "sameDayReturn": -0.0073,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_a6799cd5-09e8-4c59-9e14-56b85f93c075",
+       "marketDate": "2026-06-30",
+       "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0989,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_a6799cd5-09e8-4c59-9e14-56b85f93c075",
+       "marketDate": "2026-06-30",
+       "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0989,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_7ba65433-cb2b-4a9e-92f3-943e806228e9",
+       "marketDate": "2026-06-23",
+       "normalizedCatalystSummary": "스페이스X(-16.43%) 주가 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0086,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_01a6809c-8f04-4eaf-bafc-3bb72d2d47ed",
+       "marketDate": "2026-06-22",
+       "normalizedCatalystSummary": "스페이스X 나스닥 상장에 따른 재료 소멸 여파 지속 등에 하락",
+       "sameDayReturn": -0.0909,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_12187cf0-4e85-4050-9525-f05a2a179757",
+       "marketDate": "2026-06-15",
+       "normalizedCatalystSummary": "미래에셋증권, 스페이스X 공모주 무산 및 美 우주항공 관련주 급락 영향 등에 하락",
+       "sameDayReturn": -0.0105,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_584_ipo",
+     "catalystName": "ipo",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 30,
+       "observedCount": 30,
+       "positiveCount": 13,
+       "medianReturn": -0.0068
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 30,
+       "observedCount": 30,
+       "positiveCount": 21,
+       "medianReturn": 0.0813
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 30,
+       "observedCount": 30,
+       "positiveCount": 23,
+       "medianReturn": 0.318
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_ba2e8d10-dc57-49e8-9b5d-0590ca515dac",
+       "marketDate": "2026-06-02",
+       "normalizedCatalystSummary": "스페이스X IPO 몸값 하향 및 블루 오리진 대형 발사체 '뉴글렌' 로켓 폭발 여파 지속 속 하락",
+       "sameDayReturn": 0.0263,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_21f23c41-2ef9-4ef2-a7e3-0ac04cd380a5",
+       "marketDate": "2026-06-01",
+       "normalizedCatalystSummary": "스페이스X, IPO 몸값 하향 및 블루 오리진 대형 발사체 '뉴글렌' 로켓 폭발 소식 등에 하락",
+       "sameDayReturn": -0.0598,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_92934d1e-a3f5-4f6e-bc8a-42574331323b",
+       "marketDate": "2026-05-26",
+       "normalizedCatalystSummary": "스페이스X 기업공개(IPO) 앞두고 스타십 성공 소식 등에 상승",
+       "sameDayReturn": -0.0777,
+       "leaderName": "켄코아에어로스페이스"
+      },
+      {
+       "matchedEventId": "evt_92934d1e-a3f5-4f6e-bc8a-42574331323b",
+       "marketDate": "2026-05-26",
+       "normalizedCatalystSummary": "스페이스X 기업공개(IPO) 앞두고 스타십 성공 소식 등에 상승",
+       "sameDayReturn": -0.0451,
+       "leaderName": "켄코아에어로스페이스"
+      },
+      {
+       "matchedEventId": "evt_8239caf0-48da-4207-b1f1-a625c77070c8",
+       "marketDate": "2026-04-17",
+       "normalizedCatalystSummary": "스페이스X IPO를 앞두고 스타링크 글로벌 이용자 급증 소식 등에 상승",
+       "sameDayReturn": -0.0042,
+       "leaderName": "와이제이링크"
+      },
+      {
+       "matchedEventId": "evt_8239caf0-48da-4207-b1f1-a625c77070c8",
+       "marketDate": "2026-04-17",
+       "normalizedCatalystSummary": "스페이스X IPO를 앞두고 스타링크 글로벌 이용자 급증 소식 등에 상승",
+       "sameDayReturn": -0.0138,
+       "leaderName": "와이제이링크"
+      },
+      {
+       "matchedEventId": "evt_8b590cad-d1a2-46d1-a17a-ee383526d12e",
+       "marketDate": "2026-04-03",
+       "normalizedCatalystSummary": "아르테미스 2호 발사 성공 및 스페이스X, IPO 비공개 신청서 제출 속 기업가치 상향 조정 등에 상승",
+       "sameDayReturn": -0.0286,
+       "leaderName": "미래에셋벤처투자"
+      },
+      {
+       "matchedEventId": "evt_8b590cad-d1a2-46d1-a17a-ee383526d12e",
+       "marketDate": "2026-04-03",
+       "normalizedCatalystSummary": "아르테미스 2호 발사 성공 및 스페이스X, IPO 비공개 신청서 제출 속 기업가치 상향 조정 등에 상승",
+       "sameDayReturn": -0.0246,
+       "leaderName": "미래에셋벤처투자"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_584_상장",
+     "catalystName": "상장",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 24,
+       "observedCount": 24,
+       "positiveCount": 7,
+       "medianReturn": -0.0074
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 24,
+       "observedCount": 24,
+       "positiveCount": 14,
+       "medianReturn": 0.0169
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 24,
+       "observedCount": 24,
+       "positiveCount": 12,
+       "medianReturn": -0.0053
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_c0fbc490-4d3f-40e4-aac7-150552e8c056",
+       "marketDate": "2026-06-12",
+       "normalizedCatalystSummary": "스페이스X 나스닥 상장 앞두고 美 우주항공 업체 주가 급등 영향 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0116,
+       "leaderName": "한미반도체"
+      },
+      {
+       "matchedEventId": "evt_c0fbc490-4d3f-40e4-aac7-150552e8c056",
+       "marketDate": "2026-06-12",
+       "normalizedCatalystSummary": "스페이스X 나스닥 상장 앞두고 美 우주항공 업체 주가 급등 영향 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0075,
+       "leaderName": "한미반도체"
+      },
+      {
+       "matchedEventId": "evt_ca0d5fca-90f0-417d-9f97-d0f7288b3328",
+       "marketDate": "2026-06-04",
+       "normalizedCatalystSummary": "스페이스X 상장 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0763,
+       "leaderName": "센서뷰"
+      },
+      {
+       "matchedEventId": "evt_ca0d5fca-90f0-417d-9f97-d0f7288b3328",
+       "marketDate": "2026-06-04",
+       "normalizedCatalystSummary": "스페이스X 상장 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0846,
+       "leaderName": "센서뷰"
+      },
+      {
+       "matchedEventId": "evt_9690f52c-d6ef-485a-babc-5efd64fc47e4",
+       "marketDate": "2026-05-21",
+       "normalizedCatalystSummary": "스페이스X 상장 기대감 지속 등에 상승",
+       "sameDayReturn": 0.0103,
+       "leaderName": "에이치브이엠"
+      },
+      {
+       "matchedEventId": "evt_9690f52c-d6ef-485a-babc-5efd64fc47e4",
+       "marketDate": "2026-05-21",
+       "normalizedCatalystSummary": "스페이스X 상장 기대감 지속 등에 상승",
+       "sameDayReturn": 0.0165,
+       "leaderName": "에이치브이엠"
+      },
+      {
+       "matchedEventId": "evt_820f829d-9596-4216-b17d-7839cb1ab42e",
+       "marketDate": "2026-05-18",
+       "normalizedCatalystSummary": "스페이스X 상장 일정 단축 및 블랙록, 스페이스X에 최대 100억달러 투자 검토 소식 등에 상승",
+       "sameDayReturn": -0.0056,
+       "leaderName": "켄코아에어로스페이스"
+      },
+      {
+       "matchedEventId": "evt_820f829d-9596-4216-b17d-7839cb1ab42e",
+       "marketDate": "2026-05-18",
+       "normalizedCatalystSummary": "스페이스X 상장 일정 단축 및 블랙록, 스페이스X에 최대 100억달러 투자 검토 소식 등에 상승",
+       "sameDayReturn": -0.0173,
+       "leaderName": "켄코아에어로스페이스"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
@@ -385,7 +907,7 @@
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -437,7 +959,7 @@
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -489,7 +1011,7 @@
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -518,9 +1040,7 @@
      "marketDate": "2026-07-01",
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -570,9 +1090,7 @@
      "marketDate": "2026-07-01",
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -623,7 +1141,7 @@
      "displayNameAtEvent": "스페이스X(SpaceX)",
      "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -669,10 +1187,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_584",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승",
+     "summary": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승(주도주 : 센서뷰, 미래에셋벤처투자, 아주IB투자, 켄코아에어로스페이스, 나노팀)"
+    }
    ]
   },
   {
    "rank": 3,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_200",
    "eventId": "evt_day_200",
    "displayName": "우주항공산업(누리호/인공위성 등)",
@@ -700,6 +1227,266 @@
      "return": 0.1765
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_200_스페이스",
+     "catalystName": "스페이스",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 106,
+       "observedCount": 106,
+       "positiveCount": 55,
+       "medianReturn": 0.0017
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 106,
+       "observedCount": 103,
+       "positiveCount": 52,
+       "medianReturn": 0.0005
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 106,
+       "observedCount": 103,
+       "positiveCount": 52,
+       "medianReturn": 0.0012
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
+       "marketDate": "2026-08-07",
+       "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+       "sameDayReturn": 0.086,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
+       "marketDate": "2026-08-07",
+       "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+       "sameDayReturn": 0.1435,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_00030164-74c1-4d8a-9acc-4fef0fbe6bd0",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0057,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_22840634-cd3c-48b1-84e9-5fa73beacafa",
+       "marketDate": "2026-06-30",
+       "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
+       "sameDayReturn": 0.1121,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_22840634-cd3c-48b1-84e9-5fa73beacafa",
+       "marketDate": "2026-06-30",
+       "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
+       "sameDayReturn": 0.1227,
+       "leaderName": "스피어"
+      },
+      {
+       "matchedEventId": "evt_34416a02-6f36-4ca9-b594-6faa6387e516",
+       "marketDate": "2026-06-23",
+       "normalizedCatalystSummary": "스페이스X(-16.43%) 주가 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0115,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_8b419084-e555-4859-82de-36f96b7ab5a3",
+       "marketDate": "2026-06-22",
+       "normalizedCatalystSummary": "스페이스X 나스닥 상장에 따른 재료 소멸 여파 지속 등에 하락",
+       "sameDayReturn": -0.0949,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_10b9c8b6-1360-4e80-b379-1f8e3aaed4f6",
+       "marketDate": "2026-06-15",
+       "normalizedCatalystSummary": "미래에셋증권, 스페이스X 공모주 무산 및 美 우주항공 관련주 급락 영향 등에 하락",
+       "sameDayReturn": 0.0105,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_200_발사",
+     "catalystName": "발사",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 73,
+       "observedCount": 73,
+       "positiveCount": 25,
+       "medianReturn": -0.0084
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 73,
+       "observedCount": 73,
+       "positiveCount": 31,
+       "medianReturn": -0.0148
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 73,
+       "observedCount": 73,
+       "positiveCount": 36,
+       "medianReturn": -0.0008
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_dfad7d71-2e94-4771-bf59-5d63d5555592",
+       "marketDate": "2026-04-03",
+       "normalizedCatalystSummary": "아르테미스 2호 발사 성공 및 스페이스X, IPO 비공개 신청서 제출 속 기업가치 상향 조정 등에 상승",
+       "sameDayReturn": -0.0583,
+       "leaderName": "퍼스텍"
+      },
+      {
+       "matchedEventId": "evt_dfad7d71-2e94-4771-bf59-5d63d5555592",
+       "marketDate": "2026-04-03",
+       "normalizedCatalystSummary": "아르테미스 2호 발사 성공 및 스페이스X, IPO 비공개 신청서 제출 속 기업가치 상향 조정 등에 상승",
+       "sameDayReturn": -0.0285,
+       "leaderName": "퍼스텍"
+      },
+      {
+       "matchedEventId": "evt_0c08950d-dc02-4aec-aade-61090e3d086b",
+       "marketDate": "2026-04-01",
+       "normalizedCatalystSummary": "아르테미스Ⅱ 발사 기대감 등에 상승",
+       "sameDayReturn": -0.0209,
+       "leaderName": "LIG넥스원"
+      },
+      {
+       "matchedEventId": "evt_0c08950d-dc02-4aec-aade-61090e3d086b",
+       "marketDate": "2026-04-01",
+       "normalizedCatalystSummary": "아르테미스Ⅱ 발사 기대감 등에 상승",
+       "sameDayReturn": -0.049,
+       "leaderName": "LIG넥스원"
+      },
+      {
+       "matchedEventId": "evt_d0ac6f00-4fe6-40b2-9307-b648aff1a631",
+       "marketDate": "2026-02-03",
+       "normalizedCatalystSummary": "스페이스X, xAI와 합병 및 아르테미스 2호 발사 임박 소식 등에 상승",
+       "sameDayReturn": 0.0637,
+       "leaderName": "LK삼양"
+      },
+      {
+       "matchedEventId": "evt_d0ac6f00-4fe6-40b2-9307-b648aff1a631",
+       "marketDate": "2026-02-03",
+       "normalizedCatalystSummary": "스페이스X, xAI와 합병 및 아르테미스 2호 발사 임박 소식 등에 상승",
+       "sameDayReturn": 0.018,
+       "leaderName": "LK삼양"
+      },
+      {
+       "matchedEventId": "evt_305114de-5318-4820-beb5-1afd09261cc4",
+       "marketDate": "2026-02-02",
+       "normalizedCatalystSummary": "스페이스X, '우주 데이터센터' 위해 100만개 위성 발사 추진 소식에 일부 관련주 상승",
+       "sameDayReturn": 0.0627,
+       "leaderName": "루미르"
+      },
+      {
+       "matchedEventId": "evt_305114de-5318-4820-beb5-1afd09261cc4",
+       "marketDate": "2026-02-02",
+       "normalizedCatalystSummary": "스페이스X, '우주 데이터센터' 위해 100만개 위성 발사 추진 소식에 일부 관련주 상승",
+       "sameDayReturn": 0.0668,
+       "leaderName": "루미르"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_200_누리호",
+     "catalystName": "누리호",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 33,
+       "observedCount": 33,
+       "positiveCount": 7,
+       "medianReturn": -0.0123
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 33,
+       "observedCount": 33,
+       "positiveCount": 8,
+       "medianReturn": -0.0408
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 33,
+       "observedCount": 33,
+       "positiveCount": 15,
+       "medianReturn": -0.0167
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_dde953ee-c970-4aa6-9ff8-7f9e4c808af6",
+       "marketDate": "2026-01-08",
+       "normalizedCatalystSummary": "올해 3분기 누리호 5차 발사 기대감 등에 상승",
+       "sameDayReturn": -0.0268,
+       "leaderName": "이노스페이스"
+      },
+      {
+       "matchedEventId": "evt_dde953ee-c970-4aa6-9ff8-7f9e4c808af6",
+       "marketDate": "2026-01-08",
+       "normalizedCatalystSummary": "올해 3분기 누리호 5차 발사 기대감 등에 상승",
+       "sameDayReturn": 0.0192,
+       "leaderName": "이노스페이스"
+      },
+      {
+       "matchedEventId": "evt_46f61193-f9c6-4f8e-b31e-22e0033debcd",
+       "marketDate": "2025-11-25",
+       "normalizedCatalystSummary": "누리호 4차 발사 기대감 등에 상승",
+       "sameDayReturn": -0.0081,
+       "leaderName": "이수페타시스"
+      },
+      {
+       "matchedEventId": "evt_46f61193-f9c6-4f8e-b31e-22e0033debcd",
+       "marketDate": "2025-11-25",
+       "normalizedCatalystSummary": "누리호 4차 발사 기대감 등에 상승",
+       "sameDayReturn": -0.0449,
+       "leaderName": "이수페타시스"
+      },
+      {
+       "matchedEventId": "evt_ac162e28-6dde-4637-8f60-3451d00254d8",
+       "marketDate": "2025-11-17",
+       "normalizedCatalystSummary": "누리호 4차 발사 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0316,
+       "leaderName": "이수페타시스"
+      },
+      {
+       "matchedEventId": "evt_ac162e28-6dde-4637-8f60-3451d00254d8",
+       "marketDate": "2025-11-17",
+       "normalizedCatalystSummary": "누리호 4차 발사 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0196,
+       "leaderName": "이수페타시스"
+      },
+      {
+       "matchedEventId": "evt_ec69b826-5bc8-4c87-aaeb-85a9db6c8291",
+       "marketDate": "2025-11-03",
+       "normalizedCatalystSummary": "軍, 정찰위성 5호기 발사 성공 및 11월 누리호 4차 발사 예정 등에 상승",
+       "sameDayReturn": -0.0119,
+       "leaderName": "에이치브이엠"
+      },
+      {
+       "matchedEventId": "evt_ec69b826-5bc8-4c87-aaeb-85a9db6c8291",
+       "marketDate": "2025-11-03",
+       "normalizedCatalystSummary": "軍, 정찰위성 5호기 발사 성공 및 11월 누리호 4차 발사 예정 등에 상승",
+       "sameDayReturn": -0.0199,
+       "leaderName": "에이치브이엠"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
@@ -707,7 +1494,7 @@
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -759,7 +1546,7 @@
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -811,7 +1598,7 @@
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "스페이스"
      ],
      "outcomes": [
       {
@@ -840,9 +1627,7 @@
      "marketDate": "2026-07-15",
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "글로벌 항공기 수요 증가 전망 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -892,9 +1677,7 @@
      "marketDate": "2026-07-15",
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "글로벌 항공기 수요 증가 전망 등에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -945,7 +1728,8 @@
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
      "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "개발",
+      "우주항공청"
      ],
      "outcomes": [
       {
@@ -991,10 +1775,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_200",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승",
+     "summary": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승(주도주 : 비츠로넥스텍, LK삼양, 센서뷰, 나라스페이스테크놀로지, 파이버프로)"
+    }
    ]
   },
   {
    "rank": 4,
+   "attentionGapTradingDays": 2236,
    "themeId": "thm_269",
    "eventId": "evt_day_269",
    "displayName": "LED장비",
@@ -1003,15 +1796,14 @@
    "validCount": 11,
    "reason": "LED 업계 경쟁 완화 전망에 상승",
    "leaders": [],
+   "catalysts": [],
    "similar": [
     {
      "matchedEventId": "evt_49b40b47-3da4-4541-a871-f85b03708296",
      "marketDate": "2017-06-26",
      "displayNameAtEvent": "LED장비",
      "normalizedCatalystSummary": "LED 업계 경쟁 완화 전망에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -1039,9 +1831,7 @@
      "marketDate": "2011-11-07",
      "displayNameAtEvent": "LED장비",
      "normalizedCatalystSummary": "中 백열등 단계적 판매 금지 기대감에 동반 급등",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -1069,9 +1859,7 @@
      "marketDate": "2011-02-01",
      "displayNameAtEvent": "LED장비",
      "normalizedCatalystSummary": "업황 회복 전망에 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -1099,9 +1887,7 @@
      "marketDate": "2010-08-05",
      "displayNameAtEvent": "LED장비",
      "normalizedCatalystSummary": "업황 악화 우려감에 하락.",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -1129,9 +1915,7 @@
      "marketDate": "2010-03-18",
      "displayNameAtEvent": "LED장비",
      "normalizedCatalystSummary": "정부 정책 지원 기대감으로 일부 관련주 상승",
-     "similarityReasons": [
-      "같은 테마의 과거 기록"
-     ],
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
@@ -1154,10 +1938,19 @@
      ],
      "leaders": []
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_269",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "LED 업계 경쟁 완화 전망에 상승",
+     "summary": "LED 업계 경쟁 완화 전망에 상승(주도주 : 티에스이, 엘아이에스, 프로텍)"
+    }
    ]
   },
   {
    "rank": 5,
+   "attentionGapTradingDays": 147,
    "themeId": "thm_228",
    "eventId": "evt_day_228",
    "displayName": "국내 상장 중국기업",
@@ -1185,6 +1978,266 @@
      "return": -0.0757
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_228_중국",
+     "catalystName": "중국",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 34,
+       "observedCount": 30,
+       "positiveCount": 18,
+       "medianReturn": 0.0038
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 34,
+       "observedCount": 30,
+       "positiveCount": 15,
+       "medianReturn": -0.0012
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 34,
+       "observedCount": 30,
+       "positiveCount": 11,
+       "medianReturn": -0.0449
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_4641579a-8115-429f-ba71-240aa627e159",
+       "marketDate": "2026-01-02",
+       "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
+       "sameDayReturn": 0.0011,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_4641579a-8115-429f-ba71-240aa627e159",
+       "marketDate": "2026-01-02",
+       "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
+       "sameDayReturn": 0.0,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_288b547c-de22-4399-8cd4-8d8259603182",
+       "marketDate": "2024-12-03",
+       "normalizedCatalystSummary": "중국 경기 회복 기대감 부각 등에 상승",
+       "sameDayReturn": -0.0358,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_288b547c-de22-4399-8cd4-8d8259603182",
+       "marketDate": "2024-12-03",
+       "normalizedCatalystSummary": "중국 경기 회복 기대감 부각 등에 상승",
+       "sameDayReturn": -0.0298,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_517d57eb-1139-4916-bd65-193706f47746",
+       "marketDate": "2024-10-08",
+       "normalizedCatalystSummary": "중국 경기 부양책 발표 실망감 등에 하락",
+       "sameDayReturn": 0.0145,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_a842bb6b-43ef-453d-b3b7-ab5e54ecb29f",
+       "marketDate": "2023-08-28",
+       "normalizedCatalystSummary": "중국 내 日 제품 불매 운동 확산에 따른 반사 수혜 기대감 등에 상승",
+       "sameDayReturn": 0.009,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_a842bb6b-43ef-453d-b3b7-ab5e54ecb29f",
+       "marketDate": "2023-08-28",
+       "normalizedCatalystSummary": "중국 내 日 제품 불매 운동 확산에 따른 반사 수혜 기대감 등에 상승",
+       "sameDayReturn": 0.009,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_47782f67-79c8-451a-ae7c-d0a15b3496d6",
+       "marketDate": "2023-08-16",
+       "normalizedCatalystSummary": "중국 경기 둔화 우려 지속 등에 하락",
+       "sameDayReturn": -0.0277,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_228_경기",
+     "catalystName": "경기",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 29,
+       "observedCount": 29,
+       "positiveCount": 12,
+       "medianReturn": -0.0172
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 29,
+       "observedCount": 29,
+       "positiveCount": 9,
+       "medianReturn": -0.0357
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 29,
+       "observedCount": 29,
+       "positiveCount": 3,
+       "medianReturn": -0.0703
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_f2341a46-8022-4d8a-9c98-26cae1b17213",
+       "marketDate": "2025-01-03",
+       "normalizedCatalystSummary": "中 경기 부양 기대감 부각에 상승",
+       "sameDayReturn": 0.0233,
+       "leaderName": "컬러레이"
+      },
+      {
+       "matchedEventId": "evt_f2341a46-8022-4d8a-9c98-26cae1b17213",
+       "marketDate": "2025-01-03",
+       "normalizedCatalystSummary": "中 경기 부양 기대감 부각에 상승",
+       "sameDayReturn": 0.0219,
+       "leaderName": "컬러레이"
+      },
+      {
+       "matchedEventId": "evt_dc353339-9d87-40db-85d1-60cbcb96d43e",
+       "marketDate": "2024-12-13",
+       "normalizedCatalystSummary": "中 경기 부양책 기대감 등에 상승",
+       "sameDayReturn": 0.0063,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_dc353339-9d87-40db-85d1-60cbcb96d43e",
+       "marketDate": "2024-12-13",
+       "normalizedCatalystSummary": "中 경기 부양책 기대감 등에 상승",
+       "sameDayReturn": 0.0063,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_288b547c-de22-4399-8cd4-8d8259603182",
+       "marketDate": "2024-12-03",
+       "normalizedCatalystSummary": "중국 경기 회복 기대감 부각 등에 상승",
+       "sameDayReturn": -0.0358,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_288b547c-de22-4399-8cd4-8d8259603182",
+       "marketDate": "2024-12-03",
+       "normalizedCatalystSummary": "중국 경기 회복 기대감 부각 등에 상승",
+       "sameDayReturn": -0.0298,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_d37c64cb-88ad-4056-989c-16aa3d169d9a",
+       "marketDate": "2024-11-12",
+       "normalizedCatalystSummary": "트럼프, 관세 우려 부각 및 中 경기 부양책 실망감 지속 등에 하락",
+       "sameDayReturn": 0.0186,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_99966e1e-2e54-49b0-8f3e-4bc3bbeb2ff5",
+       "marketDate": "2024-10-21",
+       "normalizedCatalystSummary": "中 경기 부양책으로 LPR 금리 인하 등에 상승",
+       "sameDayReturn": 0.0391,
+       "leaderName": "GRT"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_228_방한",
+     "catalystName": "방한",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 20,
+       "observedCount": 20,
+       "positiveCount": 8,
+       "medianReturn": -0.0067
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 20,
+       "observedCount": 20,
+       "positiveCount": 10,
+       "medianReturn": -0.0045
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 20,
+       "observedCount": 20,
+       "positiveCount": 4,
+       "medianReturn": -0.0299
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_e3f3ec57-a9e8-4af8-a547-ad4c18b422f2",
+       "marketDate": "2025-09-18",
+       "normalizedCatalystSummary": "中 시진핑 주석 방한 기대감 지속 등에 상승",
+       "sameDayReturn": -0.006,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_e3f3ec57-a9e8-4af8-a547-ad4c18b422f2",
+       "marketDate": "2025-09-18",
+       "normalizedCatalystSummary": "中 시진핑 주석 방한 기대감 지속 등에 상승",
+       "sameDayReturn": -0.0073,
+       "leaderName": "헝셩그룹"
+      },
+      {
+       "matchedEventId": "evt_77fe9945-5695-4fc1-b316-6dd4abee29a3",
+       "marketDate": "2025-07-14",
+       "normalizedCatalystSummary": "中 시진핑, 방한 기대감 속 한한령 해제 기대감 등에 상승",
+       "sameDayReturn": -0.0098,
+       "leaderName": "오가닉티코스메틱"
+      },
+      {
+       "matchedEventId": "evt_77fe9945-5695-4fc1-b316-6dd4abee29a3",
+       "marketDate": "2025-07-14",
+       "normalizedCatalystSummary": "中 시진핑, 방한 기대감 속 한한령 해제 기대감 등에 상승",
+       "sameDayReturn": -0.0098,
+       "leaderName": "오가닉티코스메틱"
+      },
+      {
+       "matchedEventId": "evt_1e5533b7-4c23-4cda-a11f-3b440646165b",
+       "marketDate": "2023-09-25",
+       "normalizedCatalystSummary": "시진핑 中 국가주석 방한 검토 소식 및 中 국경절 속 유커 소비 기대감 등에 상승",
+       "sameDayReturn": -0.0263,
+       "leaderName": "로스웰"
+      },
+      {
+       "matchedEventId": "evt_1e5533b7-4c23-4cda-a11f-3b440646165b",
+       "marketDate": "2023-09-25",
+       "normalizedCatalystSummary": "시진핑 中 국가주석 방한 검토 소식 및 中 국경절 속 유커 소비 기대감 등에 상승",
+       "sameDayReturn": -0.0263,
+       "leaderName": "로스웰"
+      },
+      {
+       "matchedEventId": "evt_6d9db5b3-c1a0-42cb-bffc-da526c4409d2",
+       "marketDate": "2023-08-04",
+       "normalizedCatalystSummary": "中 방한 관광객 증가 및 韓中 카페리 여객운송 3년반 만에 재개 소식에 상승",
+       "sameDayReturn": -0.0299,
+       "leaderName": "이스트아시아홀딩스"
+      },
+      {
+       "matchedEventId": "evt_6d9db5b3-c1a0-42cb-bffc-da526c4409d2",
+       "marketDate": "2023-08-04",
+       "normalizedCatalystSummary": "中 방한 관광객 증가 및 韓中 카페리 여객운송 3년반 만에 재개 소식에 상승",
+       "sameDayReturn": -0.0214,
+       "leaderName": "이스트아시아홀딩스"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_4641579a-8115-429f-ba71-240aa627e159",
@@ -1192,7 +2245,7 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "중국"
      ],
      "outcomes": [
       {
@@ -1244,7 +2297,7 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "중국"
      ],
      "outcomes": [
       {
@@ -1296,7 +2349,8 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "한-중 정상회담 개최 예정 속 차익실현 매물 출회 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "개최",
+      "정상회담"
      ],
      "outcomes": [
       {
@@ -1326,7 +2380,9 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "한중 정상회담 예정 속 한한령 해제 기대감 지속 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "정상회담",
+      "한중",
+      "한한령"
      ],
      "outcomes": [
       {
@@ -1378,7 +2434,9 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "한중 정상회담 예정 속 한한령 해제 기대감 지속 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "정상회담",
+      "한중",
+      "한한령"
      ],
      "outcomes": [
       {
@@ -1430,7 +2488,8 @@
      "displayNameAtEvent": "국내 상장 중국기업",
      "normalizedCatalystSummary": "中 시진핑 주석 방한 기대감 지속 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "방한",
+      "시진핑"
      ],
      "outcomes": [
       {
@@ -1476,10 +2535,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_228",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 상승",
+     "summary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 상승(주도주 : GRT, 오가닉티코스메틱, 컬러레이, 이스트아시아홀딩스, 헝셩그룹)"
+    }
    ]
   },
   {
    "rank": 6,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_14",
    "eventId": "evt_day_14",
    "displayName": "반도체 재료/부품",
@@ -1507,6 +2575,266 @@
      "return": 0.2074
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_14_반도체",
+     "catalystName": "반도체",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 673,
+       "observedCount": 673,
+       "positiveCount": 350,
+       "medianReturn": 0.0006
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 673,
+       "observedCount": 673,
+       "positiveCount": 340,
+       "medianReturn": 0.0007
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 673,
+       "observedCount": 666,
+       "positiveCount": 360,
+       "medianReturn": 0.0114
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_134fb938-9974-4d53-b05a-cabd59fc7c07",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0846,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_969139ec-db9d-42dc-8fbc-8f328b5486b5",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1192,
+       "leaderName": "메카로"
+      },
+      {
+       "matchedEventId": "evt_969139ec-db9d-42dc-8fbc-8f328b5486b5",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1111,
+       "leaderName": "메카로"
+      },
+      {
+       "matchedEventId": "evt_c68d75b8-0a5a-4b1e-878f-12f6dde4dca9",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0184,
+       "leaderName": "뉴파워프라즈마"
+      },
+      {
+       "matchedEventId": "evt_c68d75b8-0a5a-4b1e-878f-12f6dde4dca9",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0912,
+       "leaderName": "뉴파워프라즈마"
+      },
+      {
+       "matchedEventId": "evt_d3343d86-0729-4547-ab07-03e8cd0746c0",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0847,
+       "leaderName": "엘티씨"
+      },
+      {
+       "matchedEventId": "evt_d3343d86-0729-4547-ab07-03e8cd0746c0",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.096,
+       "leaderName": "엘티씨"
+      },
+      {
+       "matchedEventId": "evt_ebe2ae81-b6e2-4b2a-94d4-a5285a0519e6",
+       "marketDate": "2026-07-08",
+       "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0258,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_14_필라델피아",
+     "catalystName": "필라델피아",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 502,
+       "observedCount": 502,
+       "positiveCount": 256,
+       "medianReturn": 0.0005
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 502,
+       "observedCount": 499,
+       "positiveCount": 260,
+       "medianReturn": 0.0029
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 502,
+       "observedCount": 494,
+       "positiveCount": 270,
+       "medianReturn": 0.0166
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_5610dc4e-a216-4433-9430-e45f681ad8be",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.0179,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": 0.0131,
+       "leaderName": "피엠티"
+      },
+      {
+       "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0076,
+       "leaderName": "피엠티"
+      },
+      {
+       "matchedEventId": "evt_134fb938-9974-4d53-b05a-cabd59fc7c07",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0846,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_624cacd2-c4d3-4300-bdfc-bcd5cb89a032",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0137,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_27c5c07b-957f-46eb-8b92-34e973e40a02",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0519,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_b229faf9-304d-4703-98c7-1d702d27ba52",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0978,
+       "leaderName": "HLB이노베이션"
+      },
+      {
+       "matchedEventId": "evt_b229faf9-304d-4703-98c7-1d702d27ba52",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0589,
+       "leaderName": "HLB이노베이션"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_14_반도체지수",
+     "catalystName": "반도체지수",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 340,
+       "observedCount": 340,
+       "positiveCount": 182,
+       "medianReturn": 0.002
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 340,
+       "observedCount": 337,
+       "positiveCount": 191,
+       "medianReturn": 0.0113
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 340,
+       "observedCount": 332,
+       "positiveCount": 194,
+       "medianReturn": 0.0248
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_5610dc4e-a216-4433-9430-e45f681ad8be",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.0179,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": 0.0131,
+       "leaderName": "피엠티"
+      },
+      {
+       "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0076,
+       "leaderName": "피엠티"
+      },
+      {
+       "matchedEventId": "evt_134fb938-9974-4d53-b05a-cabd59fc7c07",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0846,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_624cacd2-c4d3-4300-bdfc-bcd5cb89a032",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0137,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_27c5c07b-957f-46eb-8b92-34e973e40a02",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0519,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_b229faf9-304d-4703-98c7-1d702d27ba52",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0978,
+       "leaderName": "HLB이노베이션"
+      },
+      {
+       "matchedEventId": "evt_b229faf9-304d-4703-98c7-1d702d27ba52",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0589,
+       "leaderName": "HLB이노베이션"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_9bd63575-1389-420a-9f7f-2630f1a125bd",
@@ -1514,7 +2842,9 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "gpu",
+      "메모리",
+      "방안"
      ],
      "outcomes": [
       {
@@ -1544,7 +2874,9 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "amd",
+      "가이던스",
+      "매출"
      ],
      "outcomes": [
       {
@@ -1574,7 +2906,9 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -1626,7 +2960,9 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -1678,7 +3014,7 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -1730,7 +3066,7 @@
      "displayNameAtEvent": "반도체 재료/부품",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -1776,10 +3112,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_14",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+     "summary": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승(주도주 : 제이아이테크, 피엠티, 티씨케이, 한솔아이원스, 한양디지텍)"
+    }
    ]
   },
   {
    "rank": 7,
+   "attentionGapTradingDays": 116,
    "themeId": "thm_187",
    "eventId": "evt_day_187",
    "displayName": "핵융합에너지",
@@ -1807,6 +3152,266 @@
      "return": 0.037
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_187_초전도체",
+     "catalystName": "초전도체",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 19,
+       "observedCount": 19,
+       "positiveCount": 8,
+       "medianReturn": -0.0252
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 19,
+       "observedCount": 19,
+       "positiveCount": 6,
+       "medianReturn": -0.0431
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 19,
+       "observedCount": 19,
+       "positiveCount": 6,
+       "medianReturn": -0.0847
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+       "marketDate": "2026-02-19",
+       "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+       "sameDayReturn": -0.0099,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+       "marketDate": "2026-02-19",
+       "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+       "sameDayReturn": 0.0334,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_88372fc5-20e7-4208-bba0-95fa09779426",
+       "marketDate": "2026-01-22",
+       "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
+       "sameDayReturn": -0.0392,
+       "leaderName": "비츠로넥스텍"
+      },
+      {
+       "matchedEventId": "evt_88372fc5-20e7-4208-bba0-95fa09779426",
+       "marketDate": "2026-01-22",
+       "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
+       "sameDayReturn": -0.0473,
+       "leaderName": "비츠로넥스텍"
+      },
+      {
+       "matchedEventId": "evt_78d2c698-cd57-4a77-84b5-1f56c101a006",
+       "marketDate": "2023-09-05",
+       "normalizedCatalystSummary": "네이처, 초전도체 연구 강화 필요 언급 소식 등에 일부 관련주 상승",
+       "sameDayReturn": -0.0342,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_78d2c698-cd57-4a77-84b5-1f56c101a006",
+       "marketDate": "2023-09-05",
+       "normalizedCatalystSummary": "네이처, 초전도체 연구 강화 필요 언급 소식 등에 일부 관련주 상승",
+       "sameDayReturn": -0.035,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_7f3a0e93-2e09-4502-a08f-c01aa317e943",
+       "marketDate": "2023-08-17",
+       "normalizedCatalystSummary": "네이처, 'LK-99' 초전도체 부인 소식에 하락",
+       "sameDayReturn": -0.04,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_7b427306-360d-4a00-a88a-79c530bd4def",
+       "marketDate": "2023-08-16",
+       "normalizedCatalystSummary": "초전도체 진위 논란 지속에도 상승",
+       "sameDayReturn": -0.2272,
+       "leaderName": "모비스"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_187_핵융합",
+     "catalystName": "핵융합",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 15,
+       "observedCount": 15,
+       "positiveCount": 5,
+       "medianReturn": -0.0013
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 15,
+       "observedCount": 15,
+       "positiveCount": 13,
+       "medianReturn": 0.0375
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 15,
+       "observedCount": 15,
+       "positiveCount": 11,
+       "medianReturn": 0.0383
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+       "marketDate": "2026-02-19",
+       "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+       "sameDayReturn": 0.0334,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+       "marketDate": "2026-02-19",
+       "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+       "sameDayReturn": -0.0099,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_9ce1c499-c09b-4197-a0b4-a61b0da8ece3",
+       "marketDate": "2025-12-29",
+       "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
+       "sameDayReturn": 0.0195,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_9ce1c499-c09b-4197-a0b4-a61b0da8ece3",
+       "marketDate": "2025-12-29",
+       "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
+       "sameDayReturn": 0.0417,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_bd9dd2d8-e8d7-48b8-84aa-e81207052d22",
+       "marketDate": "2025-12-19",
+       "normalizedCatalystSummary": "트럼프 미디어, 핵융합 기업 TAE와 합병 및 정부, 핵융합 전력생산 실증 추진 소식 등에 상승",
+       "sameDayReturn": 0.0925,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_bd9dd2d8-e8d7-48b8-84aa-e81207052d22",
+       "marketDate": "2025-12-19",
+       "normalizedCatalystSummary": "트럼프 미디어, 핵융합 기업 TAE와 합병 및 정부, 핵융합 전력생산 실증 추진 소식 등에 상승",
+       "sameDayReturn": 0.0755,
+       "leaderName": "일진파워"
+      },
+      {
+       "matchedEventId": "evt_5774c2a0-c764-4821-9e88-411bd98f65e5",
+       "marketDate": "2025-08-29",
+       "normalizedCatalystSummary": "엔비디아, 핵융합 스타트업 커먼웰스퓨전시스템즈 투자 소식 등에 상승",
+       "sameDayReturn": -0.0091,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_5774c2a0-c764-4821-9e88-411bd98f65e5",
+       "marketDate": "2025-08-29",
+       "normalizedCatalystSummary": "엔비디아, 핵융합 스타트업 커먼웰스퓨전시스템즈 투자 소식 등에 상승",
+       "sameDayReturn": -0.0091,
+       "leaderName": "모비스"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_187_lk-99",
+     "catalystName": "lk-99",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 10,
+       "observedCount": 10,
+       "positiveCount": 6,
+       "medianReturn": 0.0533
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 10,
+       "observedCount": 10,
+       "positiveCount": 4,
+       "medianReturn": -0.0338
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 10,
+       "observedCount": 10,
+       "positiveCount": 2,
+       "medianReturn": -0.1001
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_6220e487-7a99-4668-8ede-528412831382",
+       "marketDate": "2023-08-31",
+       "normalizedCatalystSummary": "LK-99 검증위, 국내 4곳 재현실험서 초전도성 사례 없었다는 소식에 하락",
+       "sameDayReturn": -0.0049,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_7f3a0e93-2e09-4502-a08f-c01aa317e943",
+       "marketDate": "2023-08-17",
+       "normalizedCatalystSummary": "네이처, 'LK-99' 초전도체 부인 소식에 하락",
+       "sameDayReturn": -0.04,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_7d0ee10e-a024-4cdb-84d5-21efbb20d776",
+       "marketDate": "2023-08-14",
+       "normalizedCatalystSummary": "보나사피엔스 김인기 대표, LK-99 상온 초전도체·강자성체 동시 성립 발언 부각 등에 일부 관련주 상승",
+       "sameDayReturn": 0.2127,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_7d0ee10e-a024-4cdb-84d5-21efbb20d776",
+       "marketDate": "2023-08-14",
+       "normalizedCatalystSummary": "보나사피엔스 김인기 대표, LK-99 상온 초전도체·강자성체 동시 성립 발언 부각 등에 일부 관련주 상승",
+       "sameDayReturn": 0.1602,
+       "leaderName": "모비스"
+      },
+      {
+       "matchedEventId": "evt_6d99c504-7fd7-47a9-83ac-89031e03b6a4",
+       "marketDate": "2023-08-11",
+       "normalizedCatalystSummary": "초전도체 논란 지속 속 LK-99 검증위, 2주내 샘플 제작 완료 및 공개 예정 소식 등에 상승",
+       "sameDayReturn": 0.0657,
+       "leaderName": "비츠로테크"
+      },
+      {
+       "matchedEventId": "evt_6d99c504-7fd7-47a9-83ac-89031e03b6a4",
+       "marketDate": "2023-08-11",
+       "normalizedCatalystSummary": "초전도체 논란 지속 속 LK-99 검증위, 2주내 샘플 제작 완료 및 공개 예정 소식 등에 상승",
+       "sameDayReturn": 0.0657,
+       "leaderName": "비츠로테크"
+      },
+      {
+       "matchedEventId": "evt_1b35d2de-5778-4516-994f-8271d0bfcc18",
+       "marketDate": "2023-08-08",
+       "normalizedCatalystSummary": "美 CMTC, LK-99 초전도체 부인 소식 등에 하락",
+       "sameDayReturn": 0.0408,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_654ccabc-6186-4089-83d7-7592c027e5b6",
+       "marketDate": "2023-08-07",
+       "normalizedCatalystSummary": "초전도체 LK-99 진위 논란 지속에도 상승",
+       "sameDayReturn": -0.0663,
+       "leaderName": "모비스"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
@@ -1814,7 +3419,8 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "초전도체",
+      "핵융합"
      ],
      "outcomes": [
       {
@@ -1866,7 +3472,8 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "초전도체",
+      "핵융합"
      ],
      "outcomes": [
       {
@@ -1918,7 +3525,7 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "초전도체"
      ],
      "outcomes": [
       {
@@ -1970,7 +3577,7 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "초전도체"
      ],
      "outcomes": [
       {
@@ -2022,7 +3629,7 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "핵융합"
      ],
      "outcomes": [
       {
@@ -2074,7 +3681,7 @@
      "displayNameAtEvent": "핵융합에너지",
      "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "핵융합"
      ],
      "outcomes": [
       {
@@ -2120,10 +3727,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_187",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+     "summary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승(주도주 : 일진파워, 삼화콘덴서, 에스에프에이, 비츠로넥스텍)"
+    }
    ]
   },
   {
    "rank": 8,
+   "attentionGapTradingDays": 6,
    "themeId": "thm_559",
    "eventId": "evt_day_559",
    "displayName": "고체산화물 연료전지(SOFC)",
@@ -2151,6 +3767,266 @@
      "return": 0.0917
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_559_블룸에너지",
+     "catalystName": "블룸에너지",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 18,
+       "observedCount": 18,
+       "positiveCount": 16,
+       "medianReturn": 0.022
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 18,
+       "observedCount": 18,
+       "positiveCount": 8,
+       "medianReturn": -0.0111
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 18,
+       "observedCount": 16,
+       "positiveCount": 2,
+       "medianReturn": -0.0528
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_3001e831-3254-42d1-bda1-702b1ad9b4f3",
+       "marketDate": "2026-07-22",
+       "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
+       "sameDayReturn": 0.1545,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_3001e831-3254-42d1-bda1-702b1ad9b4f3",
+       "marketDate": "2026-07-22",
+       "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
+       "sameDayReturn": 0.144,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+       "marketDate": "2026-05-22",
+       "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+       "sameDayReturn": 0.0189,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+       "marketDate": "2026-05-22",
+       "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+       "sameDayReturn": 0.0041,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_3bc29fc2-fe61-4e0e-853a-f810e363cc77",
+       "marketDate": "2026-05-21",
+       "normalizedCatalystSummary": "美 블룸에너지(+8.02%) 주가 상승 영향 등에 상승",
+       "sameDayReturn": 0.0751,
+       "leaderName": "LS머트리얼즈"
+      },
+      {
+       "matchedEventId": "evt_3bc29fc2-fe61-4e0e-853a-f810e363cc77",
+       "marketDate": "2026-05-21",
+       "normalizedCatalystSummary": "美 블룸에너지(+8.02%) 주가 상승 영향 등에 상승",
+       "sameDayReturn": 0.0648,
+       "leaderName": "LS머트리얼즈"
+      },
+      {
+       "matchedEventId": "evt_30473c3c-ac9b-4c6d-8192-c57823c4ba0f",
+       "marketDate": "2025-10-14",
+       "normalizedCatalystSummary": "고체산화물연료전지(SOFC) 개발 대표기업 美 블룸에너지(+26.52%) 급등 영향 등에 일부 관련주 상승",
+       "sameDayReturn": 0.022,
+       "leaderName": "아모센스"
+      },
+      {
+       "matchedEventId": "evt_30473c3c-ac9b-4c6d-8192-c57823c4ba0f",
+       "marketDate": "2025-10-14",
+       "normalizedCatalystSummary": "고체산화물연료전지(SOFC) 개발 대표기업 美 블룸에너지(+26.52%) 급등 영향 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0244,
+       "leaderName": "아모센스"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_559_ai",
+     "catalystName": "ai",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 12,
+       "observedCount": 12,
+       "positiveCount": 10,
+       "medianReturn": 0.0226
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 12,
+       "observedCount": 12,
+       "positiveCount": 8,
+       "medianReturn": 0.0329
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 12,
+       "observedCount": 10,
+       "positiveCount": 2,
+       "medianReturn": -0.0874
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
+       "marketDate": "2026-07-31",
+       "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+       "sameDayReturn": 0.0367,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
+       "marketDate": "2026-07-31",
+       "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+       "sameDayReturn": 0.0233,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+       "marketDate": "2026-05-22",
+       "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+       "sameDayReturn": 0.0189,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+       "marketDate": "2026-05-22",
+       "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+       "sameDayReturn": 0.0041,
+       "leaderName": "비나텍"
+      },
+      {
+       "matchedEventId": "evt_7b70ff9b-fd20-4a69-aa4c-495d77259316",
+       "marketDate": "2025-09-11",
+       "normalizedCatalystSummary": "블룸에너지(+14.47%) 등 연료전지 관련주 강세 및 AI 데이터센터용 전력 수요 대안 연료전지 부각 분석",
+       "sameDayReturn": 0.0478,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_7b70ff9b-fd20-4a69-aa4c-495d77259316",
+       "marketDate": "2025-09-11",
+       "normalizedCatalystSummary": "블룸에너지(+14.47%) 등 연료전지 관련주 강세 및 AI 데이터센터용 전력 수요 대안 연료전지 부각 분석",
+       "sameDayReturn": 0.0234,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_dc5e3a0a-ff9e-429c-baac-7ade52b6dbc0",
+       "marketDate": "2024-11-18",
+       "normalizedCatalystSummary": "美 블룸에너지(+59.19%), 아메리칸 일렉트릭 파워와 AI 데이터센터 관련 SOFC 공급 소식 등에 상승",
+       "sameDayReturn": 0.022,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_dc5e3a0a-ff9e-429c-baac-7ade52b6dbc0",
+       "marketDate": "2024-11-18",
+       "normalizedCatalystSummary": "美 블룸에너지(+59.19%), 아메리칸 일렉트릭 파워와 AI 데이터센터 관련 SOFC 공급 소식 등에 상승",
+       "sameDayReturn": 0.0151,
+       "leaderName": "한선엔지니어링"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_559_공급",
+     "catalystName": "공급",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 12,
+       "observedCount": 12,
+       "positiveCount": 10,
+       "medianReturn": 0.0176
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 12,
+       "observedCount": 12,
+       "positiveCount": 8,
+       "medianReturn": 0.0329
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 12,
+       "observedCount": 12,
+       "positiveCount": 2,
+       "medianReturn": -0.0412
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_2d712d01-c799-4290-9a6c-791f4c730e30",
+       "marketDate": "2026-04-14",
+       "normalizedCatalystSummary": "오라클, 블룸에너지와 추가 전력 용량 공급 계약 체결 소식 등에 상승",
+       "sameDayReturn": 0.0143,
+       "leaderName": "두산퓨얼셀"
+      },
+      {
+       "matchedEventId": "evt_2d712d01-c799-4290-9a6c-791f4c730e30",
+       "marketDate": "2026-04-14",
+       "normalizedCatalystSummary": "오라클, 블룸에너지와 추가 전력 용량 공급 계약 체결 소식 등에 상승",
+       "sameDayReturn": 0.0314,
+       "leaderName": "두산퓨얼셀"
+      },
+      {
+       "matchedEventId": "evt_4df56179-1515-4f92-8f50-2216344451c9",
+       "marketDate": "2025-10-01",
+       "normalizedCatalystSummary": "신규 발전소에 첨단 연료전지 공급 소식 속 블룸에너지(+14.90%) 급등 영향 등에 상승",
+       "sameDayReturn": 0.0268,
+       "leaderName": "SK디앤디"
+      },
+      {
+       "matchedEventId": "evt_4df56179-1515-4f92-8f50-2216344451c9",
+       "marketDate": "2025-10-01",
+       "normalizedCatalystSummary": "신규 발전소에 첨단 연료전지 공급 소식 속 블룸에너지(+14.90%) 급등 영향 등에 상승",
+       "sameDayReturn": 0.0201,
+       "leaderName": "SK디앤디"
+      },
+      {
+       "matchedEventId": "evt_dc5e3a0a-ff9e-429c-baac-7ade52b6dbc0",
+       "marketDate": "2024-11-18",
+       "normalizedCatalystSummary": "美 블룸에너지(+59.19%), 아메리칸 일렉트릭 파워와 AI 데이터센터 관련 SOFC 공급 소식 등에 상승",
+       "sameDayReturn": 0.0151,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_dc5e3a0a-ff9e-429c-baac-7ade52b6dbc0",
+       "marketDate": "2024-11-18",
+       "normalizedCatalystSummary": "美 블룸에너지(+59.19%), 아메리칸 일렉트릭 파워와 AI 데이터센터 관련 SOFC 공급 소식 등에 상승",
+       "sameDayReturn": 0.022,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_0fe8c63f-71cd-46a5-9ce0-0079edc49ffd",
+       "marketDate": "2024-08-14",
+       "normalizedCatalystSummary": "전력수요 사상 최고치 경신 속 전력 공급 대안으로 부각 등에 상승",
+       "sameDayReturn": 0.0106,
+       "leaderName": "한선엔지니어링"
+      },
+      {
+       "matchedEventId": "evt_0fe8c63f-71cd-46a5-9ce0-0079edc49ffd",
+       "marketDate": "2024-08-14",
+       "normalizedCatalystSummary": "전력수요 사상 최고치 경신 속 전력 공급 대안으로 부각 등에 상승",
+       "sameDayReturn": 0.0093,
+       "leaderName": "한선엔지니어링"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
@@ -2158,7 +4034,7 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai"
      ],
      "outcomes": [
       {
@@ -2210,7 +4086,7 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai"
      ],
      "outcomes": [
       {
@@ -2262,7 +4138,7 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "블룸에너지"
      ],
      "outcomes": [
       {
@@ -2314,7 +4190,7 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "블룸에너지"
      ],
      "outcomes": [
       {
@@ -2366,7 +4242,9 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai",
+      "블룸에너지",
+      "연료전지"
      ],
      "outcomes": [
       {
@@ -2418,7 +4296,9 @@
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
      "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "ai",
+      "블룸에너지",
+      "연료전지"
      ],
      "outcomes": [
       {
@@ -2464,10 +4344,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_559",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 AI 수익성 우려 완화 등에 상승",
+     "summary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 AI 수익성 우려 완화 등에 상승(주도주 : 두산퓨얼셀, 엘티씨, 비나텍, 미코, 코세스)"
+    }
    ]
   },
   {
    "rank": 9,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_536",
    "eventId": "evt_day_536",
    "displayName": "HBM(고대역폭메모리)",
@@ -2495,6 +4384,266 @@
      "return": 0.117
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_536_반도체",
+     "catalystName": "반도체",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 351,
+       "observedCount": 351,
+       "positiveCount": 165,
+       "medianReturn": -0.0014
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 351,
+       "observedCount": 351,
+       "positiveCount": 178,
+       "medianReturn": 0.0006
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 351,
+       "observedCount": 344,
+       "positiveCount": 173,
+       "medianReturn": 0.0015
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_9ca6d1a6-b00e-4cfd-905c-44f259ce79a1",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0967,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_8e9f4939-35f3-4e34-a3de-c2b12b653248",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1181,
+       "leaderName": "에스티아이"
+      },
+      {
+       "matchedEventId": "evt_8e9f4939-35f3-4e34-a3de-c2b12b653248",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1295,
+       "leaderName": "에스티아이"
+      },
+      {
+       "matchedEventId": "evt_cacad7db-607d-4497-9b96-e01d87f363e4",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0507,
+       "leaderName": "제너셈"
+      },
+      {
+       "matchedEventId": "evt_cacad7db-607d-4497-9b96-e01d87f363e4",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0155,
+       "leaderName": "제너셈"
+      },
+      {
+       "matchedEventId": "evt_260e1aaf-1a71-4f5c-845c-87e0a9e7235b",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0653,
+       "leaderName": "테크윙"
+      },
+      {
+       "matchedEventId": "evt_260e1aaf-1a71-4f5c-845c-87e0a9e7235b",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.067,
+       "leaderName": "테크윙"
+      },
+      {
+       "matchedEventId": "evt_dbcb28a3-ff4d-45ca-bc7f-46980be2b9e9",
+       "marketDate": "2026-07-08",
+       "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0201,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_536_필라델피아",
+     "catalystName": "필라델피아",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 305,
+       "observedCount": 305,
+       "positiveCount": 151,
+       "medianReturn": -0.0006
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 305,
+       "observedCount": 302,
+       "positiveCount": 170,
+       "medianReturn": 0.008
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 305,
+       "observedCount": 297,
+       "positiveCount": 152,
+       "medianReturn": 0.0076
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_d97fce62-3ddf-41a0-bd03-f7934bf2ece3",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.027,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0253,
+       "leaderName": "와이씨켐"
+      },
+      {
+       "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0175,
+       "leaderName": "와이씨켐"
+      },
+      {
+       "matchedEventId": "evt_9ca6d1a6-b00e-4cfd-905c-44f259ce79a1",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0967,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_78b9ec87-f281-459c-8141-831da7c8fde3",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0194,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_5b0e956b-f220-42ff-aed5-a443da965078",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0651,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_5e598d42-37d3-4538-8a2d-14207e058f99",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0851,
+       "leaderName": "한미반도체"
+      },
+      {
+       "matchedEventId": "evt_5e598d42-37d3-4538-8a2d-14207e058f99",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0659,
+       "leaderName": "한미반도체"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_536_반도체지수",
+     "catalystName": "반도체지수",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 189,
+       "observedCount": 189,
+       "positiveCount": 100,
+       "medianReturn": 0.003
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 189,
+       "observedCount": 186,
+       "positiveCount": 119,
+       "medianReturn": 0.0194
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 189,
+       "observedCount": 181,
+       "positiveCount": 103,
+       "medianReturn": 0.025
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_d97fce62-3ddf-41a0-bd03-f7934bf2ece3",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.027,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0253,
+       "leaderName": "와이씨켐"
+      },
+      {
+       "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0175,
+       "leaderName": "와이씨켐"
+      },
+      {
+       "matchedEventId": "evt_9ca6d1a6-b00e-4cfd-905c-44f259ce79a1",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0967,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_78b9ec87-f281-459c-8141-831da7c8fde3",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0194,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_5b0e956b-f220-42ff-aed5-a443da965078",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0651,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_5e598d42-37d3-4538-8a2d-14207e058f99",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0659,
+       "leaderName": "한미반도체"
+      },
+      {
+       "matchedEventId": "evt_5e598d42-37d3-4538-8a2d-14207e058f99",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0851,
+       "leaderName": "한미반도체"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_b5dd1802-6a5d-4bed-aefe-135444da4cf9",
@@ -2502,7 +4651,9 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "gpu",
+      "메모리",
+      "엔비디아"
      ],
      "outcomes": [
       {
@@ -2532,7 +4683,9 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "amd",
+      "가이던스",
+      "매출"
      ],
      "outcomes": [
       {
@@ -2562,7 +4715,9 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -2614,7 +4769,9 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -2666,7 +4823,7 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -2718,7 +4875,7 @@
      "displayNameAtEvent": "HBM(고대역폭메모리)",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -2764,10 +4921,19 @@
       }
      ]
     }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_536",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+     "summary": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승(주도주 : 케이씨텍, 에스티아이, 피에스케이홀딩스, 펨트론, 와이씨)"
+    }
    ]
   },
   {
    "rank": 10,
+   "attentionGapTradingDays": 1,
    "themeId": "thm_12",
    "eventId": "evt_day_12",
    "displayName": "반도체 장비",
@@ -2795,6 +4961,266 @@
      "return": 0.1688
     }
    ],
+   "catalysts": [
+    {
+     "catalystId": "ctl_12_반도체",
+     "catalystName": "반도체",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 674,
+       "observedCount": 673,
+       "positiveCount": 367,
+       "medianReturn": 0.0024
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 674,
+       "observedCount": 673,
+       "positiveCount": 364,
+       "medianReturn": 0.0047
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 674,
+       "observedCount": 666,
+       "positiveCount": 387,
+       "medianReturn": 0.0179
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_81a7865d-3611-475c-b572-24233ad44973",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0914,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_314a9a73-9803-423b-938e-6b0b453e390b",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1158,
+       "leaderName": "씨피시스템"
+      },
+      {
+       "matchedEventId": "evt_314a9a73-9803-423b-938e-6b0b453e390b",
+       "marketDate": "2026-07-27",
+       "normalizedCatalystSummary": "삼성전자·SK그룹, 샌프란시스코 AI 서밋서 美 빅테크와 대규모 반도체·인프라 협력 추진 소식 등에 상승",
+       "sameDayReturn": -0.1144,
+       "leaderName": "씨피시스템"
+      },
+      {
+       "matchedEventId": "evt_ce3e6746-c147-46e8-8b78-0c2091a101c0",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0556,
+       "leaderName": "아스플로"
+      },
+      {
+       "matchedEventId": "evt_ce3e6746-c147-46e8-8b78-0c2091a101c0",
+       "marketDate": "2026-07-21",
+       "normalizedCatalystSummary": "7월1~20일 반도체 수출 호조 등에 상승",
+       "sameDayReturn": -0.0062,
+       "leaderName": "아스플로"
+      },
+      {
+       "matchedEventId": "evt_5ebb384c-359d-4641-a093-caff80cbe2b8",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0774,
+       "leaderName": "브이엠"
+      },
+      {
+       "matchedEventId": "evt_5ebb384c-359d-4641-a093-caff80cbe2b8",
+       "marketDate": "2026-07-14",
+       "normalizedCatalystSummary": "최근 주가 변동성에도 메모리 반도체 업황 견조 분석 및 한미반도체 호실적 등에 일부 관련주 상승",
+       "sameDayReturn": 0.0661,
+       "leaderName": "브이엠"
+      },
+      {
+       "matchedEventId": "evt_c0795238-50f3-47dc-a1a2-53167ec647d6",
+       "marketDate": "2026-07-08",
+       "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
+       "sameDayReturn": 0.0167,
+       "leaderName": null
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_12_필라델피아",
+     "catalystName": "필라델피아",
+     "matchesToday": true,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 508,
+       "observedCount": 508,
+       "positiveCount": 268,
+       "medianReturn": 0.0012
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 508,
+       "observedCount": 505,
+       "positiveCount": 292,
+       "medianReturn": 0.0095
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 508,
+       "observedCount": 500,
+       "positiveCount": 307,
+       "medianReturn": 0.0207
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_2ad6fb73-1d8f-4bb7-ba7d-71f86cb3f8a5",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.0245,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0774,
+       "leaderName": "그린리소스"
+      },
+      {
+       "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0214,
+       "leaderName": "그린리소스"
+      },
+      {
+       "matchedEventId": "evt_81a7865d-3611-475c-b572-24233ad44973",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0914,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_53c50564-e279-4de0-96a1-a1a00fee93d5",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0136,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_a2068e0b-ed22-4067-a513-c97d9efe123e",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0608,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_f3fd1010-72ad-441d-8220-5916f57f4c96",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0365,
+       "leaderName": "씨피시스템"
+      },
+      {
+       "matchedEventId": "evt_f3fd1010-72ad-441d-8220-5916f57f4c96",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0589,
+       "leaderName": "씨피시스템"
+      }
+     ]
+    },
+    {
+     "catalystId": "ctl_12_반도체지수",
+     "catalystName": "반도체지수",
+     "matchesToday": false,
+     "horizons": [
+      {
+       "horizonTradingDays": 1,
+       "eligibleCount": 346,
+       "observedCount": 346,
+       "positiveCount": 185,
+       "medianReturn": 0.0013
+      },
+      {
+       "horizonTradingDays": 5,
+       "eligibleCount": 346,
+       "observedCount": 343,
+       "positiveCount": 206,
+       "medianReturn": 0.015
+      },
+      {
+       "horizonTradingDays": 20,
+       "eligibleCount": 346,
+       "observedCount": 338,
+       "positiveCount": 226,
+       "medianReturn": 0.0387
+      }
+     ],
+     "events": [
+      {
+       "matchedEventId": "evt_2ad6fb73-1d8f-4bb7-ba7d-71f86cb3f8a5",
+       "marketDate": "2026-08-06",
+       "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+       "sameDayReturn": -0.0245,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0774,
+       "leaderName": "그린리소스"
+      },
+      {
+       "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+       "marketDate": "2026-08-05",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+       "sameDayReturn": -0.0214,
+       "leaderName": "그린리소스"
+      },
+      {
+       "matchedEventId": "evt_81a7865d-3611-475c-b572-24233ad44973",
+       "marketDate": "2026-07-28",
+       "normalizedCatalystSummary": "중국發 반도체 경쟁 심화 우려 및 AI 수익성 의구심 지속, 美 필라델피아 반도체지수(-2.23%) 급락 영",
+       "sameDayReturn": -0.0914,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_53c50564-e279-4de0-96a1-a1a00fee93d5",
+       "marketDate": "2026-07-20",
+       "normalizedCatalystSummary": "中 키미 K3 쇼크, 필라델피아 반도체지수 약세(-1.63%) 등에 하락",
+       "sameDayReturn": 0.0136,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_a2068e0b-ed22-4067-a513-c97d9efe123e",
+       "marketDate": "2026-07-16",
+       "normalizedCatalystSummary": "美 필라델피아 반도체지수(-2.08%) 급락 영향 등에 하락",
+       "sameDayReturn": -0.0608,
+       "leaderName": null
+      },
+      {
+       "matchedEventId": "evt_f3fd1010-72ad-441d-8220-5916f57f4c96",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0365,
+       "leaderName": "씨피시스템"
+      },
+      {
+       "matchedEventId": "evt_f3fd1010-72ad-441d-8220-5916f57f4c96",
+       "marketDate": "2026-07-15",
+       "normalizedCatalystSummary": "美 CPI 우려 완화 속 필라델피아 반도체지수 급등 및 SK하이닉스 ADR(+27.29%) 폭등 영향 등에 ",
+       "sameDayReturn": -0.0589,
+       "leaderName": "씨피시스템"
+      }
+     ]
+    }
+   ],
    "similar": [
     {
      "matchedEventId": "evt_c1279bad-df6a-4b8b-8b4d-4e3627d6179a",
@@ -2802,7 +5228,9 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "gpu",
+      "메모리",
+      "방안"
      ],
      "outcomes": [
       {
@@ -2832,7 +5260,9 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "amd",
+      "가이던스",
+      "매출"
      ],
      "outcomes": [
       {
@@ -2862,7 +5292,9 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -2914,7 +5346,9 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "반도체지수",
+      "폭등",
+      "필라델피아"
      ],
      "outcomes": [
       {
@@ -2966,7 +5400,7 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -3018,7 +5452,7 @@
      "displayNameAtEvent": "반도체 장비",
      "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
      "similarityReasons": [
-      "같은 테마의 과거 기록"
+      "메모리"
      ],
      "outcomes": [
       {
@@ -3063,6 +5497,14 @@
        "role": "LEADER"
       }
      ]
+    }
+   ],
+   "evidence": [
+    {
+     "newsId": "news_12",
+     "sourceName": "인포스탁 테마 기록",
+     "title": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+     "summary": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승(주도주 : 티씨케이, 저스템, 미래산업, 다원넥스뷰, 테스)"
     }
    ]
   }

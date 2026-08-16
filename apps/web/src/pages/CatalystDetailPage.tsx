@@ -1,4 +1,5 @@
 import { IconArrowLeftLine, IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { formatDate, formatReturn, horizonLabel, returnTone } from '../domain/formatting';
@@ -6,8 +7,11 @@ import { asRepositoryError } from '../domain/repositoryErrors';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
+const VISIBLE_EVENTS = 3;
+
 export function CatalystDetailPage() {
   const repository = useRepository();
+  const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const params = useParams();
   const catalystId = params.catalystId ?? '';
@@ -109,7 +113,7 @@ export function CatalystDetailPage() {
           {/* 수익률이 높은 사건만 골라 보여주지 않는다 (screen_spec 11.1). */}
           {detail.events.length ? (
             <ul className="case-list">
-              {detail.events.map((event) => (
+              {(expanded ? detail.events : detail.events.slice(0, VISIBLE_EVENTS)).map((event) => (
                 <li key={event.matchedEventId}>
                   <Link to={`/events/${encodeURIComponent(event.matchedEventId)}`}>
                     <span className="case-list__copy">
@@ -133,6 +137,21 @@ export function CatalystDetailPage() {
           ) : (
             <EmptyState title="집계에 포함된 사건이 없습니다" />
           )}
+          {detail.events.length > VISIBLE_EVENTS ? (
+            <button
+              type="button"
+              className="expand-button case-list__more"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((current) => !current)}
+            >
+              <span>
+                {expanded
+                  ? '사건 접기'
+                  : `사건 ${(detail.events.length - VISIBLE_EVENTS).toLocaleString('ko-KR')}건 더 보기`}
+              </span>
+              <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
+            </button>
+          ) : null}
         </section>
       </div>
 

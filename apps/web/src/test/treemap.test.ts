@@ -59,7 +59,7 @@ describe('트리맵 후보 선택', () => {
     const twelve = Array.from({ length: 12 }, (_, index) => item(`t${index}`, (12 - index) / 100));
 
     expect(treemapRows(eight).map((row) => row.length)).toEqual([2, 3, 3]);
-    expect(treemapRows(twelve).map((row) => row.length)).toEqual([2, 3, 7]);
+    expect(treemapRows(twelve).map((row) => row.length)).toEqual([2, 3, 3, 3, 1]);
     expect(treemapRows(eight.slice(0, 2)).map((row) => row.length)).toEqual([2]);
   });
 });

@@ -40,8 +40,38 @@ interface LegacySimilar {
   leaders: Array<{ stockId: string; symbol: string; name: string; return: number; role: string }>;
 }
 
+interface LegacyEvidence {
+  newsId: string;
+  sourceName: string;
+  title: string;
+  summary: string;
+}
+
+interface LegacyCatalyst {
+  catalystId: string;
+  catalystName: string;
+  matchesToday: boolean;
+  horizons: Array<{
+    horizonTradingDays: number;
+    eligibleCount: number;
+    observedCount: number;
+    positiveCount: number;
+    medianReturn: number | null;
+  }>;
+  events: Array<{
+    matchedEventId: string;
+    marketDate: string;
+    normalizedCatalystSummary: string;
+    sameDayReturn: number | null;
+    leaderName: string | null;
+  }>;
+}
+
 interface LegacyTheme {
   rank: number;
+  catalysts: LegacyCatalyst[];
+  attentionGapTradingDays: number | null;
+  evidence: LegacyEvidence[];
   themeId: string;
   eventId: string;
   displayName: string;
@@ -125,7 +155,9 @@ export const demoRankings: RankingResponse = {
       },
       rank: theme.rank,
       rankChange60s: null,
-      badges: theme.rank === 1 ? ['RISING_FAST'] : [],
+      // 급부상은 60초 순위 변동으로 판정한다. 구 DB에는 장중 스냅샷이 없어 계산할 수 없으므로
+      // 달지 않는다. 실시간 수집이 붙으면 파이프라인이 채운다.
+      badges: [],
       weightedReturn: theme.weightedReturn,
       weightMethod: 'FREE_FLOAT_CAPPED' as const,
       advancingCount: theme.advancingCount,
@@ -162,6 +194,54 @@ export const demoRankings: RankingResponse = {
   },
   meta: { ...meta, marketContext },
 };
+
+export const demoTreemap = {
+  data: {
+    snapshotId: 'snap_legacy_treemap',
+    streamId: `stream_legacy_${story.marketDate}`,
+    sequence: 1,
+    items: story.themes
+      .filter((theme) => theme.weightedReturn !== null)
+      .map((theme) => ({
+        eventId: theme.eventId,
+        themeId: theme.themeId,
+        displayName: theme.displayName,
+        lifecycleStatus: 'ACTIVE' as const,
+        weightedReturn: theme.weightedReturn as number,
+        advancingCount: theme.advancingCount,
+        validCount: theme.validCount,
+        coverageStatus: 'SUFFICIENT' as const,
+        qualityFlags: [] as string[],
+      })),
+  },
+  meta: { ...meta, marketContext },
+};
+
+/** 그날 그 테마의 사건 문장을 근거 항목으로 둔다. 뉴스 수집분이 없어 원문 링크는 없다. */
+export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
+  story.themes.map((theme) => [
+    theme.eventId,
+    {
+      data: {
+        eventId: theme.eventId,
+        evidenceStatus: 'AFTER_CLOSE_CONFIRMED',
+        items: theme.evidence.map((item) => ({
+          newsId: item.newsId,
+          sourceName: item.sourceName,
+          title: item.title,
+          publishedAt: asOf,
+          receivedAt: asOf,
+          originalUrl: 'https://infostock.co.kr',
+          matchBasis: ['THEME'],
+          summary: item.summary,
+          qualityFlags: [],
+        })),
+        page: { nextCursor: null, hasMore: false, limit: 20 },
+      },
+      meta,
+    },
+  ]),
+);
 
 const byTheme = new Map(story.themes.map((theme) => [theme.themeId, theme]));
 const byEvent = new Map(story.themes.map((theme) => [theme.eventId, theme]));
@@ -231,32 +311,40 @@ export const demoHistoricalEvents: Record<string, HistoricalEventResponse> = Obj
   ),
 );
 
-/** 소재 유형 분류는 온톨로지(E-17) 몫이라 아직 없다. 테마 단위 기록 하나로만 둔다. */
+/**
+ * 소재 유형. 온톨로지 라벨(E-17)은 아직 없어서, 그 테마의 과거 사건에 실제로 붙어 있던
+ * 키워드를 유형 대신 쓴다. 건수·중앙값은 그 키워드가 붙은 사건만 세어 계산한 값이다.
+ */
+function horizonRows(catalyst: LegacyCatalyst) {
+  return catalyst.horizons.map((row) => ({
+    horizonTradingDays: row.horizonTradingDays as HistoricalHorizon,
+    eligibleCount: row.eligibleCount,
+    observedCount: row.observedCount,
+    positiveCount: row.positiveCount,
+    medianReturn: row.medianReturn,
+  }));
+}
+
 export const demoCatalystTop3ByTheme: Record<string, CatalystTop3Response> = Object.fromEntries(
-  story.themes.map((theme) => {
-    const rows = summaryOf(theme.similar);
-    return [
-      theme.themeId,
-      {
-        data: {
-          themeId: theme.themeId,
-          eventId: theme.eventId,
-          items: [
-            {
-              catalystId: `ctl_${theme.themeId}`,
-              catalystName: `${theme.displayName} 과거 기록`,
-              eligibleCount: rows[0].eligibleCount,
-              observedCount: rows[0].observedCount,
-              medianSameDayReturn: rows[0].medianReturn,
-              matchesToday: false,
-            },
-          ],
-          qualityNote: '소재 유형 분류는 온톨로지 검증 뒤에 붙습니다.',
-        },
-        meta,
+  story.themes.map((theme) => [
+    theme.themeId,
+    {
+      data: {
+        themeId: theme.themeId,
+        eventId: theme.eventId,
+        items: theme.catalysts.map((catalyst) => ({
+          catalystId: catalyst.catalystId,
+          catalystName: catalyst.catalystName,
+          eligibleCount: catalyst.horizons[0]?.eligibleCount ?? 0,
+          observedCount: catalyst.horizons[0]?.observedCount ?? 0,
+          medianSameDayReturn: catalyst.horizons[0]?.medianReturn ?? null,
+          matchesToday: catalyst.matchesToday,
+        })),
+        qualityNote: '소재 유형은 온톨로지 검증 전이라 사건에 기록된 키워드로 대신합니다.',
       },
-    ];
-  }),
+      meta,
+    },
+  ]),
 );
 
 export const demoCatalystTop3: CatalystTop3Response =
@@ -266,33 +354,34 @@ export const demoCatalystTop3: CatalystTop3Response =
   };
 
 export const demoCatalystDetails: Record<string, CatalystDetailResponse> = Object.fromEntries(
-  story.themes.map((theme) => {
-    const rows = summaryOf(theme.similar);
-    return [
-      `ctl_${theme.themeId}`,
-      {
-        data: {
-          catalystId: `ctl_${theme.themeId}`,
-          themeId: theme.themeId,
-          themeDisplayName: theme.displayName,
-          catalystName: `${theme.displayName} 과거 기록`,
-          availability: 'AVAILABLE' as const,
-          sameDay: rows[0],
-          horizons: rows,
-          events: theme.similar.map((item) => ({
-            matchedEventId: item.matchedEventId,
-            marketDate: item.marketDate,
-            normalizedCatalystSummary: item.normalizedCatalystSummary || '기록된 사유 없음',
-            sameDayReturn:
-              item.outcomes.find((row) => row.horizonTradingDays === 1)?.return ?? null,
-            leaderName: item.leaders[0]?.name ?? null,
-          })),
-          qualityNote: '소재 유형 분류는 온톨로지 검증 뒤에 붙습니다.',
+  story.themes.flatMap((theme) =>
+    theme.catalysts.map((catalyst) => {
+      const rows = horizonRows(catalyst);
+      return [
+        catalyst.catalystId,
+        {
+          data: {
+            catalystId: catalyst.catalystId,
+            themeId: theme.themeId,
+            themeDisplayName: theme.displayName,
+            catalystName: catalyst.catalystName,
+            availability: 'AVAILABLE' as const,
+            sameDay: rows[0],
+            horizons: rows,
+            events: catalyst.events.map((event) => ({
+              matchedEventId: event.matchedEventId,
+              marketDate: event.marketDate,
+              normalizedCatalystSummary: event.normalizedCatalystSummary || '기록된 사유 없음',
+              sameDayReturn: event.sameDayReturn,
+              leaderName: event.leaderName,
+            })),
+            qualityNote: '소재 유형은 온톨로지 검증 전이라 사건에 기록된 키워드로 대신합니다.',
+          },
+          meta,
         },
-        meta,
-      },
-    ];
-  }),
+      ];
+    }),
+  ),
 );
 
 export { byTheme as demoThemeById, byEvent as demoThemeByEvent };

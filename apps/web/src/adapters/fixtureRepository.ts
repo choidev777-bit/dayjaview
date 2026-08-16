@@ -27,11 +27,13 @@ import {
   demoCatalystDetails,
   demoCatalystTop3,
   demoCatalystTop3ByTheme,
+  demoEvidenceByEvent,
   demoHistoricalEvents,
   demoRankings,
   demoSimilarByEvent,
   demoSimilarEvents,
   demoThemeByEvent,
+  demoTreemap,
 } from './demoStory';
 import type {
   AuthSession,
@@ -196,10 +198,15 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
   }
 
   const mode = options.saved ?? 'mixed';
-  const initialItems = [
-    ...(mode === 'unavailable' ? [] : libraryResponse.data.items),
-    ...(mode === 'library' ? [] : unavailableResponse.data.items),
-  ];
+  // 시연 모드에서는 미리 저장된 항목을 두지 않는다. 계약 fixture의 저장 목록(스페이스X·접근 제한
+  // 항목)이 남아 있으면 사용자가 저장한 적 없는 항목이 계속 보인다.
+  const demoEmptyLibrary = options.similar === 'demo' && !options.saved;
+  const initialItems = demoEmptyLibrary
+    ? []
+    : [
+        ...(mode === 'unavailable' ? [] : libraryResponse.data.items),
+        ...(mode === 'library' ? [] : unavailableResponse.data.items),
+      ];
   initialItems.forEach((item) => savedItems.set(savedKey(item), clone(item)));
 
   async function resolveFixture<T>(resource: FixtureResource, value: T): Promise<T> {
@@ -244,7 +251,13 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         'rankings',
         rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')],
       ),
-    getTreemap: () => resolveFixture('treemap', treemaps[options.treemap ?? 'live']),
+    getTreemap: () =>
+      resolveFixture(
+        'treemap',
+        options.similar === 'demo' && !options.treemap
+          ? (demoTreemap as unknown as TreemapResponse)
+          : treemaps[options.treemap ?? 'live'],
+      ),
     getThemeDetail: (themeId, eventId) => {
       const selected = details[options.detail ?? 'single'];
       const gated = (options.similar ?? 'gated') === 'gated';
@@ -269,6 +282,9 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
                   weightedReturn: ranked.weightedReturn,
                   advancingCount: ranked.advancingCount,
                   validCount: ranked.validCount,
+                  turnoverMultiple: null,
+                  attentionGapTradingDays:
+                    demoThemeByEvent.get(ranked.eventId)?.attentionGapTradingDays ?? null,
                 },
                 coverage: ranked.coverage,
                 evidenceSummary: {
@@ -289,7 +305,13 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         },
       });
     },
-    getEvidence: () => resolveFixture('evidence', evidence[options.evidence ?? 'single']),
+    getEvidence: (eventId) =>
+      resolveFixture(
+        'evidence',
+        options.similar === 'demo' && !options.evidence && demoEvidenceByEvent[eventId]
+          ? (demoEvidenceByEvent[eventId] as EvidenceResponse)
+          : evidence[options.evidence ?? 'single'],
+      ),
     async getSaved(type: SavedType | 'ALL') {
       const response: SavedResponse = {
         data: {

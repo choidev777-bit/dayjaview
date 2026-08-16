@@ -70,7 +70,7 @@ def main() -> int:
             # 그날 그 테마의 사건 문장과 주도주
             cur.execute(
                 """
-                select content, lead_stock_raw
+                select occurrence_id, content, lead_stock_raw
                 from theme.occurrences
                 where theme_code = %s and session_date <= %s
                 order by session_date desc limit 1
@@ -78,7 +78,18 @@ def main() -> int:
                 (theme_code, CURRENT),
             )
             row = cur.fetchone()
-            content, lead_raw = (row or (None, None))
+            today_occ, content, lead_raw = (row or (None, None, None))
+
+            cur.execute(
+                """
+                select k.display_name
+                from keyword.occurrence_keyword_links l
+                join keyword.keywords k on k.keyword_id = l.keyword_id
+                where l.occurrence_id = %s
+                """,
+                (today_occ,),
+            )
+            today_keywords = {r[0] for r in cur.fetchall()}
 
             leaders: list[dict[str, object]] = []
             for order, chunk in enumerate((lead_raw or "").split("|")):
@@ -124,7 +135,19 @@ def main() -> int:
                 (theme_code, CURRENT),
             )
             similar = []
-            for occ_id, day, text, lead, r1, r5, r20 in cur.fetchall():
+            for occ_id, day, text, lead, r1, r5, r20 in list(cur.fetchall()):
+                tag_cur = conn.cursor()
+                tag_cur.execute(
+                    """
+                    select k.display_name
+                    from keyword.occurrence_keyword_links l
+                    join keyword.keywords k on k.keyword_id = l.keyword_id
+                    where l.occurrence_id = %s order by k.display_name limit 3
+                    """,
+                    (occ_id,),
+                )
+                tags = [r[0] for r in tag_cur.fetchall() if r[0]]
+                tag_cur.close()
                 outcomes = []
                 for horizon, value in zip(HORIZONS, (r1, r5, r20), strict=True):
                     outcomes.append(
@@ -141,7 +164,7 @@ def main() -> int:
                         "marketDate": day.isoformat(),
                         "displayNameAtEvent": name,
                         "normalizedCatalystSummary": (text or "").split("(주도주")[0].strip()[:60],
-                        "similarityReasons": ["같은 테마의 과거 기록"],
+                        "similarityReasons": tags,
                         "outcomes": outcomes,
                         "leaders": [
                             {
@@ -157,9 +180,101 @@ def main() -> int:
                     }
                 )
 
+            # 소재 유형: 온톨로지 라벨이 아직 없어 그 테마 과거 사건에 붙은 키워드로 대신한다.
+            cur.execute(
+                """
+                select k.display_name, count(*) as eligible,
+                       count(e.ret_t1) as observed_1,
+                       count(*) filter (where e.ret_t1 > 0) as up_1,
+                       percentile_cont(0.5) within group (order by e.ret_t1) as med_1,
+                       count(e.ret_t5) as observed_5,
+                       count(*) filter (where e.ret_t5 > 0) as up_5,
+                       percentile_cont(0.5) within group (order by e.ret_t5) as med_5,
+                       count(e.ret_t20) as observed_20,
+                       count(*) filter (where e.ret_t20 > 0) as up_20,
+                       percentile_cont(0.5) within group (order by e.ret_t20) as med_20
+                from theme.occurrences o
+                join keyword.occurrence_keyword_links l on l.occurrence_id = o.occurrence_id
+                join keyword.keywords k on k.keyword_id = l.keyword_id
+                left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                where o.theme_code = %s and o.session_date < %s
+                group by k.display_name
+                order by count(*) desc, k.display_name limit 3
+                """,
+                (theme_code, CURRENT),
+            )
+            catalysts = []
+            for (
+                kw, eligible,
+                ob1, up1, med1,
+                ob5, up5, med5,
+                ob20, up20, med20,
+            ) in list(cur.fetchall()):
+                ev_cur = conn.cursor()
+                ev_cur.execute(
+                    """
+                    select o.occurrence_id, o.session_date, o.content, o.lead_stock_raw, e.ret_t1
+                    from theme.occurrences o
+                    join keyword.occurrence_keyword_links l on l.occurrence_id = o.occurrence_id
+                    join keyword.keywords k on k.keyword_id = l.keyword_id
+                    left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                    where o.theme_code = %s and o.session_date < %s and k.display_name = %s
+                    order by o.session_date desc limit 8
+                    """,
+                    (theme_code, CURRENT, kw),
+                )
+                events = [
+                    {
+                        "matchedEventId": f"evt_{oid}",
+                        "marketDate": d.isoformat(),
+                        "normalizedCatalystSummary": (c or "").split("(주도주")[0].strip()[:60],
+                        "sameDayReturn": _pct(r1),
+                        "leaderName": (lead or "").split("|")[0].strip().partition("-")[2] or None,
+                    }
+                    for oid, d, c, lead, r1 in ev_cur.fetchall()
+                ]
+                ev_cur.close()
+                catalysts.append(
+                    {
+                        "catalystId": f"ctl_{theme_code}_{kw}",
+                        "catalystName": kw,
+                        "matchesToday": kw in today_keywords,
+                        "horizons": [
+                            {
+                                "horizonTradingDays": h,
+                                "eligibleCount": int(eligible),
+                                "observedCount": int(o),
+                                "positiveCount": int(u),
+                                "medianReturn": _pct(m),
+                            }
+                            for h, o, u, m in (
+                                (1, ob1, up1, med1),
+                                (5, ob5, up5, med5),
+                                (20, ob20, up20, med20),
+                            )
+                        ],
+                        "events": events,
+                    }
+                )
+
+            cur.execute(
+                """
+                select count(distinct session_date)
+                from market.prices_daily
+                where session_date > (
+                    select max(session_date) from theme.occurrences
+                    where theme_code = %s and session_date < %s)
+                  and session_date <= %s
+                """,
+                (theme_code, CURRENT, CURRENT),
+            )
+            gap_row = cur.fetchone()
+            attention_gap = int(gap_row[0]) if gap_row and gap_row[0] else None
+
             themes.append(
                 {
                     "rank": rank,
+                    "attentionGapTradingDays": attention_gap,
                     "themeId": f"thm_{theme_code}",
                     "eventId": f"evt_day_{theme_code}",
                     "displayName": name,
@@ -168,7 +283,20 @@ def main() -> int:
                     "validCount": valid,
                     "reason": (content or "").split("(주도주")[0].strip(),
                     "leaders": leaders,
+                    "catalysts": catalysts,
                     "similar": similar,
+                    "evidence": (
+                        [
+                            {
+                                "newsId": f"news_{theme_code}",
+                                "sourceName": "인포스탁 테마 기록",
+                                "title": (content or "").split("(주도주")[0].strip(),
+                                "summary": (content or "").strip(),
+                            }
+                        ]
+                        if content
+                        else []
+                    ),
                 }
             )
 

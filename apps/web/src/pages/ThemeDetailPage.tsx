@@ -285,11 +285,13 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
                     <span className="case-list__copy">
                       <small>{formatDate(`${item.marketDate}T00:00:00+09:00`)}</small>
                       <strong>{item.normalizedCatalystSummary}</strong>
-                      <span className="case-list__tags">
-                        {item.similarityReasons.map((reason) => (
-                          <em key={reason}>{reason}</em>
-                        ))}
-                      </span>
+                      {item.similarityReasons.length ? (
+                        <span className="case-list__tags">
+                          {item.similarityReasons.map((reason) => (
+                            <em key={reason}>{reason}</em>
+                          ))}
+                        </span>
+                      ) : null}
                       <b className="case-list__outcome">
                         <small>5거래일</small>
                         <span className={result.tone}>{result.text}</span>
@@ -309,7 +311,15 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
   );
 }
 
-function CatalystTop3Section({ themeId, eventId }: { themeId: string; eventId: string }) {
+function CatalystTop3Section({
+  themeId,
+  eventId,
+  themeName,
+}: {
+  themeId: string;
+  eventId: string;
+  themeName: string;
+}) {
   const repository = useRepository();
   const resource = useRepositoryResource(
     repository,
@@ -324,7 +334,7 @@ function CatalystTop3Section({ themeId, eventId }: { themeId: string; eventId: s
   const { items, qualityNote } = resource.data.data;
   if (!items.length) return null;
   // 유효 유형이 1~2개면 `TOP3`라고 부르지 않는다 (screen_spec 8.7).
-  const heading = items.length >= 3 ? '과거 원전 테마 반응 TOP3' : '과거 이 테마의 반응 기록';
+  const heading = items.length >= 3 ? `과거 ${themeName} 반응 TOP3` : `과거 ${themeName} 반응 기록`;
 
   return (
     <section aria-labelledby="catalyst-top-title">
@@ -704,7 +714,9 @@ export function ThemeDetailPage() {
               두지 않았다. */}
           <div className="theme-badges">
             {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
-            {reaction.attentionGapTradingDays !== null ? (
+            {/* 어제도 나왔던 테마는 `1거래일 만의 관심`이라 적어도 알려주는 게 없다.
+                하루라도 건너뛴 경우에만 붙인다. */}
+            {reaction.attentionGapTradingDays !== null && reaction.attentionGapTradingDays >= 2 ? (
               <span className="theme-gap-pill">
                 {reaction.attentionGapTradingDays.toLocaleString('ko-KR')}거래일 만의 관심
               </span>
@@ -748,9 +760,11 @@ export function ThemeDetailPage() {
           <article>
             <span>데이터 반영</span>
             <strong>{coverageStatusLabel(detail.coverage.status)}</strong>
+            {/* 세 칸이 같은 너비라 이 설명이 길면 혼자 세 줄로 접혀 칸이 어그러진다.
+                핵심 종목 관측 비율만 한 줄로 적는다. */}
             <small>
-              핵심 {detail.coverage.core.totalCount.toLocaleString('ko-KR')}종목 중{' '}
-              {detail.coverage.core.observedCount.toLocaleString('ko-KR')}개 관측
+              핵심 {detail.coverage.core.observedCount.toLocaleString('ko-KR')}/
+              {detail.coverage.core.totalCount.toLocaleString('ko-KR')}종목
             </small>
           </article>
         </div>
@@ -805,7 +819,11 @@ export function ThemeDetailPage() {
             {historicalAvailable ? (
               <>
                 <DejavuSummarySection themeId={themeId} eventId={detail.eventId} />
-                <CatalystTop3Section themeId={themeId} eventId={detail.eventId} />
+                <CatalystTop3Section
+                  themeId={themeId}
+                  eventId={detail.eventId}
+                  themeName={detail.classification.displayName}
+                />
               </>
             ) : (
               <EmptyState

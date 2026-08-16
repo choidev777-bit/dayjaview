@@ -31,10 +31,18 @@ const repository = createFixtureRepository({
         'live',
       )
     : undefined,
-  treemap: oneOf<TreemapFixture>(params.get('insights'), ['live', 'excluded'], 'live'),
+  // 시연본은 계약 fixture 대신 구 DB 실데이터를 쓴다. 그래서 파라미터를 안 준 화면은
+  // 값을 비워 두고, 어댑터가 시연 데이터를 고르게 한다. `?insights=live`처럼 명시하면 fixture로 돌아간다.
+  treemap: params.get('insights')
+    ? oneOf<TreemapFixture>(params.get('insights'), ['live', 'excluded'], 'live')
+    : undefined,
   detail: oneOf<DetailFixture>(params.get('detail'), ['searching', 'single', 'multi', 'closed', 'unmatched'], 'single'),
-  evidence: oneOf<EvidenceFixture>(params.get('evidence'), ['searching', 'single', 'multi', 'none', 'degraded'], 'single'),
-  saved: oneOf<SavedFixture>(params.get('saved'), ['library', 'unavailable', 'mixed'], 'mixed'),
+  evidence: params.get('evidence')
+    ? oneOf<EvidenceFixture>(params.get('evidence'), ['searching', 'single', 'multi', 'none', 'degraded'], 'single')
+    : undefined,
+  saved: params.get('saved')
+    ? oneOf<SavedFixture>(params.get('saved'), ['library', 'unavailable', 'mixed'], 'mixed')
+    : undefined,
   // 로컬에서는 화면이 이어지는 시연본을 기본으로 연다. 게이트가 닫힌 상태를 보려면 `?similar=gated`.
   similar: oneOf<SimilarFixture>(
     params.get('similar'),

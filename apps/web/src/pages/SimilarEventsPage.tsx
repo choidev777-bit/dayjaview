@@ -9,6 +9,7 @@ import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const HORIZONS: readonly HistoricalHorizon[] = [1, 5, 20];
+const VISIBLE_CASES = 3;
 
 /** `표본이 적어 참고용이에요` 기준은 E-21에서 확정된다. 그 전까지 보수적으로 5건 미만을 경고한다. */
 function isSmallSample(summary: HistoricalSummary | undefined): boolean {
@@ -22,6 +23,7 @@ export function SimilarEventsPage() {
   const themeId = params.themeId ?? '';
   const eventId = params.eventId ?? '';
   const [horizon, setHorizon] = useState<HistoricalHorizon>(5);
+  const [expanded, setExpanded] = useState(false);
   const resource = useRepositoryResource(
     repository,
     'historical',
@@ -111,7 +113,8 @@ export function SimilarEventsPage() {
 
       {data.items.length ? (
         <ul className="case-list">
-          {data.items.map((item) => {
+          {/* 사례가 많으면 처음엔 3건만 보여준다. 목록이 길면 아래 고지까지 스크롤이 멀어진다. */}
+          {(expanded ? data.items : data.items.slice(0, VISIBLE_CASES)).map((item) => {
             const outcome = outcomeText(
               item.outcomes.find((row) => row.horizonTradingDays === horizon),
             );
@@ -126,15 +129,17 @@ export function SimilarEventsPage() {
                       {formatDate(`${item.marketDate}T00:00:00+09:00`)} · {item.displayNameAtEvent}
                     </small>
                     <strong>{item.normalizedCatalystSummary}</strong>
-                    <span className="case-list__tags">
-                      {item.similarityReasons.map((reason) => (
-                        <em key={reason}>{reason}</em>
-                      ))}
-                    </span>
-                  <b className="case-list__outcome">
-                    <small>{horizonLabel(horizon)}</small>
-                    <span className={outcome.tone}>{outcome.text}</span>
-                  </b>
+                    {item.similarityReasons.length ? (
+                      <span className="case-list__tags">
+                        {item.similarityReasons.map((reason) => (
+                          <em key={reason}>{reason}</em>
+                        ))}
+                      </span>
+                    ) : null}
+                    <b className="case-list__outcome">
+                      <small>{horizonLabel(horizon)}</small>
+                      <span className={outcome.tone}>{outcome.text}</span>
+                    </b>
                   </span>
                   <IconChevronRightSmallLine size={18} aria-hidden="true" />
                 </Link>
@@ -148,6 +153,22 @@ export function SimilarEventsPage() {
           description="관련성 기준을 통과한 과거 기록이 아직 없습니다."
         />
       )}
+
+      {data.items.length > VISIBLE_CASES ? (
+        <button
+          type="button"
+          className="expand-button case-list__more"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <span>
+            {expanded
+              ? '사례 접기'
+              : `사례 ${(data.items.length - VISIBLE_CASES).toLocaleString('ko-KR')}건 더 보기`}
+          </span>
+          <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
+        </button>
+      ) : null}
 
       <p className="notice">
         기본 정렬은 관련성 순서입니다. 미래 수익률로 다시 정렬하지 않습니다. 과거 관측 요약이며 미래
