@@ -271,6 +271,19 @@ KRX·금감원(OpenDART) API 키 관문은 2026-08-15에 해소됐다(A-2 완료
 - **할 일**: 웹 트리맵 컴포넌트. **배치는 시안의 3단 고정 구조**(상단 2 · 중단 3 · 하단 3, `page.tsx`의 `RealtimeThemeScreen`)를 따르고, 타일 수·값·상태 규칙은 [realtime_theme_treemap_implementation_plan.md](./realtime_theme_treemap_implementation_plan.md)와 [screen_spec.md](./screen_spec.md) §6.3을 따른다. 실제 값만, stale/reduced-motion/키보드 접근성. today와 값 일치 검증.
 - **선행**: C-0.
 
+### C-13. 장중 테마 상세·근거 갱신 (미착수, 2026-08-17 발견)
+
+- **증상**: 실 API 모드에서 테마 상세를 열어 두면 수익률·상승 종목 수·근거가 **진입 시점 값에서 멈춘다.** 홈·트리맵은 WS로 갱신되므로 같은 앱 안에서 같은 테마의 수익률이 서로 다르게 보인다. 화면에는 `실시간`이라고 적혀 있다.
+- **원인**: 세 가지가 맞물린다.
+  1. `productionRepository.getThemeDetail`·`getEvidence`가 캐시가 있으면 재요청하지 않는다.
+  2. 그 캐시를 지우는 유일한 트리거가 WS `event_state_changed`다.
+  3. **그 토픽을 발행하는 코드가 없다.** `MarketDataPipeline.publish()`는 `THEME_RANK`·`THEME_TREEMAP`만 발행하고(`serve.py`의 hub.publish도 둘뿐), `EVENT_STATE_CHANGED`는 `apps/api/realtime.py`가 구독만 받아 준다. 백엔드 `theme_detail()`은 요청마다 최신값을 계산하므로 **REST를 다시 부르기만 하면 최신값이 온다.**
+- **부수 문제**: WS 이벤트 구독 목록을 홈 상위 10개로만 만든다(`subscriptionRequest`). 저장 목록·공유 링크로 11위 이하 테마 상세에 들어가면 그 이벤트는 구독 대상이 아니다.
+- **정본 해법 (백엔드)**: `event_state_changed`를 실제로 발행한다. 다만 이 토픽의 params는 `{eventIds: [...]}`라 구독자마다 다르고, hub는 `scope_key = (topic, canonical_params)` 단위로만 배달한다. 따라서 ⓐ hub가 갱신된 eventId를 포함하는 모든 구독 조합에 fan-out 하거나 ⓑ params를 단일 `eventId`로 바꿔 계약(asyncapi·schema·fixture·validate_contracts·프런트)을 함께 고쳐야 한다. **계약·시퀀스 규칙을 건드리는 작업이다.**
+- **임시 해법 (프런트, 30분)**: 상세·근거 캐시에 짧은 TTL을 주거나 rankings 갱신 시 함께 무효화한다. 계약 위반이 아니고(REST 재조회일 뿐) 부수 문제까지 같이 사라진다. 백엔드 발행이 붙으면 걷어낸다.
+- **판단 (2026-08-17)**: 화요일 개장 검증(A-3)이 우선이라 지금은 두고 목록에만 남긴다. 시연에서 장중 상세를 오래 열어 둘 계획이면 임시 해법을 먼저 넣는다.
+- **선행**: 없음. 백엔드 정본 해법은 A-3 이후.
+
 ---
 
 ## D. 매일 자동 운영
