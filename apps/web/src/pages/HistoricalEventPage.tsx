@@ -10,7 +10,7 @@ import {
   returnTone,
 } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
-import { EmptyState, ErrorState, LoadingState, PermissionState } from '../shared/StatePanel';
+import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const HORIZONS: readonly HistoricalHorizon[] = [1, 5, 20];
@@ -41,7 +41,7 @@ export function HistoricalEventPage() {
         </div>
       );
     }
-    return <ErrorState error={resource.error} retry={resource.retry} />;
+    return <ErrorPage error={resource.error} retry={resource.retry} />;
   }
 
   const detail = resource.data.data;

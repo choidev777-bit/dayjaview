@@ -3,7 +3,7 @@ import { useRepository } from '../app/RepositoryContext';
 import type { DataStatus, TreemapResponse } from '../domain/contracts';
 import { isSnapshotStale, selectTreemapItems } from '../domain/treemap';
 import { DataStatusBar } from '../shared/DataStatusBar';
-import { EmptyState, ErrorState } from '../shared/StatePanel';
+import { EmptyState, ErrorPage } from '../shared/StatePanel';
 import { ThemeTreemap } from '../shared/ThemeTreemap';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
@@ -90,7 +90,7 @@ export function InsightsPage() {
     [repository],
   );
 
-  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorPage error={resource.error} retry={resource.retry} />;
 
   if (resource.status === 'loading') {
     return (

@@ -162,6 +162,54 @@ a:focus-visible,
   background: var(--djv-color-surface);
 }
 
+/* 화면 전체가 실패했을 때. 다른 화면과 같은 흰 바탕 위에 가운데로 세운다. */
+.page--error {
+  min-height: 100dvh;
+  background: var(--djv-color-surface);
+}
+
+.error-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--djv-space-3);
+  padding: var(--djv-space-6) var(--djv-space-6) var(--djv-nav-space);
+  text-align: center;
+}
+
+.error-page__mark {
+  display: block;
+  width: 38px;
+  height: 48px;
+  margin-bottom: var(--djv-space-2);
+  background: var(--djv-color-brand);
+  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+}
+
+.error-page h1 {
+  margin: 0;
+  font-size: var(--djv-font-size-heading-2);
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+
+.error-page p {
+  max-width: 260px;
+  margin: 0;
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-label);
+  line-height: 1.6;
+}
+
+.error-page .button {
+  width: max-content;
+  min-width: 140px;
+  margin-top: var(--djv-space-3);
+}
+
 .page-intro {
   padding: var(--djv-space-6) var(--djv-space-4) var(--djv-space-5);
   border-bottom: 1px solid var(--djv-color-border);
@@ -439,9 +487,12 @@ a:focus-visible,
   font-size: 11px;
 }
 
+/* align-items 기본값이 stretch라 패널이 세로로 길어지면 버튼까지 같이 늘어난다. */
 .state-panel {
   display: grid;
+  align-items: center;
   justify-items: center;
+  align-content: center;
   gap: var(--djv-space-2);
   margin: var(--djv-space-3) var(--djv-space-4);
   padding: var(--djv-space-6) var(--djv-space-5);

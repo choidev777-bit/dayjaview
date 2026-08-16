@@ -31,7 +31,7 @@ import {
   returnTone,
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
-import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
+import { EmptyState, ErrorPage, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 type ThemeDetail = ThemeDetailResponse['data'];
@@ -663,7 +663,7 @@ export function ThemeDetailPage() {
   }, [calculationOpen, closeCalculation]);
 
   if (resource.status === 'loading') return <LoadingState label="테마 상세를 불러오는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorPage error={resource.error} retry={resource.retry} />;
 
   const detail = resource.data.data;
   const reaction = detail.currentReaction;

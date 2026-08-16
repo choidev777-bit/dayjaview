@@ -1,7 +1,7 @@
 import { IconArrowLeftLine } from '@karrotmarket/react-monochrome-icon';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
-import { ErrorState, LoadingState, PermissionState } from '../shared/StatePanel';
+import { ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 export function HistoricalGatePage() {
@@ -17,7 +17,7 @@ export function HistoricalGatePage() {
   );
 
   if (resource.status === 'loading') return <LoadingState label="접근 가능 여부를 확인하는 중입니다" />;
-  if (resource.status === 'error') return <ErrorState error={resource.error} retry={resource.retry} />;
+  if (resource.status === 'error') return <ErrorPage error={resource.error} retry={resource.retry} />;
 
   return (
     <div className="page page--gate">
