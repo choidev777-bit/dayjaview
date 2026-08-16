@@ -9,8 +9,10 @@
 - 6자리 종목코드가 있는 참조만 회사에 연결한다. 코드가 없으면 검수로 남긴다.
 - 편집거리·임베딩으로 회사를 합치지 않는다. 우선주는 이름 접미사와 종목코드가
   **둘 다** 맞을 때만 보통주와 같은 회사가 된다.
-- alias 유효기간은 원천에 그 이름이 등장한 사건일 구간이다. 공식 사명 변경
-  유효기간이 아니므로 `OBSERVED_MENTION`으로 표시한다.
+- 사명 이력은 KRX 상장 이름(`KRX_LISTING`)을 먼저 쓴다. 인포스탁은 과거 기록의
+  이름을 현재 이름으로 소급 정규화한 코드가 있어 그 원천만으로는 이력이 없다.
+  KRX가 모르는 이름만 관측 구간(`OBSERVED_MENTION`)으로 남기며, 이는 공식
+  유효기간이 아니다.
 - 그 구간 밖의 시점으로 물으면 자동 연결하지 않고 후보만 돌려준다.
 
 규칙을 고치면 COMPANY_MASTER_VERSION을 올린다.
@@ -21,11 +23,13 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import TYPE_CHECKING, Literal
 
 from packages.infostock.hashing import sha256_json
+
+from .krx_names import KrxNameIndex, KrxNameWindow
 
 if TYPE_CHECKING:
     from packages.infostock.models import ImportBundle
@@ -34,6 +38,9 @@ COMPANY_MASTER_VERSION = "company-master/1.0.0"
 
 STOCK_CODE_RE = re.compile(r"^[0-9A-Z]{6}$")
 CORP_CODE_RE = re.compile(r"^[0-9]{8}$")
+# 원천이 이름 없이 "087730-"처럼 코드 표기만 남긴 참조. 이름으로 쓰지 않는다.
+# 꼬리 붙임표를 요구한다 — "SIMPAC"·"INVENI"처럼 여섯 글자 대문자 사명이 있다.
+_CODE_DISPLAY_RE = re.compile(r"[0-9A-Z]{6}-")
 
 # 우선주 이름 접미사. 이 표지만으로는 우선주로 보지 않는다 — "연우"처럼 보통주
 # 이름도 걸리기 때문에 종목코드 짝이 함께 맞아야 한다.
@@ -47,7 +54,17 @@ _WHITESPACE_RE = re.compile(r"\s+")
 AliasType = Literal["CURRENT_NAME", "PAST_NAME", "SHARE_CLASS_NAME"]
 ShareClass = Literal["COMMON", "PREFERRED", "UNKNOWN"]
 LinkBasis = Literal["STOCK_CODE", "SHARE_CLASS_NAME_AND_CODE"]
-SourceAuthority = Literal["CURRENT_MEMBERSHIP", "HISTORICAL_REFERENCE", "DAILY_REFERENCE"]
+SourceAuthority = Literal[
+    "CURRENT_MEMBERSHIP", "HISTORICAL_REFERENCE", "DAILY_REFERENCE", "KRX_LISTING"
+]
+NameBasis = Literal[
+    "CURRENT_MEMBERSHIP",
+    "HISTORICAL_REFERENCE",
+    "DAILY_REFERENCE",
+    "KRX_LISTING",
+    "UNKNOWN",
+]
+ValidityBasis = Literal["OBSERVED_MENTION", "KRX_LISTING"]
 ChangeType = Literal["CREATED", "NAME_CHANGED", "INSTRUMENT_LINKED"]
 ReviewSourceKind = Literal["HISTORY_LEADER", "HISTORY_MEMBER", "THEME_MEMBERSHIP"]
 ReviewReason = Literal["SOURCE_CODE_MISSING", "CODE_INVALID"]
@@ -89,6 +106,7 @@ class CompanyAliasDraft:
     alias: str
     normalized_alias: str
     alias_type: AliasType
+    validity_basis: ValidityBasis
     source_authority: SourceAuthority
     valid_from: date | None
     valid_to: date | None
@@ -144,7 +162,7 @@ class CompanyDraft:
 
     seed_stock_code: str
     canonical_name: str
-    name_basis: SourceAuthority
+    name_basis: NameBasis
     dart_corp_code: str | None
     aliases: tuple[CompanyAliasDraft, ...]
     instruments: tuple[CompanyInstrumentDraft, ...]
@@ -269,12 +287,17 @@ def _current_name_key(entry: _NameObservation) -> tuple[int, int, int, int]:
 
 
 def build_company_master(
-    bundle: ImportBundle, *, corp_codes: Mapping[str, str] | None = None
+    bundle: ImportBundle,
+    *,
+    corp_codes: Mapping[str, str] | None = None,
+    krx_names: KrxNameIndex | None = None,
 ) -> CompanyMaster:
     """수집본에서 회사 master를 만든다. 같은 입력이면 같은 결과다.
 
     `corp_codes`는 OpenDART 고유번호 대조표(6자리 종목코드 → 8자리 corp_code)다.
-    없으면 외부 식별자를 비워 둔다. 지어내지 않는다.
+    `krx_names`는 KRX 일별매매에서 뽑은 종목명 이력이다. 인포스탁은 과거 기록의
+    이름을 현재 이름으로 소급 정규화한 코드가 있어 그 원천만으로는 사명 이력이
+    나오지 않는다. 둘 다 없으면 비워 둔다. 지어내지 않는다.
     """
 
     observations: dict[str, dict[str, _NameObservation]] = {}
@@ -375,6 +398,7 @@ def build_company_master(
         if normalize_company_name(base_name) in normalized_names[base_code]:
             merged_into[code] = base_code
 
+    krx_by_code = {} if krx_names is None else krx_names.by_code()
     companies: list[CompanyDraft] = []
     for seed in sorted(observations):
         if seed in merged_into:
@@ -387,6 +411,8 @@ def build_company_master(
                 observations=observations,
                 current_name=current_name,
                 corp_codes=corp_codes or {},
+                krx_index=krx_names,
+                krx_by_code=krx_by_code,
             )
         )
 
@@ -414,25 +440,70 @@ def _alias_drafts(
     *,
     current: str,
     alias_type_for_current: AliasType,
+    krx_windows: tuple[KrxNameWindow, ...] = (),
+    krx_index: KrxNameIndex | None = None,
 ) -> list[CompanyAliasDraft]:
-    drafts: list[CompanyAliasDraft] = []
+    """KRX 상장 이름을 먼저 깔고 인포스탁 관측을 그 위에 얹는다.
+
+    같은 이름이 양쪽에 있으면 유효기간은 KRX 것을 쓰고 인포스탁에서는 등장
+    횟수만 가져온다. KRX가 그 종목의 현재 이름을 알고 있으면 현재 이름은 KRX가
+    정한다 — 인포스탁 관측만으로 열린 이름을 만들지 않는다.
+    """
+
+    drafts: dict[str, CompanyAliasDraft] = {}
+    krx_has_open = False
+    # KRX 수집은 2010-01-04부터라 그 종목의 첫 이름은 시작이 잘려 있다. 그 하나만
+    # 인포스탁 관측으로 앞으로 늘린다. 뒤 이름을 늘리면 소급 정규화된 이름이
+    # 과거까지 유효해져 이 색인을 쓰는 이유가 사라진다.
+    earliest = min(
+        krx_windows, key=lambda window: (window.first_date, window.name), default=None
+    )
+    earliest_key = None if earliest is None else normalize_company_name(earliest.name)
+    for window in krx_windows:
+        is_open = krx_index is not None and krx_index.is_open(window)
+        krx_has_open = krx_has_open or is_open
+        alias_type: AliasType = alias_type_for_current if is_open else "PAST_NAME"
+        drafts[normalize_company_name(window.name)] = CompanyAliasDraft(
+            alias=window.name,
+            normalized_alias=normalize_company_name(window.name),
+            alias_type=alias_type,
+            validity_basis="KRX_LISTING",
+            source_authority="KRX_LISTING",
+            valid_from=window.first_date,
+            valid_to=None if is_open else window.last_date,
+            mention_count=0,
+        )
     for entry in entries:
-        is_current = entry.name == current
-        alias_type: AliasType = (
-            alias_type_for_current if is_current else "PAST_NAME"
-        )
-        drafts.append(
-            CompanyAliasDraft(
-                alias=entry.name,
-                normalized_alias=normalize_company_name(entry.name),
-                alias_type=alias_type,
-                source_authority=entry.authority,
-                valid_from=entry.first_event_date,
-                valid_to=None if is_current else entry.last_event_date,
-                mention_count=entry.mention_count,
+        # 원천이 이름 없이 코드 표기만 남긴 참조는 이름이 아니다.
+        if _CODE_DISPLAY_RE.fullmatch(entry.name):
+            continue
+        normalized = normalize_company_name(entry.name)
+        found = drafts.get(normalized)
+        if found is not None:
+            widen = (
+                normalized == earliest_key
+                and entry.first_event_date is not None
+                and found.valid_from is not None
+                and entry.first_event_date < found.valid_from
             )
+            drafts[normalized] = replace(
+                found,
+                mention_count=found.mention_count + entry.mention_count,
+                valid_from=entry.first_event_date if widen else found.valid_from,
+            )
+            continue
+        is_current = entry.name == current and not krx_has_open
+        drafts[normalized] = CompanyAliasDraft(
+            alias=entry.name,
+            normalized_alias=normalized,
+            alias_type=alias_type_for_current if is_current else "PAST_NAME",
+            validity_basis="OBSERVED_MENTION",
+            source_authority=entry.authority,
+            valid_from=entry.first_event_date,
+            valid_to=None if is_current else entry.last_event_date,
+            mention_count=entry.mention_count,
         )
-    return drafts
+    return [drafts[key] for key in sorted(drafts)]
 
 
 def _build_company(
@@ -442,11 +513,15 @@ def _build_company(
     observations: dict[str, dict[str, _NameObservation]],
     current_name: dict[str, str],
     corp_codes: Mapping[str, str],
+    krx_index: KrxNameIndex | None,
+    krx_by_code: Mapping[str, tuple[KrxNameWindow, ...]],
 ) -> CompanyDraft:
     aliases = _alias_drafts(
         sorted(observations[seed].values(), key=lambda entry: entry.name),
         current=current_name[seed],
         alias_type_for_current="CURRENT_NAME",
+        krx_windows=krx_by_code.get(seed, ()),
+        krx_index=krx_index,
     )
     # 종목이 언제부터 이 회사의 것이었는지는 원천이 없다. 관측 시작을 유효
     # 시작으로 쓰면 그 전 기간을 "아니었다"로 만들므로 비워 둔다.
@@ -466,6 +541,8 @@ def _build_company(
             sorted(observations[code].values(), key=lambda entry: entry.name),
             current=current_name[code],
             alias_type_for_current="SHARE_CLASS_NAME",
+            krx_windows=krx_by_code.get(code, ()),
+            krx_index=krx_index,
         ):
             key = (alias.normalized_alias, alias.alias_type)
             if key in seen:
@@ -486,22 +563,56 @@ def _build_company(
     corp_code = corp_codes.get(seed)
     if corp_code is not None and not CORP_CODE_RE.fullmatch(corp_code):
         corp_code = None
+    canonical, name_basis = _canonical_name(
+        aliases,
+        seed=seed,
+        fallback=current_name[seed],
+        fallback_basis=observations[seed][current_name[seed]].authority,
+    )
     return CompanyDraft(
         seed_stock_code=seed,
-        canonical_name=current_name[seed],
-        name_basis=observations[seed][current_name[seed]].authority,
+        canonical_name=canonical,
+        name_basis=name_basis,
         dart_corp_code=corp_code,
         aliases=tuple(aliases),
         instruments=tuple(instruments),
         revisions=tuple(
             _revision_drafts(
-                aliases,
-                instruments,
-                canonical=current_name[seed],
-                linked_on=linked_on,
+                aliases, instruments, canonical=canonical, linked_on=linked_on
             )
         ),
     )
+
+
+def _canonical_name(
+    aliases: list[CompanyAliasDraft],
+    *,
+    seed: str,
+    fallback: str,
+    fallback_basis: NameBasis,
+) -> tuple[str, NameBasis]:
+    """대표 이름은 KRX가 아는 현재 이름 → 마지막 상장 이름 순으로 고른다.
+
+    상장폐지된 종목은 열린 이름이 없으므로 마지막으로 거래된 이름이 대표다.
+    어느 원천도 이름을 주지 않으면 종목코드를 두고 이름 미상으로 표시한다.
+    """
+
+    for alias in aliases:
+        if alias.alias_type == "CURRENT_NAME" and alias.validity_basis == "KRX_LISTING":
+            return alias.alias, "KRX_LISTING"
+    for alias in aliases:
+        if alias.alias_type == "CURRENT_NAME":
+            return alias.alias, alias.source_authority
+    listed = [
+        (alias.valid_from, alias.alias)
+        for alias in aliases
+        if alias.validity_basis == "KRX_LISTING" and alias.valid_from is not None
+    ]
+    if listed:
+        return max(listed)[1], "KRX_LISTING"
+    if _CODE_DISPLAY_RE.fullmatch(fallback):
+        return seed, "UNKNOWN"
+    return fallback, fallback_basis
 
 
 def _seed_share_class(

@@ -31,6 +31,7 @@ from packages.ontology import (
     PostgresCompanyMasterStore,
     build_company_master,
 )
+from packages.ontology.krx_names import KrxNameIndex, load_name_index
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -47,6 +48,12 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="수집해 둔 OpenDART 고유번호 대조표 JSON 봉투 경로.",
+    )
+    parser.add_argument(
+        "--krx-names",
+        type=Path,
+        default=None,
+        help="build_krx_name_windows.py가 만든 종목명 이력 색인 경로.",
     )
     parser.add_argument("--report", type=Path, default=None)
     parser.add_argument("--report-only", action="store_true")
@@ -89,14 +96,19 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     corp_codes: dict[str, str] = {}
-    if arguments.corp_code_snapshot is not None:
-        try:
+    krx_names: KrxNameIndex | None = None
+    try:
+        if arguments.corp_code_snapshot is not None:
             corp_codes = _corp_codes(arguments.corp_code_snapshot)
-        except (OSError, ValueError) as exc:
-            _print({"status": "FAILED", "messageKo": str(exc)})
-            return 2
+        if arguments.krx_names is not None:
+            krx_names = load_name_index(
+                json.loads(arguments.krx_names.read_text(encoding="utf-8"))
+            )
+    except (OSError, ValueError, KeyError) as exc:
+        _print({"status": "FAILED", "messageKo": str(exc)})
+        return 2
 
-    master = build_company_master(bundle, corp_codes=corp_codes)
+    master = build_company_master(bundle, corp_codes=corp_codes, krx_names=krx_names)
     report: dict[str, Any] = {
         "status": "SUCCEEDED",
         "datasetHash": bundle.dataset_hash,
@@ -110,6 +122,19 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "companiesWithDartCorpCode": sum(
             company.dart_corp_code is not None for company in master.companies
+        ),
+        "companiesWithKrxName": sum(
+            company.name_basis == "KRX_LISTING" for company in master.companies
+        ),
+        "krxAliases": sum(
+            alias.validity_basis == "KRX_LISTING"
+            for company in master.companies
+            for alias in company.aliases
+        ),
+        "nameChangeRevisions": sum(
+            revision.change_type == "NAME_CHANGED"
+            for company in master.companies
+            for revision in company.revisions
         ),
         "unresolvedNames": len(master.unresolved),
         "unresolvedMentions": sum(

@@ -459,6 +459,8 @@ evidence_span
 
 공백·법인 표기·시장 접미사 같은 안전한 정규화만 자동 적용한다. 편집거리나 임베딩으로 회사를 자동 연결하지 않는다. fuzzy 후보는 운영자 검수 제안으로만 사용한다.
 
+**사명 이력의 정본은 KRX 일별매매의 종목명이다.** 인포스탁은 과거 기록의 종목명을 현재 이름으로 소급 정규화한 코드가 있어(012450은 2006년 기록에도 "한화에어로스페이스"로 적혀 있다) 그 원천만으로는 alias 유효기간을 만들 수 없다. E-16이 받아 둔 KRX 봉투(2010-01-04~)는 거래일마다 그날의 이름을 담으므로 이름의 시작·끝 거래일이 나온다. 인포스탁 관측은 KRX가 모르는 이름과 등장 횟수에만 쓴다. KRX 수집 시작 이전 구간은 첫 이름에 한해 인포스탁 관측으로 앞을 늘린다 — 뒤 이름을 늘리면 소급 정규화된 이름이 과거까지 유효해진다.
+
 ### 7.2 테마 history 처리
 
 1. 기존 `parse_cause_sentence`로 주도주 괄호와 방향 꼬리를 분리한다.
@@ -817,6 +819,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 packages/ontology/
   company_entities.py
   company_postgres.py
+  krx_names.py
   participants.py
   projects.py
   event_structure.py
@@ -826,11 +829,13 @@ packages/ontology/
 
 apps/worker-batch/ontology/
   build_company_master.py
+  build_krx_name_windows.py
   label_company_events.py
   label_daily_events.py
   publish_company_ontology.py
 
 tests/ontology/
+  test_krx_names.py
   company_goldset_dev.tsv
   company_goldset_test.tsv
   test_company_entities.py

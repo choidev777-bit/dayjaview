@@ -14,6 +14,11 @@ from packages.ontology import (
     resolve_company,
     split_share_class,
 )
+from packages.ontology.krx_names import (
+    KRX_NAME_INDEX_VERSION,
+    KrxNameIndex,
+    KrxNameWindow,
+)
 
 
 @dataclass(frozen=True)
@@ -379,3 +384,187 @@ def test_build_is_deterministic() -> None:
     assert build_company_master(_shared_name_bundle()) == build_company_master(
         _shared_name_bundle()
     )
+
+
+def _krx_index(*windows: tuple[str, str, date, date]) -> KrxNameIndex:
+    return KrxNameIndex(
+        index_version=KRX_NAME_INDEX_VERSION,
+        market_last_dates={"KOSPI": date(2026, 8, 14)},
+        windows=tuple(
+            KrxNameWindow(
+                stock_code=code,
+                name=name,
+                market="KOSPI",
+                first_date=first,
+                last_date=last,
+                day_count=1,
+            )
+            for code, name, first, last in windows
+        ),
+    )
+
+
+def _hanwha_bundle() -> _Bundle:
+    """인포스탁은 2006년 기록에도 현재 이름을 적어 둔다."""
+
+    return _bundle(
+        _detail(
+            "1",
+            memberships=(_membership("012450", "한화에어로스페이스"),),
+            history=(
+                _history(
+                    date(2012, 5, 2), leaders=(_reference("012450", "한화에어로스페이스"),)
+                ),
+                _history(
+                    date(2024, 5, 2), leaders=(_reference("012450", "한화에어로스페이스"),)
+                ),
+            ),
+        )
+    )
+
+
+def test_krx_listing_names_carry_the_real_rename_dates() -> None:
+    master = build_company_master(
+        _hanwha_bundle(),
+        krx_names=_krx_index(
+            ("012450", "삼성테크윈", date(2010, 1, 4), date(2015, 7, 13)),
+            ("012450", "한화테크윈", date(2015, 7, 14), date(2018, 4, 27)),
+            ("012450", "한화에어로스페이스", date(2018, 4, 30), date(2026, 8, 14)),
+        ),
+    )
+    company = master.companies[0]
+
+    assert (company.canonical_name, company.name_basis) == (
+        "한화에어로스페이스",
+        "KRX_LISTING",
+    )
+    assert {
+        alias.alias: (alias.alias_type, alias.valid_from, alias.valid_to)
+        for alias in company.aliases
+    } == {
+        "삼성테크윈": ("PAST_NAME", date(2010, 1, 4), date(2015, 7, 13)),
+        "한화테크윈": ("PAST_NAME", date(2015, 7, 14), date(2018, 4, 27)),
+        "한화에어로스페이스": ("CURRENT_NAME", date(2018, 4, 30), None),
+    }
+    assert all(alias.validity_basis == "KRX_LISTING" for alias in company.aliases)
+    assert [
+        (revision.change_type, revision.effective_on, revision.new_value)
+        for revision in company.revisions
+    ] == [
+        ("CREATED", date(2010, 1, 4), "삼성테크윈"),
+        ("NAME_CHANGED", date(2015, 7, 14), "한화테크윈"),
+        ("NAME_CHANGED", date(2018, 4, 30), "한화에어로스페이스"),
+    ]
+
+
+def test_past_krx_name_resolves_at_its_own_time_only() -> None:
+    master = build_company_master(
+        _hanwha_bundle(),
+        krx_names=_krx_index(
+            ("012450", "삼성테크윈", date(2010, 1, 4), date(2015, 7, 13)),
+            ("012450", "한화테크윈", date(2015, 7, 14), date(2018, 4, 27)),
+            ("012450", "한화에어로스페이스", date(2018, 4, 30), date(2026, 8, 14)),
+        ),
+    )
+
+    assert resolve_company(master, "한화테크윈", as_of=date(2016, 5, 2)).seed_stock_code == (
+        "012450"
+    )
+    assert resolve_company(master, "삼성테크윈", as_of=date(2012, 5, 2)).seed_stock_code == (
+        "012450"
+    )
+    # 그 시점에 없던 이름으로는 연결하지 않는다. 인포스탁 관측은 2012년에도
+    # 현재 이름을 적어 두었지만 KRX 구간이 이를 막는다.
+    outside = resolve_company(master, "한화에어로스페이스", as_of=date(2012, 5, 2))
+    assert outside.status == "OUT_OF_VALIDITY"
+    assert outside.candidates[0].seed_stock_code == "012450"
+
+
+def test_first_krx_name_starts_earlier_when_the_source_saw_it_before_2010() -> None:
+    # KRX 수집은 2010-01-04부터라 첫 이름은 시작이 잘려 있다. 그 하나만 늘린다.
+    master = build_company_master(
+        _bundle(
+            _detail(
+                "1",
+                memberships=(_membership("010060", "OCI홀딩스"),),
+                history=(
+                    _history(
+                        date(2008, 2, 26), leaders=(_reference("010060", "OCI"),)
+                    ),
+                ),
+            )
+        ),
+        krx_names=_krx_index(
+            ("010060", "OCI", date(2010, 1, 4), date(2023, 5, 26)),
+            ("010060", "OCI홀딩스", date(2023, 5, 30), date(2026, 8, 14)),
+        ),
+    )
+    company = master.companies[0]
+
+    first = next(alias for alias in company.aliases if alias.alias == "OCI")
+    assert (first.valid_from, first.valid_to) == (date(2008, 2, 26), date(2023, 5, 26))
+    assert first.validity_basis == "KRX_LISTING"
+    assert resolve_company(master, "OCI", as_of=date(2009, 3, 2)).seed_stock_code == (
+        "010060"
+    )
+
+
+def test_infostock_mentions_are_counted_on_the_krx_alias() -> None:
+    company = build_company_master(
+        _hanwha_bundle(),
+        krx_names=_krx_index(
+            ("012450", "한화에어로스페이스", date(2018, 4, 30), date(2026, 8, 14)),
+        ),
+    ).companies[0]
+
+    current = next(
+        alias for alias in company.aliases if alias.alias == "한화에어로스페이스"
+    )
+    assert (current.validity_basis, current.mention_count) == ("KRX_LISTING", 3)
+
+
+def _nameless_bundle() -> _Bundle:
+    """원천이 이름 없이 코드 표기만 남긴 관련주."""
+
+    return _bundle(
+        _detail(
+            "1",
+            history=(
+                _history(
+                    date(2015, 5, 2), members=(_reference("087730", "087730-"),)
+                ),
+            ),
+        )
+    )
+
+
+def test_delisted_company_takes_its_last_listed_name() -> None:
+    company = build_company_master(
+        _nameless_bundle(),
+        krx_names=_krx_index(
+            ("087730", "네패스신소재", date(2010, 1, 4), date(2019, 7, 29)),
+            ("087730", "이엠네트웍스", date(2020, 12, 24), date(2021, 10, 7)),
+        ),
+    ).companies[0]
+
+    assert (company.canonical_name, company.name_basis) == ("이엠네트웍스", "KRX_LISTING")
+    assert all(alias.alias_type == "PAST_NAME" for alias in company.aliases)
+    assert "087730-" not in {alias.alias for alias in company.aliases}
+
+
+def test_code_without_any_name_source_stays_name_unknown() -> None:
+    company = build_company_master(_nameless_bundle()).companies[0]
+
+    assert (company.canonical_name, company.name_basis) == ("087730", "UNKNOWN")
+    assert company.aliases == ()
+    # 여섯 글자 대문자 사명은 코드 표기가 아니다.
+    named = build_company_master(
+        _bundle(
+            _detail("1", memberships=(_membership("009160", "SIMPAC"),)),
+        )
+    ).companies[0]
+    assert named.canonical_name == "SIMPAC"
+    assert [alias.alias for alias in named.aliases] == ["SIMPAC"]
+    assert resolve_company(
+        build_company_master(_nameless_bundle()), "087730"
+    ).seed_stock_code == "087730"

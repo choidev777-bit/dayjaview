@@ -77,7 +77,7 @@ class PostgresCompanyMasterStore:
                         " (company_id, alias, normalized_alias, alias_type,"
                         " validity_basis, source_authority, valid_from, valid_to,"
                         " mention_count, master_version, recorded_at)"
-                        " VALUES (%s, %s, %s, %s, 'OBSERVED_MENTION', %s, %s, %s,"
+                        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s,"
                         " %s, %s, %s)"
                         " ON CONFLICT (company_id, normalized_alias, alias_type)"
                         " DO NOTHING RETURNING company_alias_id",
@@ -86,6 +86,7 @@ class PostgresCompanyMasterStore:
                             alias.alias,
                             alias.normalized_alias,
                             alias.alias_type,
+                            alias.validity_basis,
                             alias.source_authority,
                             alias.valid_from,
                             alias.valid_to,

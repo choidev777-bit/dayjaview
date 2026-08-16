@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS core.company_entities (
     canonical_name text NOT NULL CHECK (btrim(canonical_name) <> ''),
     name_basis text NOT NULL CHECK (
         name_basis IN (
-            'CURRENT_MEMBERSHIP', 'HISTORICAL_REFERENCE', 'DAILY_REFERENCE',
-            'SOURCE_DECLARED', 'OPERATOR_CONFIRMED'
+            'KRX_LISTING', 'CURRENT_MEMBERSHIP', 'HISTORICAL_REFERENCE',
+            'DAILY_REFERENCE', 'SOURCE_DECLARED', 'OPERATOR_CONFIRMED', 'UNKNOWN'
         )
     ),
     dart_corp_code character(8) CHECK (dart_corp_code ~ '^[0-9]{8}$'),
@@ -40,12 +40,14 @@ CREATE TABLE IF NOT EXISTS core.company_aliases (
     alias_type text NOT NULL
         CHECK (alias_type IN ('CURRENT_NAME', 'PAST_NAME', 'SHARE_CLASS_NAME')),
     validity_basis text NOT NULL CHECK (
-        validity_basis IN ('OBSERVED_MENTION', 'SOURCE_DECLARED', 'OPERATOR_CONFIRMED')
+        validity_basis IN (
+            'KRX_LISTING', 'OBSERVED_MENTION', 'SOURCE_DECLARED', 'OPERATOR_CONFIRMED'
+        )
     ),
     source_authority text NOT NULL CHECK (
         source_authority IN (
-            'CURRENT_MEMBERSHIP', 'HISTORICAL_REFERENCE', 'DAILY_REFERENCE',
-            'SOURCE_DECLARED', 'OPERATOR_CONFIRMED'
+            'KRX_LISTING', 'CURRENT_MEMBERSHIP', 'HISTORICAL_REFERENCE',
+            'DAILY_REFERENCE', 'SOURCE_DECLARED', 'OPERATOR_CONFIRMED'
         )
     ),
     valid_from date,
@@ -184,12 +186,15 @@ $company_identity_boundary$;
 
 COMMENT ON TABLE core.company_entities IS
     '법인·발행사 정체성. 상장 종목 정본은 core.infostock_stocks에 그대로 둔다.';
+COMMENT ON COLUMN core.company_entities.name_basis IS
+    'UNKNOWN은 어느 원천도 이름을 주지 않아 종목코드를 대표 이름에 둔 상태다.';
 COMMENT ON COLUMN core.company_entities.seed_stock_code IS
     '이 회사를 처음 만든 종목코드. 재실행 계보이며 식별자가 아니다.';
 COMMENT ON TABLE core.company_aliases IS
     '현재·과거 사명과 관측 유효기간. 기간 밖 이름으로는 자동 연결하지 않는다.';
 COMMENT ON COLUMN core.company_aliases.validity_basis IS
-    'OBSERVED_MENTION은 원천에 그 이름이 등장한 사건일 구간이며 공식 유효기간이 아니다.';
+    'KRX_LISTING은 그 이름으로 거래된 거래일 구간이다. OBSERVED_MENTION은 원천에 '
+    '그 이름이 등장한 사건일 구간이며 공식 유효기간이 아니다.';
 COMMENT ON TABLE core.company_instruments IS
     '회사와 상장 종목의 유효기간 관계. 보통주·우선주가 한 회사로 모인다.';
 COMMENT ON COLUMN core.company_instruments.valid_from IS

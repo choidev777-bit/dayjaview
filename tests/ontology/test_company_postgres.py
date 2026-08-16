@@ -74,10 +74,11 @@ class FakeCursor:
             if key not in database.aliases:
                 database.aliases[key] = {
                     "alias": params[1],
-                    "source_authority": params[4],
-                    "valid_from": params[5],
-                    "valid_to": params[6],
-                    "mention_count": params[7],
+                    "validity_basis": params[4],
+                    "source_authority": params[5],
+                    "valid_from": params[6],
+                    "valid_to": params[7],
+                    "mention_count": params[8],
                 }
                 self._result = [(database.take_id(),)]
         elif query.startswith("INSERT INTO core.company_instruments"):
@@ -148,7 +149,8 @@ def _master(*, corp_code: str | None = "00164645") -> CompanyMaster:
             alias="동국제강",
             normalized_alias="동국제강",
             alias_type="PAST_NAME",
-            source_authority="HISTORICAL_REFERENCE",
+            validity_basis="KRX_LISTING",
+            source_authority="KRX_LISTING",
             valid_from=date(2013, 5, 2),
             valid_to=date(2023, 5, 18),
             mention_count=2,
@@ -157,6 +159,7 @@ def _master(*, corp_code: str | None = "00164645") -> CompanyMaster:
             alias="동국홀딩스",
             normalized_alias="동국홀딩스",
             alias_type="CURRENT_NAME",
+            validity_basis="OBSERVED_MENTION",
             source_authority="CURRENT_MEMBERSHIP",
             valid_from=date(2024, 1, 29),
             valid_to=None,
@@ -226,9 +229,12 @@ def test_load_writes_company_alias_instrument_revision_and_review() -> None:
     stored = database.companies["001230"]
     assert stored["canonical_name"] == "동국홀딩스"
     assert stored["dart_corp_code"] == "00164645"
-    assert database.aliases[(stored["company_id"], "동국제강", "PAST_NAME")][
-        "valid_to"
-    ] == date(2023, 5, 18)
+    past = database.aliases[(stored["company_id"], "동국제강", "PAST_NAME")]
+    assert past["valid_to"] == date(2023, 5, 18)
+    assert (past["validity_basis"], past["source_authority"]) == (
+        "KRX_LISTING",
+        "KRX_LISTING",
+    )
     assert database.aliases[(stored["company_id"], "동국홀딩스", "CURRENT_NAME")][
         "valid_to"
     ] is None

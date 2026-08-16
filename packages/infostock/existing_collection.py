@@ -30,10 +30,15 @@ from .models import (
 )
 from .policy import ExistingCollectionPolicy, InfostockAccessPolicy
 
-PARSER_VERSION = "infostock-existing-collection/2.0.0"
+PARSER_VERSION = "infostock-existing-collection/2.1.0"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 STOCK_CODE_RE = re.compile(r"^[0-9A-Z]{6}$")
 THEME_FILE_RE = re.compile(r"^theme-(\d+)\.json$")
+# 원천이 코드 칸을 비우고 표기 문자열에만 코드를 남기는 경우가 있다
+# (`{"name": "087730-", "stockCode": null}`). 상장 종목의 6자리 숫자 코드일
+# 때만 표기에서 되살린다. "0015G0-그린광학" 같은 비상장 표기는 상장 종목코드가
+# 아니므로 되살리지 않고 미해결로 남긴다.
+DISPLAY_CODE_RE = re.compile(r"^([0-9]{6})-")
 
 
 def _fail(code: str, path: str, detail: str) -> Never:
@@ -135,6 +140,25 @@ def _validate_source_envelope(
         _fail("COLLECTION_SOURCE_CONFLICT", path, "source/sourceType이 collector 계약과 다릅니다.")
 
 
+def _resolve_stock_code(
+    name: str, raw_code: object
+) -> tuple[str | None, ReferenceQualityStatus, bool]:
+    """(종목코드, 품질 상태, 표기에서 되살렸나)를 돌려준다.
+
+    원천 이름 문자열은 바꾸지 않는다. 코드만 표기 앞부분에서 읽는다.
+    """
+
+    stock_code = str(raw_code).strip() if raw_code not in {None, ""} else None
+    if stock_code is not None:
+        if STOCK_CODE_RE.fullmatch(stock_code):
+            return stock_code, "OK", False
+        return stock_code, "CODE_INVALID", False
+    recovered = DISPLAY_CODE_RE.match(name)
+    if recovered is None:
+        return None, "SOURCE_CODE_MISSING", False
+    return recovered.group(1), "OK", True
+
+
 def _reference(
     value: object,
     *,
@@ -145,14 +169,7 @@ def _reference(
     source_order = _integer(item.get("sourceOrder", default_order), f"{path}.sourceOrder")
     name = _text(item.get("name"), f"{path}.name")
     assert name is not None
-    raw_code = item.get("stockCode")
-    stock_code = str(raw_code).strip() if raw_code not in {None, ""} else None
-    if stock_code is None:
-        status: ReferenceQualityStatus = "SOURCE_CODE_MISSING"
-    elif STOCK_CODE_RE.fullmatch(stock_code):
-        status = "OK"
-    else:
-        status = "CODE_INVALID"
+    stock_code, status, from_display = _resolve_stock_code(name, item.get("stockCode"))
     source_url = _text(
         item.get("sourceUrl"), f"{path}.sourceUrl", allow_empty=False, optional=True
     )
@@ -161,7 +178,9 @@ def _reference(
         name=name,
         stock_code=stock_code,
         source_url=source_url,
-        display_value=f"{stock_code}-{name}" if stock_code else name,
+        display_value=(
+            name if from_display or stock_code is None else f"{stock_code}-{name}"
+        ),
         quality_status=status,
     )
 
@@ -615,14 +634,9 @@ def load_existing_collection(
                 _fail("SOURCE_ORDER_CONFLICT", f"{item_path}.sourceOrder", "related stock sourceOrder가 연속적이지 않습니다.")
             stock_name = _text(item.get("name"), f"{item_path}.name")
             assert stock_name is not None
-            raw_code = item.get("stockCode")
-            stock_code = str(raw_code).strip() if raw_code not in {None, ""} else None
-            if stock_code is None:
-                membership_status: ReferenceQualityStatus = "SOURCE_CODE_MISSING"
-            elif STOCK_CODE_RE.fullmatch(stock_code):
-                membership_status = "OK"
-            else:
-                membership_status = "CODE_INVALID"
+            stock_code, membership_status, _ = _resolve_stock_code(
+                stock_name, item.get("stockCode")
+            )
             if membership_status != "OK":
                 missing_related_code_count += 1
                 issues.append(
