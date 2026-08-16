@@ -206,7 +206,22 @@ class IdentityApiApp:
 
     def _complete_login(self, request: ApiRequest, request_id: str) -> ApiResponse:
         try:
-            request.require_query_keys({"code", "state"})
+            # 실제 구글은 code·state 외에 scope·authuser·prompt를 덧붙이고,
+            # 워크스페이스 계정은 hd, 사용자가 거부하면 error 계열이 온다.
+            # fixture callback 기준으로 닫으면 실로그인이 전부 거부된다.
+            # 값은 여전히 code·state만 읽는다.
+            request.require_query_keys(
+                {
+                    "code",
+                    "state",
+                    "scope",
+                    "authuser",
+                    "prompt",
+                    "hd",
+                    "error",
+                    "error_description",
+                }
+            )
             request.require_empty_body()
             code = request.query_value("code")
             state = request.query_value("state")

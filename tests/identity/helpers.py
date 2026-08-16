@@ -52,9 +52,17 @@ async def api_login(
     started = await client.get("/auth/google", params={"returnTo": return_to})
     state = parse_qs(urlsplit(started.headers["location"]).query)["state"][0]
     environment.oauth_provider.register_code(code, identity)
+    # 실제 구글 redirect는 code·state 외에 scope·authuser·prompt를 덧붙인다.
+    # 모든 로그인 테스트가 그 모양을 통과해야 실배포 첫 로그인이 안 깨진다.
     completed = await client.get(
         "/auth/google/callback",
-        params={"code": code, "state": state},
+        params={
+            "code": code,
+            "state": state,
+            "scope": "email profile openid",
+            "authuser": "0",
+            "prompt": "none",
+        },
     )
     return started, completed
 
