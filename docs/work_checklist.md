@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `ba88b66` · `uv run pytest -q` 518 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `e4abd43` 이후 F-25 준비분 · `uv run pytest -q` 528 passed·8 skipped
 
 ## 요약
 
@@ -118,7 +118,9 @@
   - **수리(발견 1)**: 분모 합산을 분자와 같은 `prec=60` 안으로 옮겼다. 전량 관측이면 몫이 정확히 1이 된다. 회귀 테스트 1건 추가(수리 전 코드에서 실패하는 것 확인). 실규모 재현이 40주기 완주하며 **순위 98건**을 만들고 publish P95는 773ms다. `uv run pytest -q` 519 passed·8 skipped · ruff·mypy 통과. **발행 루프의 실패 처리(조용히 멈춤)는 안 고쳤다** — 설계 결정이라 별도 작업.
   - **수리(발견 2)**: 요청 한도를 `/auth/` 전체가 아니라 무인증 OAuth 진입점 둘(`/auth/google`, `/auth/google/callback`)에만 건다 — 세션 조회는 예산을 안 먹는다. 세는 단위는 `TRUSTED_PROXY_HOPS`를 선언했을 때만 `X-Forwarded-For`의 그 자리 값을 쓰고, 기본 0이면 전송 계층 주소만 쓴다(위조 header를 기본으로 믿지 않는다). 회귀 테스트 2건, env 계약에 `TRUSTED_PROXY_HOPS` 선언. 실행 중인 서버로 재확인: 세션 60회 연속 200 → 로그인 시작 302, 로그인 시작 연속 25회는 19회 뒤 429. **F-25에서 Vercel `/api/*` rewrite를 붙이면 이 값을 실제 앞단 프록시 수로 넣어야 한다.**
   - 발견 3·4·5는 미수리.
-- [ ] **F-25** 실제 배포 — 외부 관문: 사용자 승인.
+- [ ] **F-25** 실제 배포 — 준비물은 2026-08-16에 완료, 남은 것: **사용자 승인 아래 실제 배포 실행**(OCI VM에서 4절 수행 + Vercel 프로젝트 생성 + F-21 ① redirect URI).
+  - 준비 완료: production compose(`infra/deployment/compose.production.yml`, Caddy TLS·persistent volume·secret은 `/etc/dayjaview/*.env` 참조만) · live 진입 `infra/operations/live_stack.py`(fixture 모드 fail-closed) · migration runner에 명시적 production 게이트 · Vercel `/api/*` rewrite + SPA fallback(`apps/web/vercel.json`) · 배포·백업/복구 runbook [operations_runbook.md](./release/operations_runbook.md). compose 스키마·Caddyfile은 로컬 docker로 검증, 계약 테스트 `tests/infra/**` 추가.
+  - Redis는 배포하지 않는다(F-23 — 코드가 안 읽음). market worker 컨테이너도 없다(A-8 거래일 루프가 api 안에 있음). `TRUSTED_PROXY_HOPS=1` 근거는 runbook 4절.
 
 ## 남은 외부 관문 (에이전트가 못 여는 것)
 

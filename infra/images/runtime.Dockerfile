@@ -18,8 +18,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM ${PYTHON_IMAGE} AS app-runtime
 ARG TARGETARCH
-LABEL org.opencontainers.image.title="DAYJAVIEW fixture runtime" \
-      org.opencontainers.image.description="Local/CI fixture-only API and worker runtime" \
+LABEL org.opencontainers.image.title="DAYJAVIEW runtime" \
+      org.opencontainers.image.description="API and worker runtime (local/CI fixture, OCI production live)" \
       io.dayjaview.target-platform="linux/arm64"
 RUN test "${TARGETARCH}" = "arm64" \
     && groupadd --gid 10001 dayjaview \
@@ -34,6 +34,7 @@ COPY --chown=10001:10001 apps ./apps
 COPY --chown=10001:10001 packages ./packages
 COPY --chown=10001:10001 contracts ./contracts
 COPY --chown=10001:10001 infra/operations/local_stack.py ./infra/operations/local_stack.py
+COPY --chown=10001:10001 infra/operations/live_stack.py ./infra/operations/live_stack.py
 COPY --chown=10001:10001 tests/infostock/fixtures ./tests/infostock/fixtures
 COPY --chown=10001:10001 tests/market-gateway/fixtures ./tests/market-gateway/fixtures
 COPY --chown=10001:10001 tests/reference-data/fixtures ./tests/reference-data/fixtures
@@ -50,8 +51,8 @@ CMD ["python", "infra/operations/local_stack.py", "worker-help"]
 
 FROM ${POSTGRES_IMAGE} AS migrations
 ARG TARGETARCH
-LABEL org.opencontainers.image.title="DAYJAVIEW fixture migrations" \
-      org.opencontainers.image.description="Checksum-verified local/CI PostgreSQL migration runner" \
+LABEL org.opencontainers.image.title="DAYJAVIEW migrations" \
+      org.opencontainers.image.description="Checksum-verified PostgreSQL migration runner (fixture/production)" \
       io.dayjaview.target-platform="linux/arm64"
 RUN test "${TARGETARCH}" = "arm64"
 COPY --chown=999:999 infra/migrations /migrations

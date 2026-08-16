@@ -1,0 +1,18 @@
+# DAYJAVIEW OCI production ingress.
+# TLS는 Caddy가 Let's Encrypt로 자동 발급·갱신한다 (80/443 공개, DNS는
+# DuckDNS A record가 이미 이 VM을 가리킨다).
+#
+# X-Forwarded-For: Caddy 2.7+는 신뢰하지 않은 접속의 수신 XFF를 버리고
+# 접속 주소 하나로 대체한다. 그래서 API의 TRUSTED_PROXY_HOPS=1은
+# "Caddy가 보증한 마지막 주소"를 읽는다 — Vercel rewrite 경유 요청은
+# Vercel edge 주소, 직접 접속은 그 클라이언트 주소가 되며 위조가 안 된다.
+
+{
+	admin off
+	email teamfomc@gmail.com
+}
+
+api.dayjaview.duckdns.org {
+	encode zstd gzip
+	reverse_proxy api:8000
+}

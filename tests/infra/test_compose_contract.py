@@ -22,6 +22,8 @@ COMPOSE_FILES = (
     DEPLOYMENT / "compose.local.yml",
     DEPLOYMENT / "compose.ci.yml",
 )
+PRODUCTION_COMPOSE = DEPLOYMENT / "compose.production.yml"
+ALL_COMPOSE_FILES = COMPOSE_FILES + (PRODUCTION_COMPOSE,)
 EXPECTED_SERVICES = {
     "api",
     "health-smoke",
@@ -127,7 +129,7 @@ def test_fixture_compose_is_arm64_ephemeral_and_live_free(path: Path) -> None:
         assert "profiles" not in services["health-smoke"]
 
 
-@pytest.mark.parametrize("path", COMPOSE_FILES, ids=lambda path: path.name)
+@pytest.mark.parametrize("path", ALL_COMPOSE_FILES, ids=lambda path: path.name)
 def test_compose_environment_contains_no_secret_or_credential_values(path: Path) -> None:
     services = _load(path)["services"]
     forbidden_names = (
@@ -144,6 +146,75 @@ def test_compose_environment_contains_no_secret_or_credential_values(path: Path)
         environment = service.get("environment", {})
         for name in forbidden_names:
             assert name not in environment, f"{service_name}에 {name} 값이 포함됨"
+
+
+def test_production_compose_persists_data_and_exposes_only_caddy() -> None:
+    """production은 fixture와 반대다: 데이터는 남고, 공개는 Caddy 80/443뿐이다."""
+
+    compose = _load(PRODUCTION_COMPOSE)
+    services = compose["services"]
+
+    assert set(services) == {
+        "api",
+        "caddy",
+        "migrate",
+        "migration-idempotency",
+        "postgres",
+        "worker-infostock-increment",
+    }
+    for service in services.values():
+        assert service["platform"] == "linux/arm64"
+
+    # 재부팅에도 남아야 하는 것: DB 데이터와 TLS 인증서.
+    assert set(compose["volumes"]) == {"postgres_data", "caddy_data", "caddy_config"}
+    assert services["postgres"]["volumes"] == ["postgres_data:/var/lib/postgresql/data"]
+    assert "tmpfs" not in services["postgres"]
+    assert services["postgres"]["restart"] == "unless-stopped"
+    assert "POSTGRES_HOST_AUTH_METHOD" not in services["postgres"]["environment"]
+
+    # 공개 ingress는 Caddy 80/443뿐, DB·API는 직접 공개하지 않는다(ADR-009 5항).
+    assert services["caddy"]["ports"] == ["80:80", "443:443"]
+    for name in services.keys() - {"caddy"}:
+        assert "ports" not in services[name], f"{name}는 호스트 포트를 공개할 수 없다"
+    assert compose["networks"]["backend"]["internal"] is True
+    assert services["postgres"]["networks"] == ["backend"]
+
+    # API는 live 진입·live probe로 돌고, 마이그레이션이 먼저 끝나야 한다.
+    api = services["api"]
+    assert api["command"] == ["python", "infra/operations/live_stack.py", "api"]
+    assert "infra/operations/live_stack.py" in api["healthcheck"]["test"]
+    assert api["restart"] == "unless-stopped"
+    assert api["environment"]["TRUSTED_PROXY_HOPS"] == "1"
+    assert api["environment"]["THEME_UNIVERSE_MODE"] == "infostock"
+    assert api["depends_on"]["postgres"]["condition"] == "service_healthy"
+    assert api["depends_on"]["migration-idempotency"]["condition"] == (
+        "service_completed_successfully"
+    )
+    assert api["read_only"] is True
+
+    # 인포스탁 증분 수집은 profile 뒤라 `up`으로는 시작되지 않는다.
+    assert services["worker-infostock-increment"]["profiles"] == ["collect"]
+    assert "--approved" in services["worker-infostock-increment"]["command"]
+
+
+def test_production_compose_takes_secrets_only_from_root_env_files() -> None:
+    """secret은 값이 아니라 /etc/dayjaview/*.env 참조로만 들어온다(ADR-009 7항)."""
+
+    services = _load(PRODUCTION_COMPOSE)["services"]
+    for name in ("postgres", "migrate", "migration-idempotency", "api"):
+        env_files = services[name]["env_file"]
+        assert env_files, f"{name}에 env_file이 없다"
+        for entry in env_files:
+            assert str(entry).startswith("/etc/dayjaview/"), (
+                f"{name}의 env_file이 VM secret 경로 밖이다: {entry}"
+            )
+    for name, service in services.items():
+        environment = service.get("environment", {})
+        assert "DAYJAVIEW_FIXTURE_MODE" not in environment, (
+            f"{name}가 production에서 fixture 모드를 켠다"
+        )
+    for name in ("migrate", "migration-idempotency"):
+        assert services[name]["environment"]["DAYJAVIEW_PRODUCTION_MIGRATION"] == "1"
 
 
 def test_environment_contract_declares_the_names_the_api_actually_reads() -> None:

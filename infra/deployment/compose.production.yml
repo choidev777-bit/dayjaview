@@ -1,0 +1,203 @@
+# DAYJAVIEW OCI A1(ARM64) production 스택 (ADR-009).
+#
+# fixture compose와 반대로 데이터는 재부팅에도 남아야 한다: PostgreSQL과
+# Caddy 인증서는 named volume, 수집 데이터는 /opt/dayjaview/data bind mount.
+# secret은 이 파일에 없다 — VM의 root 소유 0600 파일(/etc/dayjaview/*.env)로만
+# 주입한다(ADR-009 7항). 배포 절차는 docs/release/operations_runbook.md.
+
+name: dayjaview-production
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/images/runtime.Dockerfile
+
+x-app-security: &app-security
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  init: true
+
+x-app-logging: &app-logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "5"
+
+services:
+  caddy:
+    <<: *app-logging
+    image: caddy:2.10.2
+    platform: linux/arm64
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+  postgres:
+    <<: *app-logging
+    image: postgres:16.15-bookworm
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dayjaview
+      POSTGRES_USER: dayjaview
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8
+    # POSTGRES_PASSWORD
+    env_file:
+      - /etc/dayjaview/postgres.env
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -h 127.0.0.1 -U dayjaview -d dayjaview]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  migrate:
+    <<: [*app-security, *app-logging]
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: migrations
+    restart: "no"
+    environment:
+      DAYJAVIEW_PRODUCTION_MIGRATION: "1"
+      PGDATABASE: dayjaview
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: dayjaview
+    # PGPASSWORD
+    env_file:
+      - /etc/dayjaview/migrate.env
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  migration-idempotency:
+    <<: [*app-security, *app-logging]
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: migrations
+    restart: "no"
+    environment:
+      DAYJAVIEW_PRODUCTION_MIGRATION: "1"
+      PGDATABASE: dayjaview
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: dayjaview
+    env_file:
+      - /etc/dayjaview/migrate.env
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: [*app-security, *app-logging]
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: api
+    restart: unless-stopped
+    command:
+      - python
+      - infra/operations/live_stack.py
+      - api
+    environment:
+      APP_BASE_URL: https://dayjaview.vercel.app
+      DAYJAVIEW_LOCALE: ko-KR
+      THEME_UNIVERSE_MODE: infostock
+      INFOSTOCK_IMPORT_DIR: /workspace/data/infostock-import
+      REFERENCE_DATA_ROOT: /workspace/data/reference-data
+      INTRADAY_HISTORY_ROOT: /workspace/data/intraday-history
+      # Caddy(2.7+)가 XFF를 접속 주소로 대체하므로 신뢰 홉은 정확히 1이다.
+      TRUSTED_PROXY_HOPS: "1"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+    # DATABASE_URL, GOOGLE_OAUTH_*, SESSION_SIGNING_SECRET,
+    # OPERATOR_BOOTSTRAP_GOOGLE_EMAILS, KRX/OPENDART/KIWOOM 키
+    env_file:
+      - /etc/dayjaview/api.env
+    volumes:
+      - /opt/dayjaview/data/infostock-import:/workspace/data/infostock-import:ro
+      - /opt/dayjaview/data/reference-data:/workspace/data/reference-data
+      - /opt/dayjaview/data/intraday-history:/workspace/data/intraday-history
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - infra/operations/live_stack.py
+        - probe
+        - --url
+        - http://127.0.0.1:8000/api/health
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+    networks:
+      - web
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration-idempotency:
+        condition: service_completed_successfully
+
+  # 인포스탁 일일 증분(D-14). profile 뒤에 있어 `up`으로는 안 뜨고,
+  # 승인(CLAUDE.md 항목 2) 후 cron이 `compose run`으로 실행한다(runbook 9절).
+  worker-infostock-increment:
+    <<: [*app-security, *app-logging]
+    profiles:
+      - collect
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    restart: "no"
+    command:
+      - python
+      - apps/worker-batch/infostock/collect_increment.py
+      - --output-root
+      - /workspace/data/infostock-increment
+      - --approved
+    # INFOSTOCK_DATABASE_URL
+    env_file:
+      - /etc/dayjaview/worker.env
+    volumes:
+      - /opt/dayjaview/data/infostock-increment:/workspace/data/infostock-increment
+    networks:
+      - web
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  web: {}
+  backend:
+    internal: true
+
+volumes:
+  postgres_data: {}
+  caddy_data: {}
+  caddy_config: {}

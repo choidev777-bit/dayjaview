@@ -45,7 +45,10 @@ def _posix_shell() -> Path:
 
 
 def _run_fixture_runner(
-    tmp_path: Path, manifest_payload: bytes
+    tmp_path: Path,
+    manifest_payload: bytes,
+    *,
+    gate_environment: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[bytes]:
     migration_name = "0001_fixture.sql"
     migration_payload = b"BEGIN;\nSELECT 1;\nCOMMIT;\n"
@@ -81,13 +84,19 @@ def _run_fixture_runner(
     shell = _posix_shell()
     path_separator = ":" if sys.platform == "win32" else os.pathsep
     environment = os.environ.copy()
+    environment.pop("DAYJAVIEW_FIXTURE_MODE", None)
+    environment.pop("DAYJAVIEW_PRODUCTION_MIGRATION", None)
     environment.update(
         {
-            "DAYJAVIEW_FIXTURE_MODE": "1",
             "MIGRATION_MANIFEST_PATH": manifest.as_posix(),
             "MIGRATION_ROOT": migration_root.as_posix(),
             "PATH": f"{stub_bin.as_posix()}{path_separator}{environment['PATH']}",
         }
+    )
+    environment.update(
+        {"DAYJAVIEW_FIXTURE_MODE": "1"}
+        if gate_environment is None
+        else gate_environment
     )
     return subprocess.run(
         [shell, runner.as_posix()],
@@ -163,6 +172,29 @@ def test_migration_runner_rejects_non_line_ending_control_characters(
 
     assert completed.returncode == 1
     assert "허용되지 않은 migration 파일명입니다" in completed.stderr.decode(
+        "utf-8", errors="replace"
+    )
+
+
+def test_migration_runner_accepts_explicit_production_gate(tmp_path: Path) -> None:
+    completed = _run_fixture_runner(
+        tmp_path,
+        b"{sha256}  0001_fixture.sql\n",
+        gate_environment={"DAYJAVIEW_PRODUCTION_MIGRATION": "1"},
+    )
+
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", errors="replace")
+
+
+def test_migration_runner_rejects_run_without_any_gate(tmp_path: Path) -> None:
+    completed = _run_fixture_runner(
+        tmp_path,
+        b"{sha256}  0001_fixture.sql\n",
+        gate_environment={},
+    )
+
+    assert completed.returncode == 1
+    assert "DAYJAVIEW_PRODUCTION_MIGRATION=1" in completed.stderr.decode(
         "utf-8", errors="replace"
     )
 

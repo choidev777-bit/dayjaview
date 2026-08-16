@@ -10,8 +10,9 @@ fail() {
     exit 1
 }
 
-[ "${DAYJAVIEW_FIXTURE_MODE:-}" = "1" ] \
-    || fail "DAYJAVIEW_FIXTURE_MODE=1인 격리 환경에서만 실행할 수 있습니다."
+# fixture 격리 환경 또는 명시적 production 승인 아래에서만 실행한다.
+[ "${DAYJAVIEW_FIXTURE_MODE:-}" = "1" ] || [ "${DAYJAVIEW_PRODUCTION_MIGRATION:-}" = "1" ] \
+    || fail "DAYJAVIEW_FIXTURE_MODE=1 또는 DAYJAVIEW_PRODUCTION_MIGRATION=1이 필요합니다."
 [ -r "$manifest_path" ] || fail "순서 manifest를 읽을 수 없습니다: $manifest_path"
 
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
