@@ -8,6 +8,7 @@ import {
   type FixtureResource,
   type RankingFixture,
   type SavedFixture,
+  type SimilarFixture,
   type TreemapFixture,
 } from './adapters/fixtureRepository';
 import './styles/tokens.css';
@@ -23,11 +24,23 @@ const failure = params.get('error');
 const repository = createFixtureRepository({
   authenticated: params.get('auth') !== 'anonymous',
   latencyMs: params.get('slow') === 'true' ? 900 : 0,
-  ranking: oneOf<RankingFixture>(params.get('today'), ['live', 'delayed', 'degraded', 'closed', 'empty', 'unavailable'], 'live'),
+  ranking: params.get('today')
+    ? oneOf<RankingFixture>(
+        params.get('today'),
+        ['live', 'demo', 'delayed', 'degraded', 'closed', 'empty', 'unavailable'],
+        'live',
+      )
+    : undefined,
   treemap: oneOf<TreemapFixture>(params.get('insights'), ['live', 'excluded'], 'live'),
   detail: oneOf<DetailFixture>(params.get('detail'), ['searching', 'single', 'multi', 'closed', 'unmatched'], 'single'),
   evidence: oneOf<EvidenceFixture>(params.get('evidence'), ['searching', 'single', 'multi', 'none', 'degraded'], 'single'),
   saved: oneOf<SavedFixture>(params.get('saved'), ['library', 'unavailable', 'mixed'], 'mixed'),
+  // 로컬에서는 화면이 이어지는 시연본을 기본으로 연다. 게이트가 닫힌 상태를 보려면 `?similar=gated`.
+  similar: oneOf<SimilarFixture>(
+    params.get('similar'),
+    ['gated', 'demo', 'available', 'partial'],
+    'demo',
+  ),
   failures: failure
     ? [oneOf<FixtureResource>(failure, ['rankings', 'treemap', 'detail', 'evidence', 'saved', 'historical'], 'rankings')]
     : [],

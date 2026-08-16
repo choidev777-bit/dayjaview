@@ -1,5 +1,5 @@
 import { useRepository } from '../app/RepositoryContext';
-import { formatDate } from '../domain/formatting';
+import { formatLongDate } from '../domain/formatting';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
 import { ThemeRankingWheel } from '../shared/ThemeRankingWheel';
@@ -26,7 +26,7 @@ export function TodayPage() {
         <span className="home-mark" role="img" aria-label="DAYJAVIEW" />
       </header>
       <div className="home-title">
-        <strong>{formatDate(`${context.marketDate}T00:00:00+09:00`)}</strong>
+        <strong>{formatLongDate(`${context.marketDate}T00:00:00+09:00`)}</strong>
         <h1>오늘 많이 오른 테마예요</h1>
       </div>
       <div className="home-status">

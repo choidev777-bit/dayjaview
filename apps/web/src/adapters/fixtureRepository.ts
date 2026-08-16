@@ -18,27 +18,50 @@ import evidenceSingleSource from '../../../../contracts/fixtures/evidence/single
 import evidenceSourceDegraded from '../../../../contracts/fixtures/evidence/source-degraded.json';
 import savedLibrary from '../../../../contracts/fixtures/saved/library.json';
 import savedUnavailable from '../../../../contracts/fixtures/saved/unavailable.json';
+import similarAvailable from '../../../../contracts/fixtures/similar/available.json';
+import similarEventDetail from '../../../../contracts/fixtures/similar/event-detail.json';
 import similarGated from '../../../../contracts/fixtures/similar/gated.json';
+import similarPartial from '../../../../contracts/fixtures/similar/partial-outcomes.json';
 import unavailableError from '../../../../contracts/fixtures/errors/unavailable.json';
+import {
+  demoCatalystDetails,
+  demoCatalystTop3,
+  demoHistoricalEvents,
+  demoRankings,
+  demoSimilarEvents,
+} from './demoStory';
 import type {
   AuthSession,
+  CatalystDetailResponse,
+  CatalystTop3Response,
   EvidenceResponse,
   HistoricalAccessResponse,
+  HistoricalEventResponse,
   ProductRepository,
   RankingResponse,
   SavedItem,
   SavedResponse,
   SavedType,
+  SimilarEventsResponse,
   ThemeDetailResponse,
   TreemapResponse,
 } from '../domain/contracts';
 import { RepositoryError } from '../domain/repositoryErrors';
 
-export type RankingFixture = 'live' | 'delayed' | 'degraded' | 'closed' | 'empty' | 'unavailable';
+export type RankingFixture =
+  | 'live'
+  | 'demo'
+  | 'delayed'
+  | 'degraded'
+  | 'closed'
+  | 'empty'
+  | 'unavailable';
 export type TreemapFixture = 'live' | 'excluded';
 export type DetailFixture = 'searching' | 'single' | 'multi' | 'closed' | 'unmatched';
 export type EvidenceFixture = 'searching' | 'single' | 'multi' | 'none' | 'degraded';
 export type SavedFixture = 'library' | 'unavailable' | 'mixed';
+/** `demo`는 화면이 이어지는 원전수출 이야기, 나머지는 endpoint별 계약 fixture다. */
+export type SimilarFixture = 'gated' | 'demo' | 'available' | 'partial';
 export type FixtureResource = 'rankings' | 'treemap' | 'detail' | 'evidence' | 'saved' | 'historical';
 
 export interface FixtureRepositoryOptions {
@@ -49,11 +72,13 @@ export interface FixtureRepositoryOptions {
   detail?: DetailFixture;
   evidence?: EvidenceFixture;
   saved?: SavedFixture;
+  similar?: SimilarFixture;
   failures?: FixtureResource[];
 }
 
 const rankings: Record<RankingFixture, RankingResponse> = {
   live: rankingLive as unknown as RankingResponse,
+  demo: demoRankings,
   delayed: rankingDelayed as unknown as RankingResponse,
   degraded: rankingDegraded as unknown as RankingResponse,
   closed: rankingClosed as unknown as RankingResponse,
@@ -84,6 +109,59 @@ const evidence: Record<EvidenceFixture, EvidenceResponse> = {
 
 const libraryResponse = savedLibrary as unknown as SavedResponse;
 const unavailableResponse = savedUnavailable as unknown as SavedResponse;
+
+const similarEvents: Record<SimilarFixture, SimilarEventsResponse> = {
+  gated: similarGated as unknown as SimilarEventsResponse,
+  demo: demoSimilarEvents,
+  available: similarAvailable as unknown as SimilarEventsResponse,
+  partial: similarPartial as unknown as SimilarEventsResponse,
+};
+
+const historicalEvent = similarEventDetail as unknown as HistoricalEventResponse;
+
+/**
+ * 소재 유형 상세는 서버 계약이 없다(배선 매핑표 §5.1). 계약 fixture로 두면 없는 계약이 있는 것처럼
+ * 보이므로 화면 검토용 표본만 여기 둔다. 수치는 screen_spec 8.7 형식(건수·중앙 반응)을 따른다.
+ */
+const catalystSample: CatalystDetailResponse = {
+  data: {
+    catalystId: 'ctl_sample',
+    themeId: 'thm_nuclear',
+    themeDisplayName: '원전수출',
+    catalystName: '해외 원전 수주 단계 진전',
+    availability: 'AVAILABLE',
+    sameDay: {
+      horizonTradingDays: 1,
+      eligibleCount: 12,
+      observedCount: 12,
+      positiveCount: 8,
+      medianReturn: 0.064,
+    },
+    horizons: [
+      { horizonTradingDays: 1, eligibleCount: 12, observedCount: 12, positiveCount: 8, medianReturn: 0.021 },
+      { horizonTradingDays: 5, eligibleCount: 12, observedCount: 11, positiveCount: 7, medianReturn: 0.038 },
+      { horizonTradingDays: 20, eligibleCount: 12, observedCount: 8, positiveCount: 4, medianReturn: 0.012 },
+    ],
+    events: [
+      {
+        matchedEventId: 'evt_historical',
+        marketDate: '2024-11-18',
+        normalizedCatalystSummary: '마이크로 LED 양산 발표',
+        sameDayReturn: 0.071,
+        leaderName: '과거 예시 종목',
+      },
+      {
+        matchedEventId: 'evt_partial_history',
+        marketDate: '2025-08-20',
+        normalizedCatalystSummary: '과거 확인 소재',
+        sameDayReturn: null,
+        leaderName: null,
+      },
+    ],
+    qualityNote: '룰 기반 키워드라 검수 전 노이즈가 있을 수 있어요.',
+  },
+  meta: similarGated.meta as unknown as CatalystDetailResponse['meta'],
+};
 
 class ContractFixtureError extends RepositoryError {
   constructor() {
@@ -157,9 +235,25 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       await Promise.resolve();
       emit('session');
     },
-    getRankings: () => resolveFixture('rankings', rankings[options.ranking ?? 'live']),
+    // 시연 이야기를 켜면 오늘 목록도 10개짜리 시연본을 쓴다. `today`를 직접 준 경우는 그쪽이 우선.
+    getRankings: () =>
+      resolveFixture(
+        'rankings',
+        rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')],
+      ),
     getTreemap: () => resolveFixture('treemap', treemaps[options.treemap ?? 'live']),
-    getThemeDetail: () => resolveFixture('detail', details[options.detail ?? 'single']),
+    getThemeDetail: () => {
+      const selected = details[options.detail ?? 'single'];
+      // similar 스위치가 gated가 아니면 게이트가 열린 상태를 보는 것이므로 진입점도 함께 열어 준다.
+      if ((options.similar ?? 'gated') === 'gated') return resolveFixture('detail', selected);
+      return resolveFixture('detail', {
+        ...selected,
+        data: {
+          ...selected.data,
+          historicalAccess: { status: 'AVAILABLE' as const, reason: 'DEMO_STORY' },
+        },
+      });
+    },
     getEvidence: () => resolveFixture('evidence', evidence[options.evidence ?? 'single']),
     async getSaved(type: SavedType | 'ALL') {
       const response: SavedResponse = {
@@ -204,5 +298,40 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       const resolved = await resolveFixture('historical', response);
       return resolved.data;
     },
+    getSimilarEvents: (eventId) => {
+      // summary는 기간별 분모를 나란히 보여주는 자리라 계약 응답 전체를 그대로 준다.
+      // horizonTradingDays는 사례 행에 어느 기간 결과를 쓸지 고르는 값이고 summary를 자르지 않는다.
+      const selected = similarEvents[options.similar ?? 'gated'];
+      return resolveFixture('historical', {
+        ...selected,
+        data: { ...selected.data, eventId },
+      });
+    },
+    // 시연 이야기에 있는 id면 그 사건을 준다. 없으면 계약 fixture로 떨어진다.
+    getHistoricalEvent: (matchedEventId) =>
+      resolveFixture(
+        'historical',
+        demoHistoricalEvents[matchedEventId] ?? {
+          ...historicalEvent,
+          data: { ...historicalEvent.data, eventId: matchedEventId },
+        },
+      ),
+    getCatalystDetail: (catalystId) =>
+      resolveFixture(
+        'historical',
+        demoCatalystDetails[catalystId] ?? {
+          ...catalystSample,
+          data: { ...catalystSample.data, catalystId },
+        },
+      ),
+    getCachedRank: (eventId) =>
+      rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')].data.items.find(
+        (item) => item.eventId === eventId,
+      )?.rank ?? null,
+    getCatalystTop3: (themeId, eventId) =>
+      resolveFixture<CatalystTop3Response>('historical', {
+        ...demoCatalystTop3,
+        data: { ...demoCatalystTop3.data, themeId, eventId },
+      }),
   } satisfies ProductRepository;
 }

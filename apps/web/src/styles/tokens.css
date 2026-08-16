@@ -19,6 +19,9 @@
   --djv-color-market-up: #e5484d;
   --djv-color-market-down: #356ae6;
   --djv-color-warning: #a76700;
+  /* 경고 띠 배경. brand-soft와 같은 성격이다. 회색 위 갈색 글씨만으로는 상태가 늦게 읽힌다. */
+  --djv-color-warning-soft: #fdf3e3;
+  --djv-color-market-up-soft: #fff1f2;
 
   --djv-font-sans: "Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --djv-font-size-caption: 12px;
@@ -64,6 +67,8 @@
   --djv-color-text-muted: #a4a4aa;
   --djv-color-brand: #f28752;
   --djv-color-brand-soft: #3d2b23;
+  --djv-color-warning-soft: #38301f;
+  --djv-color-market-up-soft: #3a2427;
   --djv-color-on-brand: #ffffff;
   --djv-shadow-card: 0 1px 2px rgba(0, 0, 0, .3);
   --djv-shadow-nav: 0 4px 18px rgba(0, 0, 0, .28);

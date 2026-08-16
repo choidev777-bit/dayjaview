@@ -225,6 +225,115 @@ export interface HistoricalAccessResponse {
   meta: ResponseMeta;
 }
 
+export type HistoricalHorizon = 1 | 5 | 20;
+export type HistoricalAvailability = 'AVAILABLE' | 'GATED' | 'UNAVAILABLE';
+
+/** 관찰이 끝나지 않은 기간은 PENDING이다. 결측(UNAVAILABLE)과 구분해서 표시한다 (screen_spec 10.5). */
+export interface HistoricalOutcome {
+  horizonTradingDays: HistoricalHorizon;
+  return: number | null;
+  status: 'OBSERVED' | 'UNAVAILABLE' | 'PENDING';
+  unavailableReason: string | null;
+}
+
+/** 기간마다 유효 분모가 다르다. 하나로 합쳐 표시하지 않는다 (screen_spec 8.8·9.2). */
+export interface HistoricalSummary {
+  horizonTradingDays: HistoricalHorizon;
+  eligibleCount: number;
+  observedCount: number;
+  positiveCount: number;
+  medianReturn: number | null;
+}
+
+export interface SimilarEventItem {
+  matchedEventId: string;
+  marketDate: string;
+  displayNameAtEvent: string;
+  normalizedCatalystSummary: string;
+  similarityReasons: string[];
+  outcomes: HistoricalOutcome[];
+}
+
+export interface SimilarEventsResponse {
+  data: {
+    eventId: string;
+    decisionAt: string;
+    availability: HistoricalAvailability;
+    summary: HistoricalSummary[];
+    items: SimilarEventItem[];
+    page: {
+      nextCursor: string | null;
+      hasMore: boolean;
+      limit: number;
+    };
+  };
+  meta: ResponseMeta;
+}
+
+export interface HistoricalEventResponse {
+  data: {
+    eventId: string;
+    marketDate: string;
+    displayNameAtEvent: string;
+    catalystSummary: string;
+    similarityReasons: string[] | null;
+    leaders: Array<{
+      stockId: string;
+      symbol: string;
+      name: string;
+      return: number;
+      role: 'LEADER';
+    }>;
+    outcomes: HistoricalOutcome[];
+    futureOutcomeExcludedFromSelection: true;
+  };
+  meta: ResponseMeta;
+}
+
+/**
+ * 과거 소재 유형 상세. `api_contract.md`에 대응 endpoint가 없어(배선 매핑표 §5.1 미해결 갭)
+ * 서버 계약이 아니라 화면 검토용 형태다. 표현은 screen_spec 8.7·11.1을 따른다 —
+ * 상승 빈도를 확률·성공률로 바꾸지 않고 유효 표본 수와 중앙 반응을 쓴다.
+ */
+export interface CatalystTop3Response {
+  data: {
+    themeId: string;
+    eventId: string;
+    items: Array<{
+      catalystId: string;
+      catalystName: string;
+      eligibleCount: number;
+      observedCount: number;
+      medianSameDayReturn: number | null;
+      /** 오늘과 같은 유형이라는 표시일 뿐, 같은 수익률이나 상승을 뜻하지 않는다 (screen_spec 8.7). */
+      matchesToday: boolean;
+    }>;
+    qualityNote: string | null;
+  };
+  meta: ResponseMeta;
+}
+
+export interface CatalystDetailResponse {
+  data: {
+    catalystId: string;
+    themeId: string;
+    themeDisplayName: string;
+    catalystName: string;
+    availability: HistoricalAvailability;
+    sameDay: HistoricalSummary;
+    horizons: HistoricalSummary[];
+    events: Array<{
+      matchedEventId: string;
+      marketDate: string;
+      normalizedCatalystSummary: string;
+      sameDayReturn: number | null;
+      leaderName: string | null;
+    }>;
+    qualityNote: string | null;
+  };
+  meta: ResponseMeta;
+}
+
 export interface AuthSession {
   authenticated: boolean;
 }
@@ -318,4 +427,17 @@ export interface ProductRepository {
   saveSaved(item: SavedTarget): Promise<void>;
   removeSaved(item: Pick<SavedItem, 'savedType' | 'targetId'>): Promise<void>;
   getHistoricalAccess(eventId: string): Promise<HistoricalAccessResponse['data']>;
+  getSimilarEvents(eventId: string, horizon: HistoricalHorizon): Promise<SimilarEventsResponse>;
+  getHistoricalEvent(
+    matchedEventId: string,
+    contextEventId?: string | null,
+  ): Promise<HistoricalEventResponse>;
+  getCatalystDetail(catalystId: string): Promise<CatalystDetailResponse>;
+  getCatalystTop3(themeId: string, eventId: string): Promise<CatalystTop3Response>;
+  /**
+   * 이번 세션에서 이미 받아둔 순위 응답에서 해당 Event의 순위를 꺼낸다.
+   * 테마 상세 응답에는 rank가 없어서 서버를 다시 부르지 않고 재사용한다.
+   * 목록을 거치지 않고 URL로 바로 들어온 경우에는 null이고, 그때는 뱃지를 숨긴다.
+   */
+  getCachedRank(eventId: string): number | null;
 }

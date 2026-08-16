@@ -59,7 +59,6 @@ function InsightsScreen({ response }: { response: TreemapResponse }) {
       <div className="page-status">
         <DataStatusBar context={displayContext} />
       </div>
-      <p className="state-note">면적은 테마의 실시간 강도에 따라 달라져요.</p>
       {items.length ? (
         <ThemeTreemap items={items} motion={motion} />
       ) : (
@@ -99,8 +98,7 @@ export function InsightsPage() {
         <header className="page-intro">
           <h1>실시간 테마 중계</h1>
         </header>
-        <p className="state-note">면적은 테마의 실시간 강도에 따라 달라져요.</p>
-        <TreemapSkeleton />
+          <TreemapSkeleton />
       </div>
     );
   }

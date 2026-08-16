@@ -61,7 +61,8 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
         card.style.setProperty('--wheel-rotate', `${Math.max(-17, Math.min(17, -boundedDistance * 8))}deg`);
         card.style.setProperty('--wheel-depth', `${Math.max(-26, 12 - visualDistance * 17)}px`);
         card.style.setProperty('--wheel-curve', `${Math.sign(boundedDistance) * Math.min(2, visualDistance * 0.8)}px`);
-        card.dataset.focused = distance < 0.72 ? 'true' : 'false';
+        // 0.72로 두면 카드 사이에 멈췄을 때 위아래 둘 다 강조된다. 가장 가까운 하나만 켠다.
+        card.dataset.focused = distance < 0.5 ? 'true' : 'false';
       });
     };
 
@@ -71,24 +72,54 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
     };
 
     applyPadding();
+
+    // 시안과 같은 무한 휠. 목록을 3벌 그려 놓고 가운데 벌만 보이게 유지한다.
+    // 한 벌만 그리면 1위 위쪽과 꼴찌 아래쪽이 빈 채로 남아 목록이 끊겨 보인다.
+    const tripled = cards.length === items.length * 3;
+    const cycleHeight = step * items.length;
+    const primaryFirst = cards[tripled ? items.length : 0];
+    let baseTop = 0;
+    if (primaryFirst) {
+      baseTop = Math.max(0, primaryFirst.offsetTop - (wheel.clientHeight - cardHeight) / 2);
+      wheel.scrollTop = baseTop;
+    }
+
+    // 끝을 넘어가면 같은 화면을 유지한 채 한 바퀴만큼 되돌린다. 복제본이 같은 자리에 있어
+    // 사용자에게는 계속 이어지는 것처럼 보인다.
+    const keepPrimaryCopy = () => {
+      if (!tripled) return;
+      const wrapThreshold = step * 0.65;
+      if (wheel.scrollTop > baseTop + cycleHeight + wrapThreshold) wheel.scrollTop -= cycleHeight;
+      else if (wheel.scrollTop < baseTop - wrapThreshold) wheel.scrollTop += cycleHeight;
+    };
+
+    const handleScroll = () => {
+      keepPrimaryCopy();
+      schedulePaint();
+    };
+
     paint();
-    wheel.addEventListener('scroll', schedulePaint, { passive: true });
+    wheel.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', applyPadding);
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!introPlayedRef.current && !reducedMotion && cards.length > 1) {
+    if (!introPlayedRef.current && !reducedMotion && items.length > 1) {
       introPlayedRef.current = true;
-      cards.slice(1).forEach((_, index) => {
+      // 한 바퀴를 돌면 같은 1위 카드에 돌아오므로 끝나고 위치를 되돌려도 튀지 않는다.
+      for (let stepIndex = 1; stepIndex <= items.length; stepIndex += 1) {
         timers.push(
           window.setTimeout(() => {
-            wheel.scrollTo({ top: step * (index + 1), behavior: 'smooth' });
-          }, INTRO_STEP_MS * (index + 1)),
+            wheel.scrollTo({
+              top: stepIndex === items.length ? baseTop : baseTop + step * stepIndex,
+              behavior: stepIndex === items.length ? 'auto' : 'smooth',
+            });
+          }, INTRO_STEP_MS * stepIndex),
         );
-      });
+      }
     }
 
     return () => {
-      wheel.removeEventListener('scroll', schedulePaint);
+      wheel.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', applyPadding);
       if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
       timers.forEach((timer) => window.clearTimeout(timer));
@@ -102,7 +133,7 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
   }
 
   function focusCard(index: number) {
-    const cards = wheelRef.current?.querySelectorAll<HTMLElement>('[data-theme-card]');
+    const cards = wheelRef.current?.querySelectorAll<HTMLElement>('[data-theme-card][data-copy="main"]');
     const card = cards?.[Math.max(0, Math.min(cards.length - 1, index))];
     if (!card) return;
     cancelIntro();
@@ -111,7 +142,9 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLUListElement>) {
-    const cards = Array.from(wheelRef.current?.querySelectorAll<HTMLElement>('[data-theme-card]') ?? []);
+    const cards = Array.from(
+      wheelRef.current?.querySelectorAll<HTMLElement>('[data-theme-card][data-copy="main"]') ?? [],
+    );
     const current = cards.findIndex((card) => card === document.activeElement);
     if (event.key === ' ' && current >= 0) {
       event.preventDefault();
@@ -167,16 +200,23 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
       onPointerCancel={handlePointerUp}
       onWheel={cancelIntro}
     >
-      {items.map((item) => {
+      {/* 3벌 중 가운데 벌만 실제 목록이다. 앞뒤 복제본은 이어져 보이게 하는 장식이라
+          보조기술과 키보드에서 감춘다. 그래야 같은 테마가 세 번 읽히지 않는다.
+          항목이 적으면 감아 돌 일이 없으므로 복제하지 않는다. */}
+      {(items.length >= 4 ? [0, 1, 2] : [1]).flatMap((copy) =>
+        items.map((item) => {
+        const primary = copy === 1;
         const badge = badgeLabel(item);
         const path = `/themes/${encodeURIComponent(item.classification.themeId)}/events/${encodeURIComponent(item.eventId)}`;
         return (
-          <li key={item.eventId}>
+          <li key={`${copy}-${item.eventId}`} aria-hidden={primary ? undefined : 'true'}>
             <Link
               data-theme-card
+              data-copy={primary ? 'main' : 'clone'}
               data-top={item.rank <= 3 ? 'true' : 'false'}
               className="wheel-card"
               to={path}
+              tabIndex={primary ? undefined : -1}
               state={{ from: '/today' }}
               onClick={(event) => {
                 if (!dragRef.current.moved) return;
@@ -187,7 +227,12 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
             >
               <span className="wheel-card__rank" aria-hidden="true">{item.rank}</span>
               <span className="wheel-card__copy">
-                <strong>{item.classification.displayName}</strong>
+                {/* 뱃지는 테마를 꾸미는 말이라 이름 옆에 둔다. 아래로 내리면 줄이 하나 늘고
+                    어느 값에 걸린 뱃지인지도 흐려진다. */}
+                <span className="wheel-card__name">
+                  <strong>{item.classification.displayName}</strong>
+                  {badge ? <span className="badge wheel-card__badge">{badge}</span> : null}
+                </span>
                 <small className="wheel-card__meta">
                   {item.coverage.status === 'SUFFICIENT' &&
                   item.advancingCount !== null &&
@@ -201,11 +246,11 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
               <b className={`wheel-card__value ${returnTone(item.weightedReturn)}`}>
                 {formatReturn(item.weightedReturn)}
               </b>
-              {badge ? <span className="badge wheel-card__badge">{badge}</span> : null}
             </Link>
           </li>
         );
-      })}
+        }),
+      )}
     </ul>
   );
 }

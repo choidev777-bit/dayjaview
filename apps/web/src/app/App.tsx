@@ -18,11 +18,13 @@ import {
 } from 'react-router-dom';
 import type { ProductRepository } from '../domain/contracts';
 import { safeReturnTo } from '../domain/formatting';
-import { HistoricalGatePage } from '../pages/HistoricalGatePage';
+import { CatalystDetailPage } from '../pages/CatalystDetailPage';
+import { HistoricalEventPage } from '../pages/HistoricalEventPage';
 import { InsightsPage } from '../pages/InsightsPage';
 import { LoginPage } from '../pages/LoginPage';
 import { ResearchPage } from '../pages/ResearchPage';
 import { SavedPage } from '../pages/SavedPage';
+import { SimilarEventsPage } from '../pages/SimilarEventsPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
 import { TodayPage } from '../pages/TodayPage';
 import { ErrorState, LoadingState } from '../shared/StatePanel';
@@ -76,8 +78,11 @@ function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
         <Route path="/saved" element={<SavedPage onLogout={onLogout} />} />
         <Route path="/research" element={<ResearchPage />} />
         <Route path="/themes/:themeId/events/:eventId" element={<ThemeDetailPage />} />
-        <Route path="/themes/:themeId/events/:eventId/similar" element={<HistoricalGatePage />} />
-        <Route path="/events/:matchedEventId" element={<HistoricalGatePage />} />
+        {/* 조건부 route. 게이트가 닫혀 있으면 각 화면이 제한 안내로 닫는다 (adaptation plan §5.2).
+            production adapter는 게이트를 GATED로 고정하므로 배포에서는 진입점도 화면도 열리지 않는다. */}
+        <Route path="/themes/:themeId/events/:eventId/similar" element={<SimilarEventsPage />} />
+        <Route path="/events/:matchedEventId" element={<HistoricalEventPage />} />
+        <Route path="/catalysts/:catalystId" element={<CatalystDetailPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

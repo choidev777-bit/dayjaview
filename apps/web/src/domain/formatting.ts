@@ -1,6 +1,9 @@
 import type {
+  CoverageStatus,
   DataStatus,
   EvidenceStatus,
+  HistoricalHorizon,
+  HistoricalOutcome,
   LifecycleStatus,
   MatchBasis,
   ReconciliationStatus,
@@ -37,6 +40,13 @@ export function returnTone(value: number | null): 'market-up' | 'market-down' | 
 
 export function formatDate(value: string): string {
   return dateFormatter.format(new Date(value)).replace(/\. /g, '.').replace(/\.$/, '');
+}
+
+/** 시안 홈 제목의 날짜 형식. 목록의 날짜(`2024.07.18`)와 달리 문장처럼 읽는 자리다. */
+export function formatLongDate(value: string): string {
+  const parts = dateFormatter.formatToParts(new Date(value));
+  const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${pick('year')}년 ${pick('month')}월 ${pick('day')}일`;
 }
 
 export function formatTime(value: string | null): string {
@@ -94,6 +104,27 @@ export function evidenceFlagLabel(flag: string): string | null {
 
 export function matchBasisLabel(basis: MatchBasis): string {
   return { THEME: '테마 일치', STOCK: '종목 일치', TIME: '시각 근접' }[basis];
+}
+
+/** Coverage는 `몇 개 중 몇 개`보다 `믿을 만한가`가 먼저다. 분모·분자는 CoverageIndicator가 따로 보여준다. */
+export function coverageStatusLabel(status: CoverageStatus): string {
+  return { SUFFICIENT: '충분', PARTIAL: '일부', INSUFFICIENT: '부족' }[status];
+}
+
+export function horizonLabel(horizon: HistoricalHorizon): string {
+  return { 1: '다음날', 5: '5거래일', 20: '20거래일' }[horizon];
+}
+
+/** 결측(UNAVAILABLE)과 관찰 미완료(PENDING)를 0%나 같은 문구로 뭉뚱그리지 않는다 (screen_spec 10.5). */
+export function outcomeText(outcome: HistoricalOutcome | undefined): {
+  text: string;
+  tone: ReturnType<typeof returnTone>;
+} {
+  if (!outcome || outcome.status === 'UNAVAILABLE') {
+    return { text: '기록 없음', tone: 'market-flat' };
+  }
+  if (outcome.status === 'PENDING') return { text: '관찰 중', tone: 'market-flat' };
+  return { text: formatReturn(outcome.return), tone: returnTone(outcome.return) };
 }
 
 export function eventStatusLabel(

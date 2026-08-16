@@ -1,7 +1,11 @@
 import type {
   AuthSession,
+  CatalystDetailResponse,
+  CatalystTop3Response,
   EvidenceResponse,
   HistoricalAccessResponse,
+  HistoricalEventResponse,
+  HistoricalHorizon,
   ProductRepository,
   RankingResponse,
   RealtimeRankingSnapshot,
@@ -15,6 +19,7 @@ import type {
   SavedTarget,
   SavedType,
   SessionResponse,
+  SimilarEventsResponse,
   ThemeDetailResponse,
   TreemapResponse,
 } from '../domain/contracts';
@@ -400,6 +405,48 @@ class LiveProductRepository implements ProductRepository {
 
   async getHistoricalAccess(eventId: string): Promise<HistoricalAccessResponse['data']> {
     return { eventId, availability: 'GATED' };
+  }
+
+  async getSimilarEvents(
+    eventId: string,
+    horizon: HistoricalHorizon,
+  ): Promise<SimilarEventsResponse> {
+    // 미래 결과로 관련성 순서를 바꾸지 않는다. sort=outcome은 제공되지 않는다 (api_contract 10.2).
+    return this.request<SimilarEventsResponse>(
+      `/api/v1/events/${encodeURIComponent(eventId)}/similar-events` +
+        `?horizonTradingDays=${horizon}&sort=relevance&limit=20`,
+    );
+  }
+
+  async getHistoricalEvent(
+    matchedEventId: string,
+    contextEventId?: string | null,
+  ): Promise<HistoricalEventResponse> {
+    const query = contextEventId
+      ? `?contextEventId=${encodeURIComponent(contextEventId)}`
+      : '';
+    return this.request<HistoricalEventResponse>(
+      `/api/v1/events/${encodeURIComponent(matchedEventId)}${query}`,
+    );
+  }
+
+  async getCatalystDetail(): Promise<CatalystDetailResponse> {
+    // api_contract에 대응 endpoint가 없다(배선 매핑표 §5.1). 없는 주소를 호출하지 않고 미제공으로 닫는다.
+    throw new RepositoryError({
+      kind: 'permission',
+      message: '과거 소재 유형 상세는 아직 제공되지 않습니다.',
+    });
+  }
+
+  getCachedRank(eventId: string): number | null {
+    return this.rankingCache?.data.items.find((item) => item.eventId === eventId)?.rank ?? null;
+  }
+
+  async getCatalystTop3(): Promise<CatalystTop3Response> {
+    throw new RepositoryError({
+      kind: 'permission',
+      message: '과거 상승 소재 TOP3는 아직 제공되지 않습니다.',
+    });
   }
 
   private sequenceKey(topic: RealtimeTopic): string {

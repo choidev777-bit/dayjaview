@@ -70,6 +70,33 @@ describe('인증과 route shell', () => {
     expect(screen.queryByText(/14건 중/)).not.toBeInTheDocument();
   });
 
+  it('gate가 열리면 기간별 유효 분모를 따로 표시하고 결측을 0%로 적지 않는다', async () => {
+    render(
+      <App
+        repository={createFixtureRepository({ similar: 'available' })}
+        initialEntries={['/themes/thm_nuclear/events/evt_current/similar']}
+      />,
+    );
+
+    // 기간마다 분모가 다르다(14·14·12). 한 분모로 합치면 이 표기가 무너진다 (screen_spec 8.8).
+    expect(await screen.findByText('비슷했던 과거 14건')).toBeInTheDocument();
+    expect(screen.getByText('10 / 14건 상승')).toBeInTheDocument();
+    expect(screen.getByText('6 / 12건 상승')).toBeInTheDocument();
+    // fixture 사례에는 T+5 결과가 없다. 0%가 아니라 결측으로 적어야 한다.
+    expect(screen.getByText('기록 없음')).toBeInTheDocument();
+    expect(screen.queryByText(/확률|적중률|성공률/)).not.toBeInTheDocument();
+  });
+
+  it('과거 이벤트 상세는 당시 주도 종목과 선택 배제 고지를 함께 보여준다', async () => {
+    render(
+      <App repository={createFixtureRepository()} initialEntries={['/events/evt_historical']} />,
+    );
+
+    expect(await screen.findByRole('heading', { level: 1, name: '마이크로 LED 양산 발표' })).toBeInTheDocument();
+    expect(screen.getByText('과거 예시 종목')).toBeInTheDocument();
+    expect(screen.getByText(/미래 결과는 유사사례를 고를 때 사용하지 않았습니다/)).toBeInTheDocument();
+  });
+
   it('일반 사용자 router와 navigation에 operator surface가 없다', async () => {
     render(<App repository={createFixtureRepository()} initialEntries={['/operator']} />);
 

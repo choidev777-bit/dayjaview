@@ -57,12 +57,15 @@ a:focus-visible,
   background: var(--djv-color-bg);
 }
 
+/* 내용이 짧은 화면에서 아래로 app-shell의 베이지가 비치지 않게 여기서 흰 바탕을 깐다.
+   `.page`에 flex를 주면 순위 휠의 높이 계산이 틀어지므로 배경만 여기서 해결한다. */
 .app-content {
   display: flex;
   width: min(100%, var(--djv-app-max-width));
   min-height: 100dvh;
   flex-direction: column;
   margin: 0 auto;
+  background: var(--djv-color-surface);
 }
 
 .app-content > * {
@@ -111,11 +114,14 @@ a:focus-visible,
   font-weight: 700;
 }
 
+/* 크기는 시안 `.footer button:nth-child(2)::after`와 같다. 다만 시안은 칸 오른쪽 끝(`right`)에
+   붙였는데, 아이콘은 칸 가운데 있어서 칸 너비가 달라지면 아이콘과의 간격이 같이 달라진다.
+   여기서는 가운데를 기준으로 잡아 칸 너비와 무관하게 아이콘 오른쪽 위에 붙인다. */
 .bottom-navigation a:nth-child(2)::after {
   content: "LIVE";
   position: absolute;
-  top: 3px;
-  right: 9px;
+  top: 4px;
+  left: calc(50% + 3px);
   min-width: 24px;
   padding: 2px var(--djv-space-1);
   border-radius: 5px;
@@ -125,6 +131,8 @@ a:focus-visible,
   font-weight: 800;
   line-height: 1;
   letter-spacing: .02em;
+  /* min-width가 글자 폭보다 넓어서 기본 좌측 정렬이면 글자가 상자 왼쪽에 쏠린다. */
+  text-align: center;
 }
 
 .nav-icon {
@@ -141,9 +149,17 @@ a:focus-visible,
   background: var(--djv-color-surface);
 }
 
+/* flex 항목의 기본 `min-height: auto` 때문에 카드가 많아지면 height 100dvh가 무시되고
+   화면 밖으로 늘어난다. 그러면 휠이 뷰포트를 못 넘겨 첫 카드가 접힌 아래로 밀린다.
+   카드가 1개일 때는 늘어날 일이 없어 드러나지 않던 문제다. */
+/* `.app-content > * { flex: 1 }`이 걸려 있어 flex-basis 0에서 내용만큼 늘어난다. 그러면
+   height 100dvh가 무시되고 휠이 뷰포트를 넘겨 첫 카드가 화면 아래로 밀린다.
+   카드가 1개일 때는 늘어날 일이 없어 드러나지 않던 문제다. */
 .page--today {
   height: 100dvh;
-  background: var(--djv-color-bg);
+  min-height: 0;
+  flex: none;
+  background: var(--djv-color-surface);
 }
 
 .page-intro {
@@ -172,12 +188,13 @@ a:focus-visible,
   line-height: 1.5;
 }
 
+/* 시안 `.wireHeader`. 높이 60px이고 제목은 15px/800이다. */
 .app-bar {
   display: grid;
-  height: 56px;
+  height: 60px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
-  padding: 0 14px;
+  padding: 0 12px;
   background: var(--djv-color-bg);
 }
 
@@ -366,11 +383,13 @@ a:focus-visible,
   margin: 0;
 }
 
+/* 회색 위의 갈색 글씨만으로는 경고가 어중간하게 읽힌다. 띠 자체를 옅은 경고색으로 깔아
+   `보통 안내`가 아니라 `지금 상태가 정상이 아니다`로 먼저 보이게 한다. */
 .data-status--delayed,
 .data-status--degraded,
 .data-status--closed,
 .data-status--preopen {
-  background: var(--djv-color-surface-muted);
+  background: var(--djv-color-warning-soft);
 }
 
 .data-status--delayed strong,
@@ -595,18 +614,19 @@ a:focus-visible,
   z-index: 4;
   right: 0;
   left: 0;
-  height: 54px;
+  /* 시안보다 두껍게 덮는다. 얇으면 위아래 카드가 잘린 것처럼 보인다. */
+  height: 96px;
   pointer-events: none;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
 }
 
 .wheel::before {
   top: 0;
   background: linear-gradient(
     to bottom,
-    var(--djv-color-bg) 4%,
-    color-mix(in srgb, var(--djv-color-bg) 94%, transparent) 38%,
-    color-mix(in srgb, var(--djv-color-bg) 30%, transparent) 72%,
+    var(--djv-color-surface) 4%,
+    color-mix(in srgb, var(--djv-color-surface) 94%, transparent) 38%,
+    color-mix(in srgb, var(--djv-color-surface) 30%, transparent) 72%,
     transparent 100%
   );
 }
@@ -615,9 +635,9 @@ a:focus-visible,
   bottom: 0;
   background: linear-gradient(
     to top,
-    var(--djv-color-bg) 4%,
-    color-mix(in srgb, var(--djv-color-bg) 94%, transparent) 38%,
-    color-mix(in srgb, var(--djv-color-bg) 30%, transparent) 72%,
+    var(--djv-color-surface) 4%,
+    color-mix(in srgb, var(--djv-color-surface) 94%, transparent) 38%,
+    color-mix(in srgb, var(--djv-color-surface) 30%, transparent) 72%,
     transparent 100%
   );
 }
@@ -633,16 +653,15 @@ a:focus-visible,
   width: 100%;
   min-height: 76px;
   align-items: center;
-  gap: var(--djv-space-3);
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px;
+  /* 마지막 10px은 시안의 `›` 자리다. */
+  grid-template-columns: 30px minmax(0, 1fr) auto 10px;
   margin: 0 0 var(--djv-space-2);
-  padding: 10px var(--djv-space-3);
-  border: 1px solid color-mix(in srgb, var(--djv-color-surface) 85%, transparent);
-  border-radius: var(--djv-radius-lg);
-  background: color-mix(in srgb, var(--djv-color-surface) 84%, transparent);
-  box-shadow:
-    0 0 0 1px var(--djv-color-border),
-    0 8px 22px -14px color-mix(in srgb, var(--djv-color-text) 20%, transparent);
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--djv-color-text) 7%, transparent);
+  border-radius: 18px;
+  background: var(--djv-color-surface);
+  box-shadow: 0 2px 8px -4px color-mix(in srgb, var(--djv-color-text) 10%, transparent);
   text-align: left;
   opacity: var(--wheel-opacity);
   transform: rotateX(var(--wheel-rotate)) translateZ(var(--wheel-depth)) translateX(var(--wheel-curve))
@@ -659,27 +678,46 @@ a:focus-visible,
   scroll-snap-align: center;
 }
 
+/* 시안은 초점 카드를 연주황으로 채운다. 흰 배경 위 흰 카드라 테두리만으로는 잘 안 보인다.
+   brand-soft를 그대로 쓰면 같은 색인 뱃지가 카드에 묻혀 사라지므로 조금 더 진하게 섞는다. */
 .wheel-card[data-focused="true"] {
-  border-color: color-mix(in srgb, var(--djv-color-brand) 72%, transparent);
-  background: color-mix(in srgb, var(--djv-color-surface) 90%, transparent);
-  box-shadow:
-    0 14px 28px -15px color-mix(in srgb, var(--djv-brand-contrast) 42%, transparent),
-    0 0 0 1px color-mix(in srgb, var(--djv-color-brand) 16%, transparent);
+  border-color: color-mix(in srgb, var(--djv-color-brand) 55%, transparent);
+  background: color-mix(in srgb, var(--djv-color-brand) 9%, var(--djv-color-surface));
+  box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--djv-brand-contrast) 35%, transparent);
 }
 
+/* 시안 `.card::after`. 눌리는 줄이라는 표시를 오른쪽 끝에 둔다. */
+.wheel-card::after {
+  content: "\203A";
+  align-self: center;
+  justify-self: end;
+  color: var(--djv-color-text-muted);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.wheel-card[data-focused="true"]::after {
+  color: var(--djv-color-brand);
+}
+
+/* 시안 `.rank`. 숫자만 두지 않고 칩에 담아 열이 하나의 형태로 읽히게 한다. */
 .wheel-card__rank {
   display: grid;
-  width: 32px;
+  width: 26px;
+  height: 26px;
   place-items: center;
   align-self: center;
   justify-self: center;
-  color: var(--djv-color-text);
-  font-size: 14px;
+  border-radius: 9px;
+  background: var(--djv-color-surface-muted);
+  color: var(--djv-color-text-muted);
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
 }
 
 .wheel-card[data-top="true"] .wheel-card__rank {
+  background: var(--djv-color-brand-soft);
   color: var(--djv-brand-contrast);
   font-weight: 800;
 }
@@ -725,8 +763,24 @@ a:focus-visible,
   letter-spacing: -.01em;
 }
 
+/* 뱃지가 이름 옆에 붙는다. 이름이 길면 뱃지를 밀어내지 않고 이름 쪽이 줄어야 한다. */
+.wheel-card__name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.wheel-card__name strong {
+  min-width: 0;
+}
+
+/* 초점 카드 위에서도 상자가 보이도록 카드보다 진한 톤을 쓴다. */
 .wheel-card__badge {
-  grid-column: 2;
+  flex: none;
+  min-height: 20px;
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--djv-color-brand) 20%, var(--djv-color-surface));
 }
 
 /* ------------------------------------------------------------- 실시간 */
@@ -870,14 +924,17 @@ a:focus-visible,
   background: var(--djv-color-brand);
 }
 
+/* 아래 `.state-note`·`.treemap`과 같은 좌우 여백을 쓴다. space-4를 쓰면 이 박스만 좁아 보인다. */
 .page-status {
-  padding: 0 var(--djv-space-4) var(--djv-space-3);
+  padding: 0 var(--djv-space-3) var(--djv-space-2);
 }
 
 /* --------------------------------------------------------- 테마 상세 */
 
+/* 시안 실측: 홈만 베이지(#eae8e3)고 상세·인사이트·과거 화면은 전부 흰 바탕이다.
+   `.page` 기본값이 이미 흰색이라 여기서 베이지로 덮으면 안 된다. */
 .page--detail {
-  background: var(--djv-color-bg);
+  background: var(--djv-color-surface);
 }
 
 .detail-app-bar {
@@ -966,6 +1023,127 @@ a:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
+/* 시안 `.themeBadges`. 값이 없으면 영역째 사라져야 제목이 위로 붙는다 (시안 §4.2). */
+.theme-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-badges:empty {
+  display: none;
+}
+
+/* 시안 `.themeRankPill`. 관심 공백 뱃지와 달리 흰 배경으로 채워 먼저 읽히게 한다. */
+.theme-rank-pill {
+  width: max-content;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--djv-radius-pill);
+  background: var(--djv-color-on-brand);
+  color: var(--djv-brand-contrast);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+/* 시안 `.themeGapPill`. 순위 뱃지와 달리 배경 없이 테두리만 쓴다. */
+.theme-gap-pill {
+  width: max-content;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: var(--djv-radius-pill);
+  background: transparent;
+  color: var(--djv-color-on-brand);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+/* 시안 `.themeStats`. 주황 카드 안의 가로 3열 칩이다. */
+.theme-stats {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: var(--djv-space-5);
+}
+
+/* 시안 실측값. 테두리가 없거나 라벨이 가늘면 주황 배경에 묻혀 가시성이 떨어진다. */
+.theme-stats article {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .18);
+  text-align: center;
+}
+
+.theme-stats span {
+  color: rgba(255, 255, 255, .85);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.theme-stats strong {
+  color: var(--djv-color-on-brand);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-stats small {
+  color: rgba(255, 255, 255, .78);
+  font-size: 9px;
+}
+
+/* 시안 `.detailTabs`. 밑줄 탭이 아니라 회색 트랙 위에서 선택된 쪽만 흰 종이로 올라오는
+   폴더형이다. 사선은 `clip-path`로 내고, 겹치는 만큼 음수 margin으로 붙인다. */
+.detail-tabs {
+  display: flex;
+  height: 46px;
+  background: var(--djv-color-surface-muted);
+}
+
+.detail-tabs button {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--djv-color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  transition: color var(--djv-motion-fast) var(--djv-easing-standard);
+}
+
+.detail-tabs button[aria-selected="true"] {
+  z-index: 2;
+  background: var(--djv-color-surface);
+  color: var(--djv-brand-contrast);
+  font-weight: 800;
+}
+
+.detail-tabs button:first-child[aria-selected="true"] {
+  margin-right: -12px;
+  clip-path: polygon(0 0, 82% 0, 100% 100%, 0 100%);
+}
+
+.detail-tabs button:last-child[aria-selected="true"] {
+  margin-left: -12px;
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+}
+
 .detail-card {
   margin: 0 var(--djv-space-3) var(--djv-space-3);
   overflow: hidden;
@@ -975,12 +1153,15 @@ a:focus-visible,
   box-shadow: var(--djv-shadow-card);
 }
 
-.detail-card > section {
+/* 탭 패널이 생기면서 section이 한 단계 안으로 들어갔다. 시안처럼 두 자리 모두에 같은 여백을 준다. */
+.detail-card > section,
+.detail-panel > section {
   padding: var(--djv-space-6) var(--djv-space-4);
   border-bottom: 1px solid var(--djv-color-border);
 }
 
-.detail-card > section:last-child {
+.detail-card > section:last-child,
+.detail-panel > section:last-child {
   border-bottom: 0;
 }
 
@@ -1017,6 +1198,19 @@ a:focus-visible,
   color: var(--djv-brand-contrast);
   font-size: 18px;
   font-weight: 800;
+}
+
+/* 수익률을 담는 칸은 등락 색을 유지한다. 기본 브랜드색이 이기면 하락과 상승이 같아 보인다. */
+.metric-grid strong.market-up {
+  color: var(--djv-color-market-up);
+}
+
+.metric-grid strong.market-down {
+  color: var(--djv-color-market-down);
+}
+
+.metric-grid strong.market-flat {
+  color: var(--djv-color-text-muted);
 }
 
 .metric-grid small {
@@ -1205,6 +1399,283 @@ a:focus-visible,
   font-size: var(--djv-font-size-body);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ------------------------------------------------- 유사사례·과거 사례 */
+
+.historical-summary {
+  margin: var(--djv-space-4) var(--djv-space-4) 0;
+  padding: var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-md);
+  background: var(--djv-color-surface);
+}
+
+.historical-summary h2 {
+  margin: 0;
+  font-size: var(--djv-font-size-body);
+  font-weight: 800;
+}
+
+.historical-summary__rows {
+  margin: var(--djv-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 기간·분모·중앙값을 한 줄에 나란히 둔다. 분모가 잘려 보이지 않게 고정폭을 주지 않는다. */
+.historical-summary__rows li {
+  display: grid;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  border-top: 1px solid var(--djv-color-border);
+  font-size: var(--djv-font-size-label);
+}
+
+.historical-summary__rows li:first-child {
+  border-top: 0;
+}
+
+.historical-summary__rows span {
+  color: var(--djv-color-text-muted);
+}
+
+.historical-summary__rows strong {
+  font-weight: 600;
+}
+
+.historical-summary__rows b {
+  font-weight: 800;
+  text-align: right;
+}
+
+/* 시안은 결과 칸 배경을 화면마다 다르게 쓴다. 테마 상세의 현재 상태(`.metrics`)만 회색이고
+   과거 집계(`.pastSummarySection .horizons`)와 소재 상세는 연주황, 과거 사례는 연분홍이다. */
+.detail-panel .metric-grid article {
+  background: var(--djv-color-brand-soft);
+}
+
+.detail-panel .metric-grid strong {
+  color: var(--djv-brand-contrast);
+}
+
+.detail-panel .metric-grid span {
+  color: var(--djv-color-text);
+  font-weight: 700;
+}
+
+.page--case-detail .metric-grid article {
+  background: var(--djv-color-market-up-soft);
+}
+
+.page--case-detail .metric-grid span {
+  color: var(--djv-color-text);
+  font-weight: 700;
+}
+
+.page--catalyst .metric-grid article {
+  background: var(--djv-color-brand-soft);
+}
+
+.page--catalyst .metric-grid span {
+  color: var(--djv-color-text);
+  font-weight: 700;
+}
+
+/* 시안 `.wireBody .caseHero, .wireBody .catalystHero { border: 0 }` — 과거 화면의 인트로에는
+   구분선이 없다. 바로 아래가 카드라 선을 두면 경계가 두 겹으로 보인다. */
+.page--cases .page-intro,
+.page--case-detail .page-intro,
+.page--catalyst .page-intro {
+  border-bottom: 0;
+}
+
+/* 시안 `.horizonToggle`. 낱개 pill이 아니라 한 트랙 안에서 3등분되는 세그먼트 토글이다. */
+.horizon-toggle {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  margin: var(--djv-space-4);
+  padding: 4px;
+  border-radius: 18px;
+  background: var(--djv-color-surface-muted);
+}
+
+.horizon-toggle button {
+  height: 44px;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  color: var(--djv-color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.horizon-toggle button[aria-selected="true"] {
+  background: var(--djv-color-brand);
+  color: var(--djv-color-on-brand);
+}
+
+.case-list {
+  display: grid;
+  gap: 8px;
+  margin: var(--djv-space-2) var(--djv-space-4) 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* section이 이미 좌우 여백을 갖고 있다. 여기서 또 주면 카드가 두 겹 안으로 밀려 좁아진다. */
+.detail-card .case-list {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+/* 시안은 결과를 오른쪽 칸이 아니라 제목 아래 줄에 둔다. 그래야 제목이 폭을 다 써서
+   `체코 원전 우선협상대상자 선정`이 잘리지 않고, 카드도 시안만큼 커진다. */
+.case-list a {
+  display: grid;
+  min-height: 132px;
+  align-items: center;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  padding: 18px;
+  border: 1px solid var(--djv-color-border);
+  border-radius: 18px;
+  background: var(--djv-color-surface);
+  box-shadow: 0 2px 8px -4px color-mix(in srgb, var(--djv-color-text) 10%, transparent);
+  color: inherit;
+  text-decoration: none;
+}
+
+.case-list__copy {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.case-list__copy small {
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
+}
+
+/* 제목은 줄바꿈을 허용한다. 한 줄로 자르면 사건 이름이 통째로 사라진다. */
+.case-list__copy strong {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+  word-break: keep-all;
+}
+
+.case-list__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.case-list__tags em {
+  padding: 2px 7px;
+  border-radius: var(--djv-radius-pill);
+  background: var(--djv-color-brand-soft);
+  color: var(--djv-brand-contrast);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* 시안처럼 `T+5 +4.6%`를 아래 줄에 크게 둔다. */
+.case-list__outcome {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.case-list__outcome small {
+  color: var(--djv-color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reason-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--djv-space-3);
+}
+
+.catalyst-list {
+  margin: var(--djv-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catalyst-list a {
+  display: grid;
+  min-height: 60px;
+  align-items: center;
+  gap: 10px;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  border-top: 1px solid var(--djv-color-border);
+  color: inherit;
+  text-decoration: none;
+}
+
+.catalyst-list li:first-child a {
+  border-top: 0;
+}
+
+/* 시안 `.catalysts li > b`. 원형이 아니라 둥근 사각형이고 높이가 28px다. */
+.catalyst-list b {
+  display: grid;
+  width: 24px;
+  height: 28px;
+  place-items: center;
+  border-radius: var(--djv-radius-sm);
+  background: var(--djv-color-brand-soft);
+  color: var(--djv-brand-contrast);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.catalyst-list span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.catalyst-list small {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.catalyst-list strong {
+  overflow: hidden;
+  font-size: var(--djv-font-size-body);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalyst-list small {
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
+}
+
+.catalyst-list em {
+  width: max-content;
+  padding: 2px 7px;
+  border-radius: var(--djv-radius-pill);
+  background: var(--djv-color-brand-soft);
+  color: var(--djv-brand-contrast);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
 }
 
 /* --------------------------------------------------------- 즐겨찾기 */

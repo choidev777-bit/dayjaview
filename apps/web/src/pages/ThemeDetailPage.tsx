@@ -16,14 +16,18 @@ import type {
   ThemeDetailResponse,
 } from '../domain/contracts';
 import {
+  coverageStatusLabel,
   evidenceFlagLabel,
   evidenceStatusLabel,
   evidenceStatusNote,
   eventStatusLabel,
+  formatDate,
   formatReturn,
   formatTime,
   hasConfirmedEvidence,
+  horizonLabel,
   matchBasisLabel,
+  outcomeText,
   returnTone,
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
@@ -207,6 +211,155 @@ const EMPTY_PAGINATION: EvidencePagination = {
   loading: false,
   failed: false,
 };
+
+/** 시안의 `과거엔 어땠을까요` + `DAY-JA-VIEW 케이스`. 둘 다 유사사례 응답 하나에서 나온다. */
+function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: string }) {
+  const repository = useRepository();
+  const resource = useRepositoryResource(
+    repository,
+    'historical',
+    () => repository.getSimilarEvents(eventId, 5),
+    [repository, eventId],
+  );
+
+  if (resource.status === 'loading') return <LoadingState label="과거 기록을 불러오는 중입니다" />;
+  if (resource.status !== 'success') return null;
+
+  const data = resource.data.data;
+  if (data.availability !== 'AVAILABLE') return null;
+
+  const total = data.summary[0]?.eligibleCount ?? data.items.length;
+
+  return (
+    <>
+      <section aria-labelledby="dejavu-summary-title">
+        <div className="section-heading">
+          <h2 id="dejavu-summary-title">과거엔 어땠을까요?</h2>
+          <span>이벤트 스터디</span>
+        </div>
+        <p className="section-note">
+          비슷했던 과거 {total.toLocaleString('ko-KR')}건에서 당시 주도 종목의 반응을 모았어요.
+        </p>
+        {/* 시안은 `평균`이라고 썼지만 정본 지표는 중앙값이다 (screen_spec 8.8). 분모도 기간마다 따로 적는다. */}
+        <div className="metric-grid">
+          {data.summary.map((row) => (
+            <article key={row.horizonTradingDays}>
+              <span>{horizonLabel(row.horizonTradingDays)}</span>
+              {/* 시안 `.metrics strong`은 등락 색이 아니라 브랜드 대비색을 쓴다. 과거 집계는
+                  오늘의 등락이 아니라 기록 요약이라 빨강·파랑으로 읽히면 안 된다. */}
+              <strong>
+                {row.medianReturn === null ? '기록 없음' : `중앙 ${formatReturn(row.medianReturn)}`}
+              </strong>
+              <small>
+                {row.positiveCount.toLocaleString('ko-KR')}/{row.observedCount.toLocaleString('ko-KR')}건 상승
+              </small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="cases-title">
+        <div className="section-heading">
+          <div>
+            <h2 id="cases-title">DAY-JA-VIEW 케이스</h2>
+            <small>오늘과 비슷했던 과거</small>
+          </div>
+          <Link
+            className="text-button"
+            to={`/themes/${encodeURIComponent(themeId)}/events/${encodeURIComponent(eventId)}/similar`}
+          >
+            전체 보기
+            <IconChevronRightSmallLine size={18} aria-hidden="true" />
+          </Link>
+        </div>
+        {data.items.length ? (
+          <ul className="case-list">
+            {data.items.slice(0, 3).map((item) => {
+              const result = outcomeText(item.outcomes.find((row) => row.horizonTradingDays === 5));
+              return (
+                <li key={item.matchedEventId}>
+                  <Link
+                    to={`/events/${encodeURIComponent(item.matchedEventId)}`}
+                    state={{ contextEventId: eventId, themeId }}
+                  >
+                    <span className="case-list__copy">
+                      <small>{formatDate(`${item.marketDate}T00:00:00+09:00`)}</small>
+                      <strong>{item.normalizedCatalystSummary}</strong>
+                      <span className="case-list__tags">
+                        {item.similarityReasons.map((reason) => (
+                          <em key={reason}>{reason}</em>
+                        ))}
+                      </span>
+                      <b className="case-list__outcome">
+                        <small>5거래일</small>
+                        <span className={result.tone}>{result.text}</span>
+                      </b>
+                    </span>
+                    <IconChevronRightSmallLine size={18} aria-hidden="true" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <EmptyState title="동일 유형 과거사례 없음" />
+        )}
+      </section>
+    </>
+  );
+}
+
+function CatalystTop3Section({ themeId, eventId }: { themeId: string; eventId: string }) {
+  const repository = useRepository();
+  const resource = useRepositoryResource(
+    repository,
+    'historical',
+    () => repository.getCatalystTop3(themeId, eventId),
+    [repository, themeId, eventId],
+  );
+
+  // 게이트·미제공은 오류가 아니다. 섹션을 그리지 않는다.
+  if (resource.status !== 'success') return null;
+
+  const { items, qualityNote } = resource.data.data;
+  if (!items.length) return null;
+  // 유효 유형이 1~2개면 `TOP3`라고 부르지 않는다 (screen_spec 8.7).
+  const heading = items.length >= 3 ? '과거 원전 테마 반응 TOP3' : '과거 이 테마의 반응 기록';
+
+  return (
+    <section aria-labelledby="catalyst-top-title">
+      <div className="section-heading">
+        <div>
+          <h2 id="catalyst-top-title">{heading}</h2>
+        </div>
+      </div>
+      <p className="section-note">인포스탁 히스토리에 기록된 사례 기준</p>
+      <ol className="catalyst-list">
+        {items.slice(0, 3).map((item, index) => (
+          <li key={item.catalystId}>
+            <Link to={`/catalysts/${encodeURIComponent(item.catalystId)}`}>
+              <b>{index + 1}</b>
+              <span>
+                <strong>{item.catalystName}</strong>
+                {/* 상승 빈도를 확률로 바꾸지 않는다. 건수와 중앙 반응으로 적는다 (screen_spec 8.7·13.2).
+                    `오늘과 같은 유형`은 같은 줄에 붙인다. 줄을 따로 두면 아래 항목 구분선과 겹친다. */}
+                <small>
+                  {item.eligibleCount.toLocaleString('ko-KR')}건 · 당일 중앙 반응{' '}
+                  {item.medianSameDayReturn === null
+                    ? '기록 없음'
+                    : formatReturn(item.medianSameDayReturn)}
+                  {item.matchesToday ? <em>오늘과 같은 유형</em> : null}
+                </small>
+              </span>
+              <IconChevronRightSmallLine className="row-chevron" size={18} aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ol>
+      {qualityNote ? <p className="section-note">{qualityNote}</p> : null}
+    </section>
+  );
+}
 
 function ReasonSection({ eventId, summary }: { eventId: string; summary: EvidenceSummary }) {
   const repository = useRepository();
@@ -474,6 +627,7 @@ export function ThemeDetailPage() {
   const location = useLocation();
   const { themeId = '', eventId = '' } = useParams();
   const [saveFailed, setSaveFailed] = useState(false);
+  const [requestedTab, setRequestedTab] = useState<'dejavu' | 'today' | null>(null);
   const [calculationOpen, setCalculationOpen] = useState(false);
   const calculationTriggerRef = useRef<HTMLButtonElement>(null);
   const calculationCloseRef = useRef<HTMLButtonElement>(null);
@@ -519,6 +673,11 @@ export function ThemeDetailPage() {
       ? Math.round((reaction.advancingCount / reaction.validCount) * 100)
       : null;
   const historicalAvailable = detail.historicalAccess.status === 'AVAILABLE';
+  // 상세 응답에 rank가 없다. 목록에서 넘어왔다면 그때 받은 순위를 그대로 쓴다.
+  const rank = repository.getCachedRank(detail.eventId);
+  // 시안 기본 탭은 DAY-JA-VIEW다. 다만 게이트가 닫혀 있으면 그 탭에 보여줄 게 없으므로
+  // 사용자가 직접 고르기 전까지는 오늘 현황을 먼저 편다.
+  const detailTab = requestedTab ?? (historicalAvailable ? 'dejavu' : 'today');
 
   return (
     <div className="page page--detail">
@@ -540,14 +699,60 @@ export function ThemeDetailPage() {
 
       <section className="theme-summary">
         <div className="theme-summary__title">
-          <span className="status-chip">
-            {eventStatusLabel(detail.lifecycleStatus, detail.reconciliationStatus)}
-          </span>
+          {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고, 값이 있을 때만 병렬로 놓는다.
+              둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 시안에서 이 자리에
+              두지 않았다. */}
+          <div className="theme-badges">
+            {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
+            {reaction.attentionGapTradingDays !== null ? (
+              <span className="theme-gap-pill">
+                {reaction.attentionGapTradingDays.toLocaleString('ko-KR')}거래일 만의 관심
+              </span>
+            ) : null}
+          </div>
           <h1>{detail.classification.displayName}</h1>
         </div>
         <div className="theme-summary__return">
           <strong>{formatReturn(reaction.weightedReturn)}</strong>
-          <p className="theme-summary__pill">대형주 반영 테마 수익률</p>
+          <p className="theme-summary__pill">테마 수익률</p>
+          {/* 평상시 `활성`은 뱃지 자리를 차지할 만한 정보가 아니다. 다만 확정 대기·약화·종료는
+              screen_spec 4.4가 표시를 요구하므로 그때만 상태를 붙인다. */}
+          {detail.lifecycleStatus === 'ACTIVE' && detail.reconciliationStatus !== 'UNMATCHED' ? null : (
+            <span className="status-chip">
+              {eventStatusLabel(detail.lifecycleStatus, detail.reconciliationStatus)}
+            </span>
+          )}
+        </div>
+        {/* 시안의 가로 3열 칩. 세 번째 칸은 시안이 `거래대금`인데 계약에 그 값이 없어 Coverage를 쓴다. */}
+        <div className="theme-stats">
+          <article>
+            <span>상승 종목</span>
+            <strong>
+              {reaction.advancingCount === null || reaction.validCount === null
+                ? '—'
+                : `${reaction.advancingCount.toLocaleString('ko-KR')}/${reaction.validCount.toLocaleString('ko-KR')}`}
+            </strong>
+            <small>{advancingRatio === null ? '계산 불가' : `${advancingRatio}%`}</small>
+          </article>
+          <article>
+            <span>거래 관심</span>
+            <strong>
+              {reaction.turnoverMultiple === null
+                ? '—'
+                : `${reaction.turnoverMultiple.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배`}
+            </strong>
+            <small>{reaction.turnoverMultiple === null ? '기준선 부족' : '같은 시각 과거 기준'}</small>
+          </article>
+          {/* `17/21`로 적으면 바로 왼쪽 상승 종목과 분자·분모가 같아 보여 구분이 안 된다.
+              여기서는 믿을 만한 값인지만 말하고, 분모·분자는 CoverageIndicator가 따로 보여준다. */}
+          <article>
+            <span>데이터 반영</span>
+            <strong>{coverageStatusLabel(detail.coverage.status)}</strong>
+            <small>
+              핵심 {detail.coverage.core.totalCount.toLocaleString('ko-KR')}종목 중{' '}
+              {detail.coverage.core.observedCount.toLocaleString('ko-KR')}개 관측
+            </small>
+          </article>
         </div>
         {saveFailed ? (
           <p className="section-note" role="alert">
@@ -556,97 +761,95 @@ export function ThemeDetailPage() {
         ) : null}
       </section>
 
+      {detail.coverage.status === 'SUFFICIENT' ? null : (
+        <div className="coverage-band">
+          <CoverageIndicator coverage={detail.coverage} />
+        </div>
+      )}
+
       <div className="detail-card">
-        <section aria-labelledby="reaction-title">
-          <h2 id="reaction-title">현재 테마 상태</h2>
-          <div className="metric-grid">
-            <article>
-              <span>상승 종목</span>
-              <strong>
-                {reaction.advancingCount === null || reaction.validCount === null
-                  ? '—'
-                  : `${reaction.advancingCount.toLocaleString('ko-KR')}/${reaction.validCount.toLocaleString('ko-KR')}`}
-              </strong>
-              <small>{advancingRatio === null ? '계산 불가' : `${advancingRatio}%`}</small>
-            </article>
-            <article>
-              <span>거래 관심</span>
-              <strong>
-                {reaction.turnoverMultiple === null
-                  ? '—'
-                  : `${reaction.turnoverMultiple.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배`}
-              </strong>
-              <small>{reaction.turnoverMultiple === null ? '기준선 부족' : '같은 시각 과거 기준'}</small>
-            </article>
-            <article>
-              <span>반영 종목</span>
-              <strong>
-                {detail.coverage.core.observedCount.toLocaleString('ko-KR')}/
-                {detail.coverage.core.totalCount.toLocaleString('ko-KR')}
-              </strong>
-              <small>Coverage</small>
-            </article>
+        {/* 시안의 폴더형 2탭. 바깥 축은 과거(데자뷰)와 오늘이고,
+            근거의 실시간·장 마감 후 전환은 오늘 현황 안쪽 탭으로 그대로 남는다. */}
+        <div className="detail-tabs" role="tablist" aria-label="테마 상세 보기 전환">
+          <button
+            type="button"
+            role="tab"
+            id="detail-tab-dejavu"
+            aria-selected={detailTab === 'dejavu'}
+            aria-controls="detail-panel-dejavu"
+            onClick={() => setRequestedTab('dejavu')}
+          >
+            DAY-JA-VIEW
+          </button>
+          <button
+            type="button"
+            role="tab"
+            id="detail-tab-today"
+            aria-selected={detailTab === 'today'}
+            aria-controls="detail-panel-today"
+            onClick={() => setRequestedTab('today')}
+          >
+            오늘 현황
+          </button>
+        </div>
+
+        {detailTab === 'dejavu' ? (
+          <div
+            className="detail-panel"
+            id="detail-panel-dejavu"
+            role="tabpanel"
+            aria-labelledby="detail-tab-dejavu"
+          >
+            {/* 과거 영역 전체가 온톨로지 재검증 게이트에 종속된다.
+                게이트가 닫혀 있으면 잠긴 가짜 화면 대신 안내만 남긴다 (adaptation plan §4.3·§5.2). */}
+            {historicalAvailable ? (
+              <>
+                <DejavuSummarySection themeId={themeId} eventId={detail.eventId} />
+                <CatalystTop3Section themeId={themeId} eventId={detail.eventId} />
+              </>
+            ) : (
+              <EmptyState
+                title="과거 사례는 아직 준비 중이에요"
+                description="검증이 끝난 뒤에 오늘과 비슷했던 과거 기록을 붙여 보여드립니다."
+              />
+            )}
           </div>
+        ) : (
+          <div
+            className="detail-panel"
+            id="detail-panel-today"
+            role="tabpanel"
+            aria-labelledby="detail-tab-today"
+          >
+            <ReasonSection eventId={detail.eventId} summary={detail.evidenceSummary} />
 
-          {reaction.attentionGapTradingDays !== null ? (
-            <div className="interest-gap">
-              <strong>
-                {reaction.attentionGapTradingDays.toLocaleString('ko-KR')}거래일 만에 다시 주목받고 있어요
-              </strong>
-              <span>가격 저점이나 저평가를 뜻하지 않습니다.</span>
-            </div>
-          ) : null}
-
-          {detail.coverage.status === 'SUFFICIENT' ? null : (
-            <div className="coverage-band">
-              <CoverageIndicator coverage={detail.coverage} />
-            </div>
-          )}
-        </section>
-
-        <ReasonSection eventId={detail.eventId} summary={detail.evidenceSummary} />
-
-        <section aria-labelledby="leaders-title">
-          <div className="section-heading">
-            <h2 id="leaders-title">오늘의 주도 종목</h2>
+            <section aria-labelledby="leaders-title">
+              <div className="section-heading">
+                <h2 id="leaders-title">오늘의 주도 종목</h2>
+              </div>
+              {detail.leaders.length ? (
+                <ol className="leader-list">
+                  {detail.leaders.map((leader, index) => (
+                    <li key={leader.stockId}>
+                      <div>
+                        <strong>{leader.name}</strong>
+                        {index === 0 ? <span className="badge">주도</span> : null}
+                      </div>
+                      <strong className={returnTone(leader.return)}>
+                        {formatReturn(leader.return)}
+                      </strong>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <EmptyState
+                  title="확인된 주도 종목이 없습니다"
+                  description="데이터가 확보되면 최대 3개 종목을 표시합니다."
+                />
+              )}
+            </section>
           </div>
-          {detail.leaders.length ? (
-            <ol className="leader-list">
-              {detail.leaders.map((leader, index) => (
-                <li key={leader.stockId}>
-                  <div>
-                    <strong>{leader.name}</strong>
-                    {index === 0 ? <span className="badge">주도</span> : null}
-                  </div>
-                  <strong className={returnTone(leader.return)}>{formatReturn(leader.return)}</strong>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <EmptyState
-              title="확인된 주도 종목이 없습니다"
-              description="데이터가 확보되면 최대 3개 종목을 표시합니다."
-            />
-          )}
-        </section>
-
-        {/* 과거 상승 소재 Top 3·이벤트 스터디는 온톨로지 재검증(E-17~E-19) 전까지 계약이 없어 만들지 않는다.
-            게이트가 열린 뒤에만 유사사례 진입점을 노출한다 (adaptation plan §4.3). */}
-        {historicalAvailable ? (
-          <section aria-labelledby="cases-title">
-            <div className="section-heading">
-              <h2 id="cases-title">DAY-JA-VIEW 케이스</h2>
-              <Link
-                className="text-button"
-                to={`/themes/${encodeURIComponent(themeId)}/events/${encodeURIComponent(detail.eventId)}/similar`}
-              >
-                전체 보기
-                <IconChevronRightSmallLine size={18} aria-hidden="true" />
-              </Link>
-            </div>
-            <p className="section-note">오늘과 비슷했던 과거 사건을 검증된 범위에서만 보여드립니다.</p>
-          </section>
-        ) : null}
+        )}
       </div>
 
       <p className="notice">
