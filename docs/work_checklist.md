@@ -2,20 +2,20 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `b356285` (E-17 정확도 라운드 어휘 1.2.0 + **F-21·F-25 완료 — 실배포 공개, 1차 출시선에서 A-3 ③만 남음**) · `uv run pytest -q` 579 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `5ae7a92` (**뉴스·장후 작업 실운영 배선, cron·복원·재부팅 검증 완료**) · `uv run pytest -q` 590 passed·1 skipped
 
 ## 요약
 
 | 그룹 | 완료 | 남음 |
 |---|---|---|
 | A. 실데이터 연결 | 7 / 8 | A-3 |
-| B. 뉴스 근거 | 4 / 4 | (live 수집 실행·`.env.example` 항목만, B-8 참조) |
+| B. 뉴스 근거 | 4 / 4 | — |
 | C. 화면 | 2 / 2 | — |
 | D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 1 / 6 | E-16, E-18 ~ E-21 |
 | F. 출시 | 5 / 5 | — |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 2건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있다. E-17(온톨로지)은 완료됐다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A-3 장중 관찰 1건과 백업 암호문 외부 보관 확인 1건만 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있다. E-17(온톨로지)은 완료됐다.**
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -48,12 +48,13 @@
 
 ## B. "왜 오르는지" 뉴스 근거
 
-- [x] **B-8** codex 미커밋분 정리 + 뉴스 수집 마무리 — 2026-08-15 `2c855fb` · `2623713`
-  - 잔여: live 수집 실행(외부 API 호출 승인 필요), `.env.example`에 `NEWS_RSS_SOURCES` 항목 추가(에이전트가 `.env*`를 쓸 수 없어 사용자 수행).
+- [x] **B-8** codex 미커밋분 정리 + 뉴스 수집 마무리 — 2026-08-15 `2c855fb` · `2623713` · 2026-08-16 `5ae7a92`
+  - 운영 서버에 Postgres 영속 저장과 상시 뉴스 worker를 배선했다. 2026-08-16 네이버 뉴스 live 호출로 10건 저장, 중복 없는 재수집과 재부팅 후 보존을 확인했다. `.env.example`의 `NEWS_RSS_SOURCES`·뉴스 DSN·네이버/OpenAI 항목도 실제 배포 계약과 맞췄다.
 - [x] **B-9** 뉴스 ↔ 실시간 테마 매칭 — 2026-08-15 `cf153bd`
-- [x] **B-10** 근거 있을 때만 AI 요약 — 2026-08-15 `9f83666`
+- [x] **B-10** 근거 있을 때만 AI 요약 — 2026-08-15 `9f83666` · 2026-08-16 `5ae7a92`
+  - live `gpt-5.6-luna` 호출이 지정 JSON schema로 정상 응답하는 것을 운영 worker 안에서 확인했다. 주말이라 공개 Event가 0건이어서 실제 기사 요약 기록은 만들지 않았고, Event가 있을 때만 호출하는 기존 근거 게이트는 유지했다.
 - [x] **B-11** 근거 UI 완성 — 2026-08-15 `6c7fb83`
-- [x] **(B 잔여)** 근거 REST 배선 — 2026-08-15 `92b7c94`. `MarketDataPipeline.evidence_document`(공개 Event만, 판정 전 SEARCHING) + `SnapshotProductReadRepository.evidence`. 브라우저에서 `/evidence` 200과 근거 섹션 렌더 확인. 잔여였던 live 수집 실행·`.env.example` 항목 추가는 B-8 줄에 그대로 남아 있다.
+- [x] **(B 잔여)** 근거 REST 배선 — 2026-08-15 `92b7c94` · 2026-08-16 `5ae7a92`. `MarketDataPipeline.evidence_document`(공개 Event만, 판정 전 SEARCHING) + `SnapshotProductReadRepository.evidence`. 브라우저에서 `/evidence` 200과 근거 섹션 렌더 확인. 근거 revision·뉴스 매칭·LLM 호출 기록을 Postgres에 영속하고 API 발행 직전에 다시 읽도록 배선했다.
 
 ## C. 화면
 
@@ -62,19 +63,19 @@
 
 ## D. 매일 자동 운영
 
-- [x] **D-13** 장후 정합 (같은 eventId revision) — 2026-08-15 `f63bdb7`
+- [x] **D-13** 장후 정합 (같은 eventId revision) — 2026-08-15 `f63bdb7` · 2026-08-16 `5ae7a92`
   - `RECONCILE_EVENT` command + `packages/events/reconciliation.py`. 같은 날 같은 테마의 인포스탁 UP history만 MATCHED(분류 CONFIRMED/INFOSTOCK 승격), 기사 없으면 UNMATCHED, 늦은 기사는 UNMATCHED→MATCHED. 재실행 안전(결정적 message_id·종결 Event 건너뜀), state_logs에 axis 열 추가(`0004` 마이그레이션).
-  - 실행 주체(매일 장후 스케줄)는 D-14의 증분 수집과 함께 배선한다. 지금은 모듈·command·영속화·테스트까지.
-- [x] **D-14** 인포스탁 매일 증분 수집 자동화 — 2026-08-15 `32d1353`
+  - D-14 뒤에 같은 날짜로 실행되는 운영 worker와 운영자 review 배선을 완료했다. 2026-08-14 실자료로 confirmations 21건을 읽어 성공했고, 배포 전이라 장중 Event가 없었던 21건은 `INFOSTOCK_WITHOUT_INTRADAY_EVENT` 검토 항목으로 남겼다.
+- [x] **D-14** 인포스탁 매일 증분 수집 자동화 — 2026-08-15 `32d1353` · 2026-08-16 `5ae7a92`
   - `packages/infostock/increment.py` + worker `collect_increment.py`(매일 장후 스케줄러가 부르는 진입점). lookback 창(기본 7일)만 수집해 S1과 같은 schema·revision·lineage로 적재. 재실행은 input_hash로 reused(idempotent), 수정은 revision, 삭제는 **창 안으로 제한한** NOT_VISIBLE revision. `0005` 마이그레이션(INCREMENTAL run의 core SKIPPED).
   - 세션 설계 확정: Daily API는 무인증 공개 endpoint(S1 전체 4,655건이 무인증으로 수집된 실측 근거). 자동 로그인 없음 — 401/403이 오면 AUTH_REQUIRED로 멈춰 운영자에게 드러남(FR-10), 429는 RATE_LIMITED.
-  - DSN 게이트 테스트는 일회용 PostgreSQL 16으로 통과(revision·창 내 숨김·reused, 0004·0005 실적용). **live 호출은 실행하지 않음** — 남은 것: 사용자 승인 아래 `--approved` 첫 실행과 배포 시 cron 등록(F-25).
-- [x] **D-15** 운영자 콘솔 — 2026-08-16 `775e1c0`
+  - DSN 게이트 테스트는 일회용 PostgreSQL 16으로 통과(revision·창 내 숨김·reused, 0004·0005 실적용). 2026-08-16 승인 후 2026-08-14 기준 live 첫 실행 성공: 게시물 6건·관계 1,185건·revision 11건 저장. 평일 17:30 KST cron을 설치하고 재부팅 후에도 등록이 남는 것을 확인했다.
+- [x] **D-15** 운영자 콘솔 — 2026-08-16 `775e1c0` · `5ae7a92`
   - 계약이 이미 정의해 둔 운영자 surface 10개(status·jobs·job·retry·resume·reviews·review·resolve·audit·infostock auth-status)를 전부 구현. `packages/operator`(도메인·in-memory 저장소) + `apps/api/operator_boundary.py`(allowlist 투영).
   - command 3개는 같은 순서를 지킨다: 같은 Idempotency-Key 재요청은 저장된 receipt 재생(중복 실행 없음) → 대상 없음 404 → expectedVersion 불일치 409 `STALE_VERSION` → 허용되지 않는 전이 409 `COMMAND_NOT_ALLOWED`. 실행한 command만 revision을 올리고 audit을 남긴다. retry는 FAILED·RATE_LIMITED·AUTH_REQUIRED, resume은 PARTIAL에서만.
   - redaction: internal_context와 command 사유 원문은 어떤 응답에도 넣지 않고, 투영 값이 안전 패턴을 벗어나면 500으로 닫는다. `authorize_operator_command`가 role을 먼저 봐서 일반 사용자에게 CSRF 실패 대신 권한 없음으로 답한다.
   - 화면은 `apps/web/operator.html` + `src/operator/**`로 사용자 SPA와 다른 entry다. 두 번들은 서로를 import하지 않고 사용자 router·navigation에도 없다.
-  - **job·review 데이터를 넣는 쪽은 아직 배선하지 않았다.** 저장소는 프로세스 in-memory이고 `record_job`·`open_review` 진입점만 있다. 수집 worker와 D-13 정합 실행을 여기에 연결하는 것과 Postgres 영속화는 별도 작업이다.
+  - 운영자 job·review·audit·명령 receipt·인포스탁 인증 상태를 Postgres에 영속했다. 뉴스 수집, D-14, D-13이 실제 job·review를 기록하며 API도 같은 저장소를 읽는다. 운영 서버에서 job 3종과 pending review 21건을 확인했고 재부팅 뒤에도 보존됐다.
 
 ## E. 과거 연구 기능 (출시 후)
 
@@ -131,10 +132,11 @@
   - **수리(발견 1)**: 분모 합산을 분자와 같은 `prec=60` 안으로 옮겼다. 전량 관측이면 몫이 정확히 1이 된다. 회귀 테스트 1건 추가(수리 전 코드에서 실패하는 것 확인). 실규모 재현이 40주기 완주하며 **순위 98건**을 만들고 publish P95는 773ms다. `uv run pytest -q` 519 passed·8 skipped · ruff·mypy 통과. **발행 루프의 실패 처리(조용히 멈춤)는 안 고쳤다** — 설계 결정이라 별도 작업.
   - **수리(발견 2)**: 요청 한도를 `/auth/` 전체가 아니라 무인증 OAuth 진입점 둘(`/auth/google`, `/auth/google/callback`)에만 건다 — 세션 조회는 예산을 안 먹는다. 세는 단위는 `TRUSTED_PROXY_HOPS`를 선언했을 때만 `X-Forwarded-For`의 그 자리 값을 쓰고, 기본 0이면 전송 계층 주소만 쓴다(위조 header를 기본으로 믿지 않는다). 회귀 테스트 2건, env 계약에 `TRUSTED_PROXY_HOPS` 선언. 실행 중인 서버로 재확인: 세션 60회 연속 200 → 로그인 시작 302, 로그인 시작 연속 25회는 19회 뒤 429. **F-25에서 Vercel `/api/*` rewrite를 붙이면 이 값을 실제 앞단 프록시 수로 넣어야 한다.**
   - 발견 3·4·5는 미수리.
-- [x] **F-25** 실제 배포 — 2026-08-16 완료 (`47e29c0`·`3fb5edc` 준비, `b9bc061`·`cec46a0`·`6cf8586`·`b356285` 실행 중 수리). **서비스 공개 상태**: https://dayjaview.vercel.app (웹) + https://api.dayjaview.duckdns.org (API, TLS 자동발급) · 실로그인·rewrite·SPA fallback 외부 검증 통과.
+- [x] **F-25** 실제 배포 — 2026-08-16 완료 (`47e29c0`·`3fb5edc` 준비, `b9bc061`·`cec46a0`·`6cf8586`·`b356285`·`5ae7a92` 실행 중 수리). **서비스 공개 상태**: https://dayjaview.vercel.app (웹) + https://api.dayjaview.duckdns.org (API, TLS 자동발급) · 실로그인·rewrite·SPA fallback 외부 검증 통과.
   - 실행 기록: 기존 maptamin VM은 SSH가 내부 방화벽에 막혀 있고 Run command 에이전트도 죽어 있어 **디스크 보존 후 삭제 → dayjaview-prod 신규 생성**(같은 A1 4/24, 새 IP → DuckDNS 갱신). Security list에 80/443 추가. 배포는 `deploy_production.sh` 원커맨드(코드 archive 전송 — VM에 GitHub 자격증명 없음), 백업 cron 자동 설치.
   - 실행 중 드러난 결함 수리: git archive가 autocrlf로 SQL을 CRLF 변환해 마이그레이션 checksum 불일치(`b9bc061`, `.gitattributes` LF 고정 + manifest 재생성) · 구글 callback 부가 query 2건(F-21 줄 참조).
-  - **남은 것(별도 승인·작업)**: 인포스탁 증분 cron 등록(승인 항목 2 — runbook 9절), 복원 drill·재부팅 drill(runbook 8·11절, 공개 출시 전 필수), 백업 암호문 사용자 보관 확인, 월요일 개장 시 키움 첫 실가동 관찰(A-3 ③ 겸).
+  - 2026-08-16 `5ae7a92` 재배포 후 Vercel `/api/health`가 OCI health를 그대로 200으로 전달하는 것을 확인했다. 암호화 백업 2개를 생성하고 일회용 DB로 업무 테이블 43개를 실제 복원한 뒤 제거했다. VM 재부팅 뒤 API·PostgreSQL·Caddy·뉴스 worker가 자동 복구되고 데이터와 장후 cron이 보존되는 것도 확인했다.
+  - **남은 것(사람 확인)**: `/etc/dayjaview/backup.passphrase`는 root 전용 0600으로 존재하지만, 그 값을 사용자의 비밀번호 관리자 등 VM 밖에 보관했는지는 에이전트가 확인할 수 없다. 월요일 개장 시 키움 첫 실가동 관찰은 A-3 ③에 남는다.
   - 준비 완료: production compose(`infra/deployment/compose.production.yml`, Caddy TLS·persistent volume·secret은 `/etc/dayjaview/*.env` 참조만) · live 진입 `infra/operations/live_stack.py`(fixture 모드 fail-closed) · migration runner에 명시적 production 게이트 · Vercel `/api/*` rewrite + SPA fallback(`apps/web/vercel.json`) · 배포·백업/복구 runbook [operations_runbook.md](./release/operations_runbook.md). compose 스키마·Caddyfile은 로컬 docker로 검증, 계약 테스트 `tests/infra/**` 추가.
   - Redis는 배포하지 않는다(F-23 — 코드가 안 읽음). market worker 컨테이너도 없다(A-8 거래일 루프가 api 안에 있음). `TRUSTED_PROXY_HOPS=1` 근거는 runbook 4절.
 
@@ -142,18 +144,15 @@
 
 | 관문 | 막히는 작업 | 필요한 것 |
 |---|---|---|
-| 주식장 개장 시간 + 키움 live 승인 | A-3 | 장중 실행, CLAUDE.md 승인 항목 2 |
-| 인포스탁·뉴스 live 호출 승인 | B-8 잔여, D-14 | CLAUDE.md 승인 항목 2 |
-| `.env.example` 항목 추가 | B-8 잔여 | 없음 — F-22에서 `.env*` append 쓰기가 가능한 것으로 확인됐다. 요청 시 진행 |
-| 구글 콘솔 redirect URI 등록 | F-21 ① | 사용자 계정 작업 |
+| 주식장 개장 시간 | A-3 | 개장일 장중 실가동 관찰 |
+| 백업 암호문 VM 밖 보관 | F-25 후속 안전조치 | 사용자가 비밀번호 관리자 등에 직접 보관 확인 |
 | 2인 블라인드 평가 | E-19 → E-20 | 사람 평가 통과 |
 | 과거 주가 2005~2009 원천 | E-16 잔여 구간 (E-18·E-19의 2010년 이전 사건 outcome) | KRX Open API가 미제공(실측) — 대체 원천 확보 또는 2010년 이후로 범위 확정, 사용자 판단 |
-| 배포·cloud·DNS 승인 | F-25 | CLAUDE.md 승인 항목 1 |
 
 ## 진행 순서 (remaining_work.md 기준, 완료분 제외)
 
 ```
-A-3 (장중 승인 필요) → F-21 ~ F-25 (1차 출시)  [E-21 1단계 동반 가능]
+A-3 (개장 시간 필요)  [E-21 1단계 동반 가능]
 → E-16 → E-18 → E-19 → E-20 (출시 후)
 → E-21 2단계(E-16+E-17 후, E-17은 완료) → E-21 3단계(E-19 후)
 ```
