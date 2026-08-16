@@ -129,7 +129,7 @@ export function CatalystDetailPage() {
                   <Link
                     to={`/events/${encodeURIComponent(event.matchedEventId)}`}
                     state={{
-                      contextEventId: from?.eventId ?? detail.themeId,
+                      contextEventId: from?.eventId ?? null,
                       themeId: detail.themeId,
                       catalystId,
                     }}

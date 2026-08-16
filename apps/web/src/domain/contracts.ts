@@ -136,7 +136,8 @@ export interface ThemeDetailResponse {
       stockId: string;
       symbol: string;
       name: string;
-      return: number;
+      /** 가격을 확인하지 못한 종목은 null이다. 0으로 바꾸지 않는다 (stage0 Leader 스키마). */
+      return: number | null;
       role: 'LEADER';
     }>;
     historicalAccess: {
@@ -281,7 +282,8 @@ export interface HistoricalEventResponse {
       stockId: string;
       symbol: string;
       name: string;
-      return: number;
+      /** 가격을 확인하지 못한 종목은 null이다. 0으로 바꾸지 않는다 (stage0 Leader 스키마). */
+      return: number | null;
       role: 'LEADER';
     }>;
     outcomes: HistoricalOutcome[];

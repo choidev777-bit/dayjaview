@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-16T11:55:52.750569Z",
+ "generatedAt": "2026-08-16T12:26:25.299911Z",
  "marketDate": "2026-08-10",
  "previousDate": "2026-08-07",
  "weightMethod": "EQUAL_WEIGHT_LEGACY",
@@ -14068,6 +14068,13 @@
          "symbol": "089030",
          "name": "테크윙",
          "return": 0.1049,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_319660",
+         "symbol": "319660",
+         "name": "피에스케이",
+         "return": 0.1024,
          "role": "LEADER"
         }
        ]

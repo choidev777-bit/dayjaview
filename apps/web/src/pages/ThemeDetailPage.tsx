@@ -9,6 +9,7 @@ import {
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type {
+  DataStatus,
   EvidenceItem,
   EvidenceResponse,
   EvidenceStatus,
@@ -42,6 +43,8 @@ type EvidenceSummary = ThemeDetail['evidenceSummary'];
 type EvidencePage = EvidenceResponse['data']['page'];
 type EvidencePhase = 'LIVE' | 'AFTER_CLOSE';
 
+/** 관심 공백 배지 기준 (screen_spec 8.4). */
+const ATTENTION_GAP_MIN = 60;
 const VISIBLE_EVIDENCE = 3;
 /** 상세 기본 노출은 3개 (screen_spec 8.6). 나머지는 펼쳐서 본다. */
 const VISIBLE_LEADERS = 3;
@@ -213,7 +216,14 @@ function EvidenceList({
  * 종목 상세는 후속 범위라 행을 링크로 만들지 않는다. 대신 행마다 관심 저장을 둔다
  * (screen_spec 8.6 `종목 상세가 준비되지 않았다면 종목 행을 잘못된 링크로 만들지 않는다`).
  */
-function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
+function LeaderList({
+  leaders,
+  context,
+}: {
+  leaders: ThemeDetail['leaders'];
+  /** 저장 목록이 종목 행에 요구하는 현재 상태를 만들 재료 (screen_spec 12.1). */
+  context: { eventId: string; dataStatus: DataStatus; asOf: string } | null;
+}) {
   const repository = useRepository();
   const [expanded, setExpanded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -237,7 +247,22 @@ function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
       if (savedIds?.has(stockId)) {
         await repository.removeSaved({ savedType: 'STOCK', targetId: stockId });
       } else {
-        await repository.saveSaved({ savedType: 'STOCK', targetId: stockId, displayName: name });
+        const leader = leaders.find((row) => row.stockId === stockId);
+        await repository.saveSaved({
+          savedType: 'STOCK',
+          targetId: stockId,
+          displayName: name,
+          currentState:
+            context && leader
+              ? {
+                  eventId: context.eventId,
+                  eventState: 'ACTIVE',
+                  weightedReturn: leader.return ?? 0,
+                  dataStatus: context.dataStatus,
+                  asOf: context.asOf,
+                }
+              : null,
+        });
       }
       saved.retry();
     } catch {
@@ -247,7 +272,7 @@ function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
 
   return (
     <>
-      <ol className="leader-list">
+      <ol className="leader-list leader-list--savable">
         {visible.map((leader, index) => (
           <li key={leader.stockId}>
             <div>
@@ -884,9 +909,10 @@ export function ThemeDetailPage() {
               두지 않았다. */}
           <div className="theme-badges">
             {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
-            {/* 어제도 나왔던 테마는 `1 거래일 만의 관심`이라 적어도 알려주는 게 없다.
-                하루라도 건너뛴 경우에만 붙인다. */}
-            {reaction.attentionGapTradingDays !== null && reaction.attentionGapTradingDays >= 2 ? (
+            {/* 관심 공백은 장기 미관심에만 의미가 있다. `6 거래일 만의 관심`은 알려주는 게 없다.
+                screen_spec 8.4의 기준(60거래일 이상)을 그대로 쓴다. */}
+            {reaction.attentionGapTradingDays !== null &&
+            reaction.attentionGapTradingDays >= ATTENTION_GAP_MIN ? (
               <span className="theme-gap-pill">
                 {reaction.attentionGapTradingDays.toLocaleString('ko-KR')} 거래일 만의 관심
               </span>
@@ -1016,7 +1042,18 @@ export function ThemeDetailPage() {
                 <h2 id="leaders-title">오늘의 주도 종목</h2>
               </div>
               {detail.leaders.length ? (
-                <LeaderList leaders={detail.leaders} />
+                <LeaderList
+                  leaders={detail.leaders}
+                  context={
+                    calculationContext
+                      ? {
+                          eventId: detail.eventId,
+                          dataStatus: calculationContext.dataStatus,
+                          asOf: calculationContext.asOf,
+                        }
+                      : null
+                  }
+                />
               ) : (
                 <EmptyState
                   title="확인된 주도 종목이 없습니다"

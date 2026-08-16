@@ -44,11 +44,21 @@ def _pct(value: Decimal | None) -> float | None:
     return None if value is None else round(float(value), 4)
 
 
-def _leaders(cur, raw: str | None, day) -> list[dict[str, object]]:
+def _leaders(
+    cur,
+    raw: str | None,
+    day,
+    *,
+    limit: int | None = None,
+    keep_missing: bool = False,
+) -> list[dict[str, object]]:
     """사건 당시 주도주와 그날 등락률(T-1 종가 대비 T0 종가).
 
-    가격을 못 찾은 종목은 `0.0%`로 적지 않고 목록에서 뺀다. 0은 보합이라는 뜻이라
-    계산 불가와 구분되지 않는다 (screen_spec 8.9 `계산 불가는 —, 0 표시 금지`).
+    `keep_missing=False`(오늘 화면): 가격을 못 찾은 종목은 목록에서 뺀다. `0.0%`로 적으면
+    보합과 구분되지 않는다 (screen_spec 8.9 `계산 불가는 —, 0 표시 금지`).
+
+    `keep_missing=True`(과거 사건 상세): 못 찾은 종목도 `return: null`로 남긴다.
+    screen_spec 10.6이 `바스켓에서 제외된 종목을 조용히 숨기지 않음`을 요구한다.
     """
     rows: list[dict[str, object]] = []
     for chunk in (raw or "").split("|"):
@@ -72,18 +82,19 @@ def _leaders(cur, raw: str | None, day) -> list[dict[str, object]]:
             (code, day),
         )
         closes = [r[0] for r in cur.fetchall()]
-        if len(closes) < 2 or not closes[1]:
+        usable = len(closes) >= 2 and bool(closes[1])
+        if not usable and not keep_missing:
             continue
         rows.append(
             {
                 "stockId": f"stk_{code}",
                 "symbol": code,
                 "name": name,
-                "return": _pct(closes[0] / closes[1] - 1),
+                "return": _pct(closes[0] / closes[1] - 1) if usable else None,
                 "role": "LEADER",
             }
         )
-        if len(rows) >= 5:
+        if limit is not None and len(rows) >= limit:
             break
     return rows
 
@@ -153,7 +164,7 @@ def main() -> int:
             # 오늘의 주도 종목. 가격을 못 찾은 종목은 0%로 적지 않고 뺀다.
             leaders = [
                 {k: v for k, v in row.items() if k != "role"}
-                for row in _leaders(cur, lead_raw, CURRENT)
+                for row in _leaders(cur, lead_raw, CURRENT, limit=5)
             ]
 
             # 과거 유사사례: 같은 테마의 지난 사건 + 이미 계산된 T+N 결과
@@ -202,7 +213,7 @@ def main() -> int:
                         "normalizedCatalystSummary": (text or "").split("(주도주")[0].strip()[:60],
                         "similarityReasons": tags,
                         "outcomes": outcomes,
-                        "leaders": _leaders(lead_cur, lead, day),
+                        "leaders": _leaders(lead_cur, lead, day, keep_missing=True),
                     }
                 )
             lead_cur.close()
@@ -272,7 +283,7 @@ def main() -> int:
                             }
                             for h, v in zip(HORIZONS, (r1, r5, r20), strict=True)
                         ],
-                        "leaders": _leaders(px_cur, lead, d),
+                        "leaders": _leaders(px_cur, lead, d, keep_missing=True),
                     }
                     for oid, d, c, lead, r1, r5, r20 in ev_cur.fetchall()
                 ]
