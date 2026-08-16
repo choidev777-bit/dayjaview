@@ -161,6 +161,7 @@ def main(argv: list[str] | None = None) -> int:
             gold_rows.extend(_read_goldset(path, arguments.subset))
 
     missing = 0
+    status_counts: Counter[str] = Counter()
     confirmed = Tally()
     draft = Tally()
     by_type: dict[str, Tally] = defaultdict(Tally)
@@ -176,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             missing += 1
             continue
         is_confirmed = row.review_status == CONFIRMED
+        status_counts[row.review_status] += 1
         (confirmed_by_type if is_confirmed else draft_by_type)[row.primary] += 1
         result = classify_catalyst(raw_text)
         predicted = result.primary_type_id or "OTHER"
@@ -245,11 +247,13 @@ def main(argv: list[str] | None = None) -> int:
             else 0.0
         ),
         **confirmed.ratios(),
+        "reviewStatusCounts": dict(sorted(status_counts.items())),
         "aiDraft": {
             "scored": draft.scored,
             "messageKo": (
                 "AI_DRAFT 라벨은 현재 transform의 자기 출력이라 채점하면 정의상 "
-                "100%다. 승격 판정에 쓰지 않는다."
+                "100%다. AI_CROSS_CHECKED는 독립 판정이 같은 답을 낸 행이지만 "
+                "사람 확인은 아니다. 둘 다 승격 판정에 쓰지 않는다."
             ),
             **draft.ratios(),
         },
