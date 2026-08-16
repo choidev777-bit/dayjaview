@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import secrets
 from dataclasses import dataclass
@@ -921,8 +922,15 @@ def create_fixture_app(
     effective_target_catalog: TargetCatalog = (
         InMemoryTargetCatalog(targets) if target_catalog is None else target_catalog
     )
+    # `DAYJAVIEW_FIXTURE_LOGIN_BOUNCE=1`이면 동의 화면 없이 바로 로그인된다. 실제 구글이 없는
+    # 로컬에서 화면을 보기 위한 것으로, fixture 앱에만 있다.
     oauth_provider = FixtureGoogleOAuthProvider(
-        expected_redirect_uri=effective_settings.identity_policy().oauth_redirect_uri
+        expected_redirect_uri=effective_settings.identity_policy().oauth_redirect_uri,
+        bounce_code=(
+            "fixture-demo-login"
+            if os.environ.get("DAYJAVIEW_FIXTURE_LOGIN_BOUNCE") == "1"
+            else ""
+        ),
     )
     service = IdentityService(
         repository=repository,

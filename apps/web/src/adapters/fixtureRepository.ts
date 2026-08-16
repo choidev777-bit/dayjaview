@@ -26,9 +26,12 @@ import unavailableError from '../../../../contracts/fixtures/errors/unavailable.
 import {
   demoCatalystDetails,
   demoCatalystTop3,
+  demoCatalystTop3ByTheme,
   demoHistoricalEvents,
   demoRankings,
+  demoSimilarByEvent,
   demoSimilarEvents,
+  demoThemeByEvent,
 } from './demoStory';
 import type {
   AuthSession,
@@ -247,9 +250,12 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       const gated = (options.similar ?? 'gated') === 'gated';
       // 계약 fixture는 테마가 하나뿐이라 어느 테마를 눌러도 같은 상세가 나온다. 실제 endpoint는
       // themeId·eventId로 조회하므로, 목록에 있는 테마면 그 테마의 값으로 바꿔 눌러본 대로 보이게 한다.
-      const ranked = rankings[
-        options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')
-      ].data.items.find((item) => item.classification.themeId === themeId);
+      // 계약 fixture 모드에서는 요청된 detail fixture를 그대로 둔다. 덮어쓰면 근거 상태처럼
+      // 그 fixture가 검증하려던 값이 사라진다.
+      const ranked =
+        (options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')) === 'demo'
+          ? rankings.demo.data.items.find((item) => item.classification.themeId === themeId)
+          : undefined;
       return resolveFixture('detail', {
         ...selected,
         data: {
@@ -265,6 +271,16 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
                   validCount: ranked.validCount,
                 },
                 coverage: ranked.coverage,
+                evidenceSummary: {
+                  ...selected.data.evidenceSummary,
+                  evidenceStatus: ranked.evidence.evidenceStatus,
+                  summary: ranked.evidence.summary,
+                  latestPublishedAt: ranked.evidence.publishedAt,
+                },
+                leaders: (demoThemeByEvent.get(ranked.eventId)?.leaders ?? []).map((leader) => ({
+                  ...leader,
+                  role: 'LEADER' as const,
+                })),
               }
             : { eventId }),
           historicalAccess: gated
@@ -320,7 +336,10 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
     getSimilarEvents: (eventId) => {
       // summary는 기간별 분모를 나란히 보여주는 자리라 계약 응답 전체를 그대로 준다.
       // horizonTradingDays는 사례 행에 어느 기간 결과를 쓸지 고르는 값이고 summary를 자르지 않는다.
-      const selected = similarEvents[options.similar ?? 'gated'];
+      const mode = options.similar ?? 'gated';
+      // 시연 모드에서는 그 Event의 과거 기록을 준다. 실제 endpoint와 같은 방식이다.
+      const selected =
+        mode === 'demo' ? (demoSimilarByEvent[eventId] ?? similarEvents.demo) : similarEvents[mode];
       return resolveFixture('historical', {
         ...selected,
         data: { ...selected.data, eventId },
@@ -347,10 +366,12 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')].data.items.find(
         (item) => item.eventId === eventId,
       )?.rank ?? null,
-    getCatalystTop3: (themeId, eventId) =>
-      resolveFixture<CatalystTop3Response>('historical', {
-        ...demoCatalystTop3,
-        data: { ...demoCatalystTop3.data, themeId, eventId },
-      }),
+    getCatalystTop3: (themeId, eventId) => {
+      const selected = demoCatalystTop3ByTheme[themeId] ?? demoCatalystTop3;
+      return resolveFixture<CatalystTop3Response>('historical', {
+        ...selected,
+        data: { ...selected.data, themeId, eventId },
+      });
+    },
   } satisfies ProductRepository;
 }

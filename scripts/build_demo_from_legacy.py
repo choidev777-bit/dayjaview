@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""구 DB에서 화면 시연용 데이터를 만든다.
+
+현재 파이프라인은 `core.reference_daily_prices`에 상장주식수를 필수로 요구해서 구 DB 종가를
+그대로 못 넣는다(PD-001의 유동시총 가중 분모). 그래서 백엔드를 통과시키는 대신, 화면이 읽는
+모양으로 바로 만들어 둔다. 기준정보가 오면 이 파일은 버리고 실제 파이프라인을 쓰면 된다.
+
+수익률은 **동일가중**이다. 정본 지표(상한형 유동시총 가중)와 다르므로 `weightMethod`를 그대로
+두지 않고 품질 플래그로 드러낸다. 지어낸 값은 없고 전부 구 DB에서 계산했다.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import UTC, datetime
+from decimal import Decimal
+from pathlib import Path
+
+import psycopg
+
+CURRENT = "2026-08-10"
+PREVIOUS = "2026-08-07"
+TOP_N = 10
+HORIZONS = (1, 5, 20)
+
+
+def _pct(value: Decimal | None) -> float | None:
+    return None if value is None else round(float(value), 4)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="구 DB로 화면 시연 데이터를 만듭니다.")
+    parser.add_argument("--source", required=True)
+    parser.add_argument("--out", required=True, type=Path)
+    args = parser.parse_args()
+
+    generated_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+    with psycopg.connect(args.source) as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            with px as (
+              select security_id,
+                     max(adjusted_close) filter (where session_date = %s) c,
+                     max(adjusted_close) filter (where session_date = %s) p0
+              from market.prices_daily where session_date in (%s, %s) group by 1),
+            mem as (
+              select h.theme_code, m.security_id, s.display_name
+              from theme.membership_snapshot_headers h
+              join theme.membership_snapshot_members m on m.snapshot_id = h.snapshot_id
+              join market.securities s on s.security_id = m.security_id)
+            select t.theme_code, t.name,
+                   count(*) filter (where px.c is not null and px.p0 > 0) as valid,
+                   count(*) filter (where px.c > px.p0) as up,
+                   avg(px.c / px.p0 - 1) filter (where px.c is not null and px.p0 > 0) as ret
+            from mem join theme.themes t on t.theme_code = mem.theme_code
+            left join px on px.security_id = mem.security_id
+            group by t.theme_code, t.name
+            having count(*) filter (where px.c is not null and px.p0 > 0) >= 5
+            order by ret desc nulls last limit %s
+            """,
+            (CURRENT, PREVIOUS, CURRENT, PREVIOUS, TOP_N),
+        )
+        ranked = cur.fetchall()
+
+        themes: list[dict[str, object]] = []
+        for rank, (theme_code, name, valid, up, ret) in enumerate(ranked, start=1):
+            # 그날 그 테마의 사건 문장과 주도주
+            cur.execute(
+                """
+                select content, lead_stock_raw
+                from theme.occurrences
+                where theme_code = %s and session_date <= %s
+                order by session_date desc limit 1
+                """,
+                (theme_code, CURRENT),
+            )
+            row = cur.fetchone()
+            content, lead_raw = (row or (None, None))
+
+            leaders: list[dict[str, object]] = []
+            for order, chunk in enumerate((lead_raw or "").split("|")):
+                code, _, stock_name = chunk.strip().partition("-")
+                if not stock_name.strip():
+                    continue
+                cur.execute(
+                    """
+                    with px as (
+                      select security_id,
+                             max(adjusted_close) filter (where session_date = %s) c,
+                             max(adjusted_close) filter (where session_date = %s) p0
+                      from market.prices_daily where session_date in (%s, %s) group by 1)
+                    select px.c / nullif(px.p0, 0) - 1
+                    from market.securities s join px on px.security_id = s.security_id
+                    join theme.occurrence_members m on m.security_id = s.security_id
+                    where m.source_security_code = %s limit 1
+                    """,
+                    (CURRENT, PREVIOUS, CURRENT, PREVIOUS, code.strip()),
+                )
+                got = cur.fetchone()
+                leaders.append(
+                    {
+                        "stockId": f"stk_{code.strip()}",
+                        "symbol": code.strip(),
+                        "name": stock_name.strip(),
+                        "return": _pct(got[0]) if got and got[0] is not None else 0.0,
+                    }
+                )
+                if len(leaders) >= 3:
+                    break
+
+            # 과거 유사사례: 같은 테마의 지난 사건 + 이미 계산된 T+N 결과
+            cur.execute(
+                """
+                select o.occurrence_id, o.session_date, o.content, o.lead_stock_raw,
+                       e.ret_t1, e.ret_t5, e.ret_t20
+                from theme.occurrences o
+                left join engine.event_outcomes e on e.occurrence_id = o.occurrence_id
+                where o.theme_code = %s and o.session_date < %s
+                order by o.session_date desc limit 6
+                """,
+                (theme_code, CURRENT),
+            )
+            similar = []
+            for occ_id, day, text, lead, r1, r5, r20 in cur.fetchall():
+                outcomes = []
+                for horizon, value in zip(HORIZONS, (r1, r5, r20), strict=True):
+                    outcomes.append(
+                        {
+                            "horizonTradingDays": horizon,
+                            "return": _pct(value),
+                            "status": "OBSERVED" if value is not None else "PENDING",
+                            "unavailableReason": None,
+                        }
+                    )
+                similar.append(
+                    {
+                        "matchedEventId": f"evt_{occ_id}",
+                        "marketDate": day.isoformat(),
+                        "displayNameAtEvent": name,
+                        "normalizedCatalystSummary": (text or "").split("(주도주")[0].strip()[:60],
+                        "similarityReasons": ["같은 테마의 과거 기록"],
+                        "outcomes": outcomes,
+                        "leaders": [
+                            {
+                                "stockId": f"stk_{c.strip().partition('-')[0]}",
+                                "symbol": c.strip().partition("-")[0],
+                                "name": c.strip().partition("-")[2] or c.strip(),
+                                "return": 0.0,
+                                "role": "LEADER",
+                            }
+                            for c in (lead or "").split("|")[:3]
+                            if c.strip()
+                        ],
+                    }
+                )
+
+            themes.append(
+                {
+                    "rank": rank,
+                    "themeId": f"thm_{theme_code}",
+                    "eventId": f"evt_day_{theme_code}",
+                    "displayName": name,
+                    "weightedReturn": _pct(ret),
+                    "advancingCount": up,
+                    "validCount": valid,
+                    "reason": (content or "").split("(주도주")[0].strip(),
+                    "leaders": leaders,
+                    "similar": similar,
+                }
+            )
+
+    payload = {
+        "generatedAt": generated_at,
+        "marketDate": CURRENT,
+        "previousDate": PREVIOUS,
+        "weightMethod": "EQUAL_WEIGHT_LEGACY",
+        "note": "구 DB 종가로 계산한 동일가중 수익률. 정본의 상한형 유동시총 가중이 아니다.",
+        "themes": themes,
+    }
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    print(f"테마 {len(themes)} → {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

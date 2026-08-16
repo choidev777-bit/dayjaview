@@ -1,0 +1,3070 @@
+{
+ "generatedAt": "2026-08-16T09:42:04.772521Z",
+ "marketDate": "2026-08-10",
+ "previousDate": "2026-08-07",
+ "weightMethod": "EQUAL_WEIGHT_LEGACY",
+ "note": "구 DB 종가로 계산한 동일가중 수익률. 정본의 상한형 유동시총 가중이 아니다.",
+ "themes": [
+  {
+   "rank": 1,
+   "themeId": "thm_586",
+   "eventId": "evt_day_586",
+   "displayName": "광통신(광케이블/광섬유 등)",
+   "weightedReturn": 0.1044,
+   "advancingCount": 13,
+   "validCount": 14,
+   "reason": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 모멘텀 지속 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_010170",
+     "symbol": "010170",
+     "name": "대한광통신",
+     "return": 0.2251
+    },
+    {
+     "stockId": "stk_043260",
+     "symbol": "043260",
+     "name": "성호전자",
+     "return": 0.1999
+    },
+    {
+     "stockId": "stk_092190",
+     "symbol": "092190",
+     "name": "서울바이오시스",
+     "return": 0.1752
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_1a516377-e551-4248-8441-149e53cde798",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "美 행정부, 中 광트랜시버 수입금지 추진에 따른 반사수혜 기대감 지속 등에 일부 관련주 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1504,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_092190",
+       "symbol": "092190",
+       "name": "서울바이오시스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_388790",
+       "symbol": "388790",
+       "name": "라이콤",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_1a516377-e551-4248-8441-149e53cde798",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "美 행정부, 中 광트랜시버 수입금지 추진에 따른 반사수혜 기대감 지속 등에 일부 관련주 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1025,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_092190",
+       "symbol": "092190",
+       "name": "서울바이오시스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_388790",
+       "symbol": "388790",
+       "name": "라이콤",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_650fb891-d0bf-45ef-a8bd-883b91c72c0c",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0453,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_092190",
+       "symbol": "092190",
+       "name": "서울바이오시스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_650fb891-d0bf-45ef-a8bd-883b91c72c0c",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0416,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_092190",
+       "symbol": "092190",
+       "name": "서울바이오시스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_5c3be980-94f5-4f89-ada7-a7527cd0cdd5",
+     "marketDate": "2026-07-31",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0446,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.2599,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_389020",
+       "symbol": "389020",
+       "name": "자람테크놀로지",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_5c3be980-94f5-4f89-ada7-a7527cd0cdd5",
+     "marketDate": "2026-07-31",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0361,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.2626,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_389020",
+       "symbol": "389020",
+       "name": "자람테크놀로지",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 2,
+   "themeId": "thm_584",
+   "eventId": "evt_day_584",
+   "displayName": "스페이스X(SpaceX)",
+   "weightedReturn": 0.0917,
+   "advancingCount": 14,
+   "validCount": 14,
+   "reason": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_321370",
+     "symbol": "321370",
+     "name": "센서뷰",
+     "return": 0.1765
+    },
+    {
+     "stockId": "stk_100790",
+     "symbol": "100790",
+     "name": "미래에셋벤처투자",
+     "return": 0.1522
+    },
+    {
+     "stockId": "stk_027360",
+     "symbol": "027360",
+     "name": "아주IB투자",
+     "return": 0.1453
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0596,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_373220",
+       "symbol": "373220",
+       "name": "LG에너지솔루션",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0667,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_373220",
+       "symbol": "373220",
+       "name": "LG에너지솔루션",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_b27ef011-e8c6-4788-95f5-352f9af9034a",
+     "marketDate": "2026-08-06",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0073,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_7e8b3c9c-0fff-4e7b-8350-ccd453980658",
+     "marketDate": "2026-07-01",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.121,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2796,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.4891,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_027360",
+       "symbol": "027360",
+       "name": "아주IB투자",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_7e8b3c9c-0fff-4e7b-8350-ccd453980658",
+     "marketDate": "2026-07-01",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.1019,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2189,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.433,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_027360",
+       "symbol": "027360",
+       "name": "아주IB투자",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_a6799cd5-09e8-4c59-9e14-56b85f93c075",
+     "marketDate": "2026-06-30",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "스페이스X, 내달 7일(현지시간) 나스닥100 지수 편입 기대감 등에 일부 관련주 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0989,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1284,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.4306,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_027360",
+       "symbol": "027360",
+       "name": "아주IB투자",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 3,
+   "themeId": "thm_200",
+   "eventId": "evt_day_200",
+   "displayName": "우주항공산업(누리호/인공위성 등)",
+   "weightedReturn": 0.0884,
+   "advancingCount": 34,
+   "validCount": 37,
+   "reason": "스페이스X(+15.83%) 주가 반등 및 정부, 제2우주센터 건립 추진 소식 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_488900",
+     "symbol": "488900",
+     "name": "비츠로넥스텍",
+     "return": 0.2993
+    },
+    {
+     "stockId": "stk_225190",
+     "symbol": "225190",
+     "name": "LK삼양",
+     "return": 0.2992
+    },
+    {
+     "stockId": "stk_321370",
+     "symbol": "321370",
+     "name": "센서뷰",
+     "return": 0.1765
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1435,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_079550",
+       "symbol": "079550",
+       "name": "LIG디펜스앤에어로스페이스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.086,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_079550",
+       "symbol": "079550",
+       "name": "LIG디펜스앤에어로스페이스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_00030164-74c1-4d8a-9acc-4fef0fbe6bd0",
+     "marketDate": "2026-08-06",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0057,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_d659d0b0-a883-4a14-a2dc-aa9ac0cd7ea6",
+     "marketDate": "2026-07-15",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "글로벌 항공기 수요 증가 전망 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.05,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0085,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_0015G0",
+       "symbol": "0015G0",
+       "name": "그린광학",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_079550",
+       "symbol": "079550",
+       "name": "LIG디펜스앤에어로스페이스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_077360",
+       "symbol": "077360",
+       "name": "덕산하이메탈",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_d659d0b0-a883-4a14-a2dc-aa9ac0cd7ea6",
+     "marketDate": "2026-07-15",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "글로벌 항공기 수요 증가 전망 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0378,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0089,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_0015G0",
+       "symbol": "0015G0",
+       "name": "그린광학",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_079550",
+       "symbol": "079550",
+       "name": "LIG디펜스앤에어로스페이스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_077360",
+       "symbol": "077360",
+       "name": "덕산하이메탈",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_8d2564d2-0df2-4510-b68a-b567ff714fe1",
+     "marketDate": "2026-07-01",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "우주항공청, '재사용 차세대발사체' 개발 본격 착수 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.1342,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.3227,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.4601,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_045100",
+       "symbol": "045100",
+       "name": "한양이엔지",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_347700",
+       "symbol": "347700",
+       "name": "스피어",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_077360",
+       "symbol": "077360",
+       "name": "덕산하이메탈",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 4,
+   "themeId": "thm_269",
+   "eventId": "evt_day_269",
+   "displayName": "LED장비",
+   "weightedReturn": 0.0832,
+   "advancingCount": 11,
+   "validCount": 11,
+   "reason": "LED 업계 경쟁 완화 전망에 상승",
+   "leaders": [],
+   "similar": [
+    {
+     "matchedEventId": "evt_49b40b47-3da4-4541-a871-f85b03708296",
+     "marketDate": "2017-06-26",
+     "displayNameAtEvent": "LED장비",
+     "normalizedCatalystSummary": "LED 업계 경쟁 완화 전망에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0235,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0281,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.1109,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_51659cb8-1181-4bf9-8172-87e33548c4e1",
+     "marketDate": "2011-11-07",
+     "displayNameAtEvent": "LED장비",
+     "normalizedCatalystSummary": "中 백열등 단계적 판매 금지 기대감에 동반 급등",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0101,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0014,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.0592,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_24f29c08-5d1b-4ac8-b67b-86e71d4a4f71",
+     "marketDate": "2011-02-01",
+     "displayNameAtEvent": "LED장비",
+     "normalizedCatalystSummary": "업황 회복 전망에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0362,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0329,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.1022,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_20946bc3-7a76-42f9-9bac-adf128fd2a15",
+     "marketDate": "2010-08-05",
+     "displayNameAtEvent": "LED장비",
+     "normalizedCatalystSummary": "업황 악화 우려감에 하락.",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0077,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.017,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.0622,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_dae71710-b921-40e7-875e-ed45f401ee85",
+     "marketDate": "2010-03-18",
+     "displayNameAtEvent": "LED장비",
+     "normalizedCatalystSummary": "정부 정책 지원 기대감으로 일부 관련주 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0009,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0091,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1553,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    }
+   ]
+  },
+  {
+   "rank": 5,
+   "themeId": "thm_228",
+   "eventId": "evt_day_228",
+   "displayName": "국내 상장 중국기업",
+   "weightedReturn": 0.0815,
+   "advancingCount": 5,
+   "validCount": 10,
+   "reason": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_900110",
+     "symbol": "900110",
+     "name": "이스트아시아홀딩스",
+     "return": 0.0708
+    },
+    {
+     "stockId": "stk_900270",
+     "symbol": "900270",
+     "name": "헝셩그룹",
+     "return": 0.0
+    },
+    {
+     "stockId": "stk_900290",
+     "symbol": "900290",
+     "name": "GRT",
+     "return": -0.0757
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_4641579a-8115-429f-ba71-240aa627e159",
+     "marketDate": "2026-01-02",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0011,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1055,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1787,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_900110",
+       "symbol": "900110",
+       "name": "이스트아시아홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900270",
+       "symbol": "900270",
+       "name": "헝셩그룹",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900290",
+       "symbol": "900290",
+       "name": "GRT",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_4641579a-8115-429f-ba71-240aa627e159",
+     "marketDate": "2026-01-02",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "이재명 대통령 중국 국빈방문 및 위성락 안보실장, '韓·中 문화콘텐츠 교류 점진적·단계적 복원' 발언 등에 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0757,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1112,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_900110",
+       "symbol": "900110",
+       "name": "이스트아시아홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900270",
+       "symbol": "900270",
+       "name": "헝셩그룹",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900290",
+       "symbol": "900290",
+       "name": "GRT",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_d21bf37c-44b2-498a-8c14-7aa18166569f",
+     "marketDate": "2025-10-31",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "한-중 정상회담 개최 예정 속 차익실현 매물 출회 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0404,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.094,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1325,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_f0bf7a3b-a4c0-428d-8afe-ad7eb498a164",
+     "marketDate": "2025-10-30",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "한중 정상회담 예정 속 한한령 해제 기대감 지속 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.1028,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2108,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2574,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_900300",
+       "symbol": "900300",
+       "name": "오가닉티코스메틱",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900310",
+       "symbol": "900310",
+       "name": "컬러레이",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900110",
+       "symbol": "900110",
+       "name": "이스트아시아홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_f0bf7a3b-a4c0-428d-8afe-ad7eb498a164",
+     "marketDate": "2025-10-30",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "한중 정상회담 예정 속 한한령 해제 기대감 지속 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0835,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1898,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2297,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_900300",
+       "symbol": "900300",
+       "name": "오가닉티코스메틱",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900310",
+       "symbol": "900310",
+       "name": "컬러레이",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900110",
+       "symbol": "900110",
+       "name": "이스트아시아홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_e3f3ec57-a9e8-4af8-a547-ad4c18b422f2",
+     "marketDate": "2025-09-18",
+     "displayNameAtEvent": "국내 상장 중국기업",
+     "normalizedCatalystSummary": "中 시진핑 주석 방한 기대감 지속 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0073,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0191,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.0292,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_900270",
+       "symbol": "900270",
+       "name": "헝셩그룹",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900300",
+       "symbol": "900300",
+       "name": "오가닉티코스메틱",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900340",
+       "symbol": "900340",
+       "name": "윙입푸드",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 6,
+   "themeId": "thm_14",
+   "eventId": "evt_day_14",
+   "displayName": "반도체 재료/부품",
+   "weightedReturn": 0.0806,
+   "advancingCount": 69,
+   "validCount": 70,
+   "reason": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_417500",
+     "symbol": "417500",
+     "name": "제이아이테크",
+     "return": 0.2658
+    },
+    {
+     "stockId": "stk_147760",
+     "symbol": "147760",
+     "name": "피엠티",
+     "return": 0.2299
+    },
+    {
+     "stockId": "stk_064760",
+     "symbol": "064760",
+     "name": "티씨케이",
+     "return": 0.2074
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_9bd63575-1389-420a-9f7f-2630f1a125bd",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0936,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_5610dc4e-a216-4433-9430-e45f681ad8be",
+     "marketDate": "2026-08-06",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0179,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0131,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_147760",
+       "symbol": "147760",
+       "name": "피엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_219130",
+       "symbol": "219130",
+       "name": "타이거일렉",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_080580",
+       "symbol": "080580",
+       "name": "오킨스전자",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0076,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_147760",
+       "symbol": "147760",
+       "name": "피엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_219130",
+       "symbol": "219130",
+       "name": "타이거일렉",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_080580",
+       "symbol": "080580",
+       "name": "오킨스전자",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_ce0a89b7-6a26-4167-8cf5-c51a327afcb8",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0662,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.2871,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_146320",
+       "symbol": "146320",
+       "name": "비씨엔씨",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_252990",
+       "symbol": "252990",
+       "name": "샘씨엔에스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_272110",
+       "symbol": "272110",
+       "name": "케이엔제이",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_ce0a89b7-6a26-4167-8cf5-c51a327afcb8",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0459,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1644,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_146320",
+       "symbol": "146320",
+       "name": "비씨엔씨",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_252990",
+       "symbol": "252990",
+       "name": "샘씨엔에스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_272110",
+       "symbol": "272110",
+       "name": "케이엔제이",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 7,
+   "themeId": "thm_187",
+   "eventId": "evt_day_187",
+   "displayName": "핵융합에너지",
+   "weightedReturn": 0.078,
+   "advancingCount": 8,
+   "validCount": 8,
+   "reason": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+   "leaders": [
+    {
+     "stockId": "stk_094820",
+     "symbol": "094820",
+     "name": "일진파워",
+     "return": 0.0894
+    },
+    {
+     "stockId": "stk_001820",
+     "symbol": "001820",
+     "name": "삼화콘덴서",
+     "return": 0.0518
+    },
+    {
+     "stockId": "stk_056190",
+     "symbol": "056190",
+     "name": "에스에프에이",
+     "return": 0.037
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+     "marketDate": "2026-02-19",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0099,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0673,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.0325,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_094820",
+       "symbol": "094820",
+       "name": "일진파워",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_001820",
+       "symbol": "001820",
+       "name": "삼화콘덴서",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_a69ec5b9-1cad-482d-8b51-c8af8f1e0c60",
+     "marketDate": "2026-02-19",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "과기정통부, 2035년까지 핵융합 초전도체 기술 확보 추진 소식 속 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0334,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.075,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.0449,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_094820",
+       "symbol": "094820",
+       "name": "일진파워",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_001820",
+       "symbol": "001820",
+       "name": "삼화콘덴서",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_88372fc5-20e7-4208-bba0-95fa09779426",
+     "marketDate": "2026-01-22",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0473,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0085,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.0192,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_094820",
+       "symbol": "094820",
+       "name": "일진파워",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_88372fc5-20e7-4208-bba0-95fa09779426",
+     "marketDate": "2026-01-22",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "꿈의 기술 '고온 초전도체' 현실화 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0392,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0026,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.1725,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_094820",
+       "symbol": "094820",
+       "name": "일진파워",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9ce1c499-c09b-4197-a0b4-a61b0da8ece3",
+     "marketDate": "2025-12-29",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0417,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0909,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.3302,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_250060",
+       "symbol": "250060",
+       "name": "모비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_068240",
+       "symbol": "068240",
+       "name": "다원시스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9ce1c499-c09b-4197-a0b4-a61b0da8ece3",
+     "marketDate": "2025-12-29",
+     "displayNameAtEvent": "핵융합에너지",
+     "normalizedCatalystSummary": "국가과학기술자문회의 부의장에 '핵융합 전문가' 이경수 전 과기혁신본부장 임명 소식에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0195,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0568,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.2796,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_250060",
+       "symbol": "250060",
+       "name": "모비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_068240",
+       "symbol": "068240",
+       "name": "다원시스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 8,
+   "themeId": "thm_559",
+   "eventId": "evt_day_559",
+   "displayName": "고체산화물 연료전지(SOFC)",
+   "weightedReturn": 0.0764,
+   "advancingCount": 14,
+   "validCount": 14,
+   "reason": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 AI 수익성 우려 완화 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_126340",
+     "symbol": "126340",
+     "name": "비나텍",
+     "return": 0.057
+    },
+    {
+     "stockId": "stk_170920",
+     "symbol": "170920",
+     "name": "엘티씨",
+     "return": 0.1589
+    },
+    {
+     "stockId": "stk_336260",
+     "symbol": "336260",
+     "name": "두산퓨얼셀",
+     "return": 0.0917
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
+     "marketDate": "2026-07-31",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0367,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1183,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_336260",
+       "symbol": "336260",
+       "name": "두산퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
+     "marketDate": "2026-07-31",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0233,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1292,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_336260",
+       "symbol": "336260",
+       "name": "두산퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_3001e831-3254-42d1-bda1-702b1ad9b4f3",
+     "marketDate": "2026-07-22",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1545,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2996,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089890",
+       "symbol": "089890",
+       "name": "코세스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_475150",
+       "symbol": "475150",
+       "name": "SK이터닉스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_3001e831-3254-42d1-bda1-702b1ad9b4f3",
+     "marketDate": "2026-07-22",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.144,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2271,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089890",
+       "symbol": "089890",
+       "name": "코세스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_475150",
+       "symbol": "475150",
+       "name": "SK이터닉스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+     "marketDate": "2026-05-22",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0189,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1077,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.3639,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_336260",
+       "symbol": "336260",
+       "name": "두산퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_382900",
+       "symbol": "382900",
+       "name": "범한퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
+     "marketDate": "2026-05-22",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "블룸에너지(+9.06%), AI 클라우드 기업 네비우스와 연료전지 프로젝트 협력 발표 소식 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0041,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1184,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2662,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_126340",
+       "symbol": "126340",
+       "name": "비나텍",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_336260",
+       "symbol": "336260",
+       "name": "두산퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_382900",
+       "symbol": "382900",
+       "name": "범한퓨얼셀",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 9,
+   "themeId": "thm_536",
+   "eventId": "evt_day_536",
+   "displayName": "HBM(고대역폭메모리)",
+   "weightedReturn": 0.0745,
+   "advancingCount": 31,
+   "validCount": 33,
+   "reason": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_281820",
+     "symbol": "281820",
+     "name": "케이씨텍",
+     "return": 0.1197
+    },
+    {
+     "stockId": "stk_039440",
+     "symbol": "039440",
+     "name": "에스티아이",
+     "return": 0.1182
+    },
+    {
+     "stockId": "stk_031980",
+     "symbol": "031980",
+     "name": "피에스케이홀딩스",
+     "return": 0.117
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_b5dd1802-6a5d-4bed-aefe-135444da4cf9",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0785,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_d97fce62-3ddf-41a0-bd03-f7934bf2ece3",
+     "marketDate": "2026-08-06",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.027,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0175,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_112290",
+       "symbol": "112290",
+       "name": "와이씨켐",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_254490",
+       "symbol": "254490",
+       "name": "미래반도체",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_451220",
+       "symbol": "451220",
+       "name": "아이엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0253,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_112290",
+       "symbol": "112290",
+       "name": "와이씨켐",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_254490",
+       "symbol": "254490",
+       "name": "미래반도체",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_451220",
+       "symbol": "451220",
+       "name": "아이엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9698a86a-a0d4-4414-8e1a-90748388a1ee",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0506,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1129,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_348210",
+       "symbol": "348210",
+       "name": "넥스틴",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_394280",
+       "symbol": "394280",
+       "name": "오픈엣지테크놀로지",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_489790",
+       "symbol": "489790",
+       "name": "한화비전",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9698a86a-a0d4-4414-8e1a-90748388a1ee",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0508,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1336,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_348210",
+       "symbol": "348210",
+       "name": "넥스틴",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_394280",
+       "symbol": "394280",
+       "name": "오픈엣지테크놀로지",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_489790",
+       "symbol": "489790",
+       "name": "한화비전",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "rank": 10,
+   "themeId": "thm_12",
+   "eventId": "evt_day_12",
+   "displayName": "반도체 장비",
+   "weightedReturn": 0.0744,
+   "advancingCount": 91,
+   "validCount": 95,
+   "reason": "美 필라델피아 반도체(+2.56%) 지수 급등 및 SK하이닉스, 용인·청주 팹에 대규모 신규시설 투자 결정 등에 상승",
+   "leaders": [
+    {
+     "stockId": "stk_064760",
+     "symbol": "064760",
+     "name": "티씨케이",
+     "return": 0.2074
+    },
+    {
+     "stockId": "stk_417840",
+     "symbol": "417840",
+     "name": "저스템",
+     "return": 0.1809
+    },
+    {
+     "stockId": "stk_025560",
+     "symbol": "025560",
+     "name": "미래산업",
+     "return": 0.1688
+    }
+   ],
+   "similar": [
+    {
+     "matchedEventId": "evt_c1279bad-df6a-4b8b-8b4d-4e3627d6179a",
+     "marketDate": "2026-08-07",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0883,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_2ad6fb73-1d8f-4bb7-ba7d-71f86cb3f8a5",
+     "marketDate": "2026-08-06",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0245,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0774,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_402490",
+       "symbol": "402490",
+       "name": "그린리소스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_451220",
+       "symbol": "451220",
+       "name": "아이엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_049080",
+       "symbol": "049080",
+       "name": "기가레인",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
+     "marketDate": "2026-08-05",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0214,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_402490",
+       "symbol": "402490",
+       "name": "그린리소스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_451220",
+       "symbol": "451220",
+       "name": "아이엠티",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_049080",
+       "symbol": "049080",
+       "name": "기가레인",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_0f8a4b34-bb09-472f-9a40-b57dc75454b9",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0471,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0797,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_254120",
+       "symbol": "254120",
+       "name": "자비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_420770",
+       "symbol": "420770",
+       "name": "기가비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_030530",
+       "symbol": "030530",
+       "name": "원익홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_0f8a4b34-bb09-472f-9a40-b57dc75454b9",
+     "marketDate": "2026-08-03",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "similarityReasons": [
+      "같은 테마의 과거 기록"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0504,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.1251,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": null,
+       "status": "PENDING",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_254120",
+       "symbol": "254120",
+       "name": "자비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_420770",
+       "symbol": "420770",
+       "name": "기가비스",
+       "return": 0.0,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_030530",
+       "symbol": "030530",
+       "name": "원익홀딩스",
+       "return": 0.0,
+       "role": "LEADER"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
