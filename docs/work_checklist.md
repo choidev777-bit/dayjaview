@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `a30ba7e` + E-17 정확도 개선 라운드(어휘 1.2.0, 이 commit) · `uv run pytest -q` 579 passed·8 skipped
+- **마지막 갱신**: 2026-08-16 · 기준 commit `b356285` (E-17 정확도 라운드 어휘 1.2.0 + **F-21·F-25 완료 — 실배포 공개, 1차 출시선에서 A-3 ③만 남음**) · `uv run pytest -q` 579 passed·8 skipped
 
 ## 요약
 
@@ -13,7 +13,7 @@
 | C. 화면 | 2 / 2 | — |
 | D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 1 / 6 | E-16, E-18 ~ E-21 |
-| F. 출시 | 3 / 5 | F-21, F-25 |
+| F. 출시 | 5 / 5 | — |
 
 **1차 출시선(A+B+C+D+F) 기준으로 A 1건 · F 2건이 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있다. E-17(온톨로지)은 완료됐다.**
 
@@ -97,7 +97,8 @@
 
 ## F. 출시
 
-- [ ] **F-21** 실제 구글 로그인 연결 — ②(조립 함수)는 2026-08-16 `4682549`로 완료. 남은 것: ① redirect URI 구글 콘솔 등록(사용자 계정 작업).
+- [x] **F-21** 실제 구글 로그인 연결 — 2026-08-16 완료. ②(조립 함수) `4682549` · ①(redirect URI)은 구글 콘솔에 이미 등록돼 있음을 확인 · 실배포에서 teamfomc 계정 실로그인 왕복 검증(roles USER+OPERATOR).
+  - 실로그인에서만 드러난 결함 2건 수리: 실구글 callback의 부가 query 거부(`6cf8586`), RFC 9207 `iss` 거부(`b356285`). 로그인 테스트 helper가 실구글 모양 callback을 쓰도록 고정.
   - `create_production_app`(`apps/api/production.py`)이 env를 보고 고른다: 구글 키 둘 다 있으면 `HttpGoogleOAuthProvider`, 둘 다 없으면 fixture. **반쪽만 설정하면 즉시 실패** — fixture provider는 데모 code를 그대로 받으므로 실배포에서 fixture로 떨어지는 것이 인증 우회다. `DATABASE_URL`이 있으면 `PostgresIdentityRepository`(파이프라인과 connection 분리). `serve_live_api`가 이 조립을 쓰고, 데모 code 등록은 fixture provider일 때만 한다.
   - 일회용 PostgreSQL 16으로 확인: 같은 DSN으로 다시 조립해도 로그인 세션이 살아 있다(실제 영속). 조립된 앱의 `/auth/google`이 `accounts.google.com`으로 `redirect_uri=https://dayjaview.vercel.app/api/auth/google/callback`을 달고 나가는 것도 확인.
   - **① 사용자가 할 것**: 구글 클라우드 콘솔 → 해당 OAuth 2.0 클라이언트 ID → 승인된 리디렉션 URI에 `https://dayjaview.vercel.app/api/auth/google/callback` 추가. 로컬에서 실구글 로그인을 확인하려면 `.env.local`의 `APP_BASE_URL`을 웹 dev 서버와 같은 origin(`http://localhost:5173`)으로 바꾸고 `http://localhost:5173/api/auth/google/callback`도 함께 등록한다(지금 값은 `http://localhost:3000`이라 `/api` 프록시 origin과 다르다). 에이전트는 `.env*`를 쓸 수 없다.
@@ -128,7 +129,10 @@
   - **수리(발견 1)**: 분모 합산을 분자와 같은 `prec=60` 안으로 옮겼다. 전량 관측이면 몫이 정확히 1이 된다. 회귀 테스트 1건 추가(수리 전 코드에서 실패하는 것 확인). 실규모 재현이 40주기 완주하며 **순위 98건**을 만들고 publish P95는 773ms다. `uv run pytest -q` 519 passed·8 skipped · ruff·mypy 통과. **발행 루프의 실패 처리(조용히 멈춤)는 안 고쳤다** — 설계 결정이라 별도 작업.
   - **수리(발견 2)**: 요청 한도를 `/auth/` 전체가 아니라 무인증 OAuth 진입점 둘(`/auth/google`, `/auth/google/callback`)에만 건다 — 세션 조회는 예산을 안 먹는다. 세는 단위는 `TRUSTED_PROXY_HOPS`를 선언했을 때만 `X-Forwarded-For`의 그 자리 값을 쓰고, 기본 0이면 전송 계층 주소만 쓴다(위조 header를 기본으로 믿지 않는다). 회귀 테스트 2건, env 계약에 `TRUSTED_PROXY_HOPS` 선언. 실행 중인 서버로 재확인: 세션 60회 연속 200 → 로그인 시작 302, 로그인 시작 연속 25회는 19회 뒤 429. **F-25에서 Vercel `/api/*` rewrite를 붙이면 이 값을 실제 앞단 프록시 수로 넣어야 한다.**
   - 발견 3·4·5는 미수리.
-- [ ] **F-25** 실제 배포 — 준비물은 2026-08-16에 완료, 남은 것: **사용자 승인 아래 실제 배포 실행**(OCI VM에서 4절 수행 + Vercel 프로젝트 생성 + F-21 ① redirect URI).
+- [x] **F-25** 실제 배포 — 2026-08-16 완료 (`47e29c0`·`3fb5edc` 준비, `b9bc061`·`cec46a0`·`6cf8586`·`b356285` 실행 중 수리). **서비스 공개 상태**: https://dayjaview.vercel.app (웹) + https://api.dayjaview.duckdns.org (API, TLS 자동발급) · 실로그인·rewrite·SPA fallback 외부 검증 통과.
+  - 실행 기록: 기존 maptamin VM은 SSH가 내부 방화벽에 막혀 있고 Run command 에이전트도 죽어 있어 **디스크 보존 후 삭제 → dayjaview-prod 신규 생성**(같은 A1 4/24, 새 IP → DuckDNS 갱신). Security list에 80/443 추가. 배포는 `deploy_production.sh` 원커맨드(코드 archive 전송 — VM에 GitHub 자격증명 없음), 백업 cron 자동 설치.
+  - 실행 중 드러난 결함 수리: git archive가 autocrlf로 SQL을 CRLF 변환해 마이그레이션 checksum 불일치(`b9bc061`, `.gitattributes` LF 고정 + manifest 재생성) · 구글 callback 부가 query 2건(F-21 줄 참조).
+  - **남은 것(별도 승인·작업)**: 인포스탁 증분 cron 등록(승인 항목 2 — runbook 9절), 복원 drill·재부팅 drill(runbook 8·11절, 공개 출시 전 필수), 백업 암호문 사용자 보관 확인, 월요일 개장 시 키움 첫 실가동 관찰(A-3 ③ 겸).
   - 준비 완료: production compose(`infra/deployment/compose.production.yml`, Caddy TLS·persistent volume·secret은 `/etc/dayjaview/*.env` 참조만) · live 진입 `infra/operations/live_stack.py`(fixture 모드 fail-closed) · migration runner에 명시적 production 게이트 · Vercel `/api/*` rewrite + SPA fallback(`apps/web/vercel.json`) · 배포·백업/복구 runbook [operations_runbook.md](./release/operations_runbook.md). compose 스키마·Caddyfile은 로컬 docker로 검증, 계약 테스트 `tests/infra/**` 추가.
   - Redis는 배포하지 않는다(F-23 — 코드가 안 읽음). market worker 컨테이너도 없다(A-8 거래일 루프가 api 안에 있음). `TRUSTED_PROXY_HOPS=1` 근거는 runbook 4절.
 
