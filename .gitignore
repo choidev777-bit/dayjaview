@@ -14,6 +14,7 @@ __pycache__/
 data/
 logs/
 coverage/
+research/data/
 
 # Tooling
 .vercel/
