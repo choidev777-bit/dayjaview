@@ -33,10 +33,16 @@ function savedTypeLabel(type: SavedType): string {
 function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedItem) => Promise<void> }) {
   const [removing, setRemoving] = useState(false);
   const [failed, setFailed] = useState(false);
+  const reachable = item.availability === 'AVAILABLE';
+  // 저장 항목마다 돌아갈 화면이 다르다 (screen_spec 12.1 `연결 가능한 원래 상세 화면`).
+  // 과거 이벤트는 게이트를 통과한 경우에만 상세로 보낸다 (12.1 마지막 규칙).
+  // 종목 상세는 아직 없는 화면이라 링크를 만들지 않는다 (8.6).
   const link =
-    item.savedType === 'THEME' && item.currentState
+    item.savedType === 'THEME' && item.currentState && reachable
       ? `/themes/${encodeURIComponent(item.targetId)}/events/${encodeURIComponent(item.currentState.eventId)}`
-      : null;
+      : item.savedType === 'EVENT' && reachable
+        ? `/events/${encodeURIComponent(item.targetId)}`
+        : null;
 
   async function remove() {
     setRemoving(true);
@@ -63,12 +69,24 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
         </div>
       ) : item.currentState ? (
         <div className="saved-row__state">
-          <strong>{eventStatusLabel(item.currentState.eventState, 'PENDING')}</strong>
-          <span>{dataStatusLabel(item.currentState.dataStatus)}</span>
+          {/* 저장한 때가 아니라 지금 상태다. 무슨 값인지 이름을 붙여 준다. */}
+          <span className="saved-row__state-label">지금</span>
+          {/* 사건 수명 상태는 테마·이벤트에만 있는 개념이다. 종목에 붙이면 뜻이 없다. */}
+          {item.savedType === 'STOCK' ? null : (
+            <strong>{eventStatusLabel(item.currentState.eventState, 'PENDING')}</strong>
+          )}
           <span className={returnTone(item.currentState.weightedReturn)}>
             {formatReturn(item.currentState.weightedReturn)}
           </span>
-          <span>기준 {formatTime(item.currentState.asOf)}</span>
+          <span>
+            {dataStatusLabel(item.currentState.dataStatus)} {formatTime(item.currentState.asOf)} 기준
+          </span>
+        </div>
+      ) : item.savedType === 'EVENT' ? (
+        // 과거 사례는 오늘의 등락이 없다. 접근 가능 여부만 알려 준다 (screen_spec 12.1).
+        <div className="saved-row__state">
+          <span className="saved-row__state-label">과거 사례</span>
+          <span>{reachable ? '지금 열어볼 수 있습니다' : '지금은 열 수 없습니다'}</span>
         </div>
       ) : null}
       <div className="saved-row__actions">
