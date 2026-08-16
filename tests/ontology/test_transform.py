@@ -90,8 +90,8 @@ def test_evidence_spans_point_into_raw_text() -> None:
 
 def test_versions_are_stamped() -> None:
     result = classify_catalyst("정부 지원 소식에 상승")
-    assert result.vocabulary_version == "1.1.0"
-    assert result.transform_version == "catalyst-transform/1.0.0"
+    assert result.vocabulary_version == "1.2.0"
+    assert result.transform_version == "catalyst-transform/1.1.0"
 
 
 def test_substring_collisions_do_not_fire() -> None:
@@ -110,3 +110,61 @@ def test_nk_missile_launch_does_not_leak_product_type() -> None:
     result = classify_catalyst("北 미사일 발사 소식에 하락")
     assert "GEOPOLITICS_GLOBAL" in result.type_ids
     assert "PRODUCT_TECH" not in result.type_ids
+
+
+def test_tail_connector_does_not_swallow_verb_ending_in_deung() -> None:
+    # "급등에 상승"의 "등에"는 열거 조사가 아니다 — core가 "…급"으로 잘리면
+    # 유형(시세)과 확실성(급등) 표지를 같이 잃는다.
+    result = classify_catalyst("국제 리튬 시세 급등에 상승")
+    assert "PRICE_SUPPLY" in result.type_ids
+    assert result.certainty == "CONFIRMED"
+    assert result.direction == "UP"
+
+
+def test_certainty_compound_marker_shadows_inner_confirmed() -> None:
+    # "검토 소식"은 예정된 사건의 보도 — 안쪽 "소식"(확정)을 가린다.
+    assert classify_catalyst("배터리 자체 생산 검토 소식에 하락").certainty == "ANTICIPATION"
+    assert classify_catalyst("신공장 착공 예정 소식에 상승").certainty == "ANTICIPATION"
+    # 표지 없는 "소식"은 여전히 확정이다.
+    assert classify_catalyst("신공장 착공 소식에 상승").certainty == "CONFIRMED"
+
+
+def test_certainty_statement_and_rumor_markers() -> None:
+    assert classify_catalyst("정부 고위 관계자 지원 발언 등에 상승").certainty == "CONFIRMED"
+    assert classify_catalyst("대형 플랫폼 기업 피인수설에 급등").certainty == "ANTICIPATION"
+
+
+def test_substring_shields_keep_specific_type_first() -> None:
+    # 긴 특수 키워드가 안쪽 일반 키워드("임상", "후보", "공급", "수출")를 선점한다.
+    asco = classify_catalyst("미국임상종양학회(ASCO) 참가 기대감 등에 상승")
+    assert asco.primary_type_id == "EVENT_CONFERENCE"
+    candidate = classify_catalyst("바이오 기업 후보물질 기술이전 소식에 상승")
+    assert candidate.primary_type_id == "CLINICAL_REGULATORY"
+    housing = classify_catalyst("주택공급 확대 방안 발표 소식에 상승")
+    assert housing.primary_type_id == "POLICY_MEASURE"
+    license_out = classify_catalyst("제약사 조 단위 기술수출 소식 등에 상승")
+    assert license_out.primary_type_id == "ORDER_CONTRACT"
+    ipo = classify_catalyst("기관 수요예측 흥행 소식에 상승")
+    assert ipo.primary_type_id == "CAPITAL_MARKET_EVENT"
+
+
+def test_sanction_is_trade_not_legal() -> None:
+    result = classify_catalyst("美 중국 통신장비업체 제재에 따른 반사이익 기대감 등에 상승")
+    assert result.primary_type_id == "TRADE_TARIFF"
+
+
+def test_fallback_subject_noun_fires_only_without_action_keyword() -> None:
+    # 행위어가 없으면 주제어(로봇)가 primary가 된다.
+    bare = classify_catalyst("휴머노이드 로봇 테마 부상 등에 상승")
+    assert bare.primary_type_id == "PRODUCT_TECH"
+    # 행위어(수요)가 있으면 주제어는 primary를 빼앗지 않고 뒤에 붙는다.
+    demand = classify_catalyst("데이터센터 서버용 메모리 수요 회복 전망 등에 상승")
+    assert demand.primary_type_id == "DEMAND_INDUSTRY"
+    assert "INVESTMENT_CAPACITY" in demand.type_ids
+
+
+def test_market_sync_fallback_for_bare_price_move_cause() -> None:
+    result = classify_catalyst("美 대형 기술기업 주가 급등 여파 등에 상승")
+    assert "MARKET_SYNC" in result.type_ids
+    bare = classify_catalyst("해외 동종업체 급락 속 하락")
+    assert bare.primary_type_id == "MARKET_SYNC"

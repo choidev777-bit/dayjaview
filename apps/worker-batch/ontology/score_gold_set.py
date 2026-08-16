@@ -50,6 +50,12 @@ def _parser() -> argparse.ArgumentParser:
         type=Path,
         default=REPOSITORY_ROOT / "research" / "ontology" / "goldset_score.json",
     )
+    parser.add_argument(
+        "--subset",
+        choices=("all", "dev", "test"),
+        default="all",
+        help="dev=짝수 행(개선용), test=홀수 행(측정 전용). 어휘 개선은 dev만 본다.",
+    )
     return parser
 
 
@@ -72,9 +78,18 @@ def main(argv: list[str] | None = None) -> int:
         text_by_key[f"{row['themeId']}/{row['sourceHistoryKey']}"] = row["rawText"]
 
     gold_rows: list[tuple[str, str, str, str, str]] = []
+    row_index = 0
     for line in arguments.goldset.open(encoding="utf-8"):
         line = line.rstrip("\n")
         if not line or line.startswith("#"):
+            continue
+        keep = (
+            arguments.subset == "all"
+            or (arguments.subset == "dev" and row_index % 2 == 0)
+            or (arguments.subset == "test" and row_index % 2 == 1)
+        )
+        row_index += 1
+        if not keep:
             continue
         key, primary, alt, direction, certainty = line.split("\t")
         gold_rows.append((key, primary, alt, direction, certainty))
