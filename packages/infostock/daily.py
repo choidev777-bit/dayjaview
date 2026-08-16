@@ -165,6 +165,9 @@ class _DailyHtmlParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.text_parts: list[str] = []
         self.rows: list[_HtmlRow] = []
+        # 표가 시작된 시점의 text_parts 길이. 표를 문서 순서상 어느 섹션 아래에
+        # 두어야 하는지 나중에 되짚는 데 쓴다.
+        self.table_starts: list[int] = []
         self.table_number = 0
         self.in_row = False
         self.in_cell = False
@@ -182,6 +185,7 @@ class _DailyHtmlParser(HTMLParser):
             self.text_parts.append("\n")
         if name == "table":
             self.table_number += 1
+            self.table_starts.append(len(self.text_parts))
         elif name == "tr":
             self.in_row = True
             self.row_cells = []
@@ -234,9 +238,179 @@ class _DailyHtmlParser(HTMLParser):
         lines = [self._clean(value) for value in "".join(self.text_parts).splitlines()]
         return tuple(value for value in lines if value)
 
+    def table_sections(self) -> dict[int, str]:
+        """표 번호 → 그 표 앞에 마지막으로 나온 섹션 이름."""
+
+        sections: dict[int, str] = {}
+        marks = sorted(set(self.table_starts))
+        cursor = 0
+        current: str | None = None
+        for mark in marks:
+            for value in "".join(self.text_parts[cursor:mark]).splitlines():
+                match = _SECTION_RE.fullmatch(self._clean(value))
+                if match:
+                    current = match.group(1).strip()
+            cursor = mark
+            for number, start in enumerate(self.table_starts, start=1):
+                if start == mark and current is not None:
+                    sections[number] = current
+        return sections
+
 
 _THEME_LINK_RE = re.compile(r"/Theme/ThemeDB/(\d+)(?:[/?#]|$)", re.IGNORECASE)
 _STOCK_LINK_RE = re.compile(r"[?&]code=([0-9A-Z]{6})(?:[&#]|$)", re.IGNORECASE)
+# 섹션 상세 문단은 원문에서 ▷로 시작한다.
+_DETAIL_MARKER = "▷"
+_TABLE_HEADER_CELLS = frozenset(
+    {
+        "테마명",
+        "등락률",
+        "종목명",
+        "종가(원)",
+        "거래량(주)",
+        "시가(원)",
+        "고가(원)",
+        "저가(원)",
+    }
+)
+# 표 행은 종목명 뒤에 시세 칸이 붙고, 테마의 첫 행만 앞에 테마명·테마등락률
+# 2칸을 더 갖는다. 시세 칸 구성은 시기에 따라 둘이다 — 2024년부터는 종가·
+# 등락률·거래량·시가·고가·저가 6칸, 그 이전은 현재가·등락률·거래량 3칸.
+_QUOTE_FIELDS = (
+    "close_price",
+    "change_rate",
+    "trade_volume",
+    "open_price",
+    "high_price",
+    "low_price",
+)
+_QUOTE_LAYOUTS: dict[int, tuple[str, ...]] = {
+    7: _QUOTE_FIELDS,
+    4: _QUOTE_FIELDS[:3],
+}
+_THEME_ROW_CELLS = frozenset({length + 2 for length in _QUOTE_LAYOUTS})
+_RATE_RE = re.compile(r"^([+-]?)([0-9]+(?:\.[0-9]+)?)\s*%$")
+# 표가 없는 2007~2012년 형식의 `테마명 : 사유` 줄.
+_NARRATIVE_RE = re.compile(r"^(.{2,40}?)\s*:\s*(.+)$")
+_NARRATIVE_SECTION = "테마시황"
+
+
+@dataclass(frozen=True, slots=True)
+class _Section:
+    name: str
+    headline: str
+    details: tuple[str, ...]
+
+
+def _parse_sections(lines: tuple[str, ...]) -> tuple[_Section, ...]:
+    """`- 이름 -` 머리글 아래의 머리글 한 줄과 상세 문단 전부를 모은다."""
+
+    sections: list[_Section] = []
+    name: str | None = None
+    headline = ""
+    details: list[str] = []
+
+    def flush() -> None:
+        if name is not None and (headline or details):
+            sections.append(_Section(name, headline, tuple(details)))
+
+    for line in lines:
+        match = _SECTION_RE.fullmatch(line)
+        if match:
+            flush()
+            name = match.group(1).strip()
+            headline = ""
+            details = []
+            continue
+        if name is None or line in _TABLE_HEADER_CELLS:
+            continue
+        if line.startswith(_DETAIL_MARKER):
+            details.append(line)
+        elif not headline and not details:
+            headline = line
+    flush()
+    return tuple(sections)
+
+
+def _narrative_relations(
+    lines: tuple[str, ...],
+) -> tuple[tuple[DailyRelation, ...], str]:
+    """표가 없는 2007~2012년 형식을 보존한다.
+
+    `테마명 : 사유` 줄은 테마별 `DESCRIPTION`이 되고, 시황 서술·관련뉴스처럼
+    테마에 귀속되지 않는 줄은 `테마시황` 아래 `SECTION_DETAIL`로 남긴다.
+    귀속되지 않은 줄이 하나라도 있으면 상태를 `PARSE_PARTIAL`로 둔다.
+    """
+
+    relations: list[DailyRelation] = []
+    unattributed = 0
+    for line in lines:
+        match = _NARRATIVE_RE.fullmatch(line)
+        if match is not None and not line[0].isdigit():
+            theme_name, description = match.group(1).strip(), match.group(2).strip()
+            relations.append(
+                DailyRelation(
+                    source_order=len(relations),
+                    relation_type="DESCRIPTION",
+                    source_theme_name=theme_name,
+                    source_stock_name=None,
+                    source_stock_code=None,
+                    description=description,
+                    raw_text=line,
+                    quality_status="OK",
+                    paragraph_no=0,
+                )
+            )
+            continue
+        unattributed += 1
+        relations.append(
+            DailyRelation(
+                source_order=len(relations),
+                relation_type="SECTION_DETAIL",
+                source_theme_name=_NARRATIVE_SECTION,
+                source_stock_name=None,
+                source_stock_code=None,
+                description="",
+                raw_text=line,
+                quality_status="OK",
+                paragraph_no=unattributed,
+            )
+        )
+    if not relations:
+        return (), "PARSE_PARTIAL"
+    return tuple(relations), "PARSE_PARTIAL" if unattributed else "OK"
+
+
+def _rate(value: str) -> str | None:
+    """`+21.00%`를 numeric 적재용 `21.00`으로 바꾼다. 자릿수는 원문 그대로 둔다."""
+
+    match = _RATE_RE.fullmatch(value.strip())
+    if match is None:
+        return None
+    sign, number = match.groups()
+    return f"-{number}" if sign == "-" else number
+
+
+def _amount(value: str) -> int | None:
+    text = value.strip().replace(",", "")
+    return int(text) if text.isdigit() else None
+
+
+def _quote(cells: list[str]) -> dict[str, object]:
+    """표 한 행의 시세 칸을 필드로 나눈다. 아는 형식이 아니면 전부 비운다."""
+
+    empty: dict[str, object] = dict.fromkeys(_QUOTE_FIELDS)
+    layout = _QUOTE_LAYOUTS.get(len(cells))
+    if layout is None:
+        return empty
+    values = dict(empty)
+    for offset, field in enumerate(layout, start=1):
+        text = cells[offset]
+        parsed = _rate(text) if field == "change_rate" else _amount(text)
+        if parsed is None:
+            return empty
+        values[field] = parsed
+    return values
 
 
 def parse_daily_html_body(raw_html: str) -> tuple[tuple[DailyRelation, ...], str]:
@@ -251,42 +425,54 @@ def parse_daily_html_body(raw_html: str) -> tuple[tuple[DailyRelation, ...], str
     except (AssertionError, ValueError):
         return (), "PARSE_FAILED"
 
-    descriptions: dict[str, str] = {}
-    section_name: str | None = None
-    for line in parser.text_lines():
-        section = _SECTION_RE.fullmatch(line)
-        if section:
-            section_name = section.group(1).strip()
-            continue
-        if (
-            section_name
-            and section_name != "테마시황"
-            and section_name not in descriptions
-            and line not in {"테마명", "종목명"}
-        ):
-            descriptions[section_name] = line
+    lines = parser.text_lines()
+    has_section = any(_SECTION_RE.fullmatch(line) for line in lines)
+    if parser.table_number == 0 and not has_section:
+        return _narrative_relations(lines)
+
+    sections = _parse_sections(lines)
+    headlines = {section.name: section.headline for section in sections}
 
     relations: list[DailyRelation] = []
-    for theme_name, description in descriptions.items():
-        relations.append(
-            DailyRelation(
-                source_order=len(relations),
-                relation_type="DESCRIPTION",
-                source_theme_name=theme_name,
-                source_stock_name=None,
-                source_stock_code=None,
-                description=description,
-                raw_text=description,
-                quality_status="OK",
+    for section in sections:
+        if section.headline:
+            relations.append(
+                DailyRelation(
+                    source_order=len(relations),
+                    relation_type="DESCRIPTION",
+                    source_theme_name=section.name,
+                    source_stock_name=None,
+                    source_stock_code=None,
+                    description=section.headline,
+                    raw_text=section.headline,
+                    quality_status="OK",
+                    paragraph_no=0,
+                )
             )
-        )
+        for offset, paragraph in enumerate(section.details, start=1):
+            relations.append(
+                DailyRelation(
+                    source_order=len(relations),
+                    relation_type="SECTION_DETAIL",
+                    source_theme_name=section.name,
+                    source_stock_name=None,
+                    source_stock_code=None,
+                    description=section.headline,
+                    raw_text=paragraph,
+                    quality_status="OK",
+                    paragraph_no=offset,
+                )
+            )
 
+    table_sections = parser.table_sections()
     current_table = -1
     current_theme: str | None = None
+    theme_change_rate: str | None = None
     for row in parser.rows:
         if row.table_number != current_table:
             current_table = row.table_number
             current_theme = None
+            theme_change_rate = None
         row_text = "\t".join(cell.text for cell in row.cells if cell.text)
         if not row_text or "종목명" in row_text:
             continue
@@ -302,18 +488,14 @@ def parse_daily_html_body(raw_html: str) -> tuple[tuple[DailyRelation, ...], str
                     stock_name = link_text
         if stock_name is None:
             continue
-        description = ""
-        if current_theme:
-            description = descriptions.get(current_theme, "")
-            if not description:
-                description = next(
-                    (
-                        value
-                        for name, value in descriptions.items()
-                        if current_theme in name or name in current_theme
-                    ),
-                    "",
-                )
+        cells = [cell.text for cell in row.cells]
+        if len(cells) in _THEME_ROW_CELLS:
+            theme_change_rate = _rate(cells[1]) or theme_change_rate
+            cells = cells[2:]
+        quote = _quote(cells)
+        # 섹션 머리글은 표가 놓인 위치로 잇는다. 테마명("2차전지(소재/부품)")과
+        # 섹션명("2차전지 등")이 달라 이름 대조만으로는 끊기기 때문이다.
+        description = headlines.get(table_sections.get(row.table_number) or "", "")
         relations.append(
             DailyRelation(
                 source_order=len(relations),
@@ -324,6 +506,8 @@ def parse_daily_html_body(raw_html: str) -> tuple[tuple[DailyRelation, ...], str
                 description=description,
                 raw_text=row_text,
                 quality_status="OK" if stock_code else "SOURCE_CODE_MISSING",
+                theme_change_rate=theme_change_rate,
+                **quote,
             )
         )
 

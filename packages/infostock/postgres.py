@@ -1122,6 +1122,14 @@ class _PostgresImportTransaction:
                 "description": relation.description,
                 "raw_text": relation.raw_text,
                 "quality_status": relation.quality_status,
+                "paragraph_no": relation.paragraph_no,
+                "theme_change_rate": relation.theme_change_rate,
+                "close_price": relation.close_price,
+                "change_rate": relation.change_rate,
+                "trade_volume": relation.trade_volume,
+                "open_price": relation.open_price,
+                "high_price": relation.high_price,
+                "low_price": relation.low_price,
             }
             for relation in post.relations
         ]
@@ -1133,19 +1141,29 @@ class _PostgresImportTransaction:
                         source_order integer, relation_type text,
                         source_theme_name text, source_stock_name text,
                         source_stock_code text, description text,
-                        raw_text text, quality_status text
+                        raw_text text, quality_status text,
+                        paragraph_no integer, theme_change_rate numeric,
+                        close_price bigint, change_rate numeric,
+                        trade_volume bigint, open_price bigint,
+                        high_price bigint, low_price bigint
                     )
                 )
                 INSERT INTO core.infostock_daily_relations (
                     daily_post_revision_id, source_order, relation_type,
                     theme_id, stock_id, source_theme_name, source_stock_name,
-                    source_stock_code, description, raw_text, quality_status
+                    source_stock_code, description, raw_text, quality_status,
+                    paragraph_no, theme_change_rate, close_price, change_rate,
+                    trade_volume, open_price, high_price, low_price
                 )
                 SELECT %s, input.source_order, input.relation_type,
                        theme.theme_id, stock.stock_id,
                        input.source_theme_name, input.source_stock_name,
                        input.source_stock_code, input.description,
-                       input.raw_text, input.quality_status
+                       input.raw_text, input.quality_status,
+                       input.paragraph_no, input.theme_change_rate,
+                       input.close_price, input.change_rate,
+                       input.trade_volume, input.open_price,
+                       input.high_price, input.low_price
                   FROM input
                   LEFT JOIN core.infostock_themes AS theme
                     ON theme.current_name = input.source_theme_name

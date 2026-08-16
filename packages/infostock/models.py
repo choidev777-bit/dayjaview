@@ -149,14 +149,32 @@ class DailyListEntry:
 
 @dataclass(frozen=True, slots=True)
 class DailyRelation:
+    """Daily 게시물에서 뽑은 관계 하나.
+
+    ``DESCRIPTION``은 섹션 머리글 한 줄, ``SECTION_DETAIL``은 그 뒤에 붙는
+    상세 문단이며 ``paragraph_no``로 순서를 보존한다. 시세 필드는 등락률 표를
+    가진 ``THEME_STOCK``에만 채워진다. 등락률은 원문의 소수 자릿수를 그대로
+    둔 문자열이라 numeric 적재와 재현이 어긋나지 않는다.
+    """
+
     source_order: int
-    relation_type: Literal["THEME", "STOCK", "THEME_STOCK", "DESCRIPTION"]
+    relation_type: Literal[
+        "THEME", "STOCK", "THEME_STOCK", "DESCRIPTION", "SECTION_DETAIL"
+    ]
     source_theme_name: str | None
     source_stock_name: str | None
     source_stock_code: str | None
     description: str
     raw_text: str
     quality_status: str
+    paragraph_no: int | None = None
+    theme_change_rate: str | None = None
+    close_price: int | None = None
+    change_rate: str | None = None
+    trade_volume: int | None = None
+    open_price: int | None = None
+    high_price: int | None = None
+    low_price: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

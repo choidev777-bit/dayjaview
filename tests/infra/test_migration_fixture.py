@@ -23,6 +23,7 @@ EXPECTED_ORDER = (
     "0005_infostock_increment.sql",
     "0006_operator_runtime.sql",
     "0007_theme_catalyst_labels.sql",
+    "0008_daily_relation_details.sql",
 )
 
 

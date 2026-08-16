@@ -149,6 +149,126 @@ def test_html_projection_preserves_description_theme_stock_and_code() -> None:
     assert stock.description == "AI 수요 증가 기대감 등에 상승"
 
 
+def _quote_row(name: str, code: str, cells: tuple[str, ...]) -> str:
+    columns = "".join(f"<td>{value}</td>" for value in cells)
+    return (
+        f'<tr><td><a href="https://new.infostock.co.kr/stockitem?code={code}">'
+        f"{name}</a></td>{columns}</tr>"
+    )
+
+
+def _sectioned_html() -> str:
+    """섹션 상세 문단과 시세 표를 가진 최신 형식."""
+
+    return f"""- 2차전지 등 -<br>
+K-배터리, 2분기 실적 반등 기대감 등에 상승<br>
+▷언론에 따르면, 배터리 업계가 2분기 실적 반등의 기반을 마련.<br>
+▷아울러 전기차 캐즘이 예상보다 빠르게 종식될 것이라는 기대감.<br>
+<table>
+<tr><th>테마명</th><th>등락률</th><th>종목명</th><th>종가(원)</th><th>등락률</th>
+<th>거래량(주)</th><th>시가(원)</th><th>고가(원)</th><th>저가(원)</th></tr>
+<tr><td><a href="https://new.infostock.co.kr/Theme/ThemeDB/1">2차전지</a></td>
+<td>+10.86%</td>
+<td><a href="https://new.infostock.co.kr/stockitem?code=065350">신성델타테크</a></td>
+<td>34,000</td><td>+21.00%</td><td>480,880</td><td>27,350</td><td>34,000</td>
+<td>27,350</td></tr>
+{_quote_row("에코프로", "086520",
+            ("118,000", "-23.69%", "2,874,885", "95,600", "118,700", "95,600"))}
+</table>
+- 로봇 등 -<br>
+아틀라스, 韓 공급망 생태계 구축 추진 소식 등에 상승<br>
+▷교보증권은 휴머노이드 OEM 양산이 26년 말 본격화될 것으로 분석.<br>
+<table>
+<tr><th>테마명</th><th>등락률</th><th>종목명</th><th>종가(원)</th><th>등락률</th>
+<th>거래량(주)</th></tr>
+<tr><td><a href="https://new.infostock.co.kr/Theme/ThemeDB/2">로봇</a></td>
+<td>+9.24%</td>
+<td><a href="https://new.infostock.co.kr/stockitem?code=065350">신성델타테크</a></td>
+<td>34,000</td><td>+21.00%</td><td>480,880</td></tr>
+</table>"""
+
+
+def test_html_projection_keeps_every_section_detail_paragraph() -> None:
+    relations, status = parse_daily_html_body(_sectioned_html())
+
+    assert status == "OK"
+    details = [item for item in relations if item.relation_type == "SECTION_DETAIL"]
+    assert [(item.source_theme_name, item.paragraph_no) for item in details] == [
+        ("2차전지 등", 1),
+        ("2차전지 등", 2),
+        ("로봇 등", 1),
+    ]
+    assert details[0].raw_text.startswith("▷언론에 따르면")
+    assert details[0].description == "K-배터리, 2분기 실적 반등 기대감 등에 상승"
+    headlines = [item for item in relations if item.relation_type == "DESCRIPTION"]
+    assert [item.paragraph_no for item in headlines] == [0, 0]
+
+
+def test_html_projection_splits_quote_table_into_values() -> None:
+    relations, _ = parse_daily_html_body(_sectioned_html())
+    rows = [item for item in relations if item.relation_type == "THEME_STOCK"]
+
+    first = rows[0]
+    assert first.source_stock_code == "065350"
+    assert first.theme_change_rate == "10.86"
+    assert (first.close_price, first.change_rate) == (34000, "21.00")
+    assert (first.trade_volume, first.open_price) == (480880, 27350)
+    assert (first.high_price, first.low_price) == (34000, 27350)
+    assert rows[1].change_rate == "-23.69"
+
+
+def test_html_projection_supports_table_without_open_high_low() -> None:
+    relations, _ = parse_daily_html_body(_sectioned_html())
+    row = [item for item in relations if item.relation_type == "THEME_STOCK"][-1]
+
+    assert row.source_theme_name == "로봇"
+    assert (row.close_price, row.change_rate, row.trade_volume) == (
+        34000,
+        "21.00",
+        480880,
+    )
+    assert (row.open_price, row.high_price, row.low_price) == (None, None, None)
+
+
+def test_html_projection_links_each_table_to_its_own_section() -> None:
+    relations, _ = parse_daily_html_body(_sectioned_html())
+    rows = [item for item in relations if item.relation_type == "THEME_STOCK"]
+
+    assert all(item.description for item in rows)
+    assert rows[0].description == "K-배터리, 2분기 실적 반등 기대감 등에 상승"
+    assert rows[-1].description == "아틀라스, 韓 공급망 생태계 구축 추진 소식 등에 상승"
+
+
+def test_html_projection_preserves_table_free_narrative_format() -> None:
+    relations, status = parse_daily_html_body(
+        "철강 주요종목 : POSCO 3분기 실적 호재로 동반 상승.<br>"
+        "은행주 : 뉴욕發 호재 등으로 상승.<br>"
+        "금일 국내증권시장은 글로벌 신용위기 재발 위협으로 하락 마감하였음.<br>"
+    )
+
+    assert status == "PARSE_PARTIAL"
+    assert [(item.relation_type, item.source_theme_name) for item in relations] == [
+        ("DESCRIPTION", "철강 주요종목"),
+        ("DESCRIPTION", "은행주"),
+        ("SECTION_DETAIL", "테마시황"),
+    ]
+    assert relations[0].description == "POSCO 3분기 실적 호재로 동반 상승."
+    assert relations[2].raw_text.startswith("금일 국내증권시장은")
+
+
+def test_html_projection_leaves_quote_fields_empty_on_unknown_layout() -> None:
+    relations, _ = parse_daily_html_body(
+        '- 반도체 -<br>AI 수요 증가 등에 상승<br><table>'
+        '<tr><td><a href="https://new.infostock.co.kr/stockitem?code=005930">'
+        "삼성전자</a></td><td>일부</td><td>미상</td></tr></table>"
+    )
+    row = next(item for item in relations if item.relation_type == "THEME_STOCK")
+
+    assert row.close_price is None
+    assert row.change_rate is None
+    assert row.raw_text == "삼성전자\t일부\t미상"
+
+
 def test_collector_resume_loader_lineage_and_hash_integrity(tmp_path: Path) -> None:
     source = FakeDailyApi()
     manifest = collect_daily_api_backfill(
