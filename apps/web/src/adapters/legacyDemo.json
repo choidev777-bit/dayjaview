@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-16T12:26:25.299911Z",
+ "generatedAt": "2026-08-16T12:51:19.719178Z",
  "marketDate": "2026-08-10",
  "previousDate": "2026-08-07",
  "weightMethod": "EQUAL_WEIGHT_LEGACY",
@@ -1541,328 +1541,6 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_1a516377-e551-4248-8441-149e53cde798",
-     "marketDate": "2026-08-07",
-     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
-     "normalizedCatalystSummary": "美 행정부, 中 광트랜시버 수입금지 추진에 따른 반사수혜 기대감 지속 등에 일부 관련주 상승",
-     "similarityReasons": [],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.1504,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_092190",
-       "symbol": "092190",
-       "name": "서울바이오시스",
-       "return": 0.067,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_388790",
-       "symbol": "388790",
-       "name": "라이콤",
-       "return": 0.0662,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_327260",
-       "symbol": "327260",
-       "name": "RF머트리얼즈",
-       "return": 0.0545,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_010170",
-       "symbol": "010170",
-       "name": "대한광통신",
-       "return": 0.0352,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_650fb891-d0bf-45ef-a8bd-883b91c72c0c",
-     "marketDate": "2026-08-05",
-     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
-     "normalizedCatalystSummary": "트럼프 행정부, 中 광트랜시버 수입 금지 법안 추진 소식 등에 상승",
-     "similarityReasons": [],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.0453,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_069540",
-       "symbol": "069540",
-       "name": "빛과전자",
-       "return": 0.2989,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_010170",
-       "symbol": "010170",
-       "name": "대한광통신",
-       "return": 0.1857,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_092190",
-       "symbol": "092190",
-       "name": "서울바이오시스",
-       "return": 0.1423,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_043260",
-       "symbol": "043260",
-       "name": "성호전자",
-       "return": 0.1303,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_327260",
-       "symbol": "327260",
-       "name": "RF머트리얼즈",
-       "return": 0.1269,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_5c3be980-94f5-4f89-ada7-a7527cd0cdd5",
-     "marketDate": "2026-07-31",
-     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
-     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
-     "similarityReasons": [
-      "ai"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0446,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": 0.2599,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_218410",
-       "symbol": "218410",
-       "name": "RFHIC",
-       "return": 0.2096,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_327260",
-       "symbol": "327260",
-       "name": "RF머트리얼즈",
-       "return": 0.2979,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_389020",
-       "symbol": "389020",
-       "name": "자람테크놀로지",
-       "return": 0.2064,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_043260",
-       "symbol": "043260",
-       "name": "성호전자",
-       "return": 0.2608,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_010170",
-       "symbol": "010170",
-       "name": "대한광통신",
-       "return": 0.1913,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_e3daf3e5-53d4-46a1-902d-40d1bfd5a104",
-     "marketDate": "2026-07-22",
-     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
-     "normalizedCatalystSummary": "루멘텀홀딩스(+9.41%) 등 美 광통신 관련주 급등 및 美 주파수 경매 기대감 등에 상승",
-     "similarityReasons": [
-      "경매",
-      "광통신",
-      "루멘텀홀딩스"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0695,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": -0.2055,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_069540",
-       "symbol": "069540",
-       "name": "빛과전자",
-       "return": 0.0667,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_043260",
-       "symbol": "043260",
-       "name": "성호전자",
-       "return": 0.0594,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_006260",
-       "symbol": "006260",
-       "name": "LS",
-       "return": 0.0345,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_218410",
-       "symbol": "218410",
-       "name": "RFHIC",
-       "return": 0.0321,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_368770",
-       "symbol": "368770",
-       "name": "파이버프로",
-       "return": 0.0279,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_88ce95a6-b2b6-44d2-9c38-3ad0d62585cc",
-     "marketDate": "2026-07-21",
-     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
-     "normalizedCatalystSummary": "AI 인프라 병목에 따른 대안으로 광시장 확대 기대감 등에 상승",
-     "similarityReasons": [
-      "ai",
-      "인프라"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0123,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": -0.1098,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_217590",
-       "symbol": "217590",
-       "name": "티엠씨",
-       "return": 0.1475,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_327260",
-       "symbol": "327260",
-       "name": "RF머트리얼즈",
-       "return": 0.0821,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_010170",
-       "symbol": "010170",
-       "name": "대한광통신",
-       "return": 0.0423,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_218410",
-       "symbol": "218410",
-       "name": "RFHIC",
-       "return": 0.0381,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_006260",
-       "symbol": "006260",
-       "name": "LS",
-       "return": 0.0358,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
      "matchedEventId": "evt_c3e1ed99-f85c-440d-8406-5ef437fa4141",
      "marketDate": "2026-07-10",
      "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
@@ -1925,6 +1603,321 @@
        "symbol": "100590",
        "name": "머큐리",
        "return": 0.1229,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_196560ea-81ac-4691-a14f-e77e1882aa3f",
+     "marketDate": "2026-06-09",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "아마존, 코닝과 광 섬유·케이블 공급 계약 체결 소식 속 美 광통신 업체 주가 강세 등에 상승",
+     "similarityReasons": [
+      "광통신"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.101,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.038,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.4664,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_043260",
+       "symbol": "043260",
+       "name": "성호전자",
+       "return": 0.1343,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_388790",
+       "symbol": "388790",
+       "name": "라이콤",
+       "return": 0.1259,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.1102,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.1062,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_100590",
+       "symbol": "100590",
+       "name": "머큐리",
+       "return": 0.0745,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_a9907d14-8493-413f-96aa-d246bcae0ffc",
+     "marketDate": "2026-06-04",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "美 주파수 경매 개시 속 젠슨 황 엔비디아 CEO, 대만 Computex 2026 행사서 마벨 테크놀로지 극",
+     "similarityReasons": [
+      "경매",
+      "엔비디아"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0226,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0345,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.3928,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_388790",
+       "symbol": "388790",
+       "name": "라이콤",
+       "return": 0.2989,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.1032,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_043260",
+       "symbol": "043260",
+       "name": "성호전자",
+       "return": 0.0821,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.0814,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_100590",
+       "symbol": "100590",
+       "name": "머큐리",
+       "return": 0.0632,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_e6c3a48a-c805-4bc5-812d-a5549c462742",
+     "marketDate": "2026-05-22",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "美 정부, 양자컴퓨팅 기업에 총 20억달러 규모 투자 소식 등에 상승",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1031,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.2165,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.4852,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.2986,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_062970",
+       "symbol": "062970",
+       "name": "한국첨단소재",
+       "return": 0.2155,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.0976,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_115440",
+       "symbol": "115440",
+       "name": "우리넷",
+       "return": 0.0929,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_389020",
+       "symbol": "389020",
+       "name": "자람테크놀로지",
+       "return": 0.0814,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_b74d79e5-3266-466f-8b81-df9649004bea",
+     "marketDate": "2026-05-21",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "통신 사이클 도래 분석 등에 상승",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.015,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1569,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.3045,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.0783,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_368770",
+       "symbol": "368770",
+       "name": "파이버프로",
+       "return": 0.0519,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_092190",
+       "symbol": "092190",
+       "name": "서울바이오시스",
+       "return": 0.0454,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_006260",
+       "symbol": "006260",
+       "name": "LS",
+       "return": 0.042,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_db71c7de-9a02-49c8-b177-62625805420b",
+     "marketDate": "2026-05-20",
+     "displayNameAtEvent": "광통신(광케이블/광섬유 등)",
+     "normalizedCatalystSummary": "엔비디아 실적 컨퍼런스 앞두고 AI 병목 해결책으로 광통신 기술 중요성 확대 분석 등에 일부 관련주 상승",
+     "similarityReasons": [
+      "ai",
+      "광통신",
+      "엔비디아"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0154,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0336,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2851,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_062970",
+       "symbol": "062970",
+       "name": "한국첨단소재",
+       "return": 0.1249,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_043260",
+       "symbol": "043260",
+       "name": "성호전자",
+       "return": 0.1161,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_069540",
+       "symbol": "069540",
+       "name": "빛과전자",
+       "return": 0.115,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.0626,
        "role": "LEADER"
       }
      ]
@@ -3393,95 +3386,6 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_300d57bc-d7cc-42dc-b6a4-2c7306222066",
-     "marketDate": "2026-08-07",
-     "displayNameAtEvent": "스페이스X(SpaceX)",
-     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
-     "similarityReasons": [
-      "스페이스"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0596,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_347700",
-       "symbol": "347700",
-       "name": "스피어",
-       "return": 0.1496,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_295310",
-       "symbol": "295310",
-       "name": "에이치브이엠",
-       "return": 0.1448,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_373220",
-       "symbol": "373220",
-       "name": "LG에너지솔루션",
-       "return": 0.0435,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_001430",
-       "symbol": "001430",
-       "name": "세아베스틸지주",
-       "return": 0.0387,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_b27ef011-e8c6-4788-95f5-352f9af9034a",
-     "marketDate": "2026-08-06",
-     "displayNameAtEvent": "스페이스X(SpaceX)",
-     "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
-     "similarityReasons": [
-      "스페이스"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.0073,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": []
-    },
-    {
      "matchedEventId": "evt_7e8b3c9c-0fff-4e7b-8350-ccd453980658",
      "marketDate": "2026-07-01",
      "displayNameAtEvent": "스페이스X(SpaceX)",
@@ -3656,6 +3560,96 @@
       }
      ],
      "leaders": []
+    },
+    {
+     "matchedEventId": "evt_12187cf0-4e85-4050-9525-f05a2a179757",
+     "marketDate": "2026-06-15",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "미래에셋증권, 스페이스X 공모주 무산 및 美 우주항공 관련주 급락 영향 등에 하락",
+     "similarityReasons": [
+      "스페이스"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0105,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1958,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.3909,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_c0fbc490-4d3f-40e4-aac7-150552e8c056",
+     "marketDate": "2026-06-12",
+     "displayNameAtEvent": "스페이스X(SpaceX)",
+     "normalizedCatalystSummary": "스페이스X 나스닥 상장 앞두고 美 우주항공 업체 주가 급등 영향 등에 일부 관련주 상승",
+     "similarityReasons": [
+      "상장",
+      "스페이스"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0075,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0969,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2657,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_042700",
+       "symbol": "042700",
+       "name": "한미반도체",
+       "return": 0.2405,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_417970",
+       "symbol": "417970",
+       "name": "모델솔루션",
+       "return": 0.1061,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_373220",
+       "symbol": "373220",
+       "name": "LG에너지솔루션",
+       "return": 0.0403,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_272290",
+       "symbol": "272290",
+       "name": "이녹스첨단소재",
+       "return": 0.034,
+       "role": "LEADER"
+      }
+     ]
     }
    ],
    "evidence": [
@@ -4982,166 +4976,6 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_e71502f1-a819-42e0-9f79-84910c8f33d0",
-     "marketDate": "2026-08-07",
-     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
-     "normalizedCatalystSummary": "스페이스X 보호예수 해제에도 주가 강세 영향 등에 상승",
-     "similarityReasons": [
-      "스페이스"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.1435,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_347700",
-       "symbol": "347700",
-       "name": "스피어",
-       "return": 0.1496,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_295310",
-       "symbol": "295310",
-       "name": "에이치브이엠",
-       "return": 0.1448,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_079550",
-       "symbol": "079550",
-       "name": "LIG디펜스앤에어로스페이스",
-       "return": 0.0556,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_488900",
-       "symbol": "488900",
-       "name": "비츠로넥스텍",
-       "return": 0.0506,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_354320",
-       "symbol": "354320",
-       "name": "알멕",
-       "return": 0.0499,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_00030164-74c1-4d8a-9acc-4fef0fbe6bd0",
-     "marketDate": "2026-08-06",
-     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
-     "normalizedCatalystSummary": "자본지출 부담 및 보호예수 해제 우려 속 스페이스X(-13.61%) 폭락 영향 등에 하락",
-     "similarityReasons": [
-      "스페이스"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0057,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": []
-    },
-    {
-     "matchedEventId": "evt_d659d0b0-a883-4a14-a2dc-aa9ac0cd7ea6",
-     "marketDate": "2026-07-15",
-     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
-     "normalizedCatalystSummary": "글로벌 항공기 수요 증가 전망 등에 상승",
-     "similarityReasons": [],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.05,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": -0.0085,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_0015G0",
-       "symbol": "0015G0",
-       "name": "그린광학",
-       "return": 0.1919,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_079550",
-       "symbol": "079550",
-       "name": "LIG디펜스앤에어로스페이스",
-       "return": 0.1383,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_077360",
-       "symbol": "077360",
-       "name": "덕산하이메탈",
-       "return": 0.1118,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_488900",
-       "symbol": "488900",
-       "name": "비츠로넥스텍",
-       "return": 0.1056,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_001430",
-       "symbol": "001430",
-       "name": "세아베스틸지주",
-       "return": 0.0988,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
      "matchedEventId": "evt_8d2564d2-0df2-4510-b68a-b567ff714fe1",
      "marketDate": "2026-07-01",
      "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
@@ -5289,6 +5123,135 @@
       }
      ],
      "leaders": []
+    },
+    {
+     "matchedEventId": "evt_8b419084-e555-4859-82de-36f96b7ab5a3",
+     "marketDate": "2026-06-22",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "스페이스X 나스닥 상장에 따른 재료 소멸 여파 지속 등에 하락",
+     "similarityReasons": [
+      "스페이스"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0949,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0923,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2686,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_10b9c8b6-1360-4e80-b379-1f8e3aaed4f6",
+     "marketDate": "2026-06-15",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "미래에셋증권, 스페이스X 공모주 무산 및 美 우주항공 관련주 급락 영향 등에 하락",
+     "similarityReasons": [
+      "스페이스",
+      "우주항공"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0105,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.1519,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.3531,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_feac02f3-d3b7-487c-b0d2-33af2dce4c84",
+     "marketDate": "2026-06-12",
+     "displayNameAtEvent": "우주항공산업(누리호/인공위성 등)",
+     "normalizedCatalystSummary": "스페이스X 나스닥 상장 앞두고 美 우주항공 업체 주가 급등 영향 등에 상승",
+     "similarityReasons": [
+      "상장",
+      "스페이스",
+      "앞두고"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0301,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0657,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1833,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_288180",
+       "symbol": "288180",
+       "name": "케이피항공산업",
+       "return": 0.1614,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_064350",
+       "symbol": "064350",
+       "name": "현대로템",
+       "return": 0.1067,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_272210",
+       "symbol": "272210",
+       "name": "한화시스템",
+       "return": 0.0835,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_003490",
+       "symbol": "003490",
+       "name": "대한항공",
+       "return": 0.0726,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.068,
+       "role": "LEADER"
+      }
+     ]
     }
    ],
    "evidence": [
@@ -8410,211 +8373,182 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_9bd63575-1389-420a-9f7f-2630f1a125bd",
-     "marketDate": "2026-08-07",
+     "matchedEventId": "evt_45313b0e-f2b1-4040-99ec-eb7c719eaef5",
+     "marketDate": "2026-07-13",
      "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "normalizedCatalystSummary": "SK하이닉스 ADR 나스닥 상장 흥행에도 SK하이닉스 2분기 실적 컨센서스 하회 전망 등에 하락",
      "similarityReasons": [
-      "gpu",
-      "메모리",
-      "방안"
+      "adr",
+      "상장",
+      "실적"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": 0.0936,
+       "return": -0.0138,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0428,
+       "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0482,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
     },
     {
-     "matchedEventId": "evt_5610dc4e-a216-4433-9430-e45f681ad8be",
-     "marketDate": "2026-08-06",
+     "matchedEventId": "evt_4d3e6882-23bc-4f9e-a6e7-c9460c3886e4",
+     "marketDate": "2026-07-10",
      "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+3.06%) 급등 영향 및 SK하이닉스, 美 ADR 상장 기대감 지속 등에 상승",
      "similarityReasons": [
-      "amd",
-      "가이던스",
-      "매출"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.0179,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": []
-    },
-    {
-     "matchedEventId": "evt_82b89253-1cfa-4483-b05b-92ced8d84c24",
-     "marketDate": "2026-08-05",
-     "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
-     "similarityReasons": [
+      "adr",
       "반도체지수",
-      "폭등",
-      "필라델피아"
+      "상장"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": 0.0131,
+       "return": -0.0605,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.1033,
+       "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.1999,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": [
+      {
+       "stockId": "stk_043590",
+       "symbol": "043590",
+       "name": "웰킵스하이텍",
+       "return": 0.2333,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_077360",
+       "symbol": "077360",
+       "name": "덕산하이메탈",
+       "return": 0.2,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_311320",
+       "symbol": "311320",
+       "name": "지오엘리먼트",
+       "return": 0.1914,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.178,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_281820",
+       "symbol": "281820",
+       "name": "케이씨텍",
+       "return": 0.1665,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_9c14afa7-be7d-4167-b291-ba20ecac5e49",
+     "marketDate": "2026-07-09",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+2.23%) 급등 영향 및 SK하이닉스 美 ADR 상장 기대감 지속 등에 상승",
+     "similarityReasons": [
+      "adr",
+      "반도체지수",
+      "상장"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.1425,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0226,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1307,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_043590",
+       "symbol": "043590",
+       "name": "웰킵스하이텍",
+       "return": 0.3,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_033640",
+       "symbol": "033640",
+       "name": "네패스",
+       "return": 0.1025,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_093370",
+       "symbol": "093370",
+       "name": "후성",
+       "return": 0.1024,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_388210",
+       "symbol": "388210",
+       "name": "씨엠티엑스",
+       "return": 0.1016,
+       "role": "LEADER"
+      },
       {
        "stockId": "stk_147760",
        "symbol": "147760",
        "name": "피엠티",
-       "return": 0.129,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_219130",
-       "symbol": "219130",
-       "name": "타이거일렉",
-       "return": 0.1404,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_080580",
-       "symbol": "080580",
-       "name": "오킨스전자",
-       "return": 0.1281,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_031330",
-       "symbol": "031330",
-       "name": "에스에이엠티",
-       "return": 0.1277,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_024850",
-       "symbol": "024850",
-       "name": "HLB이노베이션",
-       "return": 0.1157,
+       "return": 0.0901,
        "role": "LEADER"
       }
      ]
     },
     {
-     "matchedEventId": "evt_ce0a89b7-6a26-4167-8cf5-c51a327afcb8",
-     "marketDate": "2026-08-03",
+     "matchedEventId": "evt_ebe2ae81-b6e2-4b2a-94d4-a5285a0519e6",
+     "marketDate": "2026-07-08",
      "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
+     "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
      "similarityReasons": [
-      "메모리"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0662,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": 0.2871,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_146320",
-       "symbol": "146320",
-       "name": "비씨엔씨",
-       "return": 0.1063,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_252990",
-       "symbol": "252990",
-       "name": "샘씨엔에스",
-       "return": 0.0701,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_272110",
-       "symbol": "272110",
-       "name": "케이엔제이",
-       "return": 0.0605,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_295310",
-       "symbol": "295310",
-       "name": "에이치브이엠",
-       "return": 0.1171,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_024850",
-       "symbol": "024850",
-       "name": "HLB이노베이션",
-       "return": 0.0747,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_c27e1656-0c2e-4b58-b743-a4b9c00f052b",
-     "marketDate": "2026-07-31",
-     "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
-     "similarityReasons": [
-      "ai",
-      "수익성"
+      "모건스탠리",
+      "반도체",
+      "여파"
      ],
      "outcomes": [
       {
@@ -8625,86 +8559,113 @@
       },
       {
        "horizonTradingDays": 5,
-       "return": 0.0764,
+       "return": 0.1331,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0241,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
-     "leaders": [
-      {
-       "stockId": "stk_170920",
-       "symbol": "170920",
-       "name": "엘티씨",
-       "return": 0.2989,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_482630",
-       "symbol": "482630",
-       "name": "삼양엔씨켐",
-       "return": 0.2999,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_093370",
-       "symbol": "093370",
-       "name": "후성",
-       "return": 0.2987,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_033160",
-       "symbol": "033160",
-       "name": "엠케이전자",
-       "return": 0.2996,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_000150",
-       "symbol": "000150",
-       "name": "두산",
-       "return": 0.3,
-       "role": "LEADER"
-      }
-     ]
+     "leaders": []
     },
     {
-     "matchedEventId": "evt_29a927a2-3791-4a2a-a43a-211919af6829",
-     "marketDate": "2026-07-29",
+     "matchedEventId": "evt_d9570ee8-5e29-4062-9166-3b505d69bae4",
+     "marketDate": "2026-07-07",
      "displayNameAtEvent": "반도체 재료/부품",
-     "normalizedCatalystSummary": "SK하이닉스, 2분기 실적 실망감 및 AI株 급락에 월가 마진콜 요구 등에 하락",
-     "similarityReasons": [
-      "ai",
-      "실망감",
-      "실적"
-     ],
+     "normalizedCatalystSummary": "삼성전자 2분기 호실적에도 차익 실현 매물 출회 등에 하락",
+     "similarityReasons": [],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": -0.0266,
+       "return": -0.0617,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": 0.2657,
+       "return": 0.0009,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0259,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
+    },
+    {
+     "matchedEventId": "evt_7c7df5d6-e5c7-4884-bb3e-d461dadb8873",
+     "marketDate": "2026-07-03",
+     "displayNameAtEvent": "반도체 재료/부품",
+     "normalizedCatalystSummary": "구조적 공급 부족에 따른 실적 기대감 등에 상승",
+     "similarityReasons": [
+      "공급",
+      "실적"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0524,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0292,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.1969,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_144960",
+       "symbol": "144960",
+       "name": "뉴파워프라즈마",
+       "return": 0.1849,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.112,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_311320",
+       "symbol": "311320",
+       "name": "지오엘리먼트",
+       "return": 0.0988,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_142210",
+       "symbol": "142210",
+       "name": "유니트론텍",
+       "return": 0.0944,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_095340",
+       "symbol": "095340",
+       "name": "ISC",
+       "return": 0.0837,
+       "role": "LEADER"
+      }
+     ]
     }
    ],
    "evidence": [
@@ -11724,138 +11685,6 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_688afa06-8027-450c-a6db-289fa87619b6",
-     "marketDate": "2026-07-31",
-     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
-     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
-     "similarityReasons": [
-      "ai"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0367,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": 0.1183,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_126340",
-       "symbol": "126340",
-       "name": "비나텍",
-       "return": 0.2812,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_170920",
-       "symbol": "170920",
-       "name": "엘티씨",
-       "return": 0.2989,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_336260",
-       "symbol": "336260",
-       "name": "두산퓨얼셀",
-       "return": 0.2989,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_059090",
-       "symbol": "059090",
-       "name": "미코",
-       "return": 0.2301,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_089890",
-       "symbol": "089890",
-       "name": "코세스",
-       "return": 0.2183,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_3001e831-3254-42d1-bda1-702b1ad9b4f3",
-     "marketDate": "2026-07-22",
-     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
-     "normalizedCatalystSummary": "블룸에너지(+14.82%) 주가 급등 영향 등에 상승",
-     "similarityReasons": [
-      "블룸에너지"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.1545,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": -0.2996,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_126340",
-       "symbol": "126340",
-       "name": "비나텍",
-       "return": 0.1219,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_089890",
-       "symbol": "089890",
-       "name": "코세스",
-       "return": 0.1209,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_475150",
-       "symbol": "475150",
-       "name": "SK이터닉스",
-       "return": 0.1091,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_083650",
-       "symbol": "083650",
-       "name": "비에이치아이",
-       "return": 0.0592,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_336260",
-       "symbol": "336260",
-       "name": "두산퓨얼셀",
-       "return": 0.043,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
      "matchedEventId": "evt_17ec2f65-efdd-4881-80ce-1638725ef0e3",
      "marketDate": "2026-05-22",
      "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
@@ -12119,6 +11948,91 @@
        "role": "LEADER"
       }
      ]
+    },
+    {
+     "matchedEventId": "evt_0053bf9d-2177-4555-b4b7-7cd6b326626e",
+     "marketDate": "2026-02-09",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "필라델피아 반도체지수(+5.70%) 폭등 및 삼성전자, 차세대 HBM4 최초 양산 출하 기대감 등에 상승",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0161,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0612,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.1893,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.1534,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_475150",
+       "symbol": "475150",
+       "name": "SK이터닉스",
+       "return": 0.1216,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_417200",
+       "symbol": "417200",
+       "name": "LS머트리얼즈",
+       "return": 0.0822,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_059090",
+       "symbol": "059090",
+       "name": "미코",
+       "return": 0.0807,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_a493b895-3fca-4354-8022-69f6a22b0583",
+     "marketDate": "2026-02-05",
+     "displayNameAtEvent": "고체산화물 연료전지(SOFC)",
+     "normalizedCatalystSummary": "'AMD 쇼크' 속 필라델피아 반도체지수(-4.36%) 폭락 영향 등에 하락",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0146,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0403,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": 0.1602,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
     }
    ],
    "evidence": [
@@ -13459,301 +13373,299 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_b5dd1802-6a5d-4bed-aefe-135444da4cf9",
-     "marketDate": "2026-08-07",
+     "matchedEventId": "evt_1cffef3f-2bad-40d2-8124-d516ef6908ea",
+     "marketDate": "2026-07-13",
      "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "normalizedCatalystSummary": "SK하이닉스 ADR 나스닥 상장 흥행에도 SK하이닉스 2분기 실적 컨센서스 하회 전망 등에 하락",
      "similarityReasons": [
-      "gpu",
-      "메모리",
-      "엔비디아"
+      "adr",
+      "상장",
+      "실적"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": 0.0785,
+       "return": -0.0158,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0392,
+       "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0084,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
     },
     {
-     "matchedEventId": "evt_d97fce62-3ddf-41a0-bd03-f7934bf2ece3",
-     "marketDate": "2026-08-06",
+     "matchedEventId": "evt_f94f11a0-0f0c-4a45-a038-80e1b2896de1",
+     "marketDate": "2026-07-10",
      "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+3.06%) 급등 영향 및 SK하이닉스, 美 ADR 상장 기대감 지속 등에 상승",
      "similarityReasons": [
-      "amd",
-      "가이던스",
-      "매출"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.027,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": []
-    },
-    {
-     "matchedEventId": "evt_9ef4e697-5c38-4782-807c-4febf3e2be16",
-     "marketDate": "2026-08-05",
-     "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
-     "similarityReasons": [
+      "adr",
       "반도체지수",
-      "폭등",
-      "필라델피아"
+      "상장"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": -0.0175,
+       "return": -0.0521,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_112290",
-       "symbol": "112290",
-       "name": "와이씨켐",
-       "return": 0.0975,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_254490",
-       "symbol": "254490",
-       "name": "미래반도체",
-       "return": 0.0668,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_451220",
-       "symbol": "451220",
-       "name": "아이엠티",
-       "return": 0.1364,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_489790",
-       "symbol": "489790",
-       "name": "한화비전",
-       "return": 0.0962,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_033160",
-       "symbol": "033160",
-       "name": "엠케이전자",
-       "return": 0.1101,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_9698a86a-a0d4-4414-8e1a-90748388a1ee",
-     "marketDate": "2026-08-03",
-     "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
-     "similarityReasons": [
-      "메모리"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0506,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": 0.1129,
+       "return": -0.137,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.2544,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": [
       {
-       "stockId": "stk_348210",
-       "symbol": "348210",
-       "name": "넥스틴",
-       "return": 0.0416,
+       "stockId": "stk_122640",
+       "symbol": "122640",
+       "name": "예스티",
+       "return": 0.2625,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_394280",
-       "symbol": "394280",
-       "name": "오픈엣지테크놀로지",
-       "return": 0.0319,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_489790",
-       "symbol": "489790",
-       "name": "한화비전",
-       "return": 0.0357,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_089030",
-       "symbol": "089030",
-       "name": "테크윙",
-       "return": 0.117,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_003160",
-       "symbol": "003160",
-       "name": "디아이",
-       "return": 0.0471,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_ad42b46f-b625-450d-b818-ef23de09ea14",
-     "marketDate": "2026-07-31",
-     "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
-     "similarityReasons": [
-      "ai",
-      "수익성"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.0075,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": -0.0204,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_089030",
-       "symbol": "089030",
-       "name": "테크윙",
-       "return": 0.2994,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_000660",
-       "symbol": "000660",
-       "name": "SK하이닉스",
-       "return": 0.2995,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_033160",
-       "symbol": "033160",
-       "name": "엠케이전자",
-       "return": 0.2996,
+       "stockId": "stk_412350",
+       "symbol": "412350",
+       "name": "레이저쎌",
+       "return": 0.238,
        "role": "LEADER"
       },
       {
        "stockId": "stk_031980",
        "symbol": "031980",
        "name": "피에스케이홀딩스",
-       "return": 0.2668,
+       "return": 0.1823,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_281820",
+       "symbol": "281820",
+       "name": "케이씨텍",
+       "return": 0.1665,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_097800",
+       "symbol": "097800",
+       "name": "윈팩",
+       "return": 0.1491,
+       "role": "LEADER"
+      }
+     ]
+    },
+    {
+     "matchedEventId": "evt_cddc150f-30fc-4a36-87c2-326eedc3505e",
+     "marketDate": "2026-07-09",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+2.23%) 급등 영향 및 SK하이닉스 美 ADR 상장 기대감 지속 등에 상승",
+     "similarityReasons": [
+      "adr",
+      "반도체지수",
+      "상장"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.108,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0276,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.0853,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_412350",
+       "symbol": "412350",
+       "name": "레이저쎌",
+       "return": 0.1325,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_394280",
+       "symbol": "394280",
+       "name": "오픈엣지테크놀로지",
+       "return": 0.0908,
        "role": "LEADER"
       },
       {
        "stockId": "stk_042700",
        "symbol": "042700",
        "name": "한미반도체",
-       "return": 0.2798,
+       "return": 0.0818,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_424980",
+       "symbol": "424980",
+       "name": "마이크로투나노",
+       "return": 0.08,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_112290",
+       "symbol": "112290",
+       "name": "와이씨켐",
+       "return": 0.0648,
        "role": "LEADER"
       }
      ]
     },
     {
-     "matchedEventId": "evt_a9c294bd-bb5b-431f-a0f9-0e847b408794",
-     "marketDate": "2026-07-29",
+     "matchedEventId": "evt_dbcb28a3-ff4d-45ca-bc7f-46980be2b9e9",
+     "marketDate": "2026-07-08",
      "displayNameAtEvent": "HBM(고대역폭메모리)",
-     "normalizedCatalystSummary": "SK하이닉스, 2분기 실적 실망감 및 AI株 급락에 월가 마진콜 요구 등에 하락",
+     "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
      "similarityReasons": [
-      "ai",
-      "실망감",
-      "실적"
+      "모건스탠리",
+      "반도체",
+      "지수"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": -0.0239,
+       "return": 0.0201,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": 0.2878,
+       "return": 0.1452,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0127,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
+    },
+    {
+     "matchedEventId": "evt_7920e4ea-f2f7-477e-ba37-26c45501d296",
+     "marketDate": "2026-07-07",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "삼성전자 2분기 호실적에도 차익 실현 매물 출회 등에 하락",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0695,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0233,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.056,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_6edddbca-097a-4e5b-9694-a62ec136ea07",
+     "marketDate": "2026-07-03",
+     "displayNameAtEvent": "HBM(고대역폭메모리)",
+     "normalizedCatalystSummary": "구조적 공급 부족에 따른 실적 기대감 등에 상승",
+     "similarityReasons": [
+      "공급",
+      "실적"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": 0.0318,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0022,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.268,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_000660",
+       "symbol": "000660",
+       "name": "SK하이닉스",
+       "return": 0.1088,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_412350",
+       "symbol": "412350",
+       "name": "레이저쎌",
+       "return": 0.0928,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_095340",
+       "symbol": "095340",
+       "name": "ISC",
+       "return": 0.0837,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_005930",
+       "symbol": "005930",
+       "name": "삼성전자",
+       "return": 0.0822,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_348210",
+       "symbol": "348210",
+       "name": "넥스틴",
+       "return": 0.0749,
+       "role": "LEADER"
+      }
+     ]
     }
    ],
    "evidence": [
@@ -15108,301 +15020,299 @@
    ],
    "similar": [
     {
-     "matchedEventId": "evt_c1279bad-df6a-4b8b-8b4d-4e3627d6179a",
-     "marketDate": "2026-08-07",
+     "matchedEventId": "evt_fdb4dc25-5224-4296-9c8b-ec1a4b235175",
+     "marketDate": "2026-07-13",
      "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+     "normalizedCatalystSummary": "SK하이닉스 ADR 나스닥 상장 흥행에도 SK하이닉스 2분기 실적 컨센서스 하회 전망 등에 하락",
      "similarityReasons": [
-      "gpu",
-      "메모리",
-      "방안"
+      "adr",
+      "상장",
+      "실적"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": 0.0883,
+       "return": -0.0083,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0414,
+       "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0206,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
     },
     {
-     "matchedEventId": "evt_2ad6fb73-1d8f-4bb7-ba7d-71f86cb3f8a5",
-     "marketDate": "2026-08-06",
+     "matchedEventId": "evt_72dd2c2b-a631-4c49-b812-ad415d0b08ae",
+     "marketDate": "2026-07-10",
      "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "분기 자본지출 급증 및 일론 머스크의 엔비디아 프로세서만 사용 발언 등에 AMD(-7.04%) 및 필라델피아",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+3.06%) 급등 영향 및 SK하이닉스, 美 ADR 상장 기대감 지속 등에 상승",
      "similarityReasons": [
-      "amd",
-      "가이던스",
-      "매출"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": -0.0245,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": []
-    },
-    {
-     "matchedEventId": "evt_cb75d66b-5947-4ca9-a1e7-31950a9ab78e",
-     "marketDate": "2026-08-05",
-     "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+6.55%) 폭등 영향 등에 상승",
-     "similarityReasons": [
+      "adr",
       "반도체지수",
-      "폭등",
-      "필라델피아"
+      "상장"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": -0.0774,
+       "return": 0.0107,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0901,
+       "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.0822,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": [
-      {
-       "stockId": "stk_402490",
-       "symbol": "402490",
-       "name": "그린리소스",
-       "return": 0.1059,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_451220",
-       "symbol": "451220",
-       "name": "아이엠티",
-       "return": 0.1364,
-       "role": "LEADER"
-      },
       {
        "stockId": "stk_049080",
        "symbol": "049080",
        "name": "기가레인",
-       "return": 0.2184,
+       "return": 0.2992,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_036170",
-       "symbol": "036170",
-       "name": "에이치엠넥스",
-       "return": 0.1284,
+       "stockId": "stk_122640",
+       "symbol": "122640",
+       "name": "예스티",
+       "return": 0.2625,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_092870",
-       "symbol": "092870",
-       "name": "엑시콘",
-       "return": 0.1142,
-       "role": "LEADER"
-      }
-     ]
-    },
-    {
-     "matchedEventId": "evt_0f8a4b34-bb09-472f-9a40-b57dc75454b9",
-     "marketDate": "2026-08-03",
-     "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "메모리 초과수요 장기화 전망 및 증설에 따른 수혜 기대감 등에 상승",
-     "similarityReasons": [
-      "메모리"
-     ],
-     "outcomes": [
-      {
-       "horizonTradingDays": 1,
-       "return": 0.0471,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 5,
-       "return": 0.0797,
-       "status": "OBSERVED",
-       "unavailableReason": null
-      },
-      {
-       "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
-       "unavailableReason": null
-      }
-     ],
-     "leaders": [
-      {
-       "stockId": "stk_254120",
-       "symbol": "254120",
-       "name": "자비스",
-       "return": 0.1542,
+       "stockId": "stk_319660",
+       "symbol": "319660",
+       "name": "피에스케이",
+       "return": 0.2444,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_420770",
-       "symbol": "420770",
-       "name": "기가비스",
-       "return": 0.1237,
+       "stockId": "stk_417840",
+       "symbol": "417840",
+       "name": "저스템",
+       "return": 0.2434,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_030530",
-       "symbol": "030530",
-       "name": "원익홀딩스",
-       "return": 0.2997,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_089030",
-       "symbol": "089030",
-       "name": "테크윙",
-       "return": 0.117,
-       "role": "LEADER"
-      },
-      {
-       "stockId": "stk_090360",
-       "symbol": "090360",
-       "name": "로보스타",
-       "return": 0.0635,
+       "stockId": "stk_412350",
+       "symbol": "412350",
+       "name": "레이저쎌",
+       "return": 0.238,
        "role": "LEADER"
       }
      ]
     },
     {
-     "matchedEventId": "evt_105c2adf-5f50-4aa6-a4de-e9a1d3dce70b",
-     "marketDate": "2026-07-31",
+     "matchedEventId": "evt_80c6b67b-1bf7-432a-a298-27818e0be138",
+     "marketDate": "2026-07-09",
      "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "AI 전문 헤지펀드 '시추에이셔널 어웨어니스' 청산 마무리 및 마이크로소프트(+15.51%) 호실적에 따른 ",
+     "normalizedCatalystSummary": "美 필라델피아 반도체지수(+2.23%) 급등 영향 및 SK하이닉스 美 ADR 상장 기대감 지속 등에 상승",
      "similarityReasons": [
-      "ai",
-      "수익성"
+      "adr",
+      "반도체지수",
+      "상장"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": 0.0168,
+       "return": 0.1101,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": 0.0299,
+       "return": -0.0261,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": -0.229,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": [
       {
-       "stockId": "stk_131290",
-       "symbol": "131290",
-       "name": "티에스이",
-       "return": 0.2994,
+       "stockId": "stk_183300",
+       "symbol": "183300",
+       "name": "코미코",
+       "return": 0.1431,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_160980",
-       "symbol": "160980",
-       "name": "싸이맥스",
-       "return": 0.2927,
+       "stockId": "stk_227950",
+       "symbol": "227950",
+       "name": "엔투텍",
+       "return": 0.1388,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_095610",
-       "symbol": "095610",
-       "name": "테스",
-       "return": 0.3,
+       "stockId": "stk_412350",
+       "symbol": "412350",
+       "name": "레이저쎌",
+       "return": 0.1325,
        "role": "LEADER"
       },
       {
-       "stockId": "stk_089030",
-       "symbol": "089030",
-       "name": "테크윙",
-       "return": 0.2994,
+       "stockId": "stk_330860",
+       "symbol": "330860",
+       "name": "네패스아크",
+       "return": 0.1206,
        "role": "LEADER"
       },
       {
        "stockId": "stk_036930",
        "symbol": "036930",
        "name": "주성엔지니어링",
-       "return": 0.2665,
+       "return": 0.115,
        "role": "LEADER"
       }
      ]
     },
     {
-     "matchedEventId": "evt_95e81c47-b1ce-4d7c-80ca-8bea7d9863db",
-     "marketDate": "2026-07-29",
+     "matchedEventId": "evt_c0795238-50f3-47dc-a1a2-53167ec647d6",
+     "marketDate": "2026-07-08",
      "displayNameAtEvent": "반도체 장비",
-     "normalizedCatalystSummary": "SK하이닉스, 2분기 실적 실망감 및 AI株 급락에 월가 마진콜 요구 등에 하락",
+     "normalizedCatalystSummary": "모건스탠리 반도체 비중 축소 여파 지속, 필라델피아 반도체(-4.65%) 지수 폭락 영향 등에 하락",
      "similarityReasons": [
-      "ai",
-      "실망감",
-      "실적"
+      "모건스탠리",
+      "반도체",
+      "여파"
      ],
      "outcomes": [
       {
        "horizonTradingDays": 1,
-       "return": -0.0238,
+       "return": 0.0167,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 5,
-       "return": 0.2787,
+       "return": 0.1644,
        "status": "OBSERVED",
        "unavailableReason": null
       },
       {
        "horizonTradingDays": 20,
-       "return": null,
-       "status": "PENDING",
+       "return": 0.0122,
+       "status": "OBSERVED",
        "unavailableReason": null
       }
      ],
      "leaders": []
+    },
+    {
+     "matchedEventId": "evt_2d1395c2-182d-495e-9728-709f5be8d8ee",
+     "marketDate": "2026-07-07",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "삼성전자 2분기 호실적에도 차익 실현 매물 출회 등에 하락",
+     "similarityReasons": [],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0591,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": 0.0087,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.0221,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": []
+    },
+    {
+     "matchedEventId": "evt_85d5ffd7-e25a-445f-9a75-e19bf536bccf",
+     "marketDate": "2026-07-03",
+     "displayNameAtEvent": "반도체 장비",
+     "normalizedCatalystSummary": "구조적 공급 부족에 따른 실적 기대감 등에 상승",
+     "similarityReasons": [
+      "공급",
+      "실적"
+     ],
+     "outcomes": [
+      {
+       "horizonTradingDays": 1,
+       "return": -0.0635,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 5,
+       "return": -0.0872,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      },
+      {
+       "horizonTradingDays": 20,
+       "return": -0.2662,
+       "status": "OBSERVED",
+       "unavailableReason": null
+      }
+     ],
+     "leaders": [
+      {
+       "stockId": "stk_0017J0",
+       "symbol": "0017J0",
+       "name": "세미티에스",
+       "return": 0.1313,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_064290",
+       "symbol": "064290",
+       "name": "인텍플러스",
+       "return": 0.131,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_254120",
+       "symbol": "254120",
+       "name": "자비스",
+       "return": 0.1163,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_036170",
+       "symbol": "036170",
+       "name": "에이치엠넥스",
+       "return": 0.1142,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_403870",
+       "symbol": "403870",
+       "name": "HPSP",
+       "return": 0.1098,
+       "role": "LEADER"
+      }
+     ]
     }
    ],
    "evidence": [

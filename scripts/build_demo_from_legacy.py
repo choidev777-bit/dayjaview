@@ -176,7 +176,10 @@ def main() -> int:
                 + OUTCOME
                 + """
                 where o.theme_code = %s and o.session_date < %s
-                order by o.session_date desc limit 6
+                -- 20거래일이 아직 안 지난 사건만 뽑으면 세 기간이 전부 `관찰 중`이 된다.
+                -- 관측이 끝난 사건을 먼저 채우고 모자라면 최신순으로 보충한다.
+                -- 수익률 크기로 고르는 것이 아니라 관측 완료 여부로만 고른다.
+                order by (e.ret_t20 is not null) desc, o.session_date desc limit 6
                 """,
                 (theme_code, CURRENT),
             )
