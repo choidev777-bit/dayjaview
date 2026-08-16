@@ -45,6 +45,17 @@ class _Stop(Exception):
     pass
 
 
+def _write_atomic(path: Path, text: str) -> None:
+    """도중에 죽어도 깨진 파일이 남지 않게 임시 파일에 쓰고 바꿔치기한다.
+
+    깨진 봉투가 남으면 resume이 그 날짜를 건너뛰어 corpus 빌드에서야 드러난다.
+    """
+
+    temp_path = path.with_name(path.name + ".tmp")
+    temp_path.write_text(text, encoding="utf-8")
+    temp_path.replace(path)
+
+
 def collect_krx_daily_history(
     *,
     api_key: str,
@@ -80,9 +91,9 @@ def collect_krx_daily_history(
     last_completed: date | None = None
     next_date: date | None = None
 
-    def report() -> dict[str, object]:
+    def report(*, final: bool = False) -> dict[str, object]:
         return {
-            "status": status,
+            "status": status if final else "RUNNING",
             "reason": reason,
             "startDate": start_date.isoformat(),
             "endDate": end_date.isoformat(),
@@ -98,11 +109,11 @@ def collect_krx_daily_history(
             "updatedAt": clock().isoformat(),
         }
 
-    def write_status() -> None:
+    def write_status(*, final: bool = False) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
-        (output_dir / STATUS_FILENAME).write_text(
-            json.dumps(report(), ensure_ascii=False, sort_keys=True, indent=1),
-            encoding="utf-8",
+        _write_atomic(
+            output_dir / STATUS_FILENAME,
+            json.dumps(report(final=final), ensure_ascii=False, sort_keys=True, indent=1),
         )
 
     def fetch(market: str, market_date: date) -> Any:
@@ -159,13 +170,13 @@ def collect_krx_daily_history(
                 calls_made += 1
                 calls_since_status += 1
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(
+                _write_atomic(
+                    path,
                     json.dumps(
                         parsers.dump_collected_snapshot(snapshot),
                         ensure_ascii=False,
                         sort_keys=True,
                     ),
-                    encoding="utf-8",
                 )
                 files_written += 1
                 row_count = len(
@@ -201,6 +212,6 @@ def collect_krx_daily_history(
     except KeyboardInterrupt:
         status, reason, next_date = "PARTIAL", "INTERRUPTED", day
 
-    final = report()
-    write_status()
+    final = report(final=True)
+    write_status(final=True)
     return final

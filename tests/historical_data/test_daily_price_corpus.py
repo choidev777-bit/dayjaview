@@ -304,6 +304,27 @@ def test_backfill_transport_failure_retries_then_reports_partial(
     assert sleeps == [5.0, 30.0, 120.0]
 
 
+def test_backfill_reports_running_until_finalized(tmp_path: Path) -> None:
+    client, _ = make_client(lambda market, day: [make_row("000001", market, day)])
+    interim: list[object] = []
+    report = collect_krx_daily_history(
+        api_key="krx-secret",
+        output_dir=tmp_path,
+        start_date=date(2005, 2, 7),
+        end_date=date(2005, 2, 8),
+        client=client,
+        sleeper=lambda _: None,
+        status_every_calls=1,
+        progress=lambda payload: interim.append(payload["status"]),
+    )
+
+    assert interim == ["RUNNING"] * 4
+    assert report["status"] == "COMPLETE"
+    status = json.loads((tmp_path / STATUS_FILENAME).read_text(encoding="utf-8"))
+    assert status["status"] == "COMPLETE"
+    assert not list(tmp_path.rglob("*.tmp"))
+
+
 def test_backfill_stops_when_source_has_no_data_for_the_era(tmp_path: Path) -> None:
     client, _ = make_client(lambda market, day: [])
     report = collect_krx_daily_history(
