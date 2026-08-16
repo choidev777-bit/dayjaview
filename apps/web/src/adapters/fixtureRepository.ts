@@ -4,6 +4,8 @@ import rankingDegraded from '../../../../contracts/fixtures/rankings/degraded-pa
 import rankingDelayed from '../../../../contracts/fixtures/rankings/delayed.json';
 import rankingEmpty from '../../../../contracts/fixtures/rankings/empty.json';
 import rankingLive from '../../../../contracts/fixtures/rankings/live.json';
+import dayMoversNotPublished from '../../../../contracts/fixtures/daily/movers.not-published.json';
+import dayMoversPublished from '../../../../contracts/fixtures/daily/movers.published.json';
 import treemapExcluded from '../../../../contracts/fixtures/treemap/insufficient-coverage-excluded.json';
 import treemapLive from '../../../../contracts/fixtures/treemap/live.json';
 import detailAfterClose from '../../../../contracts/fixtures/event/after-close-confirmed.json';
@@ -39,6 +41,7 @@ import type {
   AuthSession,
   CatalystDetailResponse,
   CatalystTop3Response,
+  DayMoversResponse,
   EvidenceResponse,
   HistoricalAccessResponse,
   HistoricalEventResponse,
@@ -67,7 +70,14 @@ export type EvidenceFixture = 'searching' | 'single' | 'multi' | 'none' | 'degra
 export type SavedFixture = 'library' | 'unavailable' | 'mixed';
 /** `demo`는 화면이 이어지는 원전수출 이야기, 나머지는 endpoint별 계약 fixture다. */
 export type SimilarFixture = 'gated' | 'demo' | 'available' | 'partial';
-export type FixtureResource = 'rankings' | 'treemap' | 'detail' | 'evidence' | 'saved' | 'historical';
+export type FixtureResource =
+  | 'rankings'
+  | 'treemap'
+  | 'dayMovers'
+  | 'detail'
+  | 'evidence'
+  | 'saved'
+  | 'historical';
 
 export interface FixtureRepositoryOptions {
   authenticated?: boolean;
@@ -250,6 +260,13 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       resolveFixture(
         'rankings',
         rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')],
+      ),
+    getDayMovers: (date: string) =>
+      resolveFixture(
+        'dayMovers',
+        (date >= '2026-08-15'
+          ? dayMoversNotPublished
+          : dayMoversPublished) as unknown as DayMoversResponse,
       ),
     getTreemap: () =>
       resolveFixture(

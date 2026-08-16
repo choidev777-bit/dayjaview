@@ -2,6 +2,7 @@ import type {
   AuthSession,
   CatalystDetailResponse,
   CatalystTop3Response,
+  DayMoversResponse,
   EvidenceResponse,
   HistoricalAccessResponse,
   HistoricalEventResponse,
@@ -115,6 +116,7 @@ class LiveProductRepository implements ProductRepository {
   private readonly setTimer: (callback: () => void, delayMs: number) => TimerHandle;
   private readonly clearTimer: (handle: TimerHandle) => void;
   private readonly listeners = new Map<RepositoryResource, Set<() => void>>();
+  private readonly dayMoversCache = new Map<string, DayMoversResponse>();
   private readonly detailCache = new Map<string, ThemeDetailResponse>();
   private readonly evidenceCache = new Map<string, EvidenceResponse>();
   private readonly savedCache = new Map<SavedType | 'ALL', SavedResponse>();
@@ -243,6 +245,7 @@ class LiveProductRepository implements ProductRepository {
     this.treemapCache = null;
     this.latestRankingSnapshot = null;
     this.latestTreemapSnapshot = null;
+    this.dayMoversCache.clear();
     this.detailCache.clear();
     this.evidenceCache.clear();
     this.savedCache.clear();
@@ -331,6 +334,16 @@ class LiveProductRepository implements ProductRepository {
     }
     this.startRealtime();
     return this.treemapCache;
+  }
+
+  async getDayMovers(date: string): Promise<DayMoversResponse> {
+    const cached = this.dayMoversCache.get(date);
+    if (cached) return cached;
+    const response = await this.request<DayMoversResponse>(
+      `/api/v1/daily/movers?date=${encodeURIComponent(date)}`,
+    );
+    this.dayMoversCache.set(date, response);
+    return response;
   }
 
   async getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse> {

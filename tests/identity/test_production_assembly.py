@@ -127,7 +127,9 @@ def test_database_url_moves_identity_to_postgres_and_close_releases_it() -> None
     )
 
     assert environment.identity_store == POSTGRES_STORE
-    assert len(connections) == 2
+    # identity·operator·특징테마 읽기가 각자 연결을 쓴다. 공유하면 서로의
+    # 트랜잭션 경계에 끼어든다.
+    assert len(connections) == 3
     assert all(connection.closed is False for connection in connections)
     assert isinstance(environment.operator_repository, PostgresOperatorRepository)
     environment.close()

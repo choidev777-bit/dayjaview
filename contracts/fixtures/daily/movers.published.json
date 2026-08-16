@@ -1,0 +1,65 @@
+{
+  "data": {
+    "requestedDate": "2026-06-29",
+    "publishedDate": "2026-06-29",
+    "status": "PUBLISHED",
+    "isFallback": false,
+    "sections": [
+      {
+        "sectionName": "2차전지 등",
+        "headline": "K-배터리, 2분기 실적 반등 기대감 등에 상승",
+        "details": [
+          "▷언론에 따르면, 중국 업체들의 저가 공세와 전기차 수요 축소로 긴 적자 터널을 지난 배터리 업계가 2분기 실적 반등의 기반을 마련할 것이라는 분석이 제기.",
+          "▷이 같은 소식 속 LG에너지솔루션, 삼성SDI, 에코프로, 신성델타테크 등 2차전지 테마가 상승."
+        ],
+        "themes": [
+          {
+            "themeName": "2차전지",
+            "changeRate": "10.86",
+            "stocks": [
+              {
+                "stockName": "신성델타테크",
+                "stockCode": "065350",
+                "closePrice": 34000,
+                "changeRate": "21.00"
+              },
+              {
+                "stockName": "LG에너지솔루션",
+                "stockCode": "373220",
+                "closePrice": 400500,
+                "changeRate": "20.81"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sectionName": "반도체 대표주(생산)",
+        "headline": "美 필라델피아 반도체지수 폭락 영향 등에 하락",
+        "details": [
+          "▷애플 가격 인상 속 메모리 수요 둔화 우려가 지속되며 반도체 대표주 테마가 하락."
+        ],
+        "themes": [
+          {
+            "themeName": "반도체 대표주(생산)",
+            "changeRate": "-2.41",
+            "stocks": [
+              {
+                "stockName": "SK하이닉스",
+                "stockCode": "000660",
+                "closePrice": 1645000,
+                "changeRate": "-3.26"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_day_movers_published",
+    "apiVersion": "1",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-29T09:40:00.000Z"
+  }
+}

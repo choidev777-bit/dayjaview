@@ -6,7 +6,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, Protocol
 from urllib.parse import unquote
 
 from packages.identity import (
@@ -25,6 +25,7 @@ from packages.identity import (
     TargetRecord,
 )
 from packages.identity.security import Clock
+from packages.infostock import DayMovers
 from packages.operator import InMemoryOperatorRepository, OperatorRepository
 
 from .app_types import JsonObject, JsonValue
@@ -63,6 +64,50 @@ from .product import (
 )
 from .realtime import RealtimeSnapshotHub, RealtimeWebSocketServer
 
+
+class DailyFeaturedReader(Protocol):
+    """PostgresDailyFeaturedReader가 이미 만족하는 읽기 전용 표면."""
+
+    def day_movers(self, requested: date) -> DayMovers: ...
+
+
+def _day_movers_data(movers: DayMovers) -> JsonObject:
+    """읽기 모델을 공개 응답으로 옮긴다. 수치를 새로 만들지 않는다."""
+
+    return {
+        "requestedDate": movers.requested_date.isoformat(),
+        "publishedDate": (
+            None if movers.published_date is None else movers.published_date.isoformat()
+        ),
+        "status": movers.status,
+        "isFallback": movers.is_fallback,
+        "sections": [
+            {
+                "sectionName": section.section_name,
+                "headline": section.headline,
+                "details": list(section.details),
+                "themes": [
+                    {
+                        "themeName": theme.theme_name,
+                        "changeRate": theme.change_rate,
+                        "stocks": [
+                            {
+                                "stockName": stock.stock_name,
+                                "stockCode": stock.stock_code,
+                                "closePrice": stock.close_price,
+                                "changeRate": stock.change_rate,
+                            }
+                            for stock in theme.stocks
+                        ],
+                    }
+                    for theme in section.themes
+                ],
+            }
+            for section in movers.sections
+        ],
+    }
+
+
 _SAVED_PATH = re.compile(r"^/v1/me/saved/(themes|stocks|events)/([^/]+)$")
 _THEME_EVENT_PATH = re.compile(r"^/v1/themes/([^/]+)/events/([^/]+)$")
 _EVENT_EVIDENCE_PATH = re.compile(r"^/v1/events/([^/]+)/evidence$")
@@ -87,6 +132,7 @@ class IdentityApiApp:
         operator_boundary: OperatorBoundary,
         settings: ApiSettings,
         product_repository: ProductReadRepository | None = None,
+        daily_reader: DailyFeaturedReader | None = None,
         realtime_hub: RealtimeSnapshotHub | None = None,
         clock: Clock | None = None,
     ) -> None:
@@ -95,6 +141,7 @@ class IdentityApiApp:
         self._settings = settings
         self._clock = clock or SystemClock()
         self._product_repository = product_repository or EmptyProductReadRepository()
+        self._daily_reader = daily_reader
         self.realtime_hub = realtime_hub or RealtimeSnapshotHub()
         self._realtime_server = RealtimeWebSocketServer(
             identity_service=identity_service,
@@ -156,6 +203,8 @@ class IdentityApiApp:
             return self._theme_rankings(request, request_id)
         if request.path == "/v1/insights/treemap" and request.method == "GET":
             return self._theme_treemap(request, request_id)
+        if request.path == "/v1/daily/movers" and request.method == "GET":
+            return self._day_movers(request, request_id)
         match = _THEME_EVENT_PATH.fullmatch(request.path)
         if match is not None and request.method == "GET":
             return self._theme_event(
@@ -347,6 +396,21 @@ class IdentityApiApp:
             self._limit_items(document, limit=limit),
             request_id,
         )
+
+    def _day_movers(self, request: ApiRequest, request_id: str) -> ApiResponse:
+        self.identity_service.require_authenticated(request.cookies.get(SESSION_COOKIE))
+        request.require_query_keys({"date"})
+        request.require_empty_body()
+        raw_date = request.query_value("date")
+        if raw_date is None:
+            raise InvalidApiRequest("조회할 날짜를 지정해 주세요.")
+        self._validate_market_date(raw_date)
+        if self._daily_reader is None:
+            raise ProductDataUnavailable
+        movers = self._daily_reader.day_movers(date.fromisoformat(raw_date))
+        if movers.status == "NO_RECORD":
+            raise ProductResourceNotFound
+        return self._success(200, _day_movers_data(movers), request_id)
 
     def _theme_event(
         self,
@@ -887,6 +951,7 @@ def create_app(
     operator_status_source: OperatorStatusSource,
     settings: ApiSettings,
     product_repository: ProductReadRepository | None = None,
+    daily_reader: DailyFeaturedReader | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
     operator_repository: OperatorRepository | None = None,
     clock: Clock | None = None,
@@ -900,6 +965,7 @@ def create_app(
         ),
         settings=settings,
         product_repository=product_repository,
+        daily_reader=daily_reader,
         realtime_hub=realtime_hub,
         clock=clock,
     )
@@ -913,6 +979,7 @@ def create_fixture_app(
     target_catalog: TargetCatalog | None = None,
     operator_status: RuntimeOperatorStatus | None = None,
     product_repository: ProductReadRepository | None = None,
+    daily_reader: DailyFeaturedReader | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
     operator_repository: InMemoryOperatorRepository | None = None,
 ) -> FixtureIdentityEnvironment:
@@ -955,6 +1022,7 @@ def create_fixture_app(
         operator_status_source=StaticOperatorStatusSource(runtime_status),
         settings=effective_settings,
         product_repository=effective_product_repository,
+        daily_reader=daily_reader,
         realtime_hub=effective_realtime_hub,
         operator_repository=effective_operator_repository,
         clock=effective_clock,

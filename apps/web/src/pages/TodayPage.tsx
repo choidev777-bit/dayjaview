@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { formatLongDate } from '../domain/formatting';
 import { DataStatusBar } from '../shared/DataStatusBar';
@@ -48,6 +49,9 @@ export function TodayPage() {
           }
         />
       )}
+      <Link className="movers-entry" to="/movers">
+        특징테마로 이날 무엇이 오르고 빠졌는지 보기
+      </Link>
     </div>
   );
 }

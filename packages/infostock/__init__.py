@@ -15,6 +15,13 @@ from .daily_api import (
     collect_daily_api_backfill,
     load_daily_api_backfill,
 )
+from .daily_read import (
+    DayMovers,
+    MoverSection,
+    MoverStock,
+    MoverTheme,
+    PostgresDailyFeaturedReader,
+)
 from .errors import (
     DataRightsBlockedError,
     FixtureValidationError,
@@ -52,6 +59,7 @@ __all__ = [
     "DailyBrowserListPage",
     "DailyBrowserSource",
     "DataRightsBlockedError",
+    "DayMovers",
     "ExistingCollectionPolicy",
     "FixtureValidationError",
     "INCREMENT_DATASET",
@@ -59,6 +67,10 @@ __all__ = [
     "ImportResult",
     "InfostockAccessPolicy",
     "InfostockImportError",
+    "MoverSection",
+    "MoverStock",
+    "MoverTheme",
+    "PostgresDailyFeaturedReader",
     "PostgresInfostockStore",
     "SnapshotConflictError",
     "TemporalConflictError",

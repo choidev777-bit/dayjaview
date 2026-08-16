@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from packages.identity import (
     FixtureGoogleOAuthProvider,
@@ -32,6 +32,7 @@ from packages.identity import (
 )
 from packages.identity.postgres import DbConnection
 from packages.identity.security import Clock
+from packages.infostock import PostgresDailyFeaturedReader
 from packages.operator import (
     InMemoryOperatorRepository,
     OperatorRepository,
@@ -47,6 +48,8 @@ from .realtime import RealtimeSnapshotHub
 GOOGLE_CLIENT_ID_ENV = "GOOGLE_OAUTH_CLIENT_ID"
 GOOGLE_CLIENT_SECRET_ENV = "GOOGLE_OAUTH_CLIENT_SECRET"
 IDENTITY_DATABASE_DSN_ENV = "DATABASE_URL"
+# 특징테마는 인포스탁 적재 DB에 있다. 워커 env는 이 이름만 준다.
+INFOSTOCK_DATABASE_DSN_ENV = "INFOSTOCK_DATABASE_URL"
 CURSOR_SIGNING_SECRET_ENV = "SESSION_SIGNING_SECRET"
 DEPLOYMENT_VERSION_ENV = "DAYJAVIEW_DEPLOYMENT_VERSION"
 DEPLOYMENT_COMMIT_ENV = "DAYJAVIEW_COMMIT"
@@ -123,6 +126,7 @@ def create_production_app(
         connect=connect,
         closers=closers,
     )
+    daily_reader = _daily_reader(environment, connect=connect, closers=closers)
     runtime_status = operator_status or RuntimeOperatorStatus(
         deployment_version=(
             environment.get(DEPLOYMENT_VERSION_ENV, "").strip() or "local"
@@ -136,6 +140,7 @@ def create_production_app(
         operator_status_source=StaticOperatorStatusSource(runtime_status),
         settings=settings,
         product_repository=product_repository or EmptyProductReadRepository(),
+        daily_reader=daily_reader,
         realtime_hub=effective_hub,
         operator_repository=effective_operator_repository,
         clock=effective_clock,
@@ -230,6 +235,34 @@ def _identity_repository(
     if callable(close):
         closers.append(close)
     return PostgresIdentityRepository(connection), POSTGRES_STORE
+
+
+def _daily_reader(
+    environment: Mapping[str, str],
+    *,
+    connect: DbConnect | None,
+    closers: list[Callable[[], None]],
+) -> PostgresDailyFeaturedReader | None:
+    """특징테마 읽기 전용 연결. DSN이 없으면 기능을 열지 않는다."""
+
+    dsn = environment.get(INFOSTOCK_DATABASE_DSN_ENV, "").strip() or environment.get(
+        IDENTITY_DATABASE_DSN_ENV, ""
+    ).strip()
+    if not dsn:
+        return None
+    if connect is None:
+        import psycopg
+
+        def connect_psycopg(target: str) -> DbConnection:
+            connection: Any = psycopg.connect(target)
+            return connection
+
+        connect = connect_psycopg
+    connection = connect(dsn)
+    close = getattr(connection, "close", None)
+    if callable(close):
+        closers.append(close)
+    return PostgresDailyFeaturedReader(cast(Any, connection))
 
 
 def _operator_repository(

@@ -1,49 +1,186 @@
 {
   "schemaVersion": "2026-08-14.1",
   "fixtures": [
-    {"path": "market/session.preopen.json", "schema": "MarketSessionResponse"},
-    {"path": "market/session.live.json", "schema": "MarketSessionResponse"},
-    {"path": "market/session.closed.json", "schema": "MarketSessionResponse"},
-    {"path": "rankings/live.json", "schema": "RankingResponse"},
-    {"path": "rankings/delayed.json", "schema": "RankingResponse"},
-    {"path": "rankings/degraded-partial-coverage.json", "schema": "RankingResponse"},
-    {"path": "rankings/closed-pending-reconciliation.json", "schema": "RankingResponse"},
-    {"path": "rankings/empty.json", "schema": "RankingResponse"},
-    {"path": "rankings/calculation-unavailable.json", "schema": "RankingResponse"},
-    {"path": "treemap/live.json", "schema": "TreemapResponse"},
-    {"path": "treemap/insufficient-coverage-excluded.json", "schema": "TreemapResponse"},
-    {"path": "event/searching-evidence.json", "schema": "ThemeDetailResponse"},
-    {"path": "event/single-source.json", "schema": "ThemeDetailResponse"},
-    {"path": "event/multi-source.json", "schema": "ThemeDetailResponse"},
-    {"path": "event/after-close-confirmed.json", "schema": "ThemeDetailResponse"},
-    {"path": "event/unmatched.json", "schema": "ThemeDetailResponse"},
-    {"path": "evidence/none-searching.json", "schema": "EvidenceListResponse"},
-    {"path": "evidence/single-source.json", "schema": "EvidenceListResponse"},
-    {"path": "evidence/multi-source.json", "schema": "EvidenceListResponse"},
-    {"path": "evidence/no-new-catalyst.json", "schema": "EvidenceListResponse"},
-    {"path": "evidence/source-degraded.json", "schema": "EvidenceListResponse"},
-    {"path": "saved/library.json", "schema": "SavedListResponse"},
-    {"path": "saved/unavailable.json", "schema": "SavedListResponse"},
-    {"path": "similar/gated.json", "schema": "SimilarEventsResponse"},
-    {"path": "similar/available.json", "schema": "SimilarEventsResponse"},
-    {"path": "similar/empty.json", "schema": "SimilarEventsResponse"},
-    {"path": "similar/partial-outcomes.json", "schema": "SimilarEventsResponse"},
-    {"path": "similar/event-detail.json", "schema": "HistoricalEventResponse"},
-    {"path": "operator/status.json", "schema": "OperatorStatusResponse"},
-    {"path": "operator/reviews.pending.json", "schema": "OperatorReviewListResponse"},
-    {"path": "realtime/auth.json", "schema": "WsAuth"},
-    {"path": "realtime/subscribe.json", "schema": "WsSubscribe"},
-    {"path": "realtime/pong.json", "schema": "WsPong"},
-    {"path": "realtime/subscribed.json", "schema": "WsSubscribed"},
-    {"path": "realtime/ranking-snapshot.json", "schema": "WsRankingSnapshot"},
-    {"path": "realtime/reconnect-full-snapshot.json", "schema": "WsRankingSnapshot"},
-    {"path": "realtime/treemap-snapshot.json", "schema": "WsTreemapSnapshot"},
-    {"path": "realtime/event-state-changed.json", "schema": "WsEventStateChanged"},
-    {"path": "realtime/ping.json", "schema": "WsPing"},
-    {"path": "realtime/error.json", "schema": "WsError"},
-    {"path": "errors/invalid-request.json", "schema": "ErrorResponse"},
-    {"path": "errors/not-entitled.json", "schema": "ErrorResponse"},
-    {"path": "errors/unavailable.json", "schema": "ErrorResponse"}
+    {
+      "path": "market/session.preopen.json",
+      "schema": "MarketSessionResponse"
+    },
+    {
+      "path": "market/session.live.json",
+      "schema": "MarketSessionResponse"
+    },
+    {
+      "path": "market/session.closed.json",
+      "schema": "MarketSessionResponse"
+    },
+    {
+      "path": "rankings/live.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "rankings/delayed.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "rankings/degraded-partial-coverage.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "rankings/closed-pending-reconciliation.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "rankings/empty.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "rankings/calculation-unavailable.json",
+      "schema": "RankingResponse"
+    },
+    {
+      "path": "treemap/live.json",
+      "schema": "TreemapResponse"
+    },
+    {
+      "path": "treemap/insufficient-coverage-excluded.json",
+      "schema": "TreemapResponse"
+    },
+    {
+      "path": "event/searching-evidence.json",
+      "schema": "ThemeDetailResponse"
+    },
+    {
+      "path": "event/single-source.json",
+      "schema": "ThemeDetailResponse"
+    },
+    {
+      "path": "event/multi-source.json",
+      "schema": "ThemeDetailResponse"
+    },
+    {
+      "path": "event/after-close-confirmed.json",
+      "schema": "ThemeDetailResponse"
+    },
+    {
+      "path": "event/unmatched.json",
+      "schema": "ThemeDetailResponse"
+    },
+    {
+      "path": "evidence/none-searching.json",
+      "schema": "EvidenceListResponse"
+    },
+    {
+      "path": "evidence/single-source.json",
+      "schema": "EvidenceListResponse"
+    },
+    {
+      "path": "evidence/multi-source.json",
+      "schema": "EvidenceListResponse"
+    },
+    {
+      "path": "evidence/no-new-catalyst.json",
+      "schema": "EvidenceListResponse"
+    },
+    {
+      "path": "evidence/source-degraded.json",
+      "schema": "EvidenceListResponse"
+    },
+    {
+      "path": "saved/library.json",
+      "schema": "SavedListResponse"
+    },
+    {
+      "path": "saved/unavailable.json",
+      "schema": "SavedListResponse"
+    },
+    {
+      "path": "similar/gated.json",
+      "schema": "SimilarEventsResponse"
+    },
+    {
+      "path": "similar/available.json",
+      "schema": "SimilarEventsResponse"
+    },
+    {
+      "path": "similar/empty.json",
+      "schema": "SimilarEventsResponse"
+    },
+    {
+      "path": "similar/partial-outcomes.json",
+      "schema": "SimilarEventsResponse"
+    },
+    {
+      "path": "similar/event-detail.json",
+      "schema": "HistoricalEventResponse"
+    },
+    {
+      "path": "operator/status.json",
+      "schema": "OperatorStatusResponse"
+    },
+    {
+      "path": "operator/reviews.pending.json",
+      "schema": "OperatorReviewListResponse"
+    },
+    {
+      "path": "realtime/auth.json",
+      "schema": "WsAuth"
+    },
+    {
+      "path": "realtime/subscribe.json",
+      "schema": "WsSubscribe"
+    },
+    {
+      "path": "realtime/pong.json",
+      "schema": "WsPong"
+    },
+    {
+      "path": "realtime/subscribed.json",
+      "schema": "WsSubscribed"
+    },
+    {
+      "path": "realtime/ranking-snapshot.json",
+      "schema": "WsRankingSnapshot"
+    },
+    {
+      "path": "realtime/reconnect-full-snapshot.json",
+      "schema": "WsRankingSnapshot"
+    },
+    {
+      "path": "realtime/treemap-snapshot.json",
+      "schema": "WsTreemapSnapshot"
+    },
+    {
+      "path": "realtime/event-state-changed.json",
+      "schema": "WsEventStateChanged"
+    },
+    {
+      "path": "realtime/ping.json",
+      "schema": "WsPing"
+    },
+    {
+      "path": "realtime/error.json",
+      "schema": "WsError"
+    },
+    {
+      "path": "errors/invalid-request.json",
+      "schema": "ErrorResponse"
+    },
+    {
+      "path": "errors/not-entitled.json",
+      "schema": "ErrorResponse"
+    },
+    {
+      "path": "errors/unavailable.json",
+      "schema": "ErrorResponse"
+    },
+    {
+      "path": "daily/movers.published.json",
+      "schema": "DayMoversResponse"
+    },
+    {
+      "path": "daily/movers.not-published.json",
+      "schema": "DayMoversResponse"
+    }
   ],
   "invariantSeries": [
     {

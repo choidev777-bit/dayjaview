@@ -2264,6 +2264,122 @@ a:focus-visible,
   line-height: 1.6;
 }
 
+/* ------------------------------------------------------------- 특징테마 */
+
+.movers-entry {
+  display: block;
+  margin: var(--djv-space-4);
+  padding: var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-lg);
+  background: var(--djv-color-surface);
+  color: var(--djv-color-text);
+  font-size: var(--djv-font-size-label);
+  text-align: center;
+  text-decoration: none;
+}
+
+.movers-date {
+  display: flex;
+  gap: var(--djv-space-2);
+  align-items: center;
+  margin-top: var(--djv-space-3);
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-label);
+}
+
+.movers-date input {
+  padding: var(--djv-space-2) var(--djv-space-3);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-md);
+  background: var(--djv-color-surface);
+  color: var(--djv-color-text);
+  font: inherit;
+}
+
+.movers-notice {
+  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  padding: var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-lg);
+  background: var(--djv-color-surface-muted, var(--djv-color-surface));
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-label);
+  line-height: 1.6;
+}
+
+.movers-group__title {
+  margin: var(--djv-space-5) var(--djv-space-4) var(--djv-space-3);
+  font-size: var(--djv-font-size-heading-3);
+}
+
+.movers-section {
+  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  padding: var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-lg);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
+}
+
+.movers-section h2 {
+  margin: 0;
+  font-size: var(--djv-font-size-heading-3);
+  line-height: 1.4;
+}
+
+.movers-section small {
+  display: block;
+  margin-top: var(--djv-space-1);
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
+}
+
+.movers-section p {
+  margin: var(--djv-space-3) 0 0;
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-label);
+  line-height: 1.7;
+}
+
+.movers-themes,
+.movers-stocks {
+  margin: var(--djv-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.movers-theme {
+  margin-top: var(--djv-space-3);
+  padding-top: var(--djv-space-3);
+  border-top: 1px solid var(--djv-color-border);
+}
+
+.movers-theme__head {
+  display: flex;
+  gap: var(--djv-space-2);
+  justify-content: space-between;
+}
+
+.movers-stocks li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--djv-space-3);
+  padding: var(--djv-space-1) 0;
+  font-size: var(--djv-font-size-label);
+}
+
+.movers-stocks__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.movers-stocks__price {
+  color: var(--djv-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ------------------------------------------------------------- 로그인 */
 
 .login-page {

@@ -26,6 +26,7 @@ import { ResearchPage } from '../pages/ResearchPage';
 import { SavedPage } from '../pages/SavedPage';
 import { SimilarEventsPage } from '../pages/SimilarEventsPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
+import { DayMoversPage } from '../pages/DayMoversPage';
 import { TodayPage } from '../pages/TodayPage';
 import { ScrollMemory } from '../shared/ScrollMemory';
 import { ErrorState, SplashScreen } from '../shared/StatePanel';
@@ -77,6 +78,7 @@ function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
         <Route index element={<Navigate to="/today" replace />} />
         <Route path="/today" element={<TodayPage />} />
         <Route path="/insights" element={<InsightsPage />} />
+        <Route path="/movers" element={<DayMoversPage />} />
         <Route path="/saved" element={<SavedPage onLogout={onLogout} />} />
         <Route path="/research" element={<ResearchPage />} />
         <Route path="/themes/:themeId/events/:eventId" element={<ThemeDetailPage />} />

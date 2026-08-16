@@ -128,6 +128,36 @@ describe('하단 탭과 즐겨찾기 route shell', () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
+  it('발행 전 날짜를 열면 대체 사실을 알리고 직전 거래일 결과를 보여준다', async () => {
+    render(<App repository={createFixtureRepository()} initialEntries={['/movers']} />);
+
+    expect(
+      await screen.findByRole('heading', { name: '이날 뭐가 움직였나요?' }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText(/특징테마가 발행되지 않았어요/)).toBeInTheDocument();
+    expect(screen.getByText(/직전 거래일/)).toBeInTheDocument();
+    expect(screen.getByText('+3.26%')).toBeInTheDocument();
+  });
+
+  it('발행된 날짜는 원문 문단과 상승·하락을 나눠 보여준다', async () => {
+    const user = userEvent.setup();
+    render(<App repository={createFixtureRepository()} initialEntries={['/movers']} />);
+
+    const input = await screen.findByLabelText('날짜');
+    await user.clear(input);
+    await user.type(input, '2026-06-29');
+
+    expect(await screen.findByText('오른 테마')).toBeInTheDocument();
+    expect(screen.getByText('빠진 테마')).toBeInTheDocument();
+    expect(
+      screen.getByText(/중국 업체들의 저가 공세와 전기차 수요 축소/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('+21.00%')).toBeInTheDocument();
+    expect(screen.getByText('-3.26%')).toBeInTheDocument();
+    expect(screen.getByText('34,000원')).toBeInTheDocument();
+    expect(screen.queryByText(/발행되지 않았어요/)).not.toBeInTheDocument();
+  });
+
   it('홈 순위 휠은 목록 의미와 방향키 이동을 제공한다', async () => {
     const user = userEvent.setup();
     render(<App repository={createFixtureRepository()} initialEntries={['/today']} />);

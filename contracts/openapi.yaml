@@ -215,6 +215,44 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
         "503":
           $ref: "#/components/responses/Unavailable"
+  /v1/daily/movers:
+    get:
+      tags: [Themes]
+      operationId: getDayMovers
+      summary: 특징테마 하루치의 상승·하락 섹션을 조회한다
+      description: >-
+        발행 전 날짜를 물으면 실시간 값으로 대체하지 않는다. status가
+        NOT_PUBLISHED이면 publishedDate의 직전 거래일 결과를 돌려준다.
+        등락률·종가는 원문 표에 적힌 값이며 재계산하지 않는다.
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      x-stage0-fixtures:
+        - daily/movers.published.json
+        - daily/movers.not-published.json
+      responses:
+        "200":
+          description: 하루치 특징테마 섹션
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/DayMoversResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          description: 요청 날짜 이전에 발행된 특징테마가 없다
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
+        "503":
+          $ref: "#/components/responses/Unavailable"
   /v1/themes/{themeId}/events/{eventId}:
     get:
       tags: [Themes]

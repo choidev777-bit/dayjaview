@@ -37,6 +37,7 @@ REQUIRED_HTTP_SURFACE = {
     "/v1/market/session": {"get"},
     "/v1/themes/rankings": {"get"},
     "/v1/insights/treemap": {"get"},
+    "/v1/daily/movers": {"get"},
     "/v1/themes/{themeId}/events/{eventId}": {"get"},
     "/v1/events/{eventId}/evidence": {"get"},
     "/v1/me/saved": {"get"},

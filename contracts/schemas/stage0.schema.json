@@ -3,108 +3,351 @@
   "$id": "https://dayjaview.example/contracts/schemas/stage0.schema.json",
   "title": "DAYJAVIEW Stage 0 shared schemas",
   "$defs": {
-    "OpaqueId": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 128
-    },
-    "Timestamp": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "MarketDate": {
-      "type": "string",
-      "format": "date"
-    },
-    "DataStatus": {
-      "enum": ["PREOPEN", "LIVE", "DELAYED", "DEGRADED", "CLOSED"]
-    },
-    "LifecycleStatus": {
-      "enum": ["CANDIDATE", "ACTIVE", "WEAKENING", "CLOSED", "DISCARDED"]
-    },
-    "PublicLifecycleStatus": {
-      "enum": ["ACTIVE", "WEAKENING", "CLOSED"]
-    },
-    "ReconciliationStatus": {
-      "enum": ["PENDING", "MATCHED", "UNMATCHED"]
-    },
-    "ReviewStatus": {
-      "enum": ["PENDING", "RESOLVED"]
-    },
-    "EvidenceStatus": {
-      "enum": [
-        "SEARCHING",
-        "SINGLE_SOURCE",
-        "MULTI_SOURCE_CONFIRMED",
-        "NO_NEW_CATALYST",
-        "REEMERGENCE",
-        "AFTER_CLOSE_CONFIRMED"
-      ]
-    },
-    "QualityFlags": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[A-Z][A-Z0-9_]*$"
-      }
-    },
-    "Versions": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "calculationVersion": {"type": ["string", "null"]},
-        "rankingModelVersion": {"type": ["string", "null"]},
-        "membershipVersion": {"type": ["string", "null"]},
-        "tradingCalendarVersion": {"type": ["string", "null"]},
-        "ontologyVersion": {"type": ["string", "null"]},
-        "retrievalArtifactVersion": {"type": ["string", "null"]},
-        "outcomeVersion": {"type": ["string", "null"]}
-      }
-    },
-    "MarketContext": {
+    "AccountDeletionResponse": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "market",
-        "timeZone",
-        "marketDate",
-        "asOf",
-        "dataStatus",
-        "lastHealthyAt",
-        "qualityFlags"
+        "data",
+        "meta"
       ],
       "properties": {
-        "market": {"const": "KRX"},
-        "timeZone": {"const": "Asia/Seoul"},
-        "marketDate": {"$ref": "#/$defs/MarketDate"},
-        "asOf": {"$ref": "#/$defs/Timestamp"},
-        "dataStatus": {"$ref": "#/$defs/DataStatus"},
-        "lastHealthyAt": {"type": ["string", "null"], "format": "date-time"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "const": "DELETION_STARTED"
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
       }
     },
-    "ResponseMeta": {
+    "Classification": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["requestId", "apiVersion", "schemaVersion", "generatedAt"],
+      "required": [
+        "classificationVersion",
+        "themeId",
+        "displayName",
+        "kind",
+        "certainty",
+        "source",
+        "changedAt"
+      ],
       "properties": {
-        "requestId": {"$ref": "#/$defs/OpaqueId"},
-        "apiVersion": {"const": "1"},
-        "schemaVersion": {"type": "string", "minLength": 1},
-        "generatedAt": {"$ref": "#/$defs/Timestamp"},
-        "marketContext": {"$ref": "#/$defs/MarketContext"},
-        "versions": {"$ref": "#/$defs/Versions"}
+        "classificationVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "themeId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "INFOSTOCK_THEME",
+            "UNCLASSIFIED_CLUSTER",
+            "TEMPORARY_THEME"
+          ]
+        },
+        "certainty": {
+          "enum": [
+            "PROVISIONAL",
+            "CONFIRMED"
+          ]
+        },
+        "source": {
+          "enum": [
+            "LIVE_ENGINE",
+            "OPERATOR",
+            "INFOSTOCK"
+          ]
+        },
+        "changedAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
       }
     },
-    "Page": {
+    "Coverage": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["nextCursor", "hasMore", "limit"],
+      "required": [
+        "status",
+        "core",
+        "related"
+      ],
       "properties": {
-        "nextCursor": {"type": ["string", "null"], "minLength": 1},
-        "hasMore": {"type": "boolean"},
-        "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+        "status": {
+          "enum": [
+            "SUFFICIENT",
+            "PARTIAL",
+            "INSUFFICIENT"
+          ]
+        },
+        "core": {
+          "$ref": "#/$defs/CoveragePart"
+        },
+        "related": {
+          "$ref": "#/$defs/CoveragePart"
+        }
+      }
+    },
+    "CoveragePart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observedCount",
+        "totalCount",
+        "countRatio"
+      ],
+      "properties": {
+        "observedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "countRatio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "observedWeightRatio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "CurrentReaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weightedReturn",
+        "weightMethod",
+        "advancingCount",
+        "validCount",
+        "turnoverMultiple",
+        "attentionGapTradingDays"
+      ],
+      "properties": {
+        "weightedReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "weightMethod": {
+          "const": "FREE_FLOAT_CAPPED"
+        },
+        "advancingCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "validCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "turnoverMultiple": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "attentionGapTradingDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "DataStatus": {
+      "enum": [
+        "PREOPEN",
+        "LIVE",
+        "DELAYED",
+        "DEGRADED",
+        "CLOSED"
+      ]
+    },
+    "DayMoversData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestedDate",
+        "publishedDate",
+        "status",
+        "isFallback",
+        "sections"
+      ],
+      "properties": {
+        "requestedDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "publishedDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "PUBLISHED",
+            "NOT_PUBLISHED",
+            "NO_RECORD"
+          ]
+        },
+        "isFallback": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DayMoversSection"
+          }
+        }
+      }
+    },
+    "DayMoversResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/DayMoversData"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "DayMoversSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sectionName",
+        "headline",
+        "details",
+        "themes"
+      ],
+      "properties": {
+        "sectionName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "headline": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DayMoversTheme"
+          }
+        }
+      }
+    },
+    "DayMoversStock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stockName",
+        "stockCode",
+        "closePrice",
+        "changeRate"
+      ],
+      "properties": {
+        "stockName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stockCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9A-Z]{6}$"
+        },
+        "closePrice": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "changeRate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
+        }
+      }
+    },
+    "DayMoversTheme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "themeName",
+        "changeRate",
+        "stocks"
+      ],
+      "properties": {
+        "themeName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "changeRate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
+        },
+        "stocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DayMoversStock"
+          }
+        }
       }
     },
     "ErrorCode": {
@@ -125,82 +368,194 @@
     "ErrorResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["error", "meta"],
+      "required": [
+        "error",
+        "meta"
+      ],
       "properties": {
         "error": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["code", "message", "retryable", "details"],
+          "required": [
+            "code",
+            "message",
+            "retryable",
+            "details"
+          ],
           "properties": {
-            "code": {"$ref": "#/$defs/ErrorCode"},
-            "message": {"type": "string", "minLength": 1},
-            "retryable": {"type": "boolean"},
-            "details": {"type": "object"}
+            "code": {
+              "$ref": "#/$defs/ErrorCode"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "details": {
+              "type": "object"
+            }
           }
         },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "CoveragePart": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["observedCount", "totalCount", "countRatio"],
-      "properties": {
-        "observedCount": {"type": "integer", "minimum": 0},
-        "totalCount": {"type": "integer", "minimum": 0},
-        "countRatio": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
-        "observedWeightRatio": {
-          "type": ["number", "null"],
-          "minimum": 0,
-          "maximum": 1
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
         }
       }
     },
-    "Coverage": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "core", "related"],
-      "properties": {
-        "status": {"enum": ["SUFFICIENT", "PARTIAL", "INSUFFICIENT"]},
-        "core": {"$ref": "#/$defs/CoveragePart"},
-        "related": {"$ref": "#/$defs/CoveragePart"}
-      }
-    },
-    "Classification": {
+    "EventStateSummary": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "classificationVersion",
-        "themeId",
-        "displayName",
-        "kind",
-        "certainty",
-        "source",
-        "changedAt"
+        "eventId",
+        "lifecycleStatus",
+        "reconciliationStatus",
+        "classification",
+        "currentReaction",
+        "evidenceSummary",
+        "historicalAccess",
+        "qualityFlags"
       ],
       "properties": {
-        "classificationVersion": {"type": "integer", "minimum": 1},
-        "themeId": {"$ref": "#/$defs/OpaqueId"},
-        "displayName": {"type": "string", "minLength": 1},
-        "kind": {
-          "enum": ["INFOSTOCK_THEME", "UNCLASSIFIED_CLUSTER", "TEMPORARY_THEME"]
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
         },
-        "certainty": {"enum": ["PROVISIONAL", "CONFIRMED"]},
-        "source": {"enum": ["LIVE_ENGINE", "OPERATOR", "INFOSTOCK"]},
-        "changedAt": {"$ref": "#/$defs/Timestamp"}
+        "lifecycleStatus": {
+          "$ref": "#/$defs/PublicLifecycleStatus"
+        },
+        "reconciliationStatus": {
+          "$ref": "#/$defs/ReconciliationStatus"
+        },
+        "classification": {
+          "$ref": "#/$defs/Classification"
+        },
+        "currentReaction": {
+          "$ref": "#/$defs/CurrentReaction"
+        },
+        "evidenceSummary": {
+          "$ref": "#/$defs/EvidenceSummary"
+        },
+        "historicalAccess": {
+          "$ref": "#/$defs/HistoricalAccess"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
       }
     },
-    "Leader": {
+    "EvidenceItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["stockId", "symbol", "name", "return"],
+      "required": [
+        "newsId",
+        "sourceName",
+        "title",
+        "publishedAt",
+        "receivedAt",
+        "originalUrl",
+        "matchBasis",
+        "summary",
+        "qualityFlags"
+      ],
       "properties": {
-        "stockId": {"$ref": "#/$defs/OpaqueId"},
-        "symbol": {"type": "string", "minLength": 1},
-        "name": {"type": "string", "minLength": 1},
-        "return": {"type": ["number", "null"]},
-        "role": {"enum": ["LEADER", "RELATED"]}
+        "newsId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "sourceName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "publishedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "receivedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "originalUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "matchBasis": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "THEME",
+              "STOCK",
+              "TIME"
+            ]
+          }
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
       }
+    },
+    "EvidenceListData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "evidenceStatus",
+        "items",
+        "page"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "evidenceStatus": {
+          "$ref": "#/$defs/EvidenceStatus"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          }
+        },
+        "page": {
+          "$ref": "#/$defs/Page"
+        }
+      }
+    },
+    "EvidenceListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/EvidenceListData"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "EvidenceStatus": {
+      "enum": [
+        "SEARCHING",
+        "SINGLE_SOURCE",
+        "MULTI_SOURCE_CONFIRMED",
+        "NO_NEW_CATALYST",
+        "REEMERGENCE",
+        "AFTER_CLOSE_CONFIRMED"
+      ]
     },
     "EvidenceSummary": {
       "type": "object",
@@ -212,24 +567,361 @@
         "latestPublishedAt"
       ],
       "properties": {
-        "evidenceStatus": {"$ref": "#/$defs/EvidenceStatus"},
-        "summary": {"type": ["string", "null"]},
-        "sourceCount": {"type": "integer", "minimum": 0},
+        "evidenceStatus": {
+          "$ref": "#/$defs/EvidenceStatus"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
         "latestPublishedAt": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         }
       }
     },
-    "RankingEvidence": {
+    "HistoricalAccess": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["evidenceStatus", "summary", "publishedAt"],
+      "required": [
+        "status",
+        "reason"
+      ],
       "properties": {
-        "evidenceStatus": {"$ref": "#/$defs/EvidenceStatus"},
-        "summary": {"type": ["string", "null"]},
-        "publishedAt": {"type": ["string", "null"], "format": "date-time"}
+        "status": {
+          "enum": [
+            "AVAILABLE",
+            "GATED",
+            "UNAVAILABLE"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
+    },
+    "HistoricalEventResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eventId",
+            "marketDate",
+            "displayNameAtEvent",
+            "catalystSummary",
+            "similarityReasons",
+            "leaders",
+            "outcomes",
+            "futureOutcomeExcludedFromSelection"
+          ],
+          "properties": {
+            "eventId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "marketDate": {
+              "$ref": "#/$defs/MarketDate"
+            },
+            "displayNameAtEvent": {
+              "type": "string",
+              "minLength": 1
+            },
+            "catalystSummary": {
+              "type": "string",
+              "minLength": 1
+            },
+            "similarityReasons": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "leaders": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Leader"
+              }
+            },
+            "outcomes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/HistoricalOutcome"
+              }
+            },
+            "futureOutcomeExcludedFromSelection": {
+              "const": true
+            }
+          }
+        },
+        "meta": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "versions"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "HistoricalOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "horizonTradingDays",
+        "return",
+        "status",
+        "unavailableReason"
+      ],
+      "properties": {
+        "horizonTradingDays": {
+          "enum": [
+            1,
+            5,
+            20
+          ]
+        },
+        "return": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "OBSERVED",
+            "UNAVAILABLE",
+            "PENDING"
+          ]
+        },
+        "unavailableReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "HistoricalSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "horizonTradingDays",
+        "eligibleCount",
+        "observedCount",
+        "positiveCount",
+        "medianReturn"
+      ],
+      "properties": {
+        "horizonTradingDays": {
+          "enum": [
+            1,
+            5,
+            20
+          ]
+        },
+        "eligibleCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "positiveCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medianReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "InfostockAuthStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "lastAuthenticatedAt",
+            "runbookKey"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "READY",
+                "AUTH_REQUIRED",
+                "UNKNOWN"
+              ]
+            },
+            "lastAuthenticatedAt": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "runbookKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "Leader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stockId",
+        "symbol",
+        "name",
+        "return"
+      ],
+      "properties": {
+        "stockId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "return": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "role": {
+          "enum": [
+            "LEADER",
+            "RELATED"
+          ]
+        }
+      }
+    },
+    "LifecycleStatus": {
+      "enum": [
+        "CANDIDATE",
+        "ACTIVE",
+        "WEAKENING",
+        "CLOSED",
+        "DISCARDED"
+      ]
+    },
+    "LogoutResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "loggedOut"
+          ],
+          "properties": {
+            "loggedOut": {
+              "const": true
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "MarketContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "market",
+        "timeZone",
+        "marketDate",
+        "asOf",
+        "dataStatus",
+        "lastHealthyAt",
+        "qualityFlags"
+      ],
+      "properties": {
+        "market": {
+          "const": "KRX"
+        },
+        "timeZone": {
+          "const": "Asia/Seoul"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "asOf": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "dataStatus": {
+          "$ref": "#/$defs/DataStatus"
+        },
+        "lastHealthyAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
+      }
+    },
+    "MarketDate": {
+      "type": "string",
+      "format": "date"
     },
     "MarketSessionData": {
       "type": "object",
@@ -244,26 +936,629 @@
         "nextTransitionAt"
       ],
       "properties": {
-        "market": {"const": "KRX"},
-        "timeZone": {"const": "Asia/Seoul"},
-        "marketDate": {"$ref": "#/$defs/MarketDate"},
-        "sessionPhase": {"enum": ["PREOPEN", "REGULAR", "CLOSED", "HOLIDAY"]},
-        "sessionOpenedAt": {"type": ["string", "null"], "format": "date-time"},
-        "sessionClosesAt": {"type": ["string", "null"], "format": "date-time"},
-        "nextTransitionAt": {"type": ["string", "null"], "format": "date-time"}
+        "market": {
+          "const": "KRX"
+        },
+        "timeZone": {
+          "const": "Asia/Seoul"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "sessionPhase": {
+          "enum": [
+            "PREOPEN",
+            "REGULAR",
+            "CLOSED",
+            "HOLIDAY"
+          ]
+        },
+        "sessionOpenedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "sessionClosesAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "nextTransitionAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
       }
     },
     "MarketSessionResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
+      "required": [
+        "data",
+        "meta"
+      ],
       "properties": {
-        "data": {"$ref": "#/$defs/MarketSessionData"},
+        "data": {
+          "$ref": "#/$defs/MarketSessionData"
+        },
         "meta": {
           "allOf": [
-            {"$ref": "#/$defs/ResponseMeta"},
-            {"type": "object", "required": ["marketContext"]}
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "marketContext"
+              ]
+            }
           ]
+        }
+      }
+    },
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "OperatorAuditEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auditId",
+        "actorId",
+        "occurredAt",
+        "action",
+        "targetId",
+        "reasonCode",
+        "beforeRevision",
+        "afterRevision"
+      ],
+      "properties": {
+        "auditId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "actorId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "action": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "targetId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "beforeRevision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "afterRevision": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    },
+    "OperatorAuditListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "page"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/OperatorAuditEntry"
+              }
+            },
+            "page": {
+              "$ref": "#/$defs/Page"
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorCommandRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reasonCode",
+        "reason",
+        "expectedVersion"
+      ],
+      "properties": {
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "OperatorCommandResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "auditId",
+            "actorId",
+            "occurredAt",
+            "targetId",
+            "beforeRevision",
+            "afterRevision"
+          ],
+          "properties": {
+            "auditId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "actorId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "targetId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "beforeRevision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "afterRevision": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorJob": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runId",
+        "jobType",
+        "status",
+        "version",
+        "lastChangedAt",
+        "errorCode"
+      ],
+      "properties": {
+        "runId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "jobType": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "status": {
+          "enum": [
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "RATE_LIMITED",
+            "AUTH_REQUIRED",
+            "FAILED"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lastChangedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "errorCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        }
+      }
+    },
+    "OperatorJobListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "page"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/OperatorJob"
+              }
+            },
+            "page": {
+              "$ref": "#/$defs/Page"
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorJobResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/OperatorJob"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorResolveRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reasonCode",
+        "reason",
+        "expectedVersion",
+        "resolution"
+      ],
+      "properties": {
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "resolution": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 20
+        }
+      }
+    },
+    "OperatorReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reviewId",
+        "reviewType",
+        "reviewStatus",
+        "targetId",
+        "reasonCode",
+        "version",
+        "createdAt",
+        "resolvedAt"
+      ],
+      "properties": {
+        "reviewId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "reviewType": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "reviewStatus": {
+          "$ref": "#/$defs/ReviewStatus"
+        },
+        "targetId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "reasonCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "resolvedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "OperatorReviewListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "items",
+            "page"
+          ],
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/OperatorReview"
+              }
+            },
+            "page": {
+              "$ref": "#/$defs/Page"
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorReviewResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/OperatorReview"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "OperatorServiceStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status",
+        "lastSucceededAt",
+        "errorCode"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "RATE_LIMITED",
+            "AUTH_REQUIRED",
+            "FAILED"
+          ]
+        },
+        "lastSucceededAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "errorCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        }
+      }
+    },
+    "OperatorStatusResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "deploymentVersion",
+            "commit",
+            "startedAt",
+            "services"
+          ],
+          "properties": {
+            "deploymentVersion": {
+              "type": "string",
+              "minLength": 1
+            },
+            "commit": {
+              "type": "string",
+              "minLength": 7
+            },
+            "startedAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "services": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/OperatorServiceStatus"
+              }
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "Page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nextCursor",
+        "hasMore",
+        "limit"
+      ],
+      "properties": {
+        "nextCursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "PublicLifecycleStatus": {
+      "enum": [
+        "ACTIVE",
+        "WEAKENING",
+        "CLOSED"
+      ]
+    },
+    "QualityFlags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    },
+    "RankingData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshotId",
+        "streamId",
+        "sequence",
+        "items"
+      ],
+      "properties": {
+        "snapshotId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "streamId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RankingItem"
+          }
+        }
+      }
+    },
+    "RankingEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidenceStatus",
+        "summary",
+        "publishedAt"
+      ],
+      "properties": {
+        "evidenceStatus": {
+          "$ref": "#/$defs/EvidenceStatus"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publishedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
         }
       }
     },
@@ -288,134 +1583,514 @@
         "qualityFlags"
       ],
       "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "lifecycleStatus": {"$ref": "#/$defs/PublicLifecycleStatus"},
-        "reconciliationStatus": {"$ref": "#/$defs/ReconciliationStatus"},
-        "classification": {"$ref": "#/$defs/Classification"},
-        "rank": {"type": "integer", "minimum": 1},
-        "rankChange60s": {"type": ["integer", "null"]},
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "lifecycleStatus": {
+          "$ref": "#/$defs/PublicLifecycleStatus"
+        },
+        "reconciliationStatus": {
+          "$ref": "#/$defs/ReconciliationStatus"
+        },
+        "classification": {
+          "$ref": "#/$defs/Classification"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rankChange60s": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "badges": {
           "type": "array",
           "uniqueItems": true,
-          "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
         },
-        "weightedReturn": {"type": ["number", "null"]},
-        "weightMethod": {"const": "FREE_FLOAT_CAPPED"},
-        "advancingCount": {"type": ["integer", "null"], "minimum": 0},
-        "validCount": {"type": ["integer", "null"], "minimum": 0},
-        "leader": {"oneOf": [{"$ref": "#/$defs/Leader"}, {"type": "null"}]},
-        "evidence": {"$ref": "#/$defs/RankingEvidence"},
-        "coverage": {"$ref": "#/$defs/Coverage"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
-      }
-    },
-    "RankingData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["snapshotId", "streamId", "sequence", "items"],
-      "properties": {
-        "snapshotId": {"$ref": "#/$defs/OpaqueId"},
-        "streamId": {"$ref": "#/$defs/OpaqueId"},
-        "sequence": {"type": "integer", "minimum": 0},
-        "items": {"type": "array", "items": {"$ref": "#/$defs/RankingItem"}}
+        "weightedReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "weightMethod": {
+          "const": "FREE_FLOAT_CAPPED"
+        },
+        "advancingCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "validCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "leader": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Leader"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/RankingEvidence"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
       }
     },
     "RankingResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
+      "required": [
+        "data",
+        "meta"
+      ],
       "properties": {
-        "data": {"$ref": "#/$defs/RankingData"},
+        "data": {
+          "$ref": "#/$defs/RankingData"
+        },
         "meta": {
           "allOf": [
-            {"$ref": "#/$defs/ResponseMeta"},
-            {"type": "object", "required": ["marketContext", "versions"]}
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "marketContext",
+                "versions"
+              ]
+            }
           ]
         }
       }
     },
-    "TreemapItem": {
+    "RealtimeTicketResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ticket",
+            "expiresAt"
+          ],
+          "properties": {
+            "ticket": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "expiresAt": {
+              "$ref": "#/$defs/Timestamp"
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "ReconciliationStatus": {
+      "enum": [
+        "PENDING",
+        "MATCHED",
+        "UNMATCHED"
+      ]
+    },
+    "ResponseMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requestId",
+        "apiVersion",
+        "schemaVersion",
+        "generatedAt"
+      ],
+      "properties": {
+        "requestId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "apiVersion": {
+          "const": "1"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generatedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "marketContext": {
+          "$ref": "#/$defs/MarketContext"
+        },
+        "versions": {
+          "$ref": "#/$defs/Versions"
+        }
+      }
+    },
+    "ReviewStatus": {
+      "enum": [
+        "PENDING",
+        "RESOLVED"
+      ]
+    },
+    "SavedCurrentState": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "eventId",
-        "themeId",
-        "displayName",
-        "lifecycleStatus",
+        "eventState",
         "weightedReturn",
-        "advancingCount",
-        "validCount",
-        "coverageStatus",
-        "qualityFlags"
+        "dataStatus",
+        "asOf"
       ],
       "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "themeId": {"$ref": "#/$defs/OpaqueId"},
-        "displayName": {"type": "string", "minLength": 1},
-        "lifecycleStatus": {"enum": ["ACTIVE", "WEAKENING"]},
-        "weightedReturn": {"type": "number", "exclusiveMinimum": 0},
-        "advancingCount": {"type": "integer", "minimum": 0},
-        "validCount": {"type": "integer", "minimum": 1},
-        "coverageStatus": {"const": "SUFFICIENT"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
-      }
-    },
-    "TreemapData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["snapshotId", "streamId", "sequence", "items"],
-      "properties": {
-        "snapshotId": {"$ref": "#/$defs/OpaqueId"},
-        "streamId": {"$ref": "#/$defs/OpaqueId"},
-        "sequence": {"type": "integer", "minimum": 0},
-        "items": {
-          "type": "array",
-          "maxItems": 12,
-          "items": {"$ref": "#/$defs/TreemapItem"}
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "eventState": {
+          "$ref": "#/$defs/PublicLifecycleStatus"
+        },
+        "weightedReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "dataStatus": {
+          "$ref": "#/$defs/DataStatus"
+        },
+        "asOf": {
+          "$ref": "#/$defs/Timestamp"
         }
       }
     },
-    "TreemapResponse": {
+    "SavedItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
+      "required": [
+        "savedType",
+        "targetId",
+        "displayName",
+        "savedAt",
+        "availability",
+        "unavailableReason",
+        "currentState"
+      ],
       "properties": {
-        "data": {"$ref": "#/$defs/TreemapData"},
-        "meta": {
-          "allOf": [
-            {"$ref": "#/$defs/ResponseMeta"},
-            {"type": "object", "required": ["marketContext", "versions"]}
+        "savedType": {
+          "enum": [
+            "THEME",
+            "STOCK",
+            "EVENT"
+          ]
+        },
+        "targetId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "savedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "availability": {
+          "enum": [
+            "AVAILABLE",
+            "UNAVAILABLE"
+          ]
+        },
+        "unavailableReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currentState": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SavedCurrentState"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }
     },
-    "HistoricalAccess": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["status", "reason"],
-      "properties": {
-        "status": {"enum": ["AVAILABLE", "GATED", "UNAVAILABLE"]},
-        "reason": {"type": ["string", "null"]}
-      }
-    },
-    "CurrentReaction": {
+    "SavedListData": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "weightedReturn",
-        "weightMethod",
-        "advancingCount",
-        "validCount",
-        "turnoverMultiple",
-        "attentionGapTradingDays"
+        "items",
+        "page"
       ],
       "properties": {
-        "weightedReturn": {"type": ["number", "null"]},
-        "weightMethod": {"const": "FREE_FLOAT_CAPPED"},
-        "advancingCount": {"type": ["integer", "null"], "minimum": 0},
-        "validCount": {"type": ["integer", "null"], "minimum": 0},
-        "turnoverMultiple": {"type": ["number", "null"], "minimum": 0},
-        "attentionGapTradingDays": {"type": ["integer", "null"], "minimum": 0}
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SavedItem"
+          }
+        },
+        "page": {
+          "$ref": "#/$defs/Page"
+        }
+      }
+    },
+    "SavedListResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/SavedListData"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "SavedMutationData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "savedType",
+        "targetId",
+        "saved",
+        "savedAt"
+      ],
+      "properties": {
+        "savedType": {
+          "enum": [
+            "THEME",
+            "STOCK",
+            "EVENT"
+          ]
+        },
+        "targetId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "saved": {
+          "type": "boolean"
+        },
+        "savedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "SavedMutationResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/SavedMutationData"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "SessionResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authenticated",
+            "user",
+            "roles"
+          ],
+          "properties": {
+            "authenticated": {
+              "type": "boolean"
+            },
+            "user": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "displayName"
+                  ],
+                  "properties": {
+                    "displayName": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "roles": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "USER",
+                  "HISTORICAL_PILOT",
+                  "OPERATOR"
+                ]
+              }
+            }
+          }
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "SimilarEventItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matchedEventId",
+        "marketDate",
+        "displayNameAtEvent",
+        "normalizedCatalystSummary",
+        "similarityReasons",
+        "outcomes"
+      ],
+      "properties": {
+        "matchedEventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "displayNameAtEvent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalizedCatalystSummary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "similarityReasons": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "outcomes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HistoricalOutcome"
+          }
+        }
+      }
+    },
+    "SimilarEventsData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "decisionAt",
+        "availability",
+        "summary",
+        "items",
+        "page"
+      ],
+      "properties": {
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "decisionAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "availability": {
+          "enum": [
+            "AVAILABLE",
+            "GATED",
+            "UNAVAILABLE"
+          ]
+        },
+        "summary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HistoricalSummary"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SimilarEventItem"
+          }
+        },
+        "page": {
+          "$ref": "#/$defs/Page"
+        }
+      }
+    },
+    "SimilarEventsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/SimilarEventsData"
+        },
+        "meta": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "versions"
+              ]
+            }
+          ]
+        }
       }
     },
     "ThemeDetailData": {
@@ -436,735 +2111,369 @@
         "qualityFlags"
       ],
       "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "marketDate": {"$ref": "#/$defs/MarketDate"},
-        "lifecycleStatus": {"$ref": "#/$defs/PublicLifecycleStatus"},
-        "reconciliationStatus": {"$ref": "#/$defs/ReconciliationStatus"},
-        "classification": {"$ref": "#/$defs/Classification"},
-        "currentReaction": {"$ref": "#/$defs/CurrentReaction"},
-        "coverage": {"$ref": "#/$defs/Coverage"},
-        "evidenceSummary": {"$ref": "#/$defs/EvidenceSummary"},
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "lifecycleStatus": {
+          "$ref": "#/$defs/PublicLifecycleStatus"
+        },
+        "reconciliationStatus": {
+          "$ref": "#/$defs/ReconciliationStatus"
+        },
+        "classification": {
+          "$ref": "#/$defs/Classification"
+        },
+        "currentReaction": {
+          "$ref": "#/$defs/CurrentReaction"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "evidenceSummary": {
+          "$ref": "#/$defs/EvidenceSummary"
+        },
         "leaders": {
           "type": "array",
           "maxItems": 3,
-          "items": {"$ref": "#/$defs/Leader"}
+          "items": {
+            "$ref": "#/$defs/Leader"
+          }
         },
-        "historicalAccess": {"$ref": "#/$defs/HistoricalAccess"},
-        "canonicalPath": {"type": "string", "pattern": "^/v1/themes/.+/events/.+$"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
+        "historicalAccess": {
+          "$ref": "#/$defs/HistoricalAccess"
+        },
+        "canonicalPath": {
+          "type": "string",
+          "pattern": "^/v1/themes/.+/events/.+$"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
       }
     },
     "ThemeDetailResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/ThemeDetailData"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "EvidenceItem": {
-      "type": "object",
-      "additionalProperties": false,
       "required": [
-        "newsId",
-        "sourceName",
-        "title",
-        "publishedAt",
-        "receivedAt",
-        "originalUrl",
-        "matchBasis",
-        "summary",
-        "qualityFlags"
+        "data",
+        "meta"
       ],
       "properties": {
-        "newsId": {"$ref": "#/$defs/OpaqueId"},
-        "sourceName": {"type": "string", "minLength": 1},
-        "title": {"type": "string", "minLength": 1},
-        "publishedAt": {"type": ["string", "null"], "format": "date-time"},
-        "receivedAt": {"$ref": "#/$defs/Timestamp"},
-        "originalUrl": {"type": "string", "format": "uri"},
-        "matchBasis": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {"enum": ["THEME", "STOCK", "TIME"]}
+        "data": {
+          "$ref": "#/$defs/ThemeDetailData"
         },
-        "summary": {"type": "string", "minLength": 1},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
-      }
-    },
-    "EvidenceListData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["eventId", "evidenceStatus", "items", "page"],
-      "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "evidenceStatus": {"$ref": "#/$defs/EvidenceStatus"},
-        "items": {"type": "array", "items": {"$ref": "#/$defs/EvidenceItem"}},
-        "page": {"$ref": "#/$defs/Page"}
-      }
-    },
-    "EvidenceListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/EvidenceListData"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "SavedCurrentState": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["eventId", "eventState", "weightedReturn", "dataStatus", "asOf"],
-      "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "eventState": {"$ref": "#/$defs/PublicLifecycleStatus"},
-        "weightedReturn": {"type": ["number", "null"]},
-        "dataStatus": {"$ref": "#/$defs/DataStatus"},
-        "asOf": {"$ref": "#/$defs/Timestamp"}
-      }
-    },
-    "SavedItem": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "savedType",
-        "targetId",
-        "displayName",
-        "savedAt",
-        "availability",
-        "unavailableReason",
-        "currentState"
-      ],
-      "properties": {
-        "savedType": {"enum": ["THEME", "STOCK", "EVENT"]},
-        "targetId": {"$ref": "#/$defs/OpaqueId"},
-        "displayName": {"type": "string", "minLength": 1},
-        "savedAt": {"$ref": "#/$defs/Timestamp"},
-        "availability": {"enum": ["AVAILABLE", "UNAVAILABLE"]},
-        "unavailableReason": {"type": ["string", "null"]},
-        "currentState": {
-          "oneOf": [{"$ref": "#/$defs/SavedCurrentState"}, {"type": "null"}]
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
         }
       }
     },
-    "SavedListData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["items", "page"],
-      "properties": {
-        "items": {"type": "array", "items": {"$ref": "#/$defs/SavedItem"}},
-        "page": {"$ref": "#/$defs/Page"}
-      }
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
     },
-    "SavedListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/SavedListData"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "SavedMutationData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["savedType", "targetId", "saved", "savedAt"],
-      "properties": {
-        "savedType": {"enum": ["THEME", "STOCK", "EVENT"]},
-        "targetId": {"$ref": "#/$defs/OpaqueId"},
-        "saved": {"type": "boolean"},
-        "savedAt": {"type": ["string", "null"], "format": "date-time"}
-      }
-    },
-    "SavedMutationResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/SavedMutationData"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "AccountDeletionResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["status"],
-          "properties": {"status": {"const": "DELETION_STARTED"}}
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "SessionResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["authenticated", "user", "roles"],
-          "properties": {
-            "authenticated": {"type": "boolean"},
-            "user": {
-              "oneOf": [
-                {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["displayName"],
-                  "properties": {"displayName": {"type": "string", "minLength": 1}}
-                },
-                {"type": "null"}
-              ]
-            },
-            "roles": {
-              "type": "array",
-              "uniqueItems": true,
-              "items": {"enum": ["USER", "HISTORICAL_PILOT", "OPERATOR"]}
-            }
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "LogoutResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["loggedOut"],
-          "properties": {"loggedOut": {"const": true}}
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "RealtimeTicketResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["ticket", "expiresAt"],
-          "properties": {
-            "ticket": {"$ref": "#/$defs/OpaqueId"},
-            "expiresAt": {"$ref": "#/$defs/Timestamp"}
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "HistoricalSummary": {
+    "TreemapData": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "horizonTradingDays",
-        "eligibleCount",
-        "observedCount",
-        "positiveCount",
-        "medianReturn"
+        "snapshotId",
+        "streamId",
+        "sequence",
+        "items"
       ],
       "properties": {
-        "horizonTradingDays": {"enum": [1, 5, 20]},
-        "eligibleCount": {"type": "integer", "minimum": 0},
-        "observedCount": {"type": "integer", "minimum": 0},
-        "positiveCount": {"type": "integer", "minimum": 0},
-        "medianReturn": {"type": ["number", "null"]}
-      }
-    },
-    "HistoricalOutcome": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["horizonTradingDays", "return", "status", "unavailableReason"],
-      "properties": {
-        "horizonTradingDays": {"enum": [1, 5, 20]},
-        "return": {"type": ["number", "null"]},
-        "status": {"enum": ["OBSERVED", "UNAVAILABLE", "PENDING"]},
-        "unavailableReason": {"type": ["string", "null"]}
-      }
-    },
-    "SimilarEventItem": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "matchedEventId",
-        "marketDate",
-        "displayNameAtEvent",
-        "normalizedCatalystSummary",
-        "similarityReasons",
-        "outcomes"
-      ],
-      "properties": {
-        "matchedEventId": {"$ref": "#/$defs/OpaqueId"},
-        "marketDate": {"$ref": "#/$defs/MarketDate"},
-        "displayNameAtEvent": {"type": "string", "minLength": 1},
-        "normalizedCatalystSummary": {"type": "string", "minLength": 1},
-        "similarityReasons": {
-          "type": "array",
-          "minItems": 1,
-          "items": {"type": "string", "minLength": 1}
+        "snapshotId": {
+          "$ref": "#/$defs/OpaqueId"
         },
-        "outcomes": {
+        "streamId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
           "type": "array",
-          "items": {"$ref": "#/$defs/HistoricalOutcome"}
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/TreemapItem"
+          }
         }
       }
     },
-    "SimilarEventsData": {
+    "TreemapItem": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "eventId",
-        "decisionAt",
-        "availability",
-        "summary",
-        "items",
-        "page"
+        "themeId",
+        "displayName",
+        "lifecycleStatus",
+        "weightedReturn",
+        "advancingCount",
+        "validCount",
+        "coverageStatus",
+        "qualityFlags"
       ],
       "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "decisionAt": {"$ref": "#/$defs/Timestamp"},
-        "availability": {"enum": ["AVAILABLE", "GATED", "UNAVAILABLE"]},
-        "summary": {
-          "type": "array",
-          "items": {"$ref": "#/$defs/HistoricalSummary"}
+        "eventId": {
+          "$ref": "#/$defs/OpaqueId"
         },
-        "items": {
-          "type": "array",
-          "items": {"$ref": "#/$defs/SimilarEventItem"}
+        "themeId": {
+          "$ref": "#/$defs/OpaqueId"
         },
-        "page": {"$ref": "#/$defs/Page"}
-      }
-    },
-    "SimilarEventsResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/SimilarEventsData"},
-        "meta": {
-          "allOf": [
-            {"$ref": "#/$defs/ResponseMeta"},
-            {"type": "object", "required": ["versions"]}
-          ]
-        }
-      }
-    },
-    "HistoricalEventResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "eventId",
-            "marketDate",
-            "displayNameAtEvent",
-            "catalystSummary",
-            "similarityReasons",
-            "leaders",
-            "outcomes",
-            "futureOutcomeExcludedFromSelection"
-          ],
-          "properties": {
-            "eventId": {"$ref": "#/$defs/OpaqueId"},
-            "marketDate": {"$ref": "#/$defs/MarketDate"},
-            "displayNameAtEvent": {"type": "string", "minLength": 1},
-            "catalystSummary": {"type": "string", "minLength": 1},
-            "similarityReasons": {
-              "type": ["array", "null"],
-              "items": {"type": "string", "minLength": 1}
-            },
-            "leaders": {"type": "array", "items": {"$ref": "#/$defs/Leader"}},
-            "outcomes": {
-              "type": "array",
-              "items": {"$ref": "#/$defs/HistoricalOutcome"}
-            },
-            "futureOutcomeExcludedFromSelection": {"const": true}
-          }
+        "displayName": {
+          "type": "string",
+          "minLength": 1
         },
-        "meta": {
-          "allOf": [
-            {"$ref": "#/$defs/ResponseMeta"},
-            {"type": "object", "required": ["versions"]}
-          ]
-        }
-      }
-    },
-    "OperatorServiceStatus": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["name", "status", "lastSucceededAt", "errorCode"],
-      "properties": {
-        "name": {"type": "string", "minLength": 1},
-        "status": {
+        "lifecycleStatus": {
           "enum": [
-            "RUNNING",
-            "SUCCEEDED",
-            "PARTIAL",
-            "RATE_LIMITED",
-            "AUTH_REQUIRED",
-            "FAILED"
+            "ACTIVE",
+            "WEAKENING"
           ]
         },
-        "lastSucceededAt": {"type": ["string", "null"], "format": "date-time"},
-        "errorCode": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]*$"}
+        "weightedReturn": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "advancingCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "coverageStatus": {
+          "const": "SUFFICIENT"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        }
       }
     },
-    "OperatorStatusResponse": {
+    "TreemapResponse": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
+      "required": [
+        "data",
+        "meta"
+      ],
       "properties": {
         "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["deploymentVersion", "commit", "startedAt", "services"],
-          "properties": {
-            "deploymentVersion": {"type": "string", "minLength": 1},
-            "commit": {"type": "string", "minLength": 7},
-            "startedAt": {"$ref": "#/$defs/Timestamp"},
-            "services": {
-              "type": "array",
-              "items": {"$ref": "#/$defs/OperatorServiceStatus"}
+          "$ref": "#/$defs/TreemapData"
+        },
+        "meta": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "marketContext",
+                "versions"
+              ]
             }
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorJob": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "runId",
-        "jobType",
-        "status",
-        "version",
-        "lastChangedAt",
-        "errorCode"
-      ],
-      "properties": {
-        "runId": {"$ref": "#/$defs/OpaqueId"},
-        "jobType": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "status": {
-          "enum": [
-            "RUNNING",
-            "SUCCEEDED",
-            "PARTIAL",
-            "RATE_LIMITED",
-            "AUTH_REQUIRED",
-            "FAILED"
           ]
-        },
-        "version": {"type": "integer", "minimum": 1},
-        "lastChangedAt": {"$ref": "#/$defs/Timestamp"},
-        "errorCode": {"type": ["string", "null"], "pattern": "^[A-Z][A-Z0-9_]*$"}
-      }
-    },
-    "OperatorReview": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "reviewId",
-        "reviewType",
-        "reviewStatus",
-        "targetId",
-        "reasonCode",
-        "version",
-        "createdAt",
-        "resolvedAt"
-      ],
-      "properties": {
-        "reviewId": {"$ref": "#/$defs/OpaqueId"},
-        "reviewType": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "reviewStatus": {"$ref": "#/$defs/ReviewStatus"},
-        "targetId": {"$ref": "#/$defs/OpaqueId"},
-        "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "version": {"type": "integer", "minimum": 1},
-        "createdAt": {"$ref": "#/$defs/Timestamp"},
-        "resolvedAt": {"type": ["string", "null"], "format": "date-time"}
-      }
-    },
-    "OperatorAuditEntry": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "auditId",
-        "actorId",
-        "occurredAt",
-        "action",
-        "targetId",
-        "reasonCode",
-        "beforeRevision",
-        "afterRevision"
-      ],
-      "properties": {
-        "auditId": {"$ref": "#/$defs/OpaqueId"},
-        "actorId": {"$ref": "#/$defs/OpaqueId"},
-        "occurredAt": {"$ref": "#/$defs/Timestamp"},
-        "action": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "targetId": {"$ref": "#/$defs/OpaqueId"},
-        "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "beforeRevision": {"type": ["integer", "null"], "minimum": 1},
-        "afterRevision": {"type": ["integer", "null"], "minimum": 1}
-      }
-    },
-    "OperatorJobListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["items", "page"],
-          "properties": {
-            "items": {"type": "array", "items": {"$ref": "#/$defs/OperatorJob"}},
-            "page": {"$ref": "#/$defs/Page"}
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorJobResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/OperatorJob"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorReviewListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["items", "page"],
-          "properties": {
-            "items": {"type": "array", "items": {"$ref": "#/$defs/OperatorReview"}},
-            "page": {"$ref": "#/$defs/Page"}
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorReviewResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {"$ref": "#/$defs/OperatorReview"},
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorAuditListResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["items", "page"],
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {"$ref": "#/$defs/OperatorAuditEntry"}
-            },
-            "page": {"$ref": "#/$defs/Page"}
-          }
-        },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "OperatorCommandRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["reasonCode", "reason", "expectedVersion"],
-      "properties": {
-        "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "reason": {"type": "string", "minLength": 1, "maxLength": 1000},
-        "expectedVersion": {"type": "integer", "minimum": 1}
-      }
-    },
-    "OperatorResolveRequest": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["reasonCode", "reason", "expectedVersion", "resolution"],
-      "properties": {
-        "reasonCode": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
-        "reason": {"type": "string", "minLength": 1, "maxLength": 1000},
-        "expectedVersion": {"type": "integer", "minimum": 1},
-        "resolution": {
-          "type": "object",
-          "minProperties": 1,
-          "maxProperties": 20
         }
       }
     },
-    "OperatorCommandResponse": {
+    "Versions": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["data", "meta"],
       "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "auditId",
-            "actorId",
-            "occurredAt",
-            "targetId",
-            "beforeRevision",
-            "afterRevision"
-          ],
-          "properties": {
-            "auditId": {"$ref": "#/$defs/OpaqueId"},
-            "actorId": {"$ref": "#/$defs/OpaqueId"},
-            "occurredAt": {"$ref": "#/$defs/Timestamp"},
-            "targetId": {"$ref": "#/$defs/OpaqueId"},
-            "beforeRevision": {"type": ["integer", "null"], "minimum": 1},
-            "afterRevision": {"type": ["integer", "null"], "minimum": 1}
-          }
+        "calculationVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
-      }
-    },
-    "InfostockAuthStatusResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["data", "meta"],
-      "properties": {
-        "data": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["status", "lastAuthenticatedAt", "runbookKey"],
-          "properties": {
-            "status": {"enum": ["READY", "AUTH_REQUIRED", "UNKNOWN"]},
-            "lastAuthenticatedAt": {"type": ["string", "null"], "format": "date-time"},
-            "runbookKey": {"type": ["string", "null"]}
-          }
+        "rankingModelVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
-        "meta": {"$ref": "#/$defs/ResponseMeta"}
+        "membershipVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tradingCalendarVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ontologyVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retrievalArtifactVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outcomeVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "WsAuth": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "ticket"],
+      "required": [
+        "type",
+        "ticket"
+      ],
       "properties": {
-        "type": {"const": "auth"},
-        "ticket": {"$ref": "#/$defs/OpaqueId"}
+        "type": {
+          "const": "auth"
+        },
+        "ticket": {
+          "$ref": "#/$defs/OpaqueId"
+        }
       }
     },
-    "WsTopicRequest": {
-      "oneOf": [
+    "WsError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "requestId",
+        "code",
+        "message",
+        "retryable"
+      ],
+      "properties": {
+        "type": {
+          "const": "error"
+        },
+        "requestId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code": {
+          "enum": [
+            "AUTHENTICATION_REQUIRED",
+            "INVALID_SUBSCRIPTION",
+            "FEATURE_NOT_ENTITLED",
+            "SCHEMA_VERSION_UNSUPPORTED",
+            "SLOW_CONSUMER"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "WsEventStateChanged": {
+      "allOf": [
         {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["name", "params"],
-          "properties": {
-            "name": {"const": "theme_rank_snapshot"},
-            "params": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["limit"],
-              "properties": {"limit": {"type": "integer", "minimum": 1, "maximum": 50}}
-            }
-          }
+          "$ref": "#/$defs/WsSnapshotBase"
         },
         {
           "type": "object",
-          "additionalProperties": false,
-          "required": ["name", "params"],
           "properties": {
-            "name": {"const": "theme_treemap_snapshot"},
-            "params": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["limit"],
-              "properties": {"limit": {"type": "integer", "minimum": 1, "maximum": 12}}
+            "type": {
+              "const": "event_state_changed"
+            },
+            "topic": {
+              "const": "event_state_changed"
+            },
+            "payload": {
+              "$ref": "#/$defs/EventStateSummary"
             }
           }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "WsPing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "sentAt"
+      ],
+      "properties": {
+        "type": {
+          "const": "ping"
+        },
+        "sentAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "WsPong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "sentAt"
+      ],
+      "properties": {
+        "type": {
+          "const": "pong"
+        },
+        "sentAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "WsRankingSnapshot": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/WsSnapshotBase"
         },
         {
           "type": "object",
-          "additionalProperties": false,
-          "required": ["name", "params"],
           "properties": {
-            "name": {"const": "event_state_changed"},
-            "params": {
+            "type": {
+              "const": "theme_rank_snapshot"
+            },
+            "topic": {
+              "const": "theme_rank_snapshot"
+            },
+            "payload": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["eventIds"],
+              "required": [
+                "snapshotId",
+                "items"
+              ],
               "properties": {
-                "eventIds": {
+                "snapshotId": {
+                  "$ref": "#/$defs/OpaqueId"
+                },
+                "items": {
                   "type": "array",
-                  "minItems": 1,
-                  "maxItems": 50,
-                  "uniqueItems": true,
-                  "items": {"$ref": "#/$defs/OpaqueId"}
+                  "items": {
+                    "$ref": "#/$defs/RankingItem"
+                  }
                 }
               }
             }
           }
         }
-      ]
-    },
-    "WsSubscribe": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "requestId", "topics"],
-      "properties": {
-        "type": {"const": "subscribe"},
-        "requestId": {"$ref": "#/$defs/OpaqueId"},
-        "topics": {
-          "type": "array",
-          "minItems": 1,
-          "maxItems": 3,
-          "items": {"$ref": "#/$defs/WsTopicRequest"}
-        }
-      }
-    },
-    "WsSubscribed": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "requestId", "subscriptionId", "topics"],
-      "properties": {
-        "type": {"const": "subscribed"},
-        "requestId": {"$ref": "#/$defs/OpaqueId"},
-        "subscriptionId": {"$ref": "#/$defs/OpaqueId"},
-        "topics": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "enum": [
-              "theme_rank_snapshot",
-              "theme_treemap_snapshot",
-              "event_state_changed"
-            ]
-          }
-        }
-      }
+      ],
+      "unevaluatedProperties": false
     },
     "WsSnapshotBase": {
       "type": "object",
@@ -1190,9 +2499,16 @@
             "event_state_changed"
           ]
         },
-        "schemaVersion": {"type": "string", "minLength": 1},
-        "subscriptionId": {"$ref": "#/$defs/OpaqueId"},
-        "streamId": {"$ref": "#/$defs/OpaqueId"},
+        "schemaVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "streamId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
         "topic": {
           "enum": [
             "theme_rank_snapshot",
@@ -1200,141 +2516,213 @@
             "event_state_changed"
           ]
         },
-        "sequence": {"type": "integer", "minimum": 0},
-        "generatedAt": {"$ref": "#/$defs/Timestamp"},
-        "asOf": {"$ref": "#/$defs/Timestamp"},
-        "marketDate": {"$ref": "#/$defs/MarketDate"},
-        "dataStatus": {"$ref": "#/$defs/DataStatus"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"},
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generatedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "asOf": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "dataStatus": {
+          "$ref": "#/$defs/DataStatus"
+        },
+        "qualityFlags": {
+          "$ref": "#/$defs/QualityFlags"
+        },
         "payload": {}
       }
     },
-    "WsRankingSnapshot": {
-      "allOf": [
-        {"$ref": "#/$defs/WsSnapshotBase"},
-        {
-          "type": "object",
-          "properties": {
-            "type": {"const": "theme_rank_snapshot"},
-            "topic": {"const": "theme_rank_snapshot"},
-            "payload": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["snapshotId", "items"],
-              "properties": {
-                "snapshotId": {"$ref": "#/$defs/OpaqueId"},
-                "items": {
-                  "type": "array",
-                  "items": {"$ref": "#/$defs/RankingItem"}
-                }
-              }
-            }
-          }
-        }
-      ],
-      "unevaluatedProperties": false
-    },
-    "WsTreemapSnapshot": {
-      "allOf": [
-        {"$ref": "#/$defs/WsSnapshotBase"},
-        {
-          "type": "object",
-          "properties": {
-            "type": {"const": "theme_treemap_snapshot"},
-            "topic": {"const": "theme_treemap_snapshot"},
-            "payload": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["snapshotId", "items"],
-              "properties": {
-                "snapshotId": {"$ref": "#/$defs/OpaqueId"},
-                "items": {
-                  "type": "array",
-                  "maxItems": 12,
-                  "items": {"$ref": "#/$defs/TreemapItem"}
-                }
-              }
-            }
-          }
-        }
-      ],
-      "unevaluatedProperties": false
-    },
-    "EventStateSummary": {
+    "WsSubscribe": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "eventId",
-        "lifecycleStatus",
-        "reconciliationStatus",
-        "classification",
-        "currentReaction",
-        "evidenceSummary",
-        "historicalAccess",
-        "qualityFlags"
+        "type",
+        "requestId",
+        "topics"
       ],
       "properties": {
-        "eventId": {"$ref": "#/$defs/OpaqueId"},
-        "lifecycleStatus": {"$ref": "#/$defs/PublicLifecycleStatus"},
-        "reconciliationStatus": {"$ref": "#/$defs/ReconciliationStatus"},
-        "classification": {"$ref": "#/$defs/Classification"},
-        "currentReaction": {"$ref": "#/$defs/CurrentReaction"},
-        "evidenceSummary": {"$ref": "#/$defs/EvidenceSummary"},
-        "historicalAccess": {"$ref": "#/$defs/HistoricalAccess"},
-        "qualityFlags": {"$ref": "#/$defs/QualityFlags"}
+        "type": {
+          "const": "subscribe"
+        },
+        "requestId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "topics": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/WsTopicRequest"
+          }
+        }
       }
     },
-    "WsEventStateChanged": {
+    "WsSubscribed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "requestId",
+        "subscriptionId",
+        "topics"
+      ],
+      "properties": {
+        "type": {
+          "const": "subscribed"
+        },
+        "requestId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "subscriptionId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "topics": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "theme_rank_snapshot",
+              "theme_treemap_snapshot",
+              "event_state_changed"
+            ]
+          }
+        }
+      }
+    },
+    "WsTopicRequest": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "const": "theme_rank_snapshot"
+            },
+            "params": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "limit"
+              ],
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "const": "theme_treemap_snapshot"
+            },
+            "params": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "limit"
+              ],
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "const": "event_state_changed"
+            },
+            "params": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "eventIds"
+              ],
+              "properties": {
+                "eventIds": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 50,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "#/$defs/OpaqueId"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WsTreemapSnapshot": {
       "allOf": [
-        {"$ref": "#/$defs/WsSnapshotBase"},
+        {
+          "$ref": "#/$defs/WsSnapshotBase"
+        },
         {
           "type": "object",
           "properties": {
-            "type": {"const": "event_state_changed"},
-            "topic": {"const": "event_state_changed"},
-            "payload": {"$ref": "#/$defs/EventStateSummary"}
+            "type": {
+              "const": "theme_treemap_snapshot"
+            },
+            "topic": {
+              "const": "theme_treemap_snapshot"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "snapshotId",
+                "items"
+              ],
+              "properties": {
+                "snapshotId": {
+                  "$ref": "#/$defs/OpaqueId"
+                },
+                "items": {
+                  "type": "array",
+                  "maxItems": 12,
+                  "items": {
+                    "$ref": "#/$defs/TreemapItem"
+                  }
+                }
+              }
+            }
           }
         }
       ],
       "unevaluatedProperties": false
-    },
-    "WsPing": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "sentAt"],
-      "properties": {
-        "type": {"const": "ping"},
-        "sentAt": {"$ref": "#/$defs/Timestamp"}
-      }
-    },
-    "WsPong": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "sentAt"],
-      "properties": {
-        "type": {"const": "pong"},
-        "sentAt": {"$ref": "#/$defs/Timestamp"}
-      }
-    },
-    "WsError": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["type", "requestId", "code", "message", "retryable"],
-      "properties": {
-        "type": {"const": "error"},
-        "requestId": {"type": ["string", "null"]},
-        "code": {
-          "enum": [
-            "AUTHENTICATION_REQUIRED",
-            "INVALID_SUBSCRIPTION",
-            "FEATURE_NOT_ENTITLED",
-            "SCHEMA_VERSION_UNSUPPORTED",
-            "SLOW_CONSUMER"
-          ]
-        },
-        "message": {"type": "string", "minLength": 1},
-        "retryable": {"type": "boolean"}
-      }
     }
   }
 }

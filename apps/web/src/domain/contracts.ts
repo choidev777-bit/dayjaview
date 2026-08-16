@@ -414,7 +414,40 @@ export type RepositoryResource =
   | 'detail'
   | 'evidence'
   | 'saved'
-  | 'historical';
+  | 'historical'
+  | 'dayMovers';
+
+export interface DayMoversStock {
+  stockName: string;
+  stockCode: string | null;
+  closePrice: number | null;
+  changeRate: string | null;
+}
+
+export interface DayMoversTheme {
+  themeName: string;
+  changeRate: string | null;
+  stocks: DayMoversStock[];
+}
+
+export interface DayMoversSection {
+  sectionName: string;
+  headline: string;
+  details: string[];
+  themes: DayMoversTheme[];
+}
+
+export interface DayMoversResponse {
+  data: {
+    requestedDate: string;
+    publishedDate: string | null;
+    /** 발행 전이면 NOT_PUBLISHED이며 publishedDate가 직전 거래일이다. */
+    status: 'PUBLISHED' | 'NOT_PUBLISHED' | 'NO_RECORD';
+    isFallback: boolean;
+    sections: DayMoversSection[];
+  };
+  meta: ResponseMeta;
+}
 
 export interface ProductRepository {
   subscribe(resource: RepositoryResource, listener: () => void): () => void;
@@ -423,6 +456,7 @@ export interface ProductRepository {
   logout(): Promise<void>;
   getRankings(): Promise<RankingResponse>;
   getTreemap(): Promise<TreemapResponse>;
+  getDayMovers(date: string): Promise<DayMoversResponse>;
   getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse>;
   getEvidence(eventId: string, cursor?: string | null): Promise<EvidenceResponse>;
   getSaved(type: SavedType | 'ALL'): Promise<SavedResponse>;

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "requestedDate": "2026-08-16",
+    "publishedDate": "2026-08-14",
+    "status": "NOT_PUBLISHED",
+    "isFallback": true,
+    "sections": [
+      {
+        "sectionName": "반도체 관련주",
+        "headline": "샌디스크 성장 전망 및 美 PPI 안도감 속 상승",
+        "details": [
+          "▷샌디스크가 2030년까지 매출이 10%대 중후반 성장할 것으로 전망했다고 전해짐."
+        ],
+        "themes": [
+          {
+            "themeName": "반도체 대표주(생산)",
+            "changeRate": "2.93",
+            "stocks": [
+              {
+                "stockName": "SK하이닉스",
+                "stockCode": "000660",
+                "closePrice": 1645000,
+                "changeRate": "3.26"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_day_movers_fallback",
+    "apiVersion": "1",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-08-16T02:00:00.000Z"
+  }
+}
