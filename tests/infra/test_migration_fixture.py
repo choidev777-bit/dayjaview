@@ -24,6 +24,7 @@ EXPECTED_ORDER = (
     "0006_operator_runtime.sql",
     "0007_theme_catalyst_labels.sql",
     "0008_daily_relation_details.sql",
+    "0009_company_identity.sql",
 )
 
 

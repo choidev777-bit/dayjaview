@@ -816,6 +816,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 ```text
 packages/ontology/
   company_entities.py
+  company_postgres.py
   participants.py
   projects.py
   event_structure.py
@@ -833,6 +834,7 @@ tests/ontology/
   company_goldset_dev.tsv
   company_goldset_test.tsv
   test_company_entities.py
+  test_company_postgres.py
   test_company_roles.py
   test_event_structure.py
   test_event_dedup.py
@@ -847,12 +849,12 @@ research/ontology/
 infra/migrations/
   0007_theme_catalyst_labels.sql
   0008_daily_relation_details.sql
-  0009_company_event_ontology.sql
+  0009_company_identity.sql
 ```
 
 `0007_theme_catalyst_labels.sql`은 선행 단계의 기존 E-17 라벨 적재용이며, 회사 확장 migration보다 앞선다. 적재 job은 `apps/worker-batch/ontology/load_theme_catalyst_labels.py`로 두고 `label_theme_history.py`의 파일 산출 책임과 분리한다.
 
-단계 1의 Daily 파싱 확장은 기존 `packages/infostock/daily.py`의 `parse_daily_html_body`를 고치고, 늘어난 필드를 `packages/infostock/models.py`의 `DailyRelation`에 더한다. 새 Daily 파서 모듈을 만들지 않는다. 관계 유형과 시세 컬럼은 `0008_daily_relation_details.sql`이 담으며, 회사 온톨로지 migration은 그 뒤 `0009`가 된다.
+단계 1의 Daily 파싱 확장은 기존 `packages/infostock/daily.py`의 `parse_daily_html_body`를 고치고, 늘어난 필드를 `packages/infostock/models.py`의 `DailyRelation`에 더한다. 새 Daily 파서 모듈을 만들지 않는다. 관계 유형과 시세 컬럼은 `0008_daily_relation_details.sql`이 담으며, 회사 정체성 migration은 그 뒤 `0009`가 된다. `0009`는 단계 2 범위인 회사·alias·회사-종목·이력·검수만 담는다. 단계 3·4의 사건 구조 테이블은 그 뒤 번호로 나간다.
 
 현재 `packages/ontology`를 확장한다. 같은 분류 책임을 별도 최상위 패키지로 복제하지 않는다.
 
