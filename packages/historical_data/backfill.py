@@ -117,6 +117,9 @@ def collect_krx_daily_history(
         )
 
     def fetch(market: str, market_date: date) -> Any:
+        # 계약 오류도 fetch 단계에서는 재시도한다. 2026-08-16 백필 실측에서 KRX가
+        # 간헐적으로 JSON이 아닌 본문을 한 번 주고 다음 호출엔 정상 응답을 줬다
+        # (2015-01-27 KOSPI). 재시도 후에도 계속되면 그대로 올려 fail-closed.
         attempts = 0
         while True:
             try:
@@ -126,7 +129,7 @@ def collect_krx_daily_history(
                     as_of=datetime.combine(market_date, time(15, 30), tzinfo=KST),
                     collected_at=clock(),
                 )
-            except errors.SourceTransportError:
+            except (errors.SourceTransportError, errors.SourceContractError):
                 if attempts >= len(RETRY_BACKOFF_SECONDS):
                     raise
                 sleeper(RETRY_BACKOFF_SECONDS[attempts])

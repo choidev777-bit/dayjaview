@@ -325,6 +325,32 @@ def test_backfill_reports_running_until_finalized(tmp_path: Path) -> None:
     assert not list(tmp_path.rglob("*.tmp"))
 
 
+def test_backfill_retries_transient_malformed_response(tmp_path: Path) -> None:
+    attempts: list[int] = []
+
+    def respond(market: str, day: date) -> object:
+        attempts.append(1)
+        if len(attempts) == 1:
+            return httpx.Response(200, text="<html>gateway hiccup</html>")
+        return [make_row("000001", market, day)]
+
+    client, _ = make_client(respond)
+    sleeps: list[float] = []
+    report = collect_krx_daily_history(
+        api_key="krx-secret",
+        output_dir=tmp_path,
+        start_date=date(2005, 2, 7),
+        end_date=date(2005, 2, 7),
+        client=client,
+        sleeper=sleeps.append,
+        request_delay_seconds=0.0,
+    )
+
+    assert report["status"] == "COMPLETE"
+    assert report["callsMade"] == 2
+    assert 5.0 in sleeps
+
+
 def test_backfill_stops_when_source_has_no_data_for_the_era(tmp_path: Path) -> None:
     client, _ = make_client(lambda market, day: [])
     report = collect_krx_daily_history(
