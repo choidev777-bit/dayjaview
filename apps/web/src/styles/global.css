@@ -593,6 +593,12 @@ a:focus-visible,
   animation: live-dot-pulse 1.35s ease-in-out infinite;
 }
 
+.source-status[data-live="false"] .live-dot {
+  background: var(--djv-color-text-muted);
+  box-shadow: 0 0 0 4px var(--djv-color-surface-muted);
+  animation: none;
+}
+
 .data-status--delayed .live-dot,
 .data-status--degraded .live-dot,
 .data-status--closed .live-dot,
@@ -1500,6 +1506,15 @@ a:focus-visible,
   border-top: 1px solid var(--djv-color-border);
 }
 
+/* 앞 시각을 빼면 왼쪽 칸이 빈 채로 남는다. 한 칸으로 접고 본문을 왼쪽 끝에 맞춘다. */
+.evidence-list li[data-time="false"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.evidence-list li[data-time="false"] > * {
+  grid-column: 1;
+}
+
 .evidence-list li > span {
   color: var(--djv-color-text-muted);
   font-size: 10px;
@@ -1621,14 +1636,35 @@ a:focus-visible,
 }
 
 /* 건수 바로 아래에 붙는 경고. 옅은 경고색 띠로 감싸 본문 글과 구분한다. */
+ /* 연한 주황 바탕에 주황 글씨라 눈에 안 들어왔다. 왼쪽에 굵은 띠를 세우고 글자는
+    본문 색으로 내려 대비를 올린다. 경고 자체는 배경과 띠 색으로 읽힌다. */
 .historical-summary__warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: var(--djv-space-2) 0 0;
-  padding: 8px 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--djv-color-warning);
   border-radius: var(--djv-radius-sm);
   background: var(--djv-color-warning-soft);
-  color: var(--djv-color-warning);
-  font-size: var(--djv-font-size-caption);
+  color: var(--djv-color-text);
+  font-size: var(--djv-font-size-label);
   font-weight: 700;
+}
+
+.historical-summary__warning::before {
+  content: "!";
+  display: grid;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-content: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--djv-color-surface);
+  background: var(--djv-color-warning);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .historical-summary__rows {

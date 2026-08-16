@@ -112,7 +112,7 @@ export function coverageStatusLabel(status: CoverageStatus): string {
 }
 
 export function horizonLabel(horizon: HistoricalHorizon): string {
-  return { 1: '다음날', 5: '5거래일', 20: '20거래일' }[horizon];
+  return { 1: '다음날', 5: '5 거래일', 20: '20 거래일' }[horizon];
 }
 
 /** 결측(UNAVAILABLE)과 관찰 미완료(PENDING)를 0%나 같은 문구로 뭉뚱그리지 않는다 (screen_spec 10.5). */

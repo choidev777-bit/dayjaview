@@ -131,7 +131,8 @@ describe('근거 상태 matrix', () => {
     expect(link).toHaveAttribute('rel', 'noreferrer');
     expect(screen.getByText('예시 언론사 · 10:17 · 새 창에서 원문 보기')).toBeInTheDocument();
     expect(screen.getByText('테마 일치 · 종목 일치 · 시각 근접')).toBeInTheDocument();
-    expect(screen.getByText('자체 요약')).toBeInTheDocument();
+    // 기사 문장이 아니라 우리가 정리한 요약임을 밝히는 표시 (PRD 저작권 규칙)
+    expect(screen.getByText('직접 정리')).toBeInTheDocument();
   });
 
   it('장후 확정 근거에 장중 이력 보존을 안내한다', async () => {

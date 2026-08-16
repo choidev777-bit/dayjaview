@@ -115,12 +115,15 @@ function SaveThemeButton({
 
 function EvidenceList({
   items,
+  showTime = true,
   hasMore = false,
   loadingMore = false,
   loadMoreFailed = false,
   onLoadMore,
 }: {
   items: EvidenceItem[];
+  /** 장중 근거는 몇 시에 들어왔는지가 중요하다. 마감 후 확정 사유는 시각이 하나뿐이라 뺀다. */
+  showTime?: boolean;
   hasMore?: boolean;
   loadingMore?: boolean;
   loadMoreFailed?: boolean;
@@ -134,8 +137,8 @@ function EvidenceList({
     <>
       <ul className="evidence-list">
         {visible.map((item) => (
-          <li key={item.newsId}>
-            <span>{formatTime(item.publishedAt)}</span>
+          <li key={item.newsId} data-time={showTime ? 'true' : 'false'}>
+            {showTime ? <span>{formatTime(item.publishedAt)}</span> : null}
             <a href={item.originalUrl} target="_blank" rel="noreferrer">
               <strong>{item.title}</strong>
               <span>
@@ -148,7 +151,7 @@ function EvidenceList({
             </a>
             <p>{item.summary}</p>
             <p className="evidence-list__basis">
-              <span className="badge">자체 요약</span>
+              <span className="badge">직접 정리</span>
               {item.matchBasis.map(matchBasisLabel).join(' · ')}
               {item.qualityFlags.map((flag) => {
                 const label = evidenceFlagLabel(flag);
@@ -194,6 +197,8 @@ interface LiveEvidenceHistory {
   summary: string | null;
   items: EvidenceItem[];
   observedAt: string;
+  /** 이 이력이 어느 장의 것인지. 날짜가 바뀌면 버린다. */
+  marketDate: string | null;
 }
 
 /** 첫 page 이후 사용자가 더 불러온 근거. 근거 응답이 갱신되면 처음부터 다시 센다. */
@@ -303,7 +308,7 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
                         </span>
                       ) : null}
                       <b className="case-list__outcome">
-                        <small>5거래일</small>
+                        <small>5 거래일</small>
                         <span className={result.tone}>{result.text}</span>
                       </b>
                     </span>
@@ -385,7 +390,9 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
   const repository = useRepository();
   const [requestedTab, setRequestedTab] = useState<EvidencePhase | null>(null);
   const [paginationState, setPaginationState] = useState<EvidencePagination>(EMPTY_PAGINATION);
-  const historyRef = useRef<LiveEvidenceHistory | null>(null);
+  // 장중 이력은 화면을 떠나도 남긴다. 상세를 나갔다 오면 사라져 `이력이 없습니다`가 되던 문제.
+  // 장 마감 뒤에도 그날 안에는 계속 볼 수 있어야 한다.
+  const historyKey = `evidence.live:${eventId}`;
   const liveTabRef = useRef<HTMLButtonElement>(null);
   const afterCloseTabRef = useRef<HTMLButtonElement>(null);
   const resource = useRepositoryResource<{
@@ -397,15 +404,21 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
     async () => {
       const response = await repository.getEvidence(eventId);
       // 장중 근거는 확정 뒤에도 이력으로 보여준다 (screen_spec 4.2 AFTER_CLOSE_CONFIRMED).
+      const marketDate = response.meta.marketContext?.marketDate ?? null;
+      const stored = readViewState<LiveEvidenceHistory>(historyKey);
+      // 날짜가 바뀌면 어제 장중 이력을 오늘 것으로 보여주지 않는다.
+      const kept = stored && stored.marketDate === marketDate ? stored : null;
       if (response.data.evidenceStatus === 'AFTER_CLOSE_CONFIRMED') {
-        return { response, history: historyRef.current };
+        return { response, history: kept };
       }
-      historyRef.current = {
+      const observed: LiveEvidenceHistory = {
         evidenceStatus: response.data.evidenceStatus,
         summary: hasConfirmedEvidence(response.data.evidenceStatus) ? summary.summary : null,
         items: response.data.items,
         observedAt: response.meta.generatedAt,
+        marketDate,
       };
+      writeViewState(historyKey, observed);
       return { response, history: null };
     },
     [repository, eventId],
@@ -577,7 +590,8 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
               return (
                 <>
-                  <div className="source-status">
+                  {/* 깜빡임은 지금 들어오는 중이라는 뜻이다. 마감 후 확정 사유는 더 변하지 않는다. */}
+                  <div className="source-status" data-live={confirmed ? 'false' : 'true'}>
                     <span className="live-dot" aria-hidden="true" />
                     {evidenceStatusLabel(evidenceStatus)}
                   </div>
@@ -610,6 +624,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                       <p className="section-note">{evidenceStatusNote(evidenceStatus)}</p>
                       <EvidenceList
                         items={items}
+                        showTime={tab === 'LIVE'}
                         hasMore={hasMore}
                         loadingMore={pagination.loading}
                         loadMoreFailed={pagination.failed}
@@ -737,11 +752,11 @@ export function ThemeDetailPage() {
               두지 않았다. */}
           <div className="theme-badges">
             {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
-            {/* 어제도 나왔던 테마는 `1거래일 만의 관심`이라 적어도 알려주는 게 없다.
+            {/* 어제도 나왔던 테마는 `1 거래일 만의 관심`이라 적어도 알려주는 게 없다.
                 하루라도 건너뛴 경우에만 붙인다. */}
             {reaction.attentionGapTradingDays !== null && reaction.attentionGapTradingDays >= 2 ? (
               <span className="theme-gap-pill">
-                {reaction.attentionGapTradingDays.toLocaleString('ko-KR')}거래일 만의 관심
+                {reaction.attentionGapTradingDays.toLocaleString('ko-KR')} 거래일 만의 관심
               </span>
             ) : null}
           </div>

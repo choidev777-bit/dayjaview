@@ -104,7 +104,11 @@ export function SimilarEventsPage() {
             type="button"
             role="tab"
             aria-selected={horizon === value}
-            onClick={() => setHorizon(value)}
+            onClick={() => {
+              setHorizon(value);
+              // 기간을 바꾸면 목록이 통째로 달라진다. 펼쳐 둔 채로 두면 어디를 보고 있었는지 잃는다.
+              setExpanded(false);
+            }}
           >
             {horizonLabel(value)}
           </button>
