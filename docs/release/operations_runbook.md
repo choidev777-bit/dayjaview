@@ -21,74 +21,37 @@
 - 별도 market worker 컨테이너는 없다 — 키움 접속·거래일 전환(A-8)은 api 프로세스 안의 `TradingDayLoop`가 수행한다. 기준정보(KRX·OpenDART)도 거래일 세션 준비 때 api가 직접 수집한다.
 - Redis는 배포하지 않는다 — 코드가 읽지 않는다(F-23에서 확인).
 
-## 1. VM 준비 (최초 1회)
+## 1~4. 백엔드 배포 — 명령 하나 (최초·갱신 공통)
+
+운영자 PC의 Git Bash에서, 저장소 루트에서:
 
 ```bash
-# SSH 접속은 운영자 단말의 키로만 한다(키 복사 금지, ADR-009 7항)
-ssh ubuntu@api.dayjaview.duckdns.org
-
-# 1) 이전 프로젝트 잔존 확인·정리 (ADR-009 검증 항목)
-docker ps -a && docker volume ls && crontab -l && systemctl list-units --type=service --state=running
-
-# 2) OS 업데이트·Docker 설치·부팅 시 자동 기동
-sudo apt-get update && sudo apt-get -y upgrade
-sudo apt-get -y install docker.io docker-compose-v2
-sudo systemctl enable --now docker
-
-# 3) 방화벽 — 공개는 22/80/443뿐 (OCI 콘솔 security list와 VM ufw 모두)
-sudo ufw allow 22/tcp && sudo ufw allow 80/tcp && sudo ufw allow 443/tcp && sudo ufw enable
-
-# 4) 디렉터리 — 데이터는 bind mount, 소유자는 컨테이너 uid 10001
-sudo mkdir -p /opt/dayjaview/data/{infostock-import,reference-data,intraday-history,infostock-increment}
-sudo chown -R 10001:10001 /opt/dayjaview/data
-sudo mkdir -p /opt/dayjaview/backup && sudo chmod 700 /opt/dayjaview/backup
-
-# 5) 코드
-sudo git clone https://github.com/choidev777-bit/dayjaview.git /opt/dayjaview/repo
+bash infra/operations/deploy_production.sh
 ```
 
-## 2. Secret 주입 (최초 1회, 회전 시 갱신)
+[deploy_production.sh](../../infra/operations/deploy_production.sh)가 순서대로 수행한다. 여러 번 실행해도 안전하다.
 
-`/etc/dayjaview/*.env` — Git 밖 root 소유 0600 파일(ADR-009 7항). **값은 운영자가 직접 입력**하고 채팅·로그에 붙여넣지 않는다. `.env.local`의 같은 이름 항목에서 옮긴다.
+1. **코드 전송** — 커밋된 트리를 `git archive`로 `/opt/dayjaview/repo`에 밀어넣는다. 저장소가 비공개라 **VM에는 GitHub 자격증명을 두지 않는다** — VM은 git을 모르고, 배포 원본은 항상 운영자 PC의 HEAD다.
+2. **부트스트랩** ([vm_bootstrap.sh](../../infra/operations/vm_bootstrap.sh), 멱등) — 잔존물 보고(삭제 안 함), 방화벽 80/443(OCI Ubuntu의 기본 iptables REJECT 앞에 삽입), Docker 설치·부팅 자동 기동, 데이터 디렉터리(uid 10001)·`/etc/dayjaview`(700), 백업 cron 설치.
+3. **secret 주입** — `POSTGRES_PASSWORD`·`SESSION_SIGNING_SECRET`·백업 암호문은 **VM에서 생성해 유지**(재실행에도 안 바뀜), `GOOGLE_OAUTH_*`·`OPERATOR_BOOTSTRAP_GOOGLE_EMAILS`·`KRX_API_KEY`·`OPENDART_API_KEY`·`KIWOOM_*`는 로컬 `.env.local`에서 읽어 `/etc/dayjaview/*.env`(root 0600)로 보낸다. 값은 화면에 출력하지 않는다. `KIWOOM_MODE=real` 고정.
+4. **인포스탁 번들 전송** — `data/infostock/import/**` → `/opt/dayjaview/data/infostock-import`.
+5. **빌드·기동·health 대기** — ARM64 네이티브 빌드(첫 회 수 분), `up -d`(migrate → api 순서 보장), api healthy까지 최대 3분 대기.
+
+끝나면 스크립트가 안내하는 두 가지를 한다:
 
 ```bash
-sudo mkdir -p /etc/dayjaview && sudo chmod 700 /etc/dayjaview
-sudo touch /etc/dayjaview/{postgres,migrate,api,worker}.env /etc/dayjaview/backup.passphrase
-sudo chmod 600 /etc/dayjaview/* && sudo chown root:root /etc/dayjaview/*
+# 외부에서 TLS+health 확인 (인증서 첫 발급에 1~2분)
+curl -fsS https://api.dayjaview.duckdns.org/api/health
 ```
-
-| 파일 | 항목 (이름만 — 값은 직접 입력) |
-|---|---|
-| `postgres.env` | `POSTGRES_PASSWORD` (새로 생성한 강한 무작위 값) |
-| `migrate.env` | `PGPASSWORD` (= POSTGRES_PASSWORD) |
-| `api.env` | `DATABASE_URL=postgresql://dayjaview:<POSTGRES_PASSWORD>@postgres:5432/dayjaview` · `SESSION_SIGNING_SECRET`(32바이트 이상, 없으면 기동 실패) · `GOOGLE_OAUTH_CLIENT_ID` · `GOOGLE_OAUTH_CLIENT_SECRET` · `OPERATOR_BOOTSTRAP_GOOGLE_EMAILS` · `KRX_API_KEY` · `OPENDART_API_KEY` · `KIWOOM_MODE`(real 또는 demo) · `KIWOOM_APP_KEY` · `KIWOOM_APP_SECRET` · (선택) `KIWOOM_CONDITION_IDS` |
-| `worker.env` | `INFOSTOCK_DATABASE_URL` (= DATABASE_URL과 같은 값) |
-| `backup.passphrase` | 백업 암호화 문구 한 줄 (VM 밖 금고에도 보관 — 잃으면 백업을 못 푼다) |
-
-주의: 구글 키가 **둘 다** 있어야 실 로그인이다. 반쪽만 넣으면 api가 즉시 기동 실패한다(fixture로 조용히 떨어지지 않음 — 의도된 동작).
-
-## 3. 데이터 반입 (최초 1회)
-
-인포스탁 280테마 import 번들(gitignore 대상)을 운영자 PC에서 올린다.
 
 ```bash
-# 운영자 PC에서
-rsync -av --chown=10001:10001 ./data/infostock/import/ ubuntu@api.dayjaview.duckdns.org:/tmp/infostock-import/
-ssh ubuntu@api.dayjaview.duckdns.org "sudo rsync -a --chown=10001:10001 /tmp/infostock-import/ /opt/dayjaview/data/infostock-import/ && rm -rf /tmp/infostock-import"
+# 백업 암호문을 비밀번호 관리자에 보관 (잃으면 백업을 못 푼다)
+ssh ubuntu@api.dayjaview.duckdns.org 'sudo cat /etc/dayjaview/backup.passphrase'
 ```
 
-## 4. 백엔드 배포 (갱신 시 반복)
-
-```bash
-cd /opt/dayjaview/repo && sudo git pull
-cd infra/deployment
-sudo docker compose -f compose.production.yml build          # ARM64 네이티브 빌드
-sudo docker compose -f compose.production.yml up -d          # migrate → api 순서는 compose가 보장
-sudo docker compose -f compose.production.yml ps             # api (healthy) 확인
-curl -fsS https://api.dayjaview.duckdns.org/api/health       # TLS + health 한 번에 확인
-```
-
-- 마이그레이션 이력은 DB의 `dayjaview_fixture.schema_migrations`에 남는다(역사적 스키마 이름 — production에서도 같은 ledger를 쓴다).
+참고:
+- 구글 키가 **둘 다** 있어야 실 로그인이다. 반쪽만이면 api가 즉시 기동 실패한다(fixture로 조용히 떨어지지 않음 — 의도된 동작).
+- 마이그레이션 이력은 DB의 `dayjaview_fixture.schema_migrations`에 남는다(역사적 스키마 이름 — production도 같은 ledger).
 - api는 `TRUSTED_PROXY_HOPS=1`로 돈다. Caddy(2.7+)가 X-Forwarded-For를 접속 주소로 강제하므로 위조가 안 되는 값이다. Vercel rewrite 경유 요청은 Vercel edge 주소로 집계되므로, 로그인 진입(`/auth/google`) 429가 정상 사용자에게 자주 보이면 이 설계를 재검토한다(F-24 발견 2 참고).
 
 ## 5. 웹 배포 (Vercel — 사용자 계정 작업)
@@ -114,34 +77,15 @@ curl -fsS https://api.dayjaview.duckdns.org/api/health       # TLS + health 한 
 
 원칙(ADR-009 8항): PostgreSQL과 수집 데이터를 **암호화해 VM 밖으로**. VM에는 외부로 미는 자격증명을 두지 않는다 — VM은 만들고, 운영자 PC가 당겨간다.
 
-`/opt/dayjaview/backup.sh`를 아래 내용으로 만들고 `sudo chmod 700`:
+[vm_backup.sh](../../infra/operations/vm_backup.sh)가 매일 07:00 UTC(16:00 KST, 장 마감 뒤)에 DB dump와 데이터 디렉터리를 암호화해 `/opt/dayjaview/backup`에 7일 순환 보관한다. cron 등록은 부트스트랩이 이미 했다(`/etc/cron.d/dayjaview-backup`).
+
+운영자 PC에서 주기적으로 당겨온다 (최소 주 1회):
 
 ```bash
-#!/bin/sh
-# 매일 DB dump + 데이터 디렉터리를 암호화 보관, 7일 순환
-set -eu
-stamp=$(date +%Y%m%d)
-out=/opt/dayjaview/backup
-cd /opt/dayjaview/repo/infra/deployment
-docker compose -f compose.production.yml exec -T postgres \
-  pg_dump -U dayjaview -d dayjaview --format=custom \
-  | openssl enc -aes-256-cbc -pbkdf2 -pass file:/etc/dayjaview/backup.passphrase \
-  > "$out/db-$stamp.dump.enc"
-tar -C /opt/dayjaview -cz data \
-  | openssl enc -aes-256-cbc -pbkdf2 -pass file:/etc/dayjaview/backup.passphrase \
-  > "$out/data-$stamp.tar.gz.enc"
-find "$out" -name '*.enc' -mtime +7 -delete
-```
-
-```bash
-# root crontab (sudo crontab -e) — 매일 16:00 KST = 07:00 UTC (장 마감 뒤)
-0 7 * * * /opt/dayjaview/backup.sh >> /var/log/dayjaview-backup.log 2>&1
-```
-
-```bash
-# 운영자 PC에서 주기적으로 당겨오기 (최소 주 1회)
 rsync -av ubuntu@api.dayjaview.duckdns.org:/opt/dayjaview/backup/ ./dayjaview-backup/
 ```
+
+rsync가 없으면 `scp -r ubuntu@api.dayjaview.duckdns.org:/opt/dayjaview/backup ./dayjaview-backup`로 대체.
 
 ## 8. 복구
 
@@ -157,7 +101,7 @@ openssl enc -d -aes-256-cbc -pbkdf2 -pass file:/etc/dayjaview/backup.passphrase 
 # 표 개수·최근 행으로 눈 검증 후: dropdb -U dayjaview dayjaview_restore
 ```
 
-호스트 전체 손실 시 재구축 순서: 1절(VM 준비) → 2절(secret — 금고 사본) → 3절(데이터: 백업의 `data-*.tar.gz.enc` 복원) → 4절(배포) → DB를 운영 `dayjaview`에 pg_restore → 6절(스모크). DuckDNS는 새 VM 공인 IP로 A record만 갱신하면 된다.
+호스트 전체 손실 시 재구축 순서: `deploy_production.sh` 재실행(새 VM이면 secret이 새로 생성된다 — DB 복원 전에 postgres volume을 비운 상태로) → 데이터 디렉터리를 백업의 `data-*.tar.gz.enc`로 복원 → DB를 운영 `dayjaview`에 pg_restore → 6절(스모크). 이전 백업을 풀려면 **보관해 둔 예전 backup.passphrase**가 필요하다. DuckDNS는 새 VM 공인 IP로 A record만 갱신하면 된다.
 
 ```bash
 # 데이터 디렉터리 복원
@@ -179,16 +123,16 @@ sudo chown -R 10001:10001 /opt/dayjaview/data
 
 ## 10. 롤백
 
+배포 원본은 운영자 PC의 HEAD이므로 롤백도 운영자 PC에서 한다:
+
 ```bash
-cd /opt/dayjaview/repo && sudo git log --oneline -5     # 되돌릴 commit 확인
-sudo git checkout <직전 정상 commit>
-cd infra/deployment
-sudo docker compose -f compose.production.yml build
-sudo docker compose -f compose.production.yml up -d
+git log --oneline -5                      # 되돌릴 commit 확인
+git checkout <직전 정상 commit>
+bash infra/operations/deploy_production.sh
+git checkout main                         # 확인 후 복귀
 ```
 
 - DB는 되돌리지 않는다(roll-forward 원칙). 새 마이그레이션이 포함된 배포가 문제면 앱만 되돌리지 말고 수정본을 앞으로 배포한다.
-- 롤백 뒤 `main`을 다시 배포할 준비가 되면 `sudo git checkout main && sudo git pull`.
 
 ## 11. 재부팅 복구
 
