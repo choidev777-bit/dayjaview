@@ -1672,13 +1672,38 @@ a:focus-visible,
 }
 
 /* 시안은 결과 칸 배경을 화면마다 다르게 쓴다. 테마 상세의 현재 상태(`.metrics`)만 회색이고
-   과거 집계(`.pastSummarySection .horizons`)와 소재 상세는 연주황, 과거 사례는 연분홍이다. */
+   과거 집계(`.pastSummarySection .horizons`)와 소재 상세는 연주황, 과거 사례는 연분홍이다.
+   다만 브랜드색 하나로 칠하면 오른 기간과 내린 기간이 구분되지 않아 등락색을 함께 쓴다. */
 .detail-panel .metric-grid article {
   background: var(--djv-color-brand-soft);
 }
 
+.detail-panel .metric-grid article[data-tone="market-up"] {
+  background: var(--djv-color-market-up-soft);
+}
+
+.detail-panel .metric-grid article[data-tone="market-down"] {
+  background: var(--djv-color-market-down-soft);
+}
+
+.detail-panel .metric-grid article[data-tone="market-flat"] {
+  background: var(--djv-color-surface-muted);
+}
+
 .detail-panel .metric-grid strong {
   color: var(--djv-brand-contrast);
+}
+
+.detail-panel .metric-grid strong.market-up {
+  color: var(--djv-color-market-up);
+}
+
+.detail-panel .metric-grid strong.market-down {
+  color: var(--djv-color-market-down);
+}
+
+.detail-panel .metric-grid strong.market-flat {
+  color: var(--djv-color-text-muted);
 }
 
 .detail-panel .metric-grid span {
@@ -1707,6 +1732,18 @@ a:focus-visible,
 
 .page--catalyst .metric-grid article {
   background: var(--djv-color-brand-soft);
+}
+
+.page--catalyst .metric-grid article[data-tone="market-up"] {
+  background: var(--djv-color-market-up-soft);
+}
+
+.page--catalyst .metric-grid article[data-tone="market-down"] {
+  background: var(--djv-color-market-down-soft);
+}
+
+.page--catalyst .metric-grid article[data-tone="market-flat"] {
+  background: var(--djv-color-surface-muted);
 }
 
 .page--catalyst .metric-grid span {

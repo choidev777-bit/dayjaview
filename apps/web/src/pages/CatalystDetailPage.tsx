@@ -76,7 +76,8 @@ export function CatalystDetailPage() {
                 {detail.sameDay.observedCount.toLocaleString('ko-KR')}건
               </strong>
             </article>
-            <article>
+            {/* 여기만 등락이 걸린 값이다. 앞의 두 칸은 건수라 배경을 바꾸지 않는다. */}
+            <article data-tone={returnTone(detail.sameDay.medianReturn)}>
               <span>당일 중앙 반응</span>
               <strong className={returnTone(detail.sameDay.medianReturn)}>
                 {detail.sameDay.medianReturn === null

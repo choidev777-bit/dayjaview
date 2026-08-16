@@ -248,14 +248,15 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
         </p>
         {/* 시안은 `평균`이라고 썼지만 정본 지표는 중앙값이다 (screen_spec 8.8). 분모도 기간마다 따로 적는다. */}
         <div className="metric-grid">
+          {/* 시안은 이 칸을 브랜드색 하나로 칠했지만, 그러면 +4.0%와 −46.0%가 같은 색이라
+              올랐는지 내렸는지 한눈에 안 보인다. 같은 화면의 유사사례 요약도 이미 등락색을
+              쓰고 있어 화면끼리도 어긋났다. 등락색으로 맞춘다. */}
           {data.summary.map((row) => (
-            <article key={row.horizonTradingDays}>
+            <article key={row.horizonTradingDays} data-tone={returnTone(row.medianReturn)}>
               <span>{horizonLabel(row.horizonTradingDays)}</span>
-              {/* 시안 `.metrics strong`은 등락 색이 아니라 브랜드 대비색을 쓴다. 과거 집계는
-                  오늘의 등락이 아니라 기록 요약이라 빨강·파랑으로 읽히면 안 된다. */}
               {/* `중앙 +22.6%`처럼 한 덩어리로 두면 폭이 모자란 칸만 두 줄로 접혀 칸 높이가
                   제각각이 된다. `중앙`을 항상 윗줄에 따로 두어 세 칸 높이를 맞춘다. */}
-              <strong>
+              <strong className={returnTone(row.medianReturn)}>
                 {row.medianReturn === null ? (
                   '기록 없음'
                 ) : (
