@@ -15,5 +15,8 @@ UNION ALL SELECT 'daily_relation', count(*) FROM core.infostock_daily_relations
 UNION ALL SELECT 'daily_relation_with_quote', count(*) FROM core.infostock_daily_relations
    WHERE to_regclass('core.infostock_daily_relations') IS NOT NULL AND relation_type = 'THEME_STOCK'
 UNION ALL SELECT 'news_item', count(*) FROM news.items
+UNION ALL SELECT 'ontology_label', count(*) FROM ontology.theme_history_labels
+UNION ALL SELECT 'ontology_label_span', count(*) FROM ontology.theme_history_label_spans
+UNION ALL SELECT 'ontology_catalyst_type', count(*) FROM ontology.catalyst_types
 UNION ALL SELECT 'applied_migration', count(*) FROM dayjaview_fixture.schema_migrations
 ORDER BY 1\""
