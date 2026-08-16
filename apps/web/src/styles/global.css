@@ -610,7 +610,6 @@ a:focus-visible,
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .04em;
-  animation: live-pulse 1.35s ease-in-out infinite;
 }
 
 .state-note {
@@ -1467,16 +1466,6 @@ a:focus-visible,
   box-shadow: var(--djv-shadow-card);
 }
 
-.source-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 13px;
-  color: var(--djv-brand-contrast);
-  font-size: 10px;
-  font-weight: 700;
-  animation: live-pulse 1.35s ease-in-out infinite;
-}
 
 .reason-summary {
   margin: 14px 0 0;
@@ -2261,11 +2250,6 @@ a:focus-visible,
 
 @keyframes sheet-up {
   from { opacity: 0; transform: translateY(24px); }
-}
-
-@keyframes live-pulse {
-  0%, 100% { opacity: .62; }
-  50% { opacity: 1; }
 }
 
 /* 시안의 유일한 화면 경계. 이보다 넓은 화면에서는 420px 열이 가운데 정렬된다. */

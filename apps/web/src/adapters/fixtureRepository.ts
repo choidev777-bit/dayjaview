@@ -271,6 +271,9 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
           : undefined;
       return resolveFixture('detail', {
         ...selected,
+        // 계약 fixture의 상세 응답에는 marketContext가 없다. 시연에서는 그날의 장 상태를
+        // 함께 준다. 계산 기준의 기준 시각과 저장 목록의 현재 상태가 이 값을 쓴다.
+        meta: ranked ? { ...selected.meta, marketContext: demoRankings.meta.marketContext } : selected.meta,
         data: {
           ...selected.data,
           ...(ranked
@@ -329,7 +332,10 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
           savedType: item.savedType,
           targetId: item.targetId,
           displayName: item.displayName ?? item.targetId,
-          savedAt: libraryResponse.meta.generatedAt,
+          savedAt:
+            options.similar === 'demo'
+              ? demoRankings.meta.generatedAt
+              : libraryResponse.meta.generatedAt,
           availability: 'AVAILABLE',
           unavailableReason: null,
           currentState: item.currentState ?? null,

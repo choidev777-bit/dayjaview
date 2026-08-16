@@ -163,7 +163,10 @@ describe('근거 상태 matrix', () => {
       />,
     );
 
-    expect((await screen.findAllByText('복수 뉴스 확인')).length).toBeGreaterThan(0);
+    // 상태는 출처 수·시각과 한 줄에 함께 적힌다. 같은 문구를 두 번 적지 않는다.
+    expect(
+      (await screen.findAllByText('복수 뉴스 확인', { exact: false })).length,
+    ).toBeGreaterThan(0);
     expect(screen.getByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
   });
 

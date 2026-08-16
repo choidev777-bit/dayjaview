@@ -13,6 +13,7 @@ import type {
   EvidenceResponse,
   EvidenceStatus,
   ResponseMeta,
+  SavedTarget,
   ThemeDetailResponse,
 } from '../domain/contracts';
 import {
@@ -57,10 +58,13 @@ function newsCollectionDelayed(meta: ResponseMeta): boolean {
 function SaveThemeButton({
   themeId,
   displayName,
+  currentState,
   onFailureChange,
 }: {
   themeId: string;
   displayName: string;
+  /** 저장 목록이 요구하는 현재 상태(screen_spec 12.1). 없으면 목록에 이름만 남는다. */
+  currentState: SavedTarget['currentState'];
   onFailureChange: (failed: boolean) => void;
 }) {
   const repository = useRepository();
@@ -91,7 +95,12 @@ function SaveThemeButton({
       if (saved) {
         await repository.removeSaved({ savedType: 'THEME', targetId: themeId });
       } else {
-        await repository.saveSaved({ savedType: 'THEME', targetId: themeId, displayName });
+        await repository.saveSaved({
+          savedType: 'THEME',
+          targetId: themeId,
+          displayName,
+          currentState,
+        });
       }
       resource.retry();
     } catch {
@@ -609,11 +618,6 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
               return (
                 <>
-                  <div className="source-status">
-                    <span className="live-dot" aria-hidden="true" />
-                    {evidenceStatusLabel(evidenceStatus)}
-                  </div>
-
                   {delayed ? (
                     <p className="confirmation-note" role="status">
                       뉴스 수집이 지연되고 있습니다. 확인된 신규 소재 없음과 다른 상태입니다.
@@ -627,7 +631,11 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                     </p>
                   ) : null}
 
-                  {hasConfirmedEvidence(evidenceStatus) && summary.summary ? (
+                  {/* 근거가 한 건이고 그 제목이 확정 사유와 같은 문장이면 두 번 적지 않는다.
+                      인포스탁 기록처럼 사유 자체가 출처인 경우가 그렇다. */}
+                  {hasConfirmedEvidence(evidenceStatus) &&
+                  summary.summary &&
+                  !(items.length === 1 && items[0].title.trim() === summary.summary.trim()) ? (
                     <p className="reason-summary">{summary.summary}</p>
                   ) : null}
 
@@ -757,6 +765,17 @@ export function ThemeDetailPage() {
         <SaveThemeButton
           themeId={detail.classification.themeId}
           displayName={detail.classification.displayName}
+          currentState={
+            calculationContext
+              ? {
+                  eventId: detail.eventId,
+                  eventState: detail.lifecycleStatus,
+                  weightedReturn: reaction.weightedReturn ?? 0,
+                  dataStatus: calculationContext.dataStatus,
+                  asOf: calculationContext.asOf,
+                }
+              : null
+          }
           onFailureChange={setSaveFailed}
         />
       </header>
