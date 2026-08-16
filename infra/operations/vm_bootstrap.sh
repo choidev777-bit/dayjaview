@@ -33,6 +33,7 @@ systemctl enable --now docker
 
 echo "== 디렉터리·권한 (데이터 bind mount는 컨테이너 uid 10001 소유)"
 mkdir -p /opt/dayjaview/data/infostock-import \
+         /opt/dayjaview/data/infostock-daily \
          /opt/dayjaview/data/reference-data \
          /opt/dayjaview/data/intraday-history \
          /opt/dayjaview/data/infostock-increment

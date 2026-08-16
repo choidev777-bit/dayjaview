@@ -206,10 +206,17 @@ def test_production_compose_persists_data_and_exposes_only_caddy() -> None:
     assert services["worker-news"]["depends_on"]["migration-idempotency"] == {
         "condition": "service_completed_successfully"
     }
-    assert services["infostock-bootstrap"]["command"][-2:] == [
+    assert services["infostock-bootstrap"]["command"][-4:] == [
         "--collection-dir",
         "/workspace/data/infostock-import",
+        "--daily-backfill-dir",
+        "/workspace/data/infostock-daily",
     ]
+    # Daily 본문은 읽기 전용으로만 붙는다 — 부트스트랩이 원문을 고치지 못한다.
+    assert (
+        "/opt/dayjaview/data/infostock-daily:/workspace/data/infostock-daily:ro"
+        in services["infostock-bootstrap"]["volumes"]
+    )
 
 
 def test_production_compose_takes_secrets_only_from_root_env_files() -> None:

@@ -124,10 +124,13 @@ services:
       - apps/worker-batch/infostock/import_fixture.py
       - --collection-dir
       - /workspace/data/infostock-import
+      - --daily-backfill-dir
+      - /workspace/data/infostock-daily
     env_file:
       - /etc/dayjaview/worker.env
     volumes:
       - /opt/dayjaview/data/infostock-import:/workspace/data/infostock-import:ro
+      - /opt/dayjaview/data/infostock-daily:/workspace/data/infostock-daily:ro
     networks:
       - backend
     depends_on:

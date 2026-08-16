@@ -124,6 +124,18 @@ else
     echo "경고: data/infostock/import가 없어 건너뜀 — 거래일에 테마 우주를 못 만든다" >&2
 fi
 
+say "5-1) DailyFeaturedTheme 본문 전송 (약 200MB — 첫 회는 수 분 걸린다)"
+DAILY_DIR=$(ls -d data/infostock/daily-full-* 2>/dev/null | sort | tail -1 || true)
+if [ -n "$DAILY_DIR" ]; then
+    ssh "$VM" 'df -h /opt | tail -1'
+    tar -cz -C "$DAILY_DIR" . \
+        | ssh "$VM" 'sudo tar -xz -C /opt/dayjaview/data/infostock-daily \
+            && sudo chown -R 10001:10001 /opt/dayjaview/data/infostock-daily \
+            && echo "본문 반입 완료: $(ls /opt/dayjaview/data/infostock-daily/details 2>/dev/null | wc -l)건"'
+else
+    echo "경고: data/infostock/daily-full-*이 없어 건너뜀 — Daily 사건 질의를 못 만든다" >&2
+fi
+
 say "6) 이미지 빌드 (ARM64 네이티브 — 첫 회는 수 분 걸린다)"
 ssh "$VM" "cd /opt/dayjaview/repo/infra/deployment && sudo docker compose -f compose.production.yml build"
 
