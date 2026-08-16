@@ -15,6 +15,7 @@ data/
 logs/
 coverage/
 research/data/
+research/ontology/
 
 # Tooling
 .vercel/
