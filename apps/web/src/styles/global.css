@@ -15,13 +15,15 @@
   box-sizing: border-box;
 }
 
+/* 시안은 폰 목업을 늘어놓는 전시 페이지라 바깥을 베이지로 뒀다. 제품은 앱 자체라
+   화면이 넓을 때 양옆에 베이지 띠가 남는다. 앱과 같은 흰 바탕으로 이어 붙인다. */
 html,
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100%;
   color: var(--djv-color-text);
-  background: var(--djv-color-bg);
+  background: var(--djv-color-surface);
   font-family: var(--djv-font-sans);
   font-size: var(--djv-font-size-body);
   font-synthesis: none;
@@ -54,7 +56,7 @@ a:focus-visible,
 
 .app-shell {
   min-height: 100dvh;
-  background: var(--djv-color-bg);
+  background: var(--djv-color-surface);
 }
 
 /* 내용이 짧은 화면에서 아래로 app-shell의 베이지가 비치지 않게 여기서 흰 바탕을 깐다.
@@ -162,6 +164,132 @@ a:focus-visible,
   background: var(--djv-color-surface);
 }
 
+/* 시안 `.loading`. 첫 진입에서만 쓰는 검은 스플래시. 값은 시안 그대로다. */
+.splash {
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111111;
+  color: #ffffff;
+}
+
+.splash__halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 520px;
+  height: 520px;
+  margin: -335px 0 0 -260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 111, 15, .34) 0%, rgba(255, 111, 15, .1) 38%, rgba(255, 111, 15, 0) 68%);
+  animation: splash-halo 4s cubic-bezier(.45, 0, .55, 1) infinite;
+  filter: blur(18px);
+}
+
+.splash__logo {
+  position: relative;
+  width: 258px;
+  height: 96px;
+  margin-bottom: 150px;
+}
+
+.splash__logo-base,
+.splash__glow,
+.splash__sharp {
+  position: absolute;
+  -webkit-mask: url("/dayjaview-logo-white.png") center / contain no-repeat;
+  mask: url("/dayjaview-logo-white.png") center / contain no-repeat;
+}
+
+.splash__logo-base {
+  inset: 0;
+  background: #825039;
+}
+
+.splash__glow {
+  inset: -40px;
+  overflow: hidden;
+  opacity: .85;
+  -webkit-mask-size: 144px 96px;
+  mask-size: 144px 96px;
+  filter: blur(9px);
+}
+
+.splash__sharp {
+  inset: 0;
+  overflow: hidden;
+}
+
+.splash__glow i,
+.splash__sharp i {
+  position: absolute;
+  inset: 0;
+  animation: splash-sweep 4s cubic-bezier(.45, 0, .55, 1) infinite both;
+}
+
+.splash__glow i {
+  background: linear-gradient(100deg, rgba(255, 111, 15, 0) 34%, rgba(255, 111, 15, .82) 50%, rgba(255, 156, 92, .88) 56%, rgba(255, 111, 15, 0) 70%);
+}
+
+.splash__sharp i {
+  background: linear-gradient(100deg, rgba(255, 111, 15, 0) 36%, rgba(255, 111, 15, .82) 48%, #ffad76 55%, rgba(255, 111, 15, .55) 62%, rgba(255, 111, 15, 0) 74%);
+}
+
+.splash__footer {
+  position: absolute;
+  right: 0;
+  bottom: 96px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.splash__footer > span {
+  color: rgba(255, 255, 255, .48);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.splash__footer > b {
+  overflow: hidden;
+  width: 132px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .12);
+}
+
+.splash__footer > b > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #ff5c00;
+  transform-origin: left;
+  animation: splash-bar 4s cubic-bezier(.3, .7, .2, 1) both;
+}
+
+@keyframes splash-halo {
+  50% { opacity: .72; transform: scale(.92); }
+}
+
+@keyframes splash-sweep {
+  from { transform: translateX(-115%); }
+  to { transform: translateX(115%); }
+}
+
+@keyframes splash-bar {
+  0% { transform: scaleX(0); }
+  60% { transform: scaleX(.63); }
+  80% { transform: scaleX(.82); }
+  92% { transform: scaleX(.91); }
+  100% { transform: scaleX(1); }
+}
+
 /* 화면 전체가 실패했을 때. 다른 화면과 같은 흰 바탕 위에 가운데로 세운다. */
 .page--error {
   min-height: 100dvh;
@@ -215,6 +343,13 @@ a:focus-visible,
   border-bottom: 1px solid var(--djv-color-border);
 }
 
+.page-intro--with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--djv-space-3);
+}
+
 .page-intro > small {
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-caption);
@@ -236,19 +371,20 @@ a:focus-visible,
   line-height: 1.5;
 }
 
-/* 시안 `.wireHeader`. 높이 60px이고 제목은 15px/800이다. */
+/* 시안 `.wireHeader` 실측: 배경 흰색, 높이 60px, 제목 15px, 뒤로가기 버튼 배경 #f4f4f5.
+   시안 CSS의 `background: var(--djv-color-bg)`는 뒤에서 흰색으로 덮인다. */
 .app-bar {
   display: grid;
   height: 60px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
   padding: 0 12px;
-  background: var(--djv-color-bg);
+  background: var(--djv-color-surface);
 }
 
 .app-bar > strong {
   color: var(--djv-color-text);
-  font-size: var(--djv-font-size-body);
+  font-size: 15px;
   font-weight: 800;
   text-align: center;
 }
@@ -1468,6 +1604,17 @@ a:focus-visible,
   font-weight: 800;
 }
 
+/* 건수 바로 아래에 붙는 경고. 옅은 경고색 띠로 감싸 본문 글과 구분한다. */
+.historical-summary__warning {
+  margin: var(--djv-space-2) 0 0;
+  padding: 8px 10px;
+  border-radius: var(--djv-radius-sm);
+  background: var(--djv-color-warning-soft);
+  color: var(--djv-color-warning);
+  font-size: var(--djv-font-size-caption);
+  font-weight: 700;
+}
+
 .historical-summary__rows {
   margin: var(--djv-space-3) 0 0;
   padding: 0;
@@ -1812,11 +1959,17 @@ a:focus-visible,
   font-size: 11px;
 }
 
+/* 저장 해제는 항상 오른쪽 끝에 둔다. space-between으로 두면 상세 보기가 없는 항목에서
+   저장 해제가 왼쪽으로 옮겨가 줄마다 위치가 달라진다. */
 .saved-row__actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--djv-space-3);
+}
+
+.saved-row__actions a {
+  margin-right: auto;
 }
 
 .saved-row__actions a {

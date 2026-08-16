@@ -242,15 +242,34 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')],
       ),
     getTreemap: () => resolveFixture('treemap', treemaps[options.treemap ?? 'live']),
-    getThemeDetail: () => {
+    getThemeDetail: (themeId, eventId) => {
       const selected = details[options.detail ?? 'single'];
-      // similar 스위치가 gated가 아니면 게이트가 열린 상태를 보는 것이므로 진입점도 함께 열어 준다.
-      if ((options.similar ?? 'gated') === 'gated') return resolveFixture('detail', selected);
+      const gated = (options.similar ?? 'gated') === 'gated';
+      // 계약 fixture는 테마가 하나뿐이라 어느 테마를 눌러도 같은 상세가 나온다. 실제 endpoint는
+      // themeId·eventId로 조회하므로, 목록에 있는 테마면 그 테마의 값으로 바꿔 눌러본 대로 보이게 한다.
+      const ranked = rankings[
+        options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')
+      ].data.items.find((item) => item.classification.themeId === themeId);
       return resolveFixture('detail', {
         ...selected,
         data: {
           ...selected.data,
-          historicalAccess: { status: 'AVAILABLE' as const, reason: 'DEMO_STORY' },
+          ...(ranked
+            ? {
+                eventId: ranked.eventId,
+                classification: ranked.classification,
+                currentReaction: {
+                  ...selected.data.currentReaction,
+                  weightedReturn: ranked.weightedReturn,
+                  advancingCount: ranked.advancingCount,
+                  validCount: ranked.validCount,
+                },
+                coverage: ranked.coverage,
+              }
+            : { eventId }),
+          historicalAccess: gated
+            ? selected.data.historicalAccess
+            : { status: 'AVAILABLE' as const, reason: 'DEMO_STORY' },
         },
       });
     },

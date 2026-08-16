@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   IconGridLine,
   IconHouseLine,
@@ -27,7 +27,7 @@ import { SavedPage } from '../pages/SavedPage';
 import { SimilarEventsPage } from '../pages/SimilarEventsPage';
 import { ThemeDetailPage } from '../pages/ThemeDetailPage';
 import { TodayPage } from '../pages/TodayPage';
-import { ErrorState, LoadingState } from '../shared/StatePanel';
+import { ErrorState, SplashScreen } from '../shared/StatePanel';
 import { useAsyncResource } from '../shared/useAsyncResource';
 import { RepositoryProvider, useRepository } from './RepositoryContext';
 
@@ -89,24 +89,30 @@ function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
   );
 }
 
-function AuthGate() {
+/** 시안의 로딩 지속 시간. 로고 sweep과 진행 바가 한 바퀴 도는 길이다. */
+const SPLASH_MS = 4000;
+
+function AuthGate({ splashMs }: { splashMs: number }) {
   const repository = useRepository();
   const location = useLocation();
   const navigate = useNavigate();
   const session = useAsyncResource(() => repository.getSession(), [repository]);
+  // 세션 확인이 먼저 끝나도 진행 바가 다 찰 때까지는 스플래시를 유지한다.
+  const [splashHeld, setSplashHeld] = useState(splashMs > 0);
+
+  useEffect(() => {
+    if (splashMs <= 0) return undefined;
+    const timer = window.setTimeout(() => setSplashHeld(false), splashMs);
+    return () => window.clearTimeout(timer);
+  }, [splashMs]);
 
   useEffect(
     () => repository.subscribe('session', session.retry),
     [repository, session.retry],
   );
 
-  if (session.status === 'loading') {
-    return (
-      <main className="login-page">
-        <LoadingState label="로그인 상태를 확인하는 중입니다" />
-      </main>
-    );
-  }
+  // 앱이 처음 열릴 때는 시안의 스플래시를 쓴다. 세션 확인은 이 뒤에서 끝난다.
+  if (session.status === 'loading' || splashHeld) return <SplashScreen />;
 
   if (session.status === 'error') {
     return (
@@ -151,9 +157,11 @@ export function App({
   repository: ProductRepository;
   initialEntries?: string[];
 }) {
+  // initialEntries는 MemoryRouter로 띄우는 경우(테스트·임베드)에만 온다. 그때는 장식용
+  // 대기를 걸지 않는다. 실제 앱은 BrowserRouter로 뜨므로 시안과 같은 4초를 유지한다.
   const content = (
     <RepositoryProvider repository={repository}>
-      <AuthGate />
+      <AuthGate splashMs={initialEntries ? 0 : SPLASH_MS} />
     </RepositoryProvider>
   );
 

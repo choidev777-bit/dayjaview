@@ -121,8 +121,13 @@ export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
 
   return (
     <div className="page page--saved">
-      <header className="page-intro">
+      {/* 로그아웃은 계정 동작이라 목록 맨 아래 본문 흐름에 두면 저장 항목처럼 읽힌다.
+          화면 제목 옆으로 올려 계정 영역이라는 걸 분명히 한다. */}
+      <header className="page-intro page-intro--with-action">
         <h1>저장</h1>
+        <button className="text-button" type="button" onClick={onLogout}>
+          로그아웃
+        </button>
       </header>
 
       <div className="library-heading">
@@ -185,9 +190,6 @@ export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
       </div>
 
       <p className="section-note notice">저장 여부는 시장 순위·계산·공용 결과에 영향을 주지 않습니다.</p>
-      <button className="text-button" type="button" onClick={onLogout}>
-        로그아웃
-      </button>
     </div>
   );
 }

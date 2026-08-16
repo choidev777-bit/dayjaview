@@ -104,11 +104,14 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!introPlayedRef.current && !reducedMotion && items.length > 1) {
-      introPlayedRef.current = true;
       // 한 바퀴를 돌면 같은 1위 카드에 돌아오므로 끝나고 위치를 되돌려도 튀지 않는다.
       for (let stepIndex = 1; stepIndex <= items.length; stepIndex += 1) {
         timers.push(
           window.setTimeout(() => {
+            // 예약 시점에 `재생함`으로 찍으면 StrictMode가 effect를 두 번 부를 때
+            // 첫 번째 pass가 flag를 태우고 그 cleanup이 타이머를 지워, 두 번째 pass는
+            // 건너뛰어 결국 한 번도 안 돈다. 실제로 시작할 때 찍는다.
+            introPlayedRef.current = true;
             wheel.scrollTo({
               top: stepIndex === items.length ? baseTop : baseTop + step * stepIndex,
               behavior: stepIndex === items.length ? 'auto' : 'smooth',

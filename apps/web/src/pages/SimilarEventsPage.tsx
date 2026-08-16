@@ -73,6 +73,11 @@ export function SimilarEventsPage() {
         <h2 id="similar-summary-title">
           비슷했던 과거 {(summary?.eligibleCount ?? data.items.length).toLocaleString('ko-KR')}건
         </h2>
+        {/* 건수 바로 아래에 둔다. 카드 맨 아래면 기간 토글에 붙어 어느 값에 걸린 경고인지
+            흐려진다 (screen_spec 8.8 `표본 부족 경고를 요약 가까이에`). */}
+        {smallSample ? (
+          <p className="historical-summary__warning">표본이 적어 참고용이에요.</p>
+        ) : null}
         {/* 기간마다 유효 분모가 다르다. 한 분모로 합치지 않고 줄마다 따로 적는다 (screen_spec 8.8). */}
         <ul className="historical-summary__rows">
           {data.summary.map((row) => (
@@ -87,7 +92,6 @@ export function SimilarEventsPage() {
             </li>
           ))}
         </ul>
-        {smallSample ? <p className="section-note">표본이 적어 참고용이에요.</p> : null}
       </section>
 
       {/* MVP에서 허용되는 필터는 기간 전환뿐이다. 표본 수를 숨기는 소재 필터는 두지 않는다 (screen_spec 9.4). */}

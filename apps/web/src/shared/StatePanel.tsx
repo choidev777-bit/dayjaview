@@ -1,6 +1,33 @@
 import type { ReactNode } from 'react';
 import { asRepositoryError } from '../domain/repositoryErrors';
 
+/**
+ * 시안의 첫 진입 로딩. 검은 배경 위에서 로고에 주황빛이 쓸려 지나간다.
+ * 앱이 처음 열릴 때 한 번만 쓰고, 화면 안의 부분 로딩은 `LoadingState`가 맡는다.
+ */
+export function SplashScreen() {
+  return (
+    <div className="splash" role="status" aria-label="DAY-JA-VIEW 불러오는 중">
+      <div className="splash__halo" aria-hidden="true" />
+      <div className="splash__logo" aria-hidden="true">
+        <i className="splash__logo-base" />
+        <span className="splash__glow">
+          <i />
+        </span>
+        <span className="splash__sharp">
+          <i />
+        </span>
+      </div>
+      <div className="splash__footer">
+        <span>오늘의 시장을, 과거의 기록으로</span>
+        <b aria-hidden="true">
+          <i />
+        </b>
+      </div>
+    </div>
+  );
+}
+
 export function LoadingState({ label = '데이터를 불러오는 중입니다' }: { label?: string }) {
   return (
     <div className="state-panel state-panel--loading" role="status" aria-live="polite">
