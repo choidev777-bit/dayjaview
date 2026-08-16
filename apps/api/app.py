@@ -218,6 +218,7 @@ class IdentityApiApp:
                     "authuser",
                     "prompt",
                     "hd",
+                    "iss",  # RFC 9207 발급자 표식 — 실측에서 확인
                     "error",
                     "error_description",
                 }

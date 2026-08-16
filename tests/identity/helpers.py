@@ -59,6 +59,7 @@ async def api_login(
         params={
             "code": code,
             "state": state,
+            "iss": "https://accounts.google.com",
             "scope": "email profile openid",
             "authuser": "0",
             "prompt": "none",
