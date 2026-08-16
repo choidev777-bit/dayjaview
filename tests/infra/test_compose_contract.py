@@ -157,10 +157,13 @@ def test_production_compose_persists_data_and_exposes_only_caddy() -> None:
     assert set(services) == {
         "api",
         "caddy",
+        "infostock-bootstrap",
         "migrate",
         "migration-idempotency",
         "postgres",
+        "worker-after-close-reconcile",
         "worker-infostock-increment",
+        "worker-news",
     }
     for service in services.values():
         assert service["platform"] == "linux/arm64"
@@ -190,18 +193,39 @@ def test_production_compose_persists_data_and_exposes_only_caddy() -> None:
     assert api["depends_on"]["migration-idempotency"]["condition"] == (
         "service_completed_successfully"
     )
+    assert api["depends_on"]["infostock-bootstrap"]["condition"] == (
+        "service_completed_successfully"
+    )
     assert api["read_only"] is True
 
     # 인포스탁 증분 수집은 profile 뒤라 `up`으로는 시작되지 않는다.
     assert services["worker-infostock-increment"]["profiles"] == ["collect"]
     assert "--approved" in services["worker-infostock-increment"]["command"]
+    assert services["worker-after-close-reconcile"]["profiles"] == ["collect"]
+    assert services["worker-news"]["restart"] == "unless-stopped"
+    assert services["worker-news"]["depends_on"]["migration-idempotency"] == {
+        "condition": "service_completed_successfully"
+    }
+    assert services["infostock-bootstrap"]["command"][-2:] == [
+        "--collection-dir",
+        "/workspace/data/infostock-import",
+    ]
 
 
 def test_production_compose_takes_secrets_only_from_root_env_files() -> None:
     """secret은 값이 아니라 /etc/dayjaview/*.env 참조로만 들어온다(ADR-009 7항)."""
 
     services = _load(PRODUCTION_COMPOSE)["services"]
-    for name in ("postgres", "migrate", "migration-idempotency", "api"):
+    for name in (
+        "postgres",
+        "migrate",
+        "migration-idempotency",
+        "api",
+        "infostock-bootstrap",
+        "worker-infostock-increment",
+        "worker-after-close-reconcile",
+        "worker-news",
+    ):
         env_files = services[name]["env_file"]
         assert env_files, f"{name}에 env_file이 없다"
         for entry in env_files:

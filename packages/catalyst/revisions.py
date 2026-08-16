@@ -4,9 +4,24 @@ from __future__ import annotations
 
 from datetime import datetime
 from threading import RLock
+from typing import Protocol
 
 from .models import EvidenceRevision
 from .policy import EvidenceDecision
+
+
+class EvidenceRevisionRepository(Protocol):
+    def current(self, event_id: str) -> EvidenceRevision | None: ...
+
+    def history(self, event_id: str) -> tuple[EvidenceRevision, ...]: ...
+
+    def record(
+        self,
+        event_id: str,
+        decision: EvidenceDecision,
+        *,
+        now: datetime,
+    ) -> EvidenceRevision: ...
 
 
 class EvidenceRevisionStore:

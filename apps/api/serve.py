@@ -30,6 +30,7 @@ from packages.adapters.kiwoom import (
     SubscriptionDemand,
     SupplementReason,
 )
+from packages.catalyst import PostgresEvidenceRepository
 from packages.domain import DataStatus
 from packages.events import (
     EventStore,
@@ -517,6 +518,17 @@ class LiveSessionController:
         self._hub = hub
         self._handle = handle
         self._event_store, self._snapshot_repository = create_pipeline_stores(env)
+        self._evidence_repository: PostgresEvidenceRepository | None = None
+        dsn = env.get(DATABASE_DSN_ENV, "").strip()
+        if dsn:
+            import psycopg
+
+            # 이 연결은 읽기 전용이다. autocommit으로 장수하는 idle transaction이
+            # evidence revision 정리를 막지 않게 한다.
+            evidence_connection: Any = psycopg.connect(dsn, autocommit=True)
+            self._evidence_repository = PostgresEvidenceRepository(
+                evidence_connection
+            )
         # 동일 시각 기준선(20거래일)과 관심 공백(60거래일)은 과거 장중 자료가
         # 있어야 나온다. 승인된 과거 분봉이 없으므로 실서빙이 도는 동안 매일
         # 직접 쌓는다. 축적이 찰 때까지는 배수·공백이 null로 남는다.
@@ -578,12 +590,23 @@ class LiveSessionController:
         )
         self._adapter = adapter
         self._handle.switch(pipeline)
+
+        def sync_evidence() -> None:
+            repository = self._evidence_repository
+            if repository is None:
+                return
+            for event in pipeline.current_events():
+                loaded = repository.load(event.event_id)
+                if loaded is not None:
+                    pipeline.record_evidence(*loaded)
+
         return MarketPublishLoop(
             pipeline=pipeline,
             on_published=lambda view: publish_view_to_hub(self._hub, view),
             data_status=runner.data_status,
             interval=PUBLISH_INTERVAL,
             poll_updates=runner.poll_updates,
+            before_publish=sync_evidence,
             market_close_at=session_close_at(
                 market_date, close_time=MARKET_CLOSE_KST
             ),

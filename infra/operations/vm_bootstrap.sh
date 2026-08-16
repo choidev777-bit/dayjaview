@@ -42,8 +42,17 @@ mkdir -p /etc/dayjaview && chmod 700 /etc/dayjaview
 
 echo "== 백업 cron 설치 (매일 07:00 UTC = 16:00 KST; 암호문 생기기 전엔 스스로 건너뜀)"
 install -m 700 /opt/dayjaview/repo/infra/operations/vm_backup.sh /opt/dayjaview/vm_backup.sh
+install -m 700 /opt/dayjaview/repo/infra/operations/vm_restore_drill.sh \
+    /opt/dayjaview/vm_restore_drill.sh
 printf '0 7 * * * root /opt/dayjaview/vm_backup.sh >> /var/log/dayjaview-backup.log 2>&1\n' \
     > /etc/cron.d/dayjaview-backup
 chmod 644 /etc/cron.d/dayjaview-backup
+
+echo "== 장후 자동 작업 cron 설치 (평일 08:30 UTC = 17:30 KST)"
+install -m 700 /opt/dayjaview/repo/infra/operations/run_after_close.sh \
+    /opt/dayjaview/run_after_close.sh
+printf '30 8 * * 1-5 root /opt/dayjaview/run_after_close.sh >> /var/log/dayjaview-after-close.log 2>&1\n' \
+    > /etc/cron.d/dayjaview-after-close
+chmod 644 /etc/cron.d/dayjaview-after-close
 
 echo "부트스트랩 완료"

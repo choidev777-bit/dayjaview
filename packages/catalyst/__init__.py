@@ -20,13 +20,14 @@ from .models import (
     catalyst_key,
 )
 from .policy import NO_NEW_CATALYST_AFTER, EvidenceDecision, decide
+from .postgres import PostgresEvidenceRepository
 from .projection import (
     DEFAULT_PAGE_LIMIT,
     evidence_item,
     evidence_list_data,
     evidence_summary,
 )
-from .revisions import EvidenceRevisionStore
+from .revisions import EvidenceRevisionRepository, EvidenceRevisionStore
 from .supplemental import (
     SUPPLEMENTAL_COOLDOWN,
     SupplementalDecision,
@@ -45,6 +46,7 @@ __all__ = [
     "CatalystEvidence",
     "EvidenceDecision",
     "EvidenceRevision",
+    "EvidenceRevisionRepository",
     "EvidenceRevisionStore",
     "EvidenceStatus",
     "ExtractionMethod",
@@ -52,6 +54,7 @@ __all__ = [
     "MatchConfig",
     "MatchTrigger",
     "NewsThemeMatch",
+    "PostgresEvidenceRepository",
     "SupplementalDecision",
     "SupplementalDenial",
     "SupplementalSearchGate",

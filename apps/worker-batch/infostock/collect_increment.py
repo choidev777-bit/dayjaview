@@ -85,6 +85,28 @@ def main(argv: list[str] | None = None) -> int:
     end_date = str(args.end_date)
     directory = args.output_root / f"window-{start_date}-{end_date}"
 
+    connection: Any | None = None
+    operator_repository: Any | None = None
+    operator = None
+    job_id = f"infostock-daily-{end_date}"
+    if not args.collect_only:
+        database_url = os.environ.get(str(args.database_url_env))
+        if not database_url:
+            raise RuntimeError(
+                f"{args.database_url_env} 환경변수에 PostgreSQL URL이 필요합니다."
+            )
+        psycopg = importlib.import_module("psycopg")
+        operator = importlib.import_module("packages.operator")
+        connection = psycopg.connect(database_url)
+        operator_repository = operator.PostgresOperatorRepository(cast(Any, connection))
+        operator_repository.set_job_status(
+            run_id=job_id,
+            job_type="INFOSTOCK_DAILY_INCREMENT",
+            status=operator.JobStatus.RUNNING,
+            now=datetime.now(UTC),
+            internal_context={"window": [start_date, end_date]},
+        )
+
     try:
         infostock.collect_daily_api_backfill(
             directory,
@@ -95,17 +117,54 @@ def main(argv: list[str] | None = None) -> int:
             request_delay_seconds=args.request_delay_seconds,
             resume=True,
         )
-    except (RuntimeError, infostock.FixtureValidationError) as exc:
+    except (OSError, RuntimeError, infostock.FixtureValidationError) as exc:
+        status = infostock.classify_collection_error(exc)
+        if operator_repository is not None and operator is not None:
+            operator_repository.set_job_status(
+                run_id=job_id,
+                job_type="INFOSTOCK_DAILY_INCREMENT",
+                status=operator.JobStatus(status),
+                now=datetime.now(UTC),
+                error_code=type(exc).__name__,
+                internal_context={
+                    "window": [start_date, end_date],
+                    "message": str(exc)[:500],
+                },
+            )
+            if status == "AUTH_REQUIRED":
+                operator_repository.set_infostock_auth_status(
+                    operator.InfostockAuthStatus(
+                        operator.InfostockAuthState.AUTH_REQUIRED,
+                        None,
+                        "INFOSTOCK_REAUTH",
+                    )
+                )
+        if connection is not None:
+            connection.close()
         return _emit(
             {
-                "status": infostock.classify_collection_error(exc),
+                "status": status,
                 "phase": "COLLECT",
                 "window": [start_date, end_date],
                 "messageKo": str(exc),
             }
         )
 
-    bundle, window = infostock.build_daily_increment_bundle(directory)
+    try:
+        bundle, window = infostock.build_daily_increment_bundle(directory)
+    except Exception as exc:
+        if operator_repository is not None and operator is not None:
+            operator_repository.set_job_status(
+                run_id=job_id,
+                job_type="INFOSTOCK_DAILY_INCREMENT",
+                status=operator.JobStatus.FAILED,
+                now=datetime.now(UTC),
+                error_code=type(exc).__name__,
+                internal_context={"message": str(exc)[:500]},
+            )
+        if connection is not None:
+            connection.close()
+        raise
     daily_status = str(bundle.daily.component_status)
     if args.collect_only:
         return _emit(
@@ -119,18 +178,45 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
 
-    database_url = os.environ.get(str(args.database_url_env))
-    if not database_url:
-        raise RuntimeError(
-            f"{args.database_url_env} 환경변수에 PostgreSQL URL이 필요합니다."
-        )
-    psycopg = importlib.import_module("psycopg")
-    connection = psycopg.connect(database_url)
+    assert connection is not None
     try:
         store = infostock.PostgresInfostockStore(cast(Any, connection))
         result = infostock.import_daily_increment(
             bundle, store, window_start=window[0], window_end=window[1]
         )
+        if operator_repository is not None and operator is not None:
+            operator_repository.set_job_status(
+                run_id=job_id,
+                job_type="INFOSTOCK_DAILY_INCREMENT",
+                status=operator.JobStatus(str(result.status)),
+                now=datetime.now(UTC),
+                internal_context={
+                    "window": [start_date, end_date],
+                    "runId": result.run_id,
+                    "runReused": result.reused,
+                    "postsSeen": result.daily_posts_seen,
+                    "relationsSeen": result.daily_relations_seen,
+                    "revisionsCreated": result.daily_post_revisions_created,
+                },
+            )
+            operator_repository.set_infostock_auth_status(
+                operator.InfostockAuthStatus(
+                    operator.InfostockAuthState.READY,
+                    datetime.now(UTC),
+                    None,
+                )
+            )
+    except Exception as exc:
+        if operator_repository is not None and operator is not None:
+            operator_repository.set_job_status(
+                run_id=job_id,
+                job_type="INFOSTOCK_DAILY_INCREMENT",
+                status=operator.JobStatus.FAILED,
+                now=datetime.now(UTC),
+                error_code=type(exc).__name__,
+                internal_context={"message": str(exc)[:500]},
+            )
+        raise
     finally:
         connection.close()
     return _emit(

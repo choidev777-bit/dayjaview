@@ -112,6 +112,30 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  infostock-bootstrap:
+    <<: [*app-security, *app-logging]
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    restart: "no"
+    command:
+      - python
+      - apps/worker-batch/infostock/import_fixture.py
+      - --collection-dir
+      - /workspace/data/infostock-import
+    env_file:
+      - /etc/dayjaview/worker.env
+    volumes:
+      - /opt/dayjaview/data/infostock-import:/workspace/data/infostock-import:ro
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration-idempotency:
+        condition: service_completed_successfully
+
   api:
     <<: [*app-security, *app-logging]
     platform: linux/arm64
@@ -162,6 +186,8 @@ services:
         condition: service_healthy
       migration-idempotency:
         condition: service_completed_successfully
+      infostock-bootstrap:
+        condition: service_completed_successfully
 
   # 인포스탁 일일 증분(D-14). profile 뒤에 있어 `up`으로는 안 뜨고,
   # 승인(CLAUDE.md 항목 2) 후 cron이 `compose run`으로 실행한다(runbook 9절).
@@ -191,6 +217,57 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migration-idempotency:
+        condition: service_completed_successfully
+      infostock-bootstrap:
+        condition: service_completed_successfully
+
+  worker-after-close-reconcile:
+    <<: [*app-security, *app-logging]
+    profiles:
+      - collect
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    restart: "no"
+    command:
+      - python
+      - apps/worker-batch/infostock/reconcile_after_close.py
+    env_file:
+      - /etc/dayjaview/worker.env
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration-idempotency:
+        condition: service_completed_successfully
+      infostock-bootstrap:
+        condition: service_completed_successfully
+
+  worker-news:
+    <<: [*app-security, *app-logging]
+    platform: linux/arm64
+    build:
+      <<: *app-build
+      target: worker
+    restart: unless-stopped
+    command:
+      - python
+      - apps/worker-news/collect.py
+    env_file:
+      - /etc/dayjaview/worker.env
+    networks:
+      - web
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migration-idempotency:
+        condition: service_completed_successfully
+      infostock-bootstrap:
+        condition: service_completed_successfully
 
 networks:
   web: {}

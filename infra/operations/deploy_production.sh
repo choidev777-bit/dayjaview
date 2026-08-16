@@ -39,7 +39,14 @@ OPENDART=$(require OPENDART_API_KEY)
 KIWOOM_KEY=$(require KIWOOM_APP_KEY)
 KIWOOM_SECRET=$(require KIWOOM_APP_SECRET)
 KIWOOM_CONDITIONS=$(value_of KIWOOM_CONDITION_IDS)
-echo "필수 7개 모두 있음"
+NAVER_ID=$(require NAVER_API_HUB_CLIENT_ID)
+NAVER_SECRET=$(require NAVER_API_HUB_CLIENT_SECRET)
+OPENAI_KEY=$(require OPENAI_API_KEY)
+OPENAI_MODEL=$(require OPENAI_MODEL)
+OPENAI_REASONING=$(value_of OPENAI_REASONING_EFFORT)
+NEWS_RSS=$(value_of NEWS_RSS_SOURCES)
+DEPLOY_COMMIT=$(git rev-parse --short=12 HEAD)
+echo "필수 11개 모두 있음"
 
 say "1) SSH 연결 확인"
 ssh -o ConnectTimeout=10 "$VM" 'echo "VM 접속 OK: $(uname -m) $(lsb_release -ds 2>/dev/null || true)"'
@@ -62,7 +69,10 @@ if ! grep -q '^POSTGRES_PASSWORD=' postgres.env 2>/dev/null; then
 fi
 pw=$(sed -n 's/^POSTGRES_PASSWORD=//p' postgres.env | tail -1)
 printf 'PGPASSWORD=%s\n' "$pw" > migrate.env
-printf 'INFOSTOCK_DATABASE_URL=postgresql://dayjaview:%s@postgres:5432/dayjaview\n' "$pw" > worker.env
+{
+    printf 'INFOSTOCK_DATABASE_URL=postgresql://dayjaview:%s@postgres:5432/dayjaview\n' "$pw"
+    printf 'NEWS_DATABASE_URL=postgresql://dayjaview:%s@postgres:5432/dayjaview\n' "$pw"
+} > worker.env
 signing=$(sed -n 's/^SESSION_SIGNING_SECRET=//p' api.env 2>/dev/null | tail -1)
 [ -n "$signing" ] || signing=$(openssl rand -hex 32)
 {
@@ -84,10 +94,25 @@ say "4b) secret 주입 — .env.local 유래 값 append"
     printf 'KIWOOM_MODE=real\n'
     printf 'KIWOOM_APP_KEY=%s\n' "$KIWOOM_KEY"
     printf 'KIWOOM_APP_SECRET=%s\n' "$KIWOOM_SECRET"
+    printf 'DAYJAVIEW_DEPLOYMENT_VERSION=%s\n' "$DEPLOY_COMMIT"
+    printf 'DAYJAVIEW_COMMIT=%s\n' "$DEPLOY_COMMIT"
     if [ -n "$KIWOOM_CONDITIONS" ]; then
         printf 'KIWOOM_CONDITION_IDS=%s\n' "$KIWOOM_CONDITIONS"
     fi
 } | ssh "$VM" 'sudo tee -a /etc/dayjaview/api.env >/dev/null && echo "api.env 완성"'
+
+{
+    printf 'NAVER_API_HUB_CLIENT_ID=%s\n' "$NAVER_ID"
+    printf 'NAVER_API_HUB_CLIENT_SECRET=%s\n' "$NAVER_SECRET"
+    printf 'OPENAI_API_KEY=%s\n' "$OPENAI_KEY"
+    printf 'OPENAI_MODEL=%s\n' "$OPENAI_MODEL"
+    if [ -n "$OPENAI_REASONING" ]; then
+        printf 'OPENAI_REASONING_EFFORT=%s\n' "$OPENAI_REASONING"
+    fi
+    if [ -n "$NEWS_RSS" ]; then
+        printf 'NEWS_RSS_SOURCES=%s\n' "$NEWS_RSS"
+    fi
+} | ssh "$VM" 'sudo tee -a /etc/dayjaview/worker.env >/dev/null && sudo chmod 600 /etc/dayjaview/worker.env && echo "worker.env 완성"'
 
 say "5) 인포스탁 280테마 번들 전송"
 if [ -d data/infostock/import ]; then

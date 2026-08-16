@@ -34,6 +34,7 @@ class MarketPublishLoop:
         data_status: Callable[[], DataStatus],
         interval: timedelta,
         poll_updates: Callable[[], Iterable[StockRealtimeUpdate]] | None = None,
+        before_publish: Callable[[], None] | None = None,
         market_close_at: datetime | None = None,
         clock: Callable[[], datetime] = _utc_now,
     ) -> None:
@@ -44,6 +45,7 @@ class MarketPublishLoop:
         self._data_status = data_status
         self._interval = interval
         self._poll_updates = poll_updates
+        self._before_publish = before_publish
         self._market_close_at = market_close_at
         self._clock = clock
         self._market_close_applied = False
@@ -64,6 +66,8 @@ class MarketPublishLoop:
         ):
             self._pipeline.close_market(now=now)
             self._market_close_applied = True
+        if self._before_publish is not None:
+            self._before_publish()
         view = self._pipeline.publish(now=now, data_status=self._data_status())
         self._on_published(view)
         return view

@@ -19,6 +19,7 @@ from .models import (
     OperatorReview,
     ReviewStatus,
 )
+from .postgres import PostgresOperatorRepository
 from .repository import InMemoryOperatorRepository, OperatorRepository
 from .service import (
     RESOLVE_REVIEW,
@@ -46,6 +47,7 @@ __all__ = [
     "OperatorError",
     "OperatorJob",
     "OperatorPage",
+    "PostgresOperatorRepository",
     "OperatorRepository",
     "OperatorReview",
     "OperatorTargetNotFound",

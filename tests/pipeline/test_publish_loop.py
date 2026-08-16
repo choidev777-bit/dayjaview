@@ -122,6 +122,7 @@ def _loop(
     *,
     pending: list[StockRealtimeUpdate] | None = None,
     market_close_at: datetime | None = None,
+    before_publish=None,
 ) -> MarketPublishLoop:
     def poll_updates() -> list[StockRealtimeUpdate]:
         if pending is None:
@@ -135,6 +136,7 @@ def _loop(
         data_status=lambda: DataStatus.LIVE,
         interval=timedelta(seconds=2),
         poll_updates=poll_updates,
+        before_publish=before_publish,
         market_close_at=market_close_at,
         clock=clock,
     )
@@ -164,6 +166,24 @@ def test_tick_ingests_new_observations_and_publishes() -> None:
     assert items[0]["lifecycleStatus"] == "ACTIVE"
     assert second.rankings.sequence == 2
     assert [view.rankings.sequence for view in published] == [1, 2]
+
+
+def test_tick_refreshes_persisted_evidence_before_publishing() -> None:
+    pipeline = _pipeline()
+    clock = FakeClock(BASE + timedelta(seconds=7))
+    published: list[PublishedView] = []
+    order: list[str] = []
+
+    loop = _loop(
+        pipeline,
+        clock,
+        published,
+        before_publish=lambda: order.append("evidence"),
+    )
+    loop.tick()
+
+    assert order == ["evidence"]
+    assert len(published) == 1
 
 
 def test_run_repeats_ticks_with_interval_until_cancelled() -> None:

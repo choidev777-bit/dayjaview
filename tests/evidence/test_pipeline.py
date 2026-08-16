@@ -85,6 +85,8 @@ def test_collected_news_becomes_a_contract_shaped_evidence_projection() -> None:
     assert collection.sources_degraded is False
     assert outcome.revision.evidence_status is EvidenceStatus.SINGLE_SOURCE
     assert outcome.llm_called is True
+    assert outcome.llm_record is not None
+    assert outcome.llm_record.accepted is True
 
     list_data = outcome.list_projection()
     summary = outcome.summary_projection()
@@ -138,6 +140,7 @@ def test_without_local_evidence_no_llm_call_and_no_generated_cause() -> None:
     )
 
     assert outcome.llm_called is False
+    assert outcome.llm_record is None
     assert outcome.revision.evidence_status is EvidenceStatus.SEARCHING
     assert outcome.revision.summary is None
     assert outcome.list_projection()["items"] == []

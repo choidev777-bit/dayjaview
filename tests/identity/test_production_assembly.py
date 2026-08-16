@@ -20,6 +20,7 @@ from apps.api.production import (
     create_production_app,
 )
 from packages.identity import GoogleIdentity
+from packages.operator import PostgresOperatorRepository
 
 from .helpers import MutableClock
 
@@ -126,10 +127,11 @@ def test_database_url_moves_identity_to_postgres_and_close_releases_it() -> None
     )
 
     assert environment.identity_store == POSTGRES_STORE
-    assert len(connections) == 1
-    assert connections[0].closed is False
+    assert len(connections) == 2
+    assert all(connection.closed is False for connection in connections)
+    assert isinstance(environment.operator_repository, PostgresOperatorRepository)
     environment.close()
-    assert connections[0].closed is True
+    assert all(connection.closed is True for connection in connections)
 
 
 def test_login_redirects_to_google_with_the_deployment_redirect_uri() -> None:

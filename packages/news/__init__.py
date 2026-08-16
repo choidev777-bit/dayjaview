@@ -33,6 +33,7 @@ from .normalize import (
     normalized_title,
     title_hash,
 )
+from .postgres import PostgresNewsStore
 from .sources import (
     NewsSource,
     PollResult,
@@ -57,6 +58,7 @@ __all__ = [
     "NewsSource",
     "NewsSourceType",
     "NewsStore",
+    "PostgresNewsStore",
     "PollResult",
     "RawNewsItem",
     "RejectedNews",

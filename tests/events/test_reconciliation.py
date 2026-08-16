@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
+from importlib import import_module
 
 import pytest
 
@@ -41,6 +42,9 @@ MARKET_DATE = date(2026, 8, 14)
 INTRADAY = datetime(2026, 8, 14, 0, 10, tzinfo=UTC)  # 09:10 KST 장중
 AFTER_CLOSE = datetime(2026, 8, 14, 9, 0, tzinfo=UTC)  # 18:00 KST 장후
 NEXT_RUN = AFTER_CLOSE + timedelta(hours=3)
+_daily_worker = import_module(
+    "apps." + "worker-batch.infostock.reconcile_after_close"
+)
 
 
 def _create_event(
@@ -457,3 +461,17 @@ def test_confirmations_from_theme_details_keeps_dated_entries_once() -> None:
     assert first.lineage.kind == CONFIRMATION_LINEAGE_KIND
     assert first.lineage.content_hash == "hash-h1"
     assert confirmations[1].direction == "DOWN"
+
+
+def test_daily_confirmation_requires_an_explicit_positive_theme_move() -> None:
+    assert _daily_worker._is_up(
+        "원전",
+        "",
+        ("원전\t+3.25%\t한국원전\t+5.0%",),
+    )
+    assert not _daily_worker._is_up(
+        "원전",
+        "",
+        ("원전\t-1.20%\t한국원전\t+5.0%",),
+    )
+    assert _daily_worker._is_up("원전", "수주 기대감으로 강세", ())

@@ -7,6 +7,16 @@ from pathlib import Path
 
 import pytest
 
+from packages.catalyst import (
+    CatalystEvidence,
+    EvidenceDecision,
+    EvidenceStatus,
+    ExtractionMethod,
+    MatchBasis,
+    MatchTrigger,
+    NewsThemeMatch,
+    PostgresEvidenceRepository,
+)
 from packages.domain import (
     DataStatus,
     MembershipRole,
@@ -15,6 +25,14 @@ from packages.domain import (
     ThemeMembershipSnapshot,
 )
 from packages.events import PostgresEventStore
+from packages.llm import LlmCallRecord
+from packages.news import (
+    IngestionStatus,
+    NewsItem,
+    NewsSourceType,
+    PostgresNewsStore,
+    RightsScope,
+)
 from packages.pipeline import MarketDataPipeline
 from packages.pipeline.market import RANKINGS_PARAMS
 from packages.realtime import (
@@ -27,7 +45,11 @@ from packages.realtime import (
 TEST_DSN = os.environ.get("PIPELINE_TEST_DSN")
 MIGRATIONS = tuple(
     Path(__file__).resolve().parents[2] / "infra/migrations" / name
-    for name in ("0002_event_realtime.sql", "0004_event_reconciliation.sql")
+    for name in (
+        "0002_event_realtime.sql",
+        "0003_news_catalyst.sql",
+        "0004_event_reconciliation.sql",
+    )
 )
 MARKET_DATE = date(2026, 8, 14)
 KNOWN_AT = datetime(2026, 8, 13, 23, 0, tzinfo=UTC)
@@ -48,6 +70,7 @@ def connection():
         admin.execute("DROP SCHEMA IF EXISTS event CASCADE")
         admin.execute("DROP SCHEMA IF EXISTS realtime CASCADE")
         admin.execute("DROP SCHEMA IF EXISTS serving CASCADE")
+        admin.execute("DROP SCHEMA IF EXISTS news CASCADE")
         for migration in MIGRATIONS:
             admin.execute(migration.read_text(encoding="utf-8"))
     connection = psycopg.connect(TEST_DSN)
@@ -164,3 +187,85 @@ def test_snapshots_and_events_accumulate_in_postgres(connection) -> None:
     assert latest is not None
     assert latest.sequence == 3
     assert latest.snapshot_id == closed.rankings.snapshot_id
+
+
+def test_news_and_grounded_evidence_survive_postgres_reassembly(connection) -> None:
+    item = NewsItem(
+        news_id="news_persistent",
+        source_id="rss_test",
+        source_type=NewsSourceType.RSS,
+        source_item_id="source-1",
+        canonical_url="https://example.test/news/1",
+        original_url="https://example.test/news/1",
+        publisher="테스트 언론사",
+        title="[특징주] 테스트 종목 상승",
+        description="수주 기대감",
+        published_at=BASE,
+        retrieved_at=BASE + timedelta(minutes=1),
+        normalized_title_hash="a" * 64,
+        content_hash="b" * 64,
+        rights_scope=RightsScope.SUMMARY_ALLOWED,
+        ingestion_status=IngestionStatus.STORED,
+        stock_ids=("KRX:000001",),
+        entities=("수주",),
+        body="",
+    )
+    assert PostgresNewsStore(connection).upsert(item)
+
+    repository = PostgresEvidenceRepository(connection)
+    revision = repository.record(
+        "evt_persistent",
+        EvidenceDecision(
+            evidence_status=EvidenceStatus.SINGLE_SOURCE,
+            summary="수주 기대감 관련 보도",
+            news_ids=(item.news_id,),
+            catalyst_key="cat_persistent",
+            reason="단일 매체 보도로 확인된 추정입니다",
+        ),
+        now=BASE + timedelta(minutes=2),
+    )
+    match = NewsThemeMatch(
+        news_id=item.news_id,
+        event_id=revision.event_id,
+        theme_id="thm_full",
+        matched_stock_ids=item.stock_ids,
+        match_basis=(MatchBasis.STOCK, MatchBasis.TIME),
+        trigger=MatchTrigger.THEME_TO_NEWS,
+        rule_score=0.5,
+        relevance_score=0.5,
+        matched_at=BASE + timedelta(minutes=2),
+    )
+    llm_call = LlmCallRecord(
+        model_name="test-model",
+        prompt_version="test-prompt-v1",
+        news_ids=(item.news_id,),
+        request_fingerprint="c" * 64,
+        raw_output='{"grounded":true}',
+        accepted=True,
+        rejection=None,
+        called_at=BASE + timedelta(minutes=2),
+    )
+    evidence = CatalystEvidence(
+        news_id=item.news_id,
+        event_id=revision.event_id,
+        publisher=item.publisher,
+        title=item.title,
+        summary="수주 기대감 관련 보도",
+        match_basis=match.match_basis,
+        entities=item.entities,
+        published_at=item.published_at,
+        received_at=item.retrieved_at,
+        original_url=item.original_url,
+        quality_flags=(),
+        extraction_method=ExtractionMethod.LLM_GROUNDED,
+        model_name=llm_call.model_name,
+        prompt_version=llm_call.prompt_version,
+        confidence=0.9,
+        generated_at=llm_call.called_at,
+    )
+    repository.save_supporting_records(
+        matches=(match,), evidence=(evidence,), llm_record=llm_call
+    )
+
+    loaded = PostgresEvidenceRepository(connection).load(revision.event_id)
+    assert loaded == (revision, (evidence,))

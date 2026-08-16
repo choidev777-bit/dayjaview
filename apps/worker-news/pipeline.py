@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from catalyst import (
         CatalystEvidence,
         EvidenceRevision,
-        EvidenceRevisionStore,
+        EvidenceRevisionRepository,
         ExtractionMethod,
         MatchConfig,
         NewsThemeMatch,
@@ -81,6 +81,7 @@ class EvidenceOutcome:
     matches: tuple[NewsThemeMatch, ...]
     evidence: tuple[CatalystEvidence, ...]
     llm_called: bool
+    llm_record: LlmCallRecord | None
     rejection: GroundingRejection | None
     supplemental: SupplementalSearchRequest | None
 
@@ -100,7 +101,7 @@ class EvidencePipeline:
         store: NewsStore,
         ingestor: NewsIngestor,
         grounding: GroundingService,
-        revisions: EvidenceRevisionStore,
+        revisions: EvidenceRevisionRepository,
         poller: SourcePoller | None = None,
         supplemental_gate: SupplementalSearchGate | None = None,
         supplemental_source: SupplementalSearchSource | None = None,
@@ -269,6 +270,7 @@ class EvidencePipeline:
             matches=tuple(matches),
             evidence=evidence,
             llm_called=outcome.called,
+            llm_record=outcome.record,
             rejection=outcome.rejection,
             supplemental=supplemental,
         )

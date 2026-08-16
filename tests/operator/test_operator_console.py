@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
+import pytest
 from httpx import ASGITransport, AsyncClient, Response
 
 from apps.api import ApiSettings, create_fixture_app
@@ -15,8 +18,10 @@ from packages.operator import (
     InfostockAuthStatus,
     InMemoryOperatorRepository,
     JobStatus,
+    OperatorCommandReceipt,
     OperatorJob,
     OperatorReview,
+    PostgresOperatorRepository,
     ReviewStatus,
 )
 from scripts.validate_contracts import validate_instance
@@ -24,6 +29,11 @@ from tests.identity.helpers import MutableClock, api_login
 
 _BASE = datetime(2026, 8, 14, 7, 0, tzinfo=UTC)
 _OPERATOR_EMAIL = "operator@example.test"
+_OPERATOR_TEST_DSN = os.environ.get("OPERATOR_TEST_DSN")
+_OPERATOR_MIGRATION = (
+    Path(__file__).resolve().parents[2]
+    / "infra/migrations/0006_operator_runtime.sql"
+)
 
 
 def _repository() -> InMemoryOperatorRepository:
@@ -507,3 +517,66 @@ def test_audit_and_job_pages_walk_forward_with_an_opaque_cursor() -> None:
         assert unknown.json()["error"]["code"] == "INVALID_REQUEST"
 
     _run(scenario)
+
+
+@pytest.mark.skipif(
+    _OPERATOR_TEST_DSN is None,
+    reason="OPERATOR_TEST_DSN의 disposable PostgreSQL 16이 필요합니다.",
+)
+def test_postgres_operator_state_survives_repository_reassembly() -> None:
+    psycopg = pytest.importorskip("psycopg")
+    with psycopg.connect(_OPERATOR_TEST_DSN, autocommit=True) as admin:
+        admin.execute("DROP SCHEMA IF EXISTS operations CASCADE")
+        admin.execute(_OPERATOR_MIGRATION.read_text(encoding="utf-8"))
+
+    connection = psycopg.connect(_OPERATOR_TEST_DSN)
+    repository = PostgresOperatorRepository(connection)
+    job = repository.set_job_status(
+        run_id="run_persistent",
+        job_type="NEWS_LIVE",
+        status=JobStatus.RUNNING,
+        now=_BASE,
+        internal_context={"stored": 3},
+    )
+    review = OperatorReview(
+        review_id="review_persistent",
+        review_type="AFTER_CLOSE_UNMATCHED",
+        review_status=ReviewStatus.PENDING,
+        target_id="evt_persistent",
+        reason_code="NO_INFOSTOCK_CONFIRMATION",
+        version=1,
+        created_at=_BASE,
+        resolved_at=None,
+    )
+    repository.open_review(review)
+    audit = repository.append_audit(
+        actor_id="usr_operator",
+        occurred_at=_BASE,
+        action="RESOLVE_REVIEW",
+        target_id=review.review_id,
+        reason_code="CHECKED",
+        reason="확인 완료",
+        before_revision=1,
+        after_revision=2,
+    )
+    repository.store_receipt(
+        OperatorCommandReceipt(
+            actor_id="usr_operator",
+            idempotency_key="persistent-command",
+            fingerprint="a" * 64,
+            audit=audit,
+        )
+    )
+    connection.close()
+
+    reconnected = psycopg.connect(_OPERATOR_TEST_DSN)
+    try:
+        persisted = PostgresOperatorRepository(reconnected)
+        assert persisted.get_job(job.run_id) == job
+        assert persisted.get_review(review.review_id) == review
+        receipt = persisted.find_receipt(
+            actor_id="usr_operator", idempotency_key="persistent-command"
+        )
+        assert receipt is not None and receipt.audit == audit
+    finally:
+        reconnected.close()

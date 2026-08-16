@@ -32,7 +32,11 @@ from packages.identity import (
 )
 from packages.identity.postgres import DbConnection
 from packages.identity.security import Clock
-from packages.operator import InMemoryOperatorRepository
+from packages.operator import (
+    InMemoryOperatorRepository,
+    OperatorRepository,
+    PostgresOperatorRepository,
+)
 
 from .app import IdentityApiApp, create_app
 from .config import ApiSettings
@@ -44,6 +48,8 @@ GOOGLE_CLIENT_ID_ENV = "GOOGLE_OAUTH_CLIENT_ID"
 GOOGLE_CLIENT_SECRET_ENV = "GOOGLE_OAUTH_CLIENT_SECRET"
 IDENTITY_DATABASE_DSN_ENV = "DATABASE_URL"
 CURSOR_SIGNING_SECRET_ENV = "SESSION_SIGNING_SECRET"
+DEPLOYMENT_VERSION_ENV = "DAYJAVIEW_DEPLOYMENT_VERSION"
+DEPLOYMENT_COMMIT_ENV = "DAYJAVIEW_COMMIT"
 
 GOOGLE_MODE = "GOOGLE"
 FIXTURE_MODE = "FIXTURE"
@@ -60,7 +66,7 @@ class ProductionIdentityEnvironment:
     app: IdentityApiApp
     service: IdentityService
     realtime_hub: RealtimeSnapshotHub
-    operator_repository: InMemoryOperatorRepository
+    operator_repository: OperatorRepository
     google_mode: str
     identity_store: str
     fixture_oauth_provider: FixtureGoogleOAuthProvider | None
@@ -82,7 +88,7 @@ def create_production_app(
     product_repository: ProductReadRepository | None = None,
     target_catalog: TargetCatalog | None = None,
     realtime_hub: RealtimeSnapshotHub | None = None,
-    operator_repository: InMemoryOperatorRepository | None = None,
+    operator_repository: OperatorRepository | None = None,
     operator_status: RuntimeOperatorStatus | None = None,
     clock: Clock | None = None,
     connect: DbConnect | None = None,
@@ -112,10 +118,16 @@ def create_production_app(
         cursor_secret=_cursor_secret(environment, identity_store=identity_store),
     )
     effective_hub = realtime_hub or RealtimeSnapshotHub()
-    effective_operator_repository = operator_repository or InMemoryOperatorRepository()
+    effective_operator_repository = operator_repository or _operator_repository(
+        environment,
+        connect=connect,
+        closers=closers,
+    )
     runtime_status = operator_status or RuntimeOperatorStatus(
-        deployment_version="unknown",
-        commit="unknown",
+        deployment_version=(
+            environment.get(DEPLOYMENT_VERSION_ENV, "").strip() or "local"
+        ),
+        commit=environment.get(DEPLOYMENT_COMMIT_ENV, "").strip() or "0000000",
         started_at=effective_clock.now(),
         services=(),
     )
@@ -218,3 +230,27 @@ def _identity_repository(
     if callable(close):
         closers.append(close)
     return PostgresIdentityRepository(connection), POSTGRES_STORE
+
+
+def _operator_repository(
+    environment: Mapping[str, str],
+    *,
+    connect: DbConnect | None,
+    closers: list[Callable[[], None]],
+) -> OperatorRepository:
+    dsn = environment.get(IDENTITY_DATABASE_DSN_ENV, "").strip()
+    if not dsn:
+        return InMemoryOperatorRepository()
+    if connect is None:
+        import psycopg
+
+        def connect_psycopg(target: str) -> DbConnection:
+            connection: Any = psycopg.connect(target)
+            return connection
+
+        connect = connect_psycopg
+    connection = connect(dsn)
+    close = getattr(connection, "close", None)
+    if callable(close):
+        closers.append(close)
+    return PostgresOperatorRepository(connection)

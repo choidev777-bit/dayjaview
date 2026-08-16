@@ -2,6 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/health",
+      "destination": "https://api.dayjaview.duckdns.org/api/health"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://api.dayjaview.duckdns.org/:path*"
     },
