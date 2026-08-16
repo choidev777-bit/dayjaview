@@ -43,6 +43,8 @@ type EvidencePage = EvidenceResponse['data']['page'];
 type EvidencePhase = 'LIVE' | 'AFTER_CLOSE';
 
 const VISIBLE_EVIDENCE = 3;
+/** 상세 기본 노출은 3개 (screen_spec 8.6). 나머지는 펼쳐서 본다. */
+const VISIBLE_LEADERS = 3;
 const NEWS_DELAY_FLAGS = ['SOURCE_DEGRADED', 'STALE_NEWS_DATA'];
 
 function newsCollectionDelayed(meta: ResponseMeta): boolean {
@@ -195,6 +197,97 @@ function EvidenceList({
       {loadMoreFailed ? (
         <p className="confirmation-note" role="alert">
           이전 근거를 더 불러오지 못했습니다. 지금까지 확인된 근거만 표시합니다.
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * 주도 종목. 상세는 상위 3~5개를 표시하고(realtime_theme_feature_spec 14),
+ * 기본은 3개만 펼쳐 둔다 (screen_spec 8.6).
+ *
+ * `주도` 라벨은 첫 번째 종목에만 붙인다. 나머지도 주도 종목이지만, 라벨을 다 붙이면
+ * Leader Score 1위가 누구인지 사라진다 (screen_spec 8.6).
+ *
+ * 종목 상세는 후속 범위라 행을 링크로 만들지 않는다. 대신 행마다 관심 저장을 둔다
+ * (screen_spec 8.6 `종목 상세가 준비되지 않았다면 종목 행을 잘못된 링크로 만들지 않는다`).
+ */
+function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
+  const repository = useRepository();
+  const [expanded, setExpanded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const saved = useRepositoryResource(
+    repository,
+    'saved',
+    () => repository.getSaved('STOCK'),
+    [repository],
+  );
+  const visible = expanded ? leaders : leaders.slice(0, VISIBLE_LEADERS);
+  const hidden = leaders.length - visible.length;
+
+  const savedIds =
+    saved.status === 'success'
+      ? new Set(saved.data.data.items.map((item) => item.targetId))
+      : null;
+
+  async function toggle(stockId: string, name: string) {
+    setFailed(false);
+    try {
+      if (savedIds?.has(stockId)) {
+        await repository.removeSaved({ savedType: 'STOCK', targetId: stockId });
+      } else {
+        await repository.saveSaved({ savedType: 'STOCK', targetId: stockId, displayName: name });
+      }
+      saved.retry();
+    } catch {
+      setFailed(true);
+    }
+  }
+
+  return (
+    <>
+      <ol className="leader-list">
+        {visible.map((leader, index) => (
+          <li key={leader.stockId}>
+            <div>
+              <strong>{leader.name}</strong>
+              {index === 0 ? <span className="badge">주도</span> : null}
+            </div>
+            <strong className={returnTone(leader.return)}>{formatReturn(leader.return)}</strong>
+            <button
+              type="button"
+              className="leader-list__save"
+              aria-pressed={savedIds?.has(leader.stockId) ?? false}
+              aria-label={`${leader.name} ${savedIds?.has(leader.stockId) ? '저장 해제' : '관심에 저장'}`}
+              disabled={savedIds === null}
+              onClick={() => toggle(leader.stockId, leader.name)}
+            >
+              {savedIds?.has(leader.stockId) ? (
+                <IconStarFill size={18} aria-hidden="true" />
+              ) : (
+                <IconStarLine size={18} aria-hidden="true" />
+              )}
+            </button>
+          </li>
+        ))}
+      </ol>
+      {hidden > 0 || expanded ? (
+        <button
+          type="button"
+          className="expand-button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <span>
+            {expanded ? '주도 종목 접기' : `주도 종목 ${hidden.toLocaleString('ko-KR')}개 더 보기`}
+          </span>
+          <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
+        </button>
+      ) : null}
+      {failed ? (
+        <p className="confirmation-note" role="alert">
+          종목 저장 상태를 바꾸지 못했습니다. 다시 시도해 주세요.
         </p>
       ) : null}
     </>
@@ -919,23 +1012,11 @@ export function ThemeDetailPage() {
                 <h2 id="leaders-title">오늘의 주도 종목</h2>
               </div>
               {detail.leaders.length ? (
-                <ol className="leader-list">
-                  {detail.leaders.map((leader, index) => (
-                    <li key={leader.stockId}>
-                      <div>
-                        <strong>{leader.name}</strong>
-                        {index === 0 ? <span className="badge">주도</span> : null}
-                      </div>
-                      <strong className={returnTone(leader.return)}>
-                        {formatReturn(leader.return)}
-                      </strong>
-                    </li>
-                  ))}
-                </ol>
+                <LeaderList leaders={detail.leaders} />
               ) : (
                 <EmptyState
                   title="확인된 주도 종목이 없습니다"
-                  description="데이터가 확보되면 최대 3개 종목을 표시합니다."
+                  description="데이터가 확보되면 상위 3개 종목을 표시합니다."
                 />
               )}
             </section>

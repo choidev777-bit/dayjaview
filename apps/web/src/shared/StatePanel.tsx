@@ -1,13 +1,22 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { asRepositoryError } from '../domain/repositoryErrors';
 
 /**
  * 시안의 첫 진입 로딩. 검은 배경 위에서 로고에 주황빛이 쓸려 지나간다.
  * 앱이 처음 열릴 때 한 번만 쓰고, 화면 안의 부분 로딩은 `LoadingState`가 맡는다.
  */
-export function SplashScreen() {
+/**
+ * 첫 진입 스플래시. 로고 sweep·후광·진행 바가 `durationMs` 동안 딱 한 바퀴 돌게 맞춘다.
+ * 화면이 사라지는 시각과 애니메이션 길이가 다르면 로고가 지나가는 도중에 잘린다.
+ */
+export function SplashScreen({ durationMs = 3000 }: { durationMs?: number } = {}) {
   return (
-    <div className="splash" role="status" aria-label="DAY-JA-VIEW 불러오는 중">
+    <div
+      className="splash"
+      role="status"
+      aria-label="DAY-JA-VIEW 불러오는 중"
+      style={{ '--splash-duration': `${durationMs}ms` } as CSSProperties}
+    >
       <div className="splash__halo" aria-hidden="true" />
       <div className="splash__logo" aria-hidden="true">
         <i className="splash__logo-base" />

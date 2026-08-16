@@ -83,7 +83,7 @@ def _leaders(cur, raw: str | None, day) -> list[dict[str, object]]:
                 "role": "LEADER",
             }
         )
-        if len(rows) >= 3:
+        if len(rows) >= 5:
             break
     return rows
 

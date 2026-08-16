@@ -167,7 +167,8 @@ describe('근거 상태 matrix', () => {
     expect(
       (await screen.findAllByText('복수 뉴스 확인', { exact: false })).length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
+    // 상태 문구는 근거보다 먼저 그려진다. 근거 목록은 따로 기다린다.
+    expect(await screen.findByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
   });
 
   it('장후 확정 상태를 event lifecycle과 별도 문구로 표시한다', async () => {

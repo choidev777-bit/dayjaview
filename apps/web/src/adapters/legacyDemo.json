@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-08-16T11:33:40.419703Z",
+ "generatedAt": "2026-08-16T11:55:52.750569Z",
  "marketDate": "2026-08-10",
  "previousDate": "2026-08-07",
  "weightMethod": "EQUAL_WEIGHT_LEGACY",
@@ -33,6 +33,18 @@
      "symbol": "092190",
      "name": "서울바이오시스",
      "return": 0.1752
+    },
+    {
+     "stockId": "stk_327260",
+     "symbol": "327260",
+     "name": "RF머트리얼즈",
+     "return": 0.1722
+    },
+    {
+     "stockId": "stk_368770",
+     "symbol": "368770",
+     "name": "파이버프로",
+     "return": 0.1525
     }
    ],
    "catalysts": [
@@ -115,6 +127,20 @@
          "name": "자람테크놀로지",
          "return": 0.2064,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_043260",
+         "symbol": "043260",
+         "name": "성호전자",
+         "return": 0.2608,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.1913,
+         "role": "LEADER"
         }
        ]
       },
@@ -168,6 +194,20 @@
          "symbol": "010170",
          "name": "대한광통신",
          "return": 0.0423,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_218410",
+         "symbol": "218410",
+         "name": "RFHIC",
+         "return": 0.0381,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_006260",
+         "symbol": "006260",
+         "name": "LS",
+         "return": 0.0358,
          "role": "LEADER"
         }
        ]
@@ -223,6 +263,13 @@
          "name": "빛과전자",
          "return": 0.115,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.0626,
+         "role": "LEADER"
         }
        ]
       },
@@ -276,6 +323,13 @@
          "symbol": "010170",
          "name": "대한광통신",
          "return": 0.1683,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_327260",
+         "symbol": "327260",
+         "name": "RF머트리얼즈",
+         "return": 0.164,
          "role": "LEADER"
         }
        ]
@@ -331,6 +385,20 @@
          "name": "RF머트리얼즈",
          "return": 0.1413,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_043260",
+         "symbol": "043260",
+         "name": "성호전자",
+         "return": 0.1083,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1017,
+         "role": "LEADER"
         }
        ]
       },
@@ -384,6 +452,20 @@
          "symbol": "388790",
          "name": "라이콤",
          "return": 0.2988,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100590",
+         "symbol": "100590",
+         "name": "머큐리",
+         "return": 0.2185,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.1182,
          "role": "LEADER"
         }
        ]
@@ -439,6 +521,13 @@
          "name": "라이콤",
          "return": 0.1975,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1892,
+         "role": "LEADER"
         }
        ]
       },
@@ -492,6 +581,13 @@
          "symbol": "217590",
          "name": "티엠씨",
          "return": 0.0465,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_327260",
+         "symbol": "327260",
+         "name": "RF머트리얼즈",
+         "return": 0.0406,
          "role": "LEADER"
         }
        ]
@@ -577,6 +673,20 @@
          "name": "LS",
          "return": 0.0345,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_218410",
+         "symbol": "218410",
+         "name": "RFHIC",
+         "return": 0.0321,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_368770",
+         "symbol": "368770",
+         "name": "파이버프로",
+         "return": 0.0279,
+         "role": "LEADER"
         }
        ]
       },
@@ -630,6 +740,20 @@
          "symbol": "062970",
          "name": "한국첨단소재",
          "return": 0.1713,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_327260",
+         "symbol": "327260",
+         "name": "RF머트리얼즈",
+         "return": 0.1691,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100590",
+         "symbol": "100590",
+         "name": "머큐리",
+         "return": 0.1229,
          "role": "LEADER"
         }
        ]
@@ -685,6 +809,20 @@
          "name": "빛과전자",
          "return": 0.1102,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.1062,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100590",
+         "symbol": "100590",
+         "name": "머큐리",
+         "return": 0.0745,
+         "role": "LEADER"
         }
        ]
       },
@@ -738,6 +876,13 @@
          "symbol": "069540",
          "name": "빛과전자",
          "return": 0.115,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.0626,
          "role": "LEADER"
         }
        ]
@@ -857,6 +1002,20 @@
          "name": "RF머트리얼즈",
          "return": 0.1413,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_043260",
+         "symbol": "043260",
+         "name": "성호전자",
+         "return": 0.1083,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1017,
+         "role": "LEADER"
         }
        ]
       },
@@ -910,6 +1069,13 @@
          "symbol": "388790",
          "name": "라이콤",
          "return": 0.1975,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1892,
          "role": "LEADER"
         }
        ]
@@ -995,6 +1161,20 @@
          "name": "대한광통신",
          "return": 0.0423,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_218410",
+         "symbol": "218410",
+         "name": "RFHIC",
+         "return": 0.0381,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_006260",
+         "symbol": "006260",
+         "name": "LS",
+         "return": 0.0358,
+         "role": "LEADER"
         }
        ]
       },
@@ -1048,6 +1228,20 @@
          "symbol": "327260",
          "name": "RF머트리얼즈",
          "return": 0.067,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_062970",
+         "symbol": "062970",
+         "name": "한국첨단소재",
+         "return": 0.0655,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_115440",
+         "symbol": "115440",
+         "name": "우리넷",
+         "return": 0.0538,
          "role": "LEADER"
         }
        ]
@@ -1103,6 +1297,20 @@
          "name": "RF머트리얼즈",
          "return": 0.1413,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_043260",
+         "symbol": "043260",
+         "name": "성호전자",
+         "return": 0.1083,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1017,
+         "role": "LEADER"
         }
        ]
       },
@@ -1156,6 +1364,20 @@
          "symbol": "388790",
          "name": "라이콤",
          "return": 0.2988,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100590",
+         "symbol": "100590",
+         "name": "머큐리",
+         "return": 0.2185,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010170",
+         "symbol": "010170",
+         "name": "대한광통신",
+         "return": 0.1182,
          "role": "LEADER"
         }
        ]
@@ -1211,6 +1433,13 @@
          "name": "라이콤",
          "return": 0.1975,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_217590",
+         "symbol": "217590",
+         "name": "티엠씨",
+         "return": 0.1892,
+         "role": "LEADER"
         }
        ]
       },
@@ -1264,6 +1493,13 @@
          "symbol": "217590",
          "name": "티엠씨",
          "return": 0.0465,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_327260",
+         "symbol": "327260",
+         "name": "RF머트리얼즈",
+         "return": 0.0406,
          "role": "LEADER"
         }
        ]
@@ -1351,6 +1587,13 @@
        "name": "RF머트리얼즈",
        "return": 0.0545,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.0352,
+       "role": "LEADER"
       }
      ]
     },
@@ -1400,6 +1643,20 @@
        "symbol": "092190",
        "name": "서울바이오시스",
        "return": 0.1423,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_043260",
+       "symbol": "043260",
+       "name": "성호전자",
+       "return": 0.1303,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.1269,
        "role": "LEADER"
       }
      ]
@@ -1452,6 +1709,20 @@
        "symbol": "389020",
        "name": "자람테크놀로지",
        "return": 0.2064,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_043260",
+       "symbol": "043260",
+       "name": "성호전자",
+       "return": 0.2608,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_010170",
+       "symbol": "010170",
+       "name": "대한광통신",
+       "return": 0.1913,
        "role": "LEADER"
       }
      ]
@@ -1507,6 +1778,20 @@
        "name": "LS",
        "return": 0.0345,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.0321,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_368770",
+       "symbol": "368770",
+       "name": "파이버프로",
+       "return": 0.0279,
+       "role": "LEADER"
       }
      ]
     },
@@ -1559,6 +1844,20 @@
        "symbol": "010170",
        "name": "대한광통신",
        "return": 0.0423,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_218410",
+       "symbol": "218410",
+       "name": "RFHIC",
+       "return": 0.0381,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_006260",
+       "symbol": "006260",
+       "name": "LS",
+       "return": 0.0358,
        "role": "LEADER"
       }
      ]
@@ -1613,6 +1912,20 @@
        "name": "한국첨단소재",
        "return": 0.1713,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_327260",
+       "symbol": "327260",
+       "name": "RF머트리얼즈",
+       "return": 0.1691,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_100590",
+       "symbol": "100590",
+       "name": "머큐리",
+       "return": 0.1229,
+       "role": "LEADER"
       }
      ]
     }
@@ -1654,6 +1967,18 @@
      "symbol": "027360",
      "name": "아주IB투자",
      "return": 0.1453
+    },
+    {
+     "stockId": "stk_274090",
+     "symbol": "274090",
+     "name": "켄코아에어로스페이스",
+     "return": 0.1112
+    },
+    {
+     "stockId": "stk_417010",
+     "symbol": "417010",
+     "name": "나노팀",
+     "return": 0.095
     }
    ],
    "catalysts": [
@@ -1735,6 +2060,13 @@
          "symbol": "373220",
          "name": "LG에너지솔루션",
          "return": 0.0435,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_001430",
+         "symbol": "001430",
+         "name": "세아베스틸지주",
+         "return": 0.0387,
          "role": "LEADER"
         }
        ]
@@ -1821,6 +2153,13 @@
          "symbol": "027360",
          "name": "아주IB투자",
          "return": 0.0277,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_209640",
+         "symbol": "209640",
+         "name": "와이제이링크",
+         "return": 0.0143,
          "role": "LEADER"
         }
        ]
@@ -1972,6 +2311,13 @@
          "name": "LG에너지솔루션",
          "return": 0.0403,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_272290",
+         "symbol": "272290",
+         "name": "이녹스첨단소재",
+         "return": 0.034,
+         "role": "LEADER"
         }
        ]
       },
@@ -2025,6 +2371,20 @@
          "symbol": "027360",
          "name": "아주IB투자",
          "return": 0.0693,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_209640",
+         "symbol": "209640",
+         "name": "와이제이링크",
+         "return": 0.0603,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_272290",
+         "symbol": "272290",
+         "name": "이녹스첨단소재",
+         "return": 0.0601,
          "role": "LEADER"
         }
        ]
@@ -2174,6 +2534,20 @@
          "name": "센서뷰",
          "return": 0.1293,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_347700",
+         "symbol": "347700",
+         "name": "스피어",
+         "return": 0.0923,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100790",
+         "symbol": "100790",
+         "name": "미래에셋벤처투자",
+         "return": 0.0911,
+         "role": "LEADER"
         }
        ]
       },
@@ -2227,6 +2601,20 @@
          "symbol": "417010",
          "name": "나노팀",
          "return": 0.149,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_295310",
+         "symbol": "295310",
+         "name": "에이치브이엠",
+         "return": 0.1019,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_027360",
+         "symbol": "027360",
+         "name": "아주IB투자",
+         "return": 0.0875,
          "role": "LEADER"
         }
        ]
@@ -2282,6 +2670,13 @@
          "name": "와이제이링크",
          "return": 0.0409,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_001430",
+         "symbol": "001430",
+         "name": "세아베스틸지주",
+         "return": 0.0386,
+         "role": "LEADER"
         }
        ]
       },
@@ -2335,6 +2730,20 @@
          "symbol": "347700",
          "name": "스피어",
          "return": 0.2989,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_417010",
+         "symbol": "417010",
+         "name": "나노팀",
+         "return": 0.2165,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_027360",
+         "symbol": "027360",
+         "name": "아주IB투자",
+         "return": 0.234,
          "role": "LEADER"
         }
        ]
@@ -2430,6 +2839,13 @@
          "name": "켄코아에어로스페이스",
          "return": 0.0214,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_347700",
+         "symbol": "347700",
+         "name": "스피어",
+         "return": 0.0158,
+         "role": "LEADER"
         }
        ]
       }
@@ -2514,6 +2930,13 @@
          "name": "LG에너지솔루션",
          "return": 0.0403,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_272290",
+         "symbol": "272290",
+         "name": "이녹스첨단소재",
+         "return": 0.034,
+         "role": "LEADER"
         }
        ]
       },
@@ -2567,6 +2990,13 @@
          "symbol": "272290",
          "name": "이녹스첨단소재",
          "return": 0.0517,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_347700",
+         "symbol": "347700",
+         "name": "스피어",
+         "return": 0.0446,
          "role": "LEADER"
         }
        ]
@@ -2622,6 +3052,20 @@
          "name": "와이제이링크",
          "return": 0.113,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_006800",
+         "symbol": "006800",
+         "name": "미래에셋증권",
+         "return": 0.0726,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_347700",
+         "symbol": "347700",
+         "name": "스피어",
+         "return": 0.0649,
+         "role": "LEADER"
         }
        ]
       },
@@ -2675,6 +3119,20 @@
          "symbol": "321370",
          "name": "센서뷰",
          "return": 0.2285,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_100790",
+         "symbol": "100790",
+         "name": "미래에셋벤처투자",
+         "return": 0.2277,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_027360",
+         "symbol": "027360",
+         "name": "아주IB투자",
+         "return": 0.1887,
          "role": "LEADER"
         }
        ]
@@ -2730,6 +3188,13 @@
          "name": "나노팀",
          "return": 0.0235,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_027360",
+         "symbol": "027360",
+         "name": "아주IB투자",
+         "return": 0.1675,
+         "role": "LEADER"
         }
        ]
       },
@@ -2784,6 +3249,20 @@
          "name": "스피어",
          "return": 0.1626,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_274090",
+         "symbol": "274090",
+         "name": "켄코아에어로스페이스",
+         "return": 0.1116,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_006800",
+         "symbol": "006800",
+         "name": "미래에셋증권",
+         "return": 0.1087,
+         "role": "LEADER"
         }
        ]
       },
@@ -2837,6 +3316,20 @@
          "symbol": "006800",
          "name": "미래에셋증권",
          "return": 0.1125,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_272290",
+         "symbol": "272290",
+         "name": "이녹스첨단소재",
+         "return": 0.111,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_274090",
+         "symbol": "274090",
+         "name": "켄코아에어로스페이스",
+         "return": 0.0616,
          "role": "LEADER"
         }
        ]
@@ -2948,6 +3441,13 @@
        "name": "LG에너지솔루션",
        "return": 0.0435,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_001430",
+       "symbol": "001430",
+       "name": "세아베스틸지주",
+       "return": 0.0387,
+       "role": "LEADER"
       }
      ]
     },
@@ -3028,6 +3528,13 @@
        "name": "아주IB투자",
        "return": 0.0622,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_209640",
+       "symbol": "209640",
+       "name": "와이제이링크",
+       "return": 0.0457,
+       "role": "LEADER"
       }
      ]
     },
@@ -3079,6 +3586,13 @@
        "symbol": "027360",
        "name": "아주IB투자",
        "return": 0.0277,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_209640",
+       "symbol": "209640",
+       "name": "와이제이링크",
+       "return": 0.0143,
        "role": "LEADER"
       }
      ]
@@ -3181,6 +3695,18 @@
      "symbol": "321370",
      "name": "센서뷰",
      "return": 0.1765
+    },
+    {
+     "stockId": "stk_478340",
+     "symbol": "478340",
+     "name": "나라스페이스테크놀로지",
+     "return": 0.1733
+    },
+    {
+     "stockId": "stk_368770",
+     "symbol": "368770",
+     "name": "파이버프로",
+     "return": 0.1525
     }
    ],
    "catalysts": [
@@ -3262,6 +3788,20 @@
          "symbol": "079550",
          "name": "LIG디펜스앤에어로스페이스",
          "return": 0.0556,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_488900",
+         "symbol": "488900",
+         "name": "비츠로넥스텍",
+         "return": 0.0506,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_354320",
+         "symbol": "354320",
+         "name": "알멕",
+         "return": 0.0499,
          "role": "LEADER"
         }
        ]
@@ -3348,6 +3888,13 @@
          "symbol": "007660",
          "name": "이수페타시스",
          "return": 0.052,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_189300",
+         "symbol": "189300",
+         "name": "인텔리안테크",
+         "return": 0.0237,
          "role": "LEADER"
         }
        ]
@@ -3499,6 +4046,20 @@
          "name": "한화시스템",
          "return": 0.0835,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_003490",
+         "symbol": "003490",
+         "name": "대한항공",
+         "return": 0.0726,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_056190",
+         "symbol": "056190",
+         "name": "에스에프에이",
+         "return": 0.068,
+         "role": "LEADER"
         }
        ]
       },
@@ -3552,6 +4113,20 @@
          "symbol": "007660",
          "name": "이수페타시스",
          "return": 0.0956,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_045100",
+         "symbol": "045100",
+         "name": "한양이엔지",
+         "return": 0.0863,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_0015G0",
+         "symbol": "0015G0",
+         "name": "그린광학",
+         "return": 0.0821,
          "role": "LEADER"
         }
        ]
@@ -3637,6 +4212,20 @@
          "name": "LIG넥스원",
          "return": 0.0969,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_354320",
+         "symbol": "354320",
+         "name": "알멕",
+         "return": 0.0569,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_042370",
+         "symbol": "042370",
+         "name": "비츠로테크",
+         "return": 0.0563,
+         "role": "LEADER"
         }
        ]
       },
@@ -3690,6 +4279,20 @@
          "symbol": "368770",
          "name": "파이버프로",
          "return": 0.1941,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_354320",
+         "symbol": "354320",
+         "name": "알멕",
+         "return": 0.1707,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_321370",
+         "symbol": "321370",
+         "name": "센서뷰",
+         "return": 0.1638,
          "role": "LEADER"
         }
        ]
@@ -3745,6 +4348,20 @@
          "name": "루미르",
          "return": 0.1532,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_001430",
+         "symbol": "001430",
+         "name": "세아베스틸지주",
+         "return": 0.1495,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_099320",
+         "symbol": "099320",
+         "name": "쎄트렉아이",
+         "return": 0.1336,
+         "role": "LEADER"
         }
        ]
       },
@@ -3798,6 +4415,13 @@
          "symbol": "368770",
          "name": "파이버프로",
          "return": 0.0708,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_010820",
+         "symbol": "010820",
+         "name": "퍼스텍",
+         "return": 0.0406,
          "role": "LEADER"
         }
        ]
@@ -3853,6 +4477,20 @@
          "name": "제노코",
          "return": 0.1305,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_099320",
+         "symbol": "099320",
+         "name": "쎄트렉아이",
+         "return": 0.1069,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_211270",
+         "symbol": "211270",
+         "name": "AP위성",
+         "return": 0.0982,
+         "role": "LEADER"
         }
        ]
       },
@@ -3906,6 +4544,13 @@
          "symbol": "462350",
          "name": "이노스페이스",
          "return": 0.0548,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_077360",
+         "symbol": "077360",
+         "name": "덕산하이메탈",
+         "return": 0.0539,
          "role": "LEADER"
         }
        ]
@@ -3961,6 +4606,20 @@
          "name": "이노스페이스",
          "return": 0.1103,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_045100",
+         "symbol": "045100",
+         "name": "한양이엔지",
+         "return": 0.095,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_047810",
+         "symbol": "047810",
+         "name": "한국항공우주",
+         "return": 0.0786,
+         "role": "LEADER"
         }
        ]
       },
@@ -4014,6 +4673,20 @@
          "symbol": "012450",
          "name": "한화에어로스페이스",
          "return": 0.0644,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_064350",
+         "symbol": "064350",
+         "name": "현대로템",
+         "return": 0.0607,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_047810",
+         "symbol": "047810",
+         "name": "한국항공우주",
+         "return": 0.0532,
          "role": "LEADER"
         }
        ]
@@ -4357,6 +5030,20 @@
        "name": "LIG디펜스앤에어로스페이스",
        "return": 0.0556,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0506,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_354320",
+       "symbol": "354320",
+       "name": "알멕",
+       "return": 0.0499,
+       "role": "LEADER"
       }
      ]
     },
@@ -4437,6 +5124,20 @@
        "name": "덕산하이메탈",
        "return": 0.1118,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.1056,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_001430",
+       "symbol": "001430",
+       "name": "세아베스틸지주",
+       "return": 0.0988,
+       "role": "LEADER"
       }
      ]
     },
@@ -4490,6 +5191,13 @@
        "name": "덕산하이메탈",
        "return": 0.1548,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_007660",
+       "symbol": "007660",
+       "name": "이수페타시스",
+       "return": 0.1516,
+       "role": "LEADER"
       }
      ]
     },
@@ -4541,6 +5249,13 @@
        "symbol": "007660",
        "name": "이수페타시스",
        "return": 0.052,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_189300",
+       "symbol": "189300",
+       "name": "인텔리안테크",
+       "return": 0.0237,
        "role": "LEADER"
       }
      ]
@@ -4776,6 +5491,18 @@
      "symbol": "900290",
      "name": "GRT",
      "return": -0.0757
+    },
+    {
+     "stockId": "stk_900300",
+     "symbol": "900300",
+     "name": "오가닉티코스메틱",
+     "return": 0.0311
+    },
+    {
+     "stockId": "stk_900310",
+     "symbol": "900310",
+     "name": "컬러레이",
+     "return": -0.0119
     }
    ],
    "catalysts": [
@@ -4858,6 +5585,20 @@
          "name": "GRT",
          "return": 0.1431,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900300",
+         "symbol": "900300",
+         "name": "오가닉티코스메틱",
+         "return": 0.0633,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900310",
+         "symbol": "900310",
+         "name": "컬러레이",
+         "return": 0.0542,
+         "role": "LEADER"
         }
        ]
       },
@@ -4911,6 +5652,13 @@
          "symbol": "900340",
          "name": "윙입푸드",
          "return": 0.0483,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900120",
+         "symbol": "900120",
+         "name": "씨엑스아이",
+         "return": 0.0442,
          "role": "LEADER"
         }
        ]
@@ -5077,6 +5825,13 @@
          "name": "헝셩그룹",
          "return": 0.1359,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900340",
+         "symbol": "900340",
+         "name": "윙입푸드",
+         "return": 0.0616,
+         "role": "LEADER"
         }
        ]
       },
@@ -5130,6 +5885,13 @@
          "symbol": "900310",
          "name": "컬러레이",
          "return": 0.0702,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900340",
+         "symbol": "900340",
+         "name": "윙입푸드",
+         "return": 0.0682,
          "role": "LEADER"
         }
        ]
@@ -5247,6 +6009,20 @@
          "name": "크리스탈신소재",
          "return": 0.0391,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900300",
+         "symbol": "900300",
+         "name": "오가닉티코스메틱",
+         "return": 0.0316,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900270",
+         "symbol": "900270",
+         "name": "헝셩그룹",
+         "return": 0.0248,
+         "role": "LEADER"
         }
        ]
       },
@@ -5301,6 +6077,13 @@
          "name": "크리스탈신소재",
          "return": 0.0182,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_032580",
+         "symbol": "032580",
+         "name": "피델릭스",
+         "return": 0.0114,
+         "role": "LEADER"
         }
        ]
       },
@@ -5354,6 +6137,13 @@
          "symbol": "900340",
          "name": "윙입푸드",
          "return": 0.0483,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900120",
+         "symbol": "900120",
+         "name": "씨엑스아이",
+         "return": 0.0442,
          "role": "LEADER"
         }
        ]
@@ -5520,6 +6310,13 @@
          "name": "씨엑스아이",
          "return": 0.0918,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900250",
+         "symbol": "900250",
+         "name": "크리스탈신소재",
+         "return": 0.0329,
+         "role": "LEADER"
         }
        ]
       },
@@ -5573,6 +6370,13 @@
          "symbol": "900340",
          "name": "윙입푸드",
          "return": 0.0398,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900250",
+         "symbol": "900250",
+         "name": "크리스탈신소재",
+         "return": 0.0197,
          "role": "LEADER"
         }
        ]
@@ -5658,6 +6462,20 @@
          "name": "윙입푸드",
          "return": 0.0323,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900120",
+         "symbol": "900120",
+         "name": "씨엑스아이",
+         "return": 0.0246,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900290",
+         "symbol": "900290",
+         "name": "GRT",
+         "return": 0.0217,
+         "role": "LEADER"
         }
        ]
       },
@@ -5711,6 +6529,13 @@
          "symbol": "900270",
          "name": "헝셩그룹",
          "return": 0.0212,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900110",
+         "symbol": "900110",
+         "name": "이스트아시아홀딩스",
+         "return": 0.0114,
          "role": "LEADER"
         }
        ]
@@ -5812,6 +6637,13 @@
          "symbol": "900270",
          "name": "헝셩그룹",
          "return": 0.0357,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_900300",
+         "symbol": "900300",
+         "name": "오가닉티코스메틱",
+         "return": 0.2958,
          "role": "LEADER"
         }
        ]
@@ -5997,6 +6829,20 @@
        "name": "GRT",
        "return": 0.1431,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900300",
+       "symbol": "900300",
+       "name": "오가닉티코스메틱",
+       "return": 0.0633,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900310",
+       "symbol": "900310",
+       "name": "컬러레이",
+       "return": 0.0542,
+       "role": "LEADER"
       }
      ]
     },
@@ -6082,6 +6928,13 @@
        "name": "이스트아시아홀딩스",
        "return": 0.0694,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900270",
+       "symbol": "900270",
+       "name": "헝셩그룹",
+       "return": 0.0429,
+       "role": "LEADER"
       }
      ]
     },
@@ -6134,6 +6987,20 @@
        "symbol": "900340",
        "name": "윙입푸드",
        "return": 0.0323,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900120",
+       "symbol": "900120",
+       "name": "씨엑스아이",
+       "return": 0.0246,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_900290",
+       "symbol": "900290",
+       "name": "GRT",
+       "return": 0.0217,
        "role": "LEADER"
       }
      ]
@@ -6235,6 +7102,18 @@
      "symbol": "064760",
      "name": "티씨케이",
      "return": 0.2074
+    },
+    {
+     "stockId": "stk_114810",
+     "symbol": "114810",
+     "name": "한솔아이원스",
+     "return": 0.1909
+    },
+    {
+     "stockId": "stk_078350",
+     "symbol": "078350",
+     "name": "한양디지텍",
+     "return": 0.165
     }
    ],
    "catalysts": [
@@ -6349,6 +7228,20 @@
          "name": "뉴파워프라즈마",
          "return": 0.0669,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_064760",
+         "symbol": "064760",
+         "name": "티씨케이",
+         "return": 0.0662,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_101160",
+         "symbol": "101160",
+         "name": "월덱스",
+         "return": 0.0646,
+         "role": "LEADER"
         }
        ]
       },
@@ -6403,6 +7296,20 @@
          "name": "케이씨텍",
          "return": 0.0739,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_043590",
+         "symbol": "043590",
+         "name": "웰킵스하이텍",
+         "return": 0.1307,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_077360",
+         "symbol": "077360",
+         "name": "덕산하이메탈",
+         "return": 0.0994,
+         "role": "LEADER"
         }
        ]
       },
@@ -6456,6 +7363,20 @@
          "symbol": "252990",
          "name": "샘씨엔에스",
          "return": 0.0451,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.0444,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_219130",
+         "symbol": "219130",
+         "name": "타이거일렉",
+         "return": 0.0372,
          "role": "LEADER"
         }
        ]
@@ -6574,6 +7495,20 @@
          "symbol": "147760",
          "name": "피엠티",
          "return": 0.1377,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_059090",
+         "symbol": "059090",
+         "name": "미코",
+         "return": 0.0949,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_295310",
+         "symbol": "295310",
+         "name": "에이치브이엠",
+         "return": 0.0864,
          "role": "LEADER"
         }
        ]
@@ -6723,6 +7658,20 @@
          "name": "오킨스전자",
          "return": 0.1281,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_031330",
+         "symbol": "031330",
+         "name": "에스에이엠티",
+         "return": 0.1277,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_024850",
+         "symbol": "024850",
+         "name": "HLB이노베이션",
+         "return": 0.1157,
+         "role": "LEADER"
         }
        ]
       },
@@ -6873,6 +7822,20 @@
          "name": "샘씨엔에스",
          "return": 0.2088,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_033160",
+         "symbol": "033160",
+         "name": "엠케이전자",
+         "return": 0.1475,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_147760",
+         "symbol": "147760",
+         "name": "피엠티",
+         "return": 0.1438,
+         "role": "LEADER"
         }
        ]
       },
@@ -6927,6 +7890,20 @@
          "name": "지오엘리먼트",
          "return": 0.1914,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_170920",
+         "symbol": "170920",
+         "name": "엘티씨",
+         "return": 0.178,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.1665,
+         "role": "LEADER"
         }
        ]
       },
@@ -6980,6 +7957,20 @@
          "symbol": "093370",
          "name": "후성",
          "return": 0.1024,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_388210",
+         "symbol": "388210",
+         "name": "씨엠티엑스",
+         "return": 0.1016,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_147760",
+         "symbol": "147760",
+         "name": "피엠티",
+         "return": 0.0901,
          "role": "LEADER"
         }
        ]
@@ -7097,6 +8088,20 @@
          "name": "오킨스전자",
          "return": 0.1281,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_031330",
+         "symbol": "031330",
+         "name": "에스에이엠티",
+         "return": 0.1277,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_024850",
+         "symbol": "024850",
+         "name": "HLB이노베이션",
+         "return": 0.1157,
+         "role": "LEADER"
         }
        ]
       },
@@ -7247,6 +8252,20 @@
          "name": "샘씨엔에스",
          "return": 0.2088,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_033160",
+         "symbol": "033160",
+         "name": "엠케이전자",
+         "return": 0.1475,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_147760",
+         "symbol": "147760",
+         "name": "피엠티",
+         "return": 0.1438,
+         "role": "LEADER"
         }
        ]
       },
@@ -7301,6 +8320,20 @@
          "name": "지오엘리먼트",
          "return": 0.1914,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_170920",
+         "symbol": "170920",
+         "name": "엘티씨",
+         "return": 0.178,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.1665,
+         "role": "LEADER"
         }
        ]
       },
@@ -7354,6 +8387,20 @@
          "symbol": "093370",
          "name": "후성",
          "return": 0.1024,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_388210",
+         "symbol": "388210",
+         "name": "씨엠티엑스",
+         "return": 0.1016,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_147760",
+         "symbol": "147760",
+         "name": "피엠티",
+         "return": 0.0901,
          "role": "LEADER"
         }
        ]
@@ -7477,6 +8524,20 @@
        "name": "오킨스전자",
        "return": 0.1281,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_031330",
+       "symbol": "031330",
+       "name": "에스에이엠티",
+       "return": 0.1277,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_024850",
+       "symbol": "024850",
+       "name": "HLB이노베이션",
+       "return": 0.1157,
+       "role": "LEADER"
       }
      ]
     },
@@ -7528,6 +8589,20 @@
        "symbol": "272110",
        "name": "케이엔제이",
        "return": 0.0605,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_295310",
+       "symbol": "295310",
+       "name": "에이치브이엠",
+       "return": 0.1171,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_024850",
+       "symbol": "024850",
+       "name": "HLB이노베이션",
+       "return": 0.0747,
        "role": "LEADER"
       }
      ]
@@ -7581,6 +8656,20 @@
        "symbol": "093370",
        "name": "후성",
        "return": 0.2987,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_033160",
+       "symbol": "033160",
+       "name": "엠케이전자",
+       "return": 0.2996,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_000150",
+       "symbol": "000150",
+       "name": "두산",
+       "return": 0.3,
        "role": "LEADER"
       }
      ]
@@ -7655,6 +8744,12 @@
      "symbol": "056190",
      "name": "에스에프에이",
      "return": 0.037
+    },
+    {
+     "stockId": "stk_488900",
+     "symbol": "488900",
+     "name": "비츠로넥스텍",
+     "return": 0.2993
     }
    ],
    "catalysts": [
@@ -7737,6 +8832,13 @@
          "name": "에스에프에이",
          "return": 0.0634,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_488900",
+         "symbol": "488900",
+         "name": "비츠로넥스텍",
+         "return": 0.0624,
+         "role": "LEADER"
         }
        ]
       },
@@ -7790,6 +8892,13 @@
          "symbol": "094820",
          "name": "일진파워",
          "return": 0.0325,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_250060",
+         "symbol": "250060",
+         "name": "모비스",
+         "return": 0.0321,
          "role": "LEADER"
         }
        ]
@@ -8141,6 +9250,13 @@
          "name": "에스에프에이",
          "return": 0.0634,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_488900",
+         "symbol": "488900",
+         "name": "비츠로넥스텍",
+         "return": 0.0624,
+         "role": "LEADER"
         }
        ]
       },
@@ -8195,6 +9311,13 @@
          "name": "다원시스",
          "return": 0.0395,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_034020",
+         "symbol": "034020",
+         "name": "두산에너빌리티",
+         "return": 0.0394,
+         "role": "LEADER"
         }
        ]
       },
@@ -8248,6 +9371,13 @@
          "symbol": "488900",
          "name": "비츠로넥스텍",
          "return": 0.099,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_068240",
+         "symbol": "068240",
+         "name": "다원시스",
+         "return": 0.0417,
          "role": "LEADER"
         }
        ]
@@ -8357,6 +9487,13 @@
          "name": "삼화콘덴서",
          "return": 0.0213,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_042370",
+         "symbol": "042370",
+         "name": "비츠로테크",
+         "return": 0.0197,
+         "role": "LEADER"
         }
        ]
       },
@@ -8410,6 +9547,13 @@
          "symbol": "094820",
          "name": "일진파워",
          "return": 0.0734,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_068240",
+         "symbol": "068240",
+         "name": "다원시스",
+         "return": 0.043,
          "role": "LEADER"
         }
        ]
@@ -8867,6 +10011,13 @@
        "name": "에스에프에이",
        "return": 0.0634,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_488900",
+       "symbol": "488900",
+       "name": "비츠로넥스텍",
+       "return": 0.0624,
+       "role": "LEADER"
       }
      ]
     },
@@ -8918,6 +10069,13 @@
        "symbol": "094820",
        "name": "일진파워",
        "return": 0.0325,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_250060",
+       "symbol": "250060",
+       "name": "모비스",
+       "return": 0.0321,
        "role": "LEADER"
       }
      ]
@@ -8971,6 +10129,13 @@
        "name": "다원시스",
        "return": 0.0395,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_034020",
+       "symbol": "034020",
+       "name": "두산에너빌리티",
+       "return": 0.0394,
+       "role": "LEADER"
       }
      ]
     },
@@ -9022,6 +10187,13 @@
        "symbol": "488900",
        "name": "비츠로넥스텍",
        "return": 0.099,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_068240",
+       "symbol": "068240",
+       "name": "다원시스",
+       "return": 0.0417,
        "role": "LEADER"
       }
      ]
@@ -9127,6 +10299,13 @@
        "name": "삼화콘덴서",
        "return": 0.0213,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_042370",
+       "symbol": "042370",
+       "name": "비츠로테크",
+       "return": 0.0197,
+       "role": "LEADER"
       }
      ]
     }
@@ -9168,6 +10347,18 @@
      "symbol": "336260",
      "name": "두산퓨얼셀",
      "return": 0.0917
+    },
+    {
+     "stockId": "stk_059090",
+     "symbol": "059090",
+     "name": "미코",
+     "return": 0.0776
+    },
+    {
+     "stockId": "stk_089890",
+     "symbol": "089890",
+     "name": "코세스",
+     "return": 0.0733
     }
    ],
    "catalysts": [
@@ -9250,6 +10441,20 @@
          "name": "SK이터닉스",
          "return": 0.1091,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_083650",
+         "symbol": "083650",
+         "name": "비에이치아이",
+         "return": 0.0592,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_336260",
+         "symbol": "336260",
+         "name": "두산퓨얼셀",
+         "return": 0.043,
+         "role": "LEADER"
         }
        ]
       },
@@ -9304,6 +10509,20 @@
          "name": "범한퓨얼셀",
          "return": 0.0892,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_357580",
+         "symbol": "357580",
+         "name": "아모센스",
+         "return": 0.0787,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_056190",
+         "symbol": "056190",
+         "name": "에스에프에이",
+         "return": 0.0755,
+         "role": "LEADER"
         }
        ]
       },
@@ -9357,6 +10576,20 @@
          "symbol": "336260",
          "name": "두산퓨얼셀",
          "return": 0.0788,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_083650",
+         "symbol": "083650",
+         "name": "비에이치아이",
+         "return": 0.0753,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_059090",
+         "symbol": "059090",
+         "name": "미코",
+         "return": 0.0544,
          "role": "LEADER"
         }
        ]
@@ -9466,6 +10699,13 @@
          "name": "비에이치아이",
          "return": 0.0434,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_357580",
+         "symbol": "357580",
+         "name": "아모센스",
+         "return": 0.036,
+         "role": "LEADER"
         }
        ]
       },
@@ -9520,6 +10760,13 @@
          "name": "금양그린파워",
          "return": 0.0152,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_357580",
+         "symbol": "357580",
+         "name": "아모센스",
+         "return": 0.0148,
+         "role": "LEADER"
         }
        ]
       },
@@ -9573,6 +10820,13 @@
          "symbol": "336260",
          "name": "두산퓨얼셀",
          "return": 0.1582,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_475150",
+         "symbol": "475150",
+         "name": "SK이터닉스",
+         "return": 0.1007,
          "role": "LEADER"
         }
        ]
@@ -9712,6 +10966,20 @@
          "name": "두산퓨얼셀",
          "return": 0.2989,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_059090",
+         "symbol": "059090",
+         "name": "미코",
+         "return": 0.2301,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_089890",
+         "symbol": "089890",
+         "name": "코세스",
+         "return": 0.2183,
+         "role": "LEADER"
         }
        ]
       },
@@ -9765,6 +11033,20 @@
          "symbol": "382900",
          "name": "범한퓨얼셀",
          "return": 0.0892,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_357580",
+         "symbol": "357580",
+         "name": "아모센스",
+         "return": 0.0787,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_056190",
+         "symbol": "056190",
+         "name": "에스에프에이",
+         "return": 0.0755,
          "role": "LEADER"
         }
        ]
@@ -9820,6 +11102,13 @@
          "name": "두산퓨얼셀",
          "return": 0.1582,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_475150",
+         "symbol": "475150",
+         "name": "SK이터닉스",
+         "return": 0.1007,
+         "role": "LEADER"
         }
        ]
       },
@@ -9873,6 +11162,20 @@
          "symbol": "083650",
          "name": "비에이치아이",
          "return": 0.0884,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0682,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_336260",
+         "symbol": "336260",
+         "name": "두산퓨얼셀",
+         "return": 0.0553,
          "role": "LEADER"
         }
        ]
@@ -9928,6 +11231,13 @@
          "name": "한선엔지니어링",
          "return": 0.1209,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0912,
+         "role": "LEADER"
         }
        ]
       },
@@ -9981,6 +11291,13 @@
          "symbol": "336260",
          "name": "두산퓨얼셀",
          "return": 0.2225,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0958,
          "role": "LEADER"
         }
        ]
@@ -10066,6 +11383,20 @@
          "name": "LS머트리얼즈",
          "return": 0.0735,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_170920",
+         "symbol": "170920",
+         "name": "엘티씨",
+         "return": 0.073,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_382900",
+         "symbol": "382900",
+         "name": "범한퓨얼셀",
+         "return": 0.0533,
+         "role": "LEADER"
         }
        ]
       },
@@ -10119,6 +11450,13 @@
          "symbol": "083650",
          "name": "비에이치아이",
          "return": 0.0434,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_357580",
+         "symbol": "357580",
+         "name": "아모센스",
+         "return": 0.036,
          "role": "LEADER"
         }
        ]
@@ -10174,6 +11512,20 @@
          "name": "비에이치아이",
          "return": 0.0884,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0682,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_336260",
+         "symbol": "336260",
+         "name": "두산퓨얼셀",
+         "return": 0.0553,
+         "role": "LEADER"
         }
        ]
       },
@@ -10227,6 +11579,20 @@
          "symbol": "282720",
          "name": "금양그린파워",
          "return": 0.0621,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_475150",
+         "symbol": "475150",
+         "name": "SK이터닉스",
+         "return": 0.059,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_382900",
+         "symbol": "382900",
+         "name": "범한퓨얼셀",
+         "return": 0.0572,
          "role": "LEADER"
         }
        ]
@@ -10282,6 +11648,13 @@
          "name": "한선엔지니어링",
          "return": 0.1209,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0912,
+         "role": "LEADER"
         }
        ]
       },
@@ -10335,6 +11708,13 @@
          "symbol": "336260",
          "name": "두산퓨얼셀",
          "return": 0.2225,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_282720",
+         "symbol": "282720",
+         "name": "금양그린파워",
+         "return": 0.0958,
          "role": "LEADER"
         }
        ]
@@ -10392,6 +11772,20 @@
        "name": "두산퓨얼셀",
        "return": 0.2989,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_059090",
+       "symbol": "059090",
+       "name": "미코",
+       "return": 0.2301,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089890",
+       "symbol": "089890",
+       "name": "코세스",
+       "return": 0.2183,
+       "role": "LEADER"
       }
      ]
     },
@@ -10443,6 +11837,20 @@
        "symbol": "475150",
        "name": "SK이터닉스",
        "return": 0.1091,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_083650",
+       "symbol": "083650",
+       "name": "비에이치아이",
+       "return": 0.0592,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_336260",
+       "symbol": "336260",
+       "name": "두산퓨얼셀",
+       "return": 0.043,
        "role": "LEADER"
       }
      ]
@@ -10498,6 +11906,20 @@
        "name": "범한퓨얼셀",
        "return": 0.0892,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_357580",
+       "symbol": "357580",
+       "name": "아모센스",
+       "return": 0.0787,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_056190",
+       "symbol": "056190",
+       "name": "에스에프에이",
+       "return": 0.0755,
+       "role": "LEADER"
       }
      ]
     },
@@ -10550,6 +11972,20 @@
        "name": "두산퓨얼셀",
        "return": 0.0788,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_083650",
+       "symbol": "083650",
+       "name": "비에이치아이",
+       "return": 0.0753,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_059090",
+       "symbol": "059090",
+       "name": "미코",
+       "return": 0.0544,
+       "role": "LEADER"
       }
      ]
     },
@@ -10599,6 +12035,20 @@
        "symbol": "417200",
        "name": "LS머트리얼즈",
        "return": 0.1639,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_452280",
+       "symbol": "452280",
+       "name": "한선엔지니어링",
+       "return": 0.11,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_475150",
+       "symbol": "475150",
+       "name": "SK이터닉스",
+       "return": 0.0727,
        "role": "LEADER"
       }
      ]
@@ -10653,6 +12103,20 @@
        "name": "LS머트리얼즈",
        "return": 0.0735,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_170920",
+       "symbol": "170920",
+       "name": "엘티씨",
+       "return": 0.073,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_382900",
+       "symbol": "382900",
+       "name": "범한퓨얼셀",
+       "return": 0.0533,
+       "role": "LEADER"
       }
      ]
     }
@@ -10694,6 +12158,18 @@
      "symbol": "031980",
      "name": "피에스케이홀딩스",
      "return": 0.117
+    },
+    {
+     "stockId": "stk_168360",
+     "symbol": "168360",
+     "name": "펨트론",
+     "return": 0.1119
+    },
+    {
+     "stockId": "stk_232140",
+     "symbol": "232140",
+     "name": "와이씨",
+     "return": 0.1109
     }
    ],
    "catalysts": [
@@ -10808,6 +12284,20 @@
          "name": "디아이",
          "return": 0.0689,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_031980",
+         "symbol": "031980",
+         "name": "피에스케이홀딩스",
+         "return": 0.0529,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_232140",
+         "symbol": "232140",
+         "name": "와이씨",
+         "return": 0.0474,
+         "role": "LEADER"
         }
        ]
       },
@@ -10862,6 +12352,20 @@
          "name": "오픈엣지테크놀로지",
          "return": 0.0578,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_005930",
+         "symbol": "005930",
+         "name": "삼성전자",
+         "return": 0.0615,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_031980",
+         "symbol": "031980",
+         "name": "피에스케이홀딩스",
+         "return": 0.053,
+         "role": "LEADER"
         }
        ]
       },
@@ -10915,6 +12419,13 @@
          "symbol": "122640",
          "name": "예스티",
          "return": 0.0443,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_000660",
+         "symbol": "000660",
+         "name": "SK하이닉스",
+         "return": 0.0369,
          "role": "LEADER"
         }
        ]
@@ -11033,6 +12544,20 @@
          "symbol": "039440",
          "name": "에스티아이",
          "return": 0.1127,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_168360",
+         "symbol": "168360",
+         "name": "펨트론",
+         "return": 0.0933,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_089030",
+         "symbol": "089030",
+         "name": "테크윙",
+         "return": 0.0896,
          "role": "LEADER"
         }
        ]
@@ -11182,6 +12707,20 @@
          "name": "아이엠티",
          "return": 0.1364,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_489790",
+         "symbol": "489790",
+         "name": "한화비전",
+         "return": 0.0962,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_033160",
+         "symbol": "033160",
+         "name": "엠케이전자",
+         "return": 0.1101,
+         "role": "LEADER"
         }
        ]
       },
@@ -11332,6 +12871,20 @@
          "name": "엠케이전자",
          "return": 0.1475,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_489790",
+         "symbol": "489790",
+         "name": "한화비전",
+         "return": 0.1442,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_168360",
+         "symbol": "168360",
+         "name": "펨트론",
+         "return": 0.1315,
+         "role": "LEADER"
         }
        ]
       },
@@ -11386,6 +12939,20 @@
          "name": "피에스케이홀딩스",
          "return": 0.1823,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.1665,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_097800",
+         "symbol": "097800",
+         "name": "윈팩",
+         "return": 0.1491,
+         "role": "LEADER"
         }
        ]
       },
@@ -11439,6 +13006,20 @@
          "symbol": "042700",
          "name": "한미반도체",
          "return": 0.0818,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_424980",
+         "symbol": "424980",
+         "name": "마이크로투나노",
+         "return": 0.08,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_112290",
+         "symbol": "112290",
+         "name": "와이씨켐",
+         "return": 0.0648,
          "role": "LEADER"
         }
        ]
@@ -11556,6 +13137,20 @@
          "name": "아이엠티",
          "return": 0.1364,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_489790",
+         "symbol": "489790",
+         "name": "한화비전",
+         "return": 0.0962,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_033160",
+         "symbol": "033160",
+         "name": "엠케이전자",
+         "return": 0.1101,
+         "role": "LEADER"
         }
        ]
       },
@@ -11706,6 +13301,20 @@
          "name": "엠케이전자",
          "return": 0.1475,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_489790",
+         "symbol": "489790",
+         "name": "한화비전",
+         "return": 0.1442,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_168360",
+         "symbol": "168360",
+         "name": "펨트론",
+         "return": 0.1315,
+         "role": "LEADER"
         }
        ]
       },
@@ -11760,6 +13369,20 @@
          "name": "피에스케이홀딩스",
          "return": 0.1823,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.1665,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_097800",
+         "symbol": "097800",
+         "name": "윈팩",
+         "return": 0.1491,
+         "role": "LEADER"
         }
        ]
       },
@@ -11813,6 +13436,20 @@
          "symbol": "042700",
          "name": "한미반도체",
          "return": 0.0818,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_424980",
+         "symbol": "424980",
+         "name": "마이크로투나노",
+         "return": 0.08,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_112290",
+         "symbol": "112290",
+         "name": "와이씨켐",
+         "return": 0.0648,
          "role": "LEADER"
         }
        ]
@@ -11936,6 +13573,20 @@
        "name": "아이엠티",
        "return": 0.1364,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_489790",
+       "symbol": "489790",
+       "name": "한화비전",
+       "return": 0.0962,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_033160",
+       "symbol": "033160",
+       "name": "엠케이전자",
+       "return": 0.1101,
+       "role": "LEADER"
       }
      ]
     },
@@ -11987,6 +13638,20 @@
        "symbol": "489790",
        "name": "한화비전",
        "return": 0.0357,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089030",
+       "symbol": "089030",
+       "name": "테크윙",
+       "return": 0.117,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_003160",
+       "symbol": "003160",
+       "name": "디아이",
+       "return": 0.0471,
        "role": "LEADER"
       }
      ]
@@ -12040,6 +13705,20 @@
        "symbol": "033160",
        "name": "엠케이전자",
        "return": 0.2996,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_031980",
+       "symbol": "031980",
+       "name": "피에스케이홀딩스",
+       "return": 0.2668,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_042700",
+       "symbol": "042700",
+       "name": "한미반도체",
+       "return": 0.2798,
        "role": "LEADER"
       }
      ]
@@ -12114,6 +13793,18 @@
      "symbol": "025560",
      "name": "미래산업",
      "return": 0.1688
+    },
+    {
+     "stockId": "stk_323350",
+     "symbol": "323350",
+     "name": "다원넥스뷰",
+     "return": 0.1465
+    },
+    {
+     "stockId": "stk_095610",
+     "symbol": "095610",
+     "name": "테스",
+     "return": 0.1445
     }
    ],
    "catalysts": [
@@ -12228,6 +13919,20 @@
          "name": "GST",
          "return": 0.0959,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_0017J0",
+         "symbol": "0017J0",
+         "name": "세미티에스",
+         "return": 0.0931,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_232680",
+         "symbol": "232680",
+         "name": "라온로보틱스",
+         "return": 0.0781,
+         "role": "LEADER"
         }
        ]
       },
@@ -12282,6 +13987,20 @@
          "name": "제너셈",
          "return": 0.0694,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_281820",
+         "symbol": "281820",
+         "name": "케이씨텍",
+         "return": 0.0739,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_417840",
+         "symbol": "417840",
+         "name": "저스템",
+         "return": 0.0821,
+         "role": "LEADER"
         }
        ]
       },
@@ -12335,6 +14054,20 @@
          "symbol": "049080",
          "name": "기가레인",
          "return": 0.1637,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_131290",
+         "symbol": "131290",
+         "name": "티에스이",
+         "return": 0.1058,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_089030",
+         "symbol": "089030",
+         "name": "테크윙",
+         "return": 0.1049,
          "role": "LEADER"
         }
        ]
@@ -12453,6 +14186,20 @@
          "symbol": "089890",
          "name": "코세스",
          "return": 0.184,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_037350",
+         "symbol": "037350",
+         "name": "성도이엔지",
+         "return": 0.1325,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_131290",
+         "symbol": "131290",
+         "name": "티에스이",
+         "return": 0.1288,
          "role": "LEADER"
         }
        ]
@@ -12602,6 +14349,20 @@
          "name": "기가레인",
          "return": 0.2184,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_036170",
+         "symbol": "036170",
+         "name": "에이치엠넥스",
+         "return": 0.1284,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_092870",
+         "symbol": "092870",
+         "name": "엑시콘",
+         "return": 0.1142,
+         "role": "LEADER"
         }
        ]
       },
@@ -12752,6 +14513,20 @@
          "name": "한미반도체",
          "return": 0.2988,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_159010",
+         "symbol": "159010",
+         "name": "아스플로",
+         "return": 0.2381,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_160980",
+         "symbol": "160980",
+         "name": "싸이맥스",
+         "return": 0.1988,
+         "role": "LEADER"
         }
        ]
       },
@@ -12806,6 +14581,20 @@
          "name": "피에스케이",
          "return": 0.2444,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_417840",
+         "symbol": "417840",
+         "name": "저스템",
+         "return": 0.2434,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_412350",
+         "symbol": "412350",
+         "name": "레이저쎌",
+         "return": 0.238,
+         "role": "LEADER"
         }
        ]
       },
@@ -12859,6 +14648,20 @@
          "symbol": "412350",
          "name": "레이저쎌",
          "return": 0.1325,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_330860",
+         "symbol": "330860",
+         "name": "네패스아크",
+         "return": 0.1206,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_036930",
+         "symbol": "036930",
+         "name": "주성엔지니어링",
+         "return": 0.115,
          "role": "LEADER"
         }
        ]
@@ -12976,6 +14779,20 @@
          "name": "기가레인",
          "return": 0.2184,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_036170",
+         "symbol": "036170",
+         "name": "에이치엠넥스",
+         "return": 0.1284,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_092870",
+         "symbol": "092870",
+         "name": "엑시콘",
+         "return": 0.1142,
+         "role": "LEADER"
         }
        ]
       },
@@ -13126,6 +14943,20 @@
          "name": "한미반도체",
          "return": 0.2988,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_159010",
+         "symbol": "159010",
+         "name": "아스플로",
+         "return": 0.2381,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_160980",
+         "symbol": "160980",
+         "name": "싸이맥스",
+         "return": 0.1988,
+         "role": "LEADER"
         }
        ]
       },
@@ -13180,6 +15011,20 @@
          "name": "피에스케이",
          "return": 0.2444,
          "role": "LEADER"
+        },
+        {
+         "stockId": "stk_417840",
+         "symbol": "417840",
+         "name": "저스템",
+         "return": 0.2434,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_412350",
+         "symbol": "412350",
+         "name": "레이저쎌",
+         "return": 0.238,
+         "role": "LEADER"
         }
        ]
       },
@@ -13233,6 +15078,20 @@
          "symbol": "412350",
          "name": "레이저쎌",
          "return": 0.1325,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_330860",
+         "symbol": "330860",
+         "name": "네패스아크",
+         "return": 0.1206,
+         "role": "LEADER"
+        },
+        {
+         "stockId": "stk_036930",
+         "symbol": "036930",
+         "name": "주성엔지니어링",
+         "return": 0.115,
          "role": "LEADER"
         }
        ]
@@ -13356,6 +15215,20 @@
        "name": "기가레인",
        "return": 0.2184,
        "role": "LEADER"
+      },
+      {
+       "stockId": "stk_036170",
+       "symbol": "036170",
+       "name": "에이치엠넥스",
+       "return": 0.1284,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_092870",
+       "symbol": "092870",
+       "name": "엑시콘",
+       "return": 0.1142,
+       "role": "LEADER"
       }
      ]
     },
@@ -13407,6 +15280,20 @@
        "symbol": "030530",
        "name": "원익홀딩스",
        "return": 0.2997,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089030",
+       "symbol": "089030",
+       "name": "테크윙",
+       "return": 0.117,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_090360",
+       "symbol": "090360",
+       "name": "로보스타",
+       "return": 0.0635,
        "role": "LEADER"
       }
      ]
@@ -13460,6 +15347,20 @@
        "symbol": "095610",
        "name": "테스",
        "return": 0.3,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_089030",
+       "symbol": "089030",
+       "name": "테크윙",
+       "return": 0.2994,
+       "role": "LEADER"
+      },
+      {
+       "stockId": "stk_036930",
+       "symbol": "036930",
+       "name": "주성엔지니어링",
+       "return": 0.2665,
        "role": "LEADER"
       }
      ]

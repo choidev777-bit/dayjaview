@@ -91,8 +91,11 @@ function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
   );
 }
 
-/** 시안의 로딩 지속 시간. 로고 sweep과 진행 바가 한 바퀴 도는 길이다. */
-const SPLASH_MS = 4000;
+/**
+ * 첫 진입 스플래시 길이. 로고 sweep과 진행 바가 이 시간 동안 한 바퀴 돈다.
+ * 시안은 4초였는데 그만큼 첫 화면이 늦어져 3초로 줄였다. CSS 애니메이션도 같은 값을 쓴다.
+ */
+const SPLASH_MS = 3000;
 
 function AuthGate({ splashMs }: { splashMs: number }) {
   const repository = useRepository();
@@ -114,7 +117,7 @@ function AuthGate({ splashMs }: { splashMs: number }) {
   );
 
   // 앱이 처음 열릴 때는 시안의 스플래시를 쓴다. 세션 확인은 이 뒤에서 끝난다.
-  if (session.status === 'loading' || splashHeld) return <SplashScreen />;
+  if (session.status === 'loading' || splashHeld) return <SplashScreen durationMs={splashMs || SPLASH_MS} />;
 
   if (session.status === 'error') {
     return (

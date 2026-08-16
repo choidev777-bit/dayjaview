@@ -185,7 +185,7 @@ a:focus-visible,
   margin: -335px 0 0 -260px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 111, 15, .34) 0%, rgba(255, 111, 15, .1) 38%, rgba(255, 111, 15, 0) 68%);
-  animation: splash-halo 4s cubic-bezier(.45, 0, .55, 1) infinite;
+  animation: splash-halo var(--splash-duration, 3s) cubic-bezier(.45, 0, .55, 1) infinite;
   filter: blur(18px);
 }
 
@@ -227,7 +227,7 @@ a:focus-visible,
 .splash__sharp i {
   position: absolute;
   inset: 0;
-  animation: splash-sweep 4s cubic-bezier(.45, 0, .55, 1) infinite both;
+  animation: splash-sweep var(--splash-duration, 3s) cubic-bezier(.45, 0, .55, 1) infinite both;
 }
 
 .splash__glow i {
@@ -270,7 +270,7 @@ a:focus-visible,
   border-radius: inherit;
   background: #ff5c00;
   transform-origin: left;
-  animation: splash-bar 4s cubic-bezier(.3, .7, .2, 1) both;
+  animation: splash-bar var(--splash-duration, 3s) cubic-bezier(.3, .7, .2, 1) both;
 }
 
 @keyframes splash-halo {
@@ -1583,7 +1583,8 @@ a:focus-visible,
   min-height: 56px;
   align-items: center;
   gap: 10px;
-  grid-template-columns: minmax(0, 1fr) auto;
+  /* 이름 · 수익률 · 저장 버튼 */
+  grid-template-columns: minmax(0, 1fr) auto 30px;
   border-top: 1px solid var(--djv-color-border);
 }
 
@@ -1887,6 +1888,29 @@ a:focus-visible,
 .case-list__more {
   margin-top: var(--djv-space-3);
   margin-bottom: var(--djv-space-2);
+}
+
+/* 종목 상세가 아직 없어 행을 링크로 만들지 않는다. 대신 저장 버튼만 따로 둔다
+   (screen_spec 8.6 `행의 상세 이동과 클릭 영역을 분리한다`). */
+.leader-list__save {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  align-content: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--djv-color-text-muted);
+  background: transparent;
+}
+
+.leader-list__save[aria-pressed="true"] {
+  color: var(--djv-color-brand);
+}
+
+.leader-list__save:disabled {
+  opacity: .4;
 }
 
 .reason-tags {
