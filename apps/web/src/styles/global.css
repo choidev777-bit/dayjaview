@@ -547,7 +547,7 @@ a:focus-visible,
   border: 0;
   border-top: 1px solid var(--djv-color-border);
   border-radius: 0 0 18px 18px;
-  background: var(--djv-color-surface-muted);
+  background: transparent;
 }
 
 .visually-hidden {
