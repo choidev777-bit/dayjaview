@@ -25,6 +25,9 @@ EXPECTED_ORDER = (
     "0007_theme_catalyst_labels.sql",
     "0008_daily_relation_details.sql",
     "0009_company_identity.sql",
+    "0010_history_company_roles.sql",
+    "0011_ontology_source_mentions.sql",
+    "0012_catalyst_events.sql",
 )
 
 

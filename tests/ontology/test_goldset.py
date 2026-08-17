@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from packages.ontology import VOCABULARY
+from packages.ontology import VOCABULARY, QueryType
 
 GOLDSET_PATH = Path(__file__).with_name("goldset_v1.tsv")
 SUPPLEMENT_PATH = Path(__file__).with_name("goldset_supplement.tsv")
@@ -65,25 +65,7 @@ def test_supplement_fills_sparse_types_and_is_marked_ai_draft() -> None:
 
 
 QUERY_GOLDSET_PATH = Path(__file__).with_name("query_goldset.tsv")
-QUERY_IDS = {
-    "DAY_MOVERS",
-    "PERIOD_SUMMARY",
-    "STOCK_DAY_REASON",
-    "STOCK_TOP_MOVES",
-    "STOCK_THEME_MEMBERSHIP",
-    "STOCK_COOCCURRENCE",
-    "THEME_MEMBERS",
-    "THEME_HISTORY",
-    "THEME_COMPARISON",
-    "THEME_FREQUENCY",
-    "CATALYST_THEME_REACTION",
-    "CATALYST_FREQUENCY",
-    "CATALYST_CERTAINTY",
-    "CATALYST_CONTINUATION",
-    "COMPANY_DIRECT_EVENT",
-    "COMPANY_VALUE_SUMMARY",
-    "COMPANY_HISTORICAL_OUTCOME",
-}
+QUERY_IDS = {item.value for item in QueryType}
 REJECT_REASONS = {"OUT_OF_SCOPE", "NOT_INTERPRETABLE"}
 DIRECTION_SPLIT_QUERIES = {
     "DAY_MOVERS",
@@ -92,13 +74,15 @@ DIRECTION_SPLIT_QUERIES = {
     "STOCK_TOP_MOVES",
     "THEME_COMPARISON",
 }
+# 회귀 고정용 표본군. 규모가 계획서 11.1.1의 160문장 내역이다.
+FIXTURE_GROUPS = {"REJECT": 60, "HARD_SLOT": 80, "TODAY_BEFORE_PUBLISH": 20}
 
 
 def test_query_goldset_covers_every_type_with_both_directions() -> None:
     """17종 전부와 상승·하락 대칭이 표본군으로 덮여 있어야 한다."""
 
     rows = _rows(QUERY_GOLDSET_PATH)
-    answered = {row[3] for row in rows if row[1] not in {"REJECT", "HARD_SLOT"}}
+    answered = {row[3] for row in rows if row[1] not in FIXTURE_GROUPS}
     assert answered == QUERY_IDS
 
     groups: dict[str, int] = {}
@@ -111,9 +95,34 @@ def test_query_goldset_covers_every_type_with_both_directions() -> None:
         assert any(name.endswith("_DOWN") and name.startswith(query_id) for name in groups)
     # test 30 + dev 15. 이보다 적으면 그 표본군은 측정 불가로 남는다.
     for name, count in groups.items():
-        if name in {"REJECT", "HARD_SLOT"}:
+        if name in FIXTURE_GROUPS:
             continue
         assert count == 45, f"{name} 표본이 45건이 아니다: {count}"
+    for name, wanted in FIXTURE_GROUPS.items():
+        assert groups.get(name) == wanted, f"{name} 표본이 {wanted}건이 아니다"
+
+
+def test_query_goldset_splits_dev_and_test_by_column() -> None:
+    """dev/test는 행 번호가 아니라 split 열이 정한다(계획서 11.1.1).
+
+    겹 C가 쓰는 짝/홀 규칙은 1:1만 표현할 수 있어 30:15에 못 쓴다. 그리고
+    실패·난이도 표본을 dev로 흘리면 그것을 보며 규칙을 고치게 되어 회귀로서
+    값어치가 없어진다.
+    """
+
+    rows = _rows(QUERY_GOLDSET_PATH)
+    per_group: dict[str, dict[str, int]] = {}
+    for row in rows:
+        assert row[5] in {"dev", "test"}, f"split 값이 이상하다: {row[5]}"
+        per_group.setdefault(row[1], {}).setdefault(row[5], 0)
+        per_group[row[1]][row[5]] += 1
+
+    for name, counts in per_group.items():
+        if name in FIXTURE_GROUPS:
+            assert counts.get("dev", 0) == 0, f"{name}은 전부 test여야 한다"
+            continue
+        assert counts.get("test") == 30, f"{name} test가 30건이 아니다"
+        assert counts.get("dev") == 15, f"{name} dev가 15건이 아니다"
 
 
 def test_query_goldset_rows_are_well_formed_and_ai_draft() -> None:
@@ -122,7 +131,7 @@ def test_query_goldset_rows_are_well_formed_and_ai_draft() -> None:
     assert len({row[0] for row in rows}) == len(rows)
     assert len({row[2] for row in rows}) == len(rows)
     for row in rows:
-        question_id, group, question, gold, slots, review_status = row
+        question_id, group, question, gold, slots, split, review_status = row
         assert question.strip() == question and question
         assert review_status in REVIEW_STATUSES
         parsed = json.loads(slots)
@@ -133,4 +142,8 @@ def test_query_goldset_rows_are_well_formed_and_ai_draft() -> None:
         else:
             assert gold in QUERY_IDS
             assert parsed
-    assert {row[5] for row in rows} == {"AI_DRAFT"}
+        # 발행 전 "오늘"은 직전 거래일로 답해야 하는 회귀다(계획서 4.0.1).
+        if group == "TODAY_BEFORE_PUBLISH":
+            assert parsed["date"] == "RELATIVE:TODAY"
+            assert parsed["publicationState"] == "BEFORE_PUBLISH"
+    assert {row[6] for row in rows} == {"AI_DRAFT"}

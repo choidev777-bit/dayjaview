@@ -46,7 +46,7 @@
 
 | 목적 | 명령 |
 |---|---|
-| 파이썬 테스트 | `uv run pytest -q` (전체 579 passed·8 skipped 기준; skip은 DSN 필요 postgres 통합 테스트) |
+| 파이썬 테스트 | `uv run pytest -q` (2026-08-17 기준 722 passed·10 skipped, E-22 단계 0~6 포함; skip은 DSN 필요 postgres 통합 테스트) |
 | 웹 lint | `pnpm --dir apps/web run lint` |
 | 웹 타입체크 | `pnpm --dir apps/web run typecheck` |
 | 웹 테스트 | `pnpm --dir apps/web run test` |

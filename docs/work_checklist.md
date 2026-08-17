@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `5ae7a92` (**뉴스·장후 작업 실운영 배선, cron·복원·재부팅 검증 완료**) · `uv run pytest -q` 590 passed·1 skipped
+- **마지막 갱신**: 2026-08-17 · 기준 commit `d76dd9d` (**마스터 플랜 2단계 자연어 질문 v1 구현 완료 — E-22 단계 0·1·3·4·5·6 포함, 품질 관문은 사람 검수 대기**) · `uv run pytest -q` 722 passed·10 skipped (2026-08-17 측정)
 
 ## 요약
 
@@ -12,10 +12,10 @@
 | B. 뉴스 근거 | 4 / 4 | — |
 | C. 화면 | 2 / 3 | C-13 |
 | D. 매일 자동 운영 | 3 / 3 | — |
-| E. 과거 연구 | 1 / 6 | E-16, E-18 ~ E-21 |
+| E. 과거 연구 | 1 / 7 | E-16, E-18 ~ E-22 |
 | F. 출시 | 5 / 5 | — |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A-3 장중 관찰 1건과 백업 암호문 외부 보관 확인 1건만 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있다. E-17(온톨로지)은 완료됐다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A-3 장중 관찰 1건과 백업 암호문 외부 보관 확인 1건만 남았다.** E는 출시 후 진행 중 — **E-17(온톨로지)은 완료**됐고, 그 확장인 **E-22가 2026-08-17에 착수돼 9단계 중 선행·2·5가 끝났고 0·1·3·4·6은 구현 후 검수 대기, 7은 미착수다.** E-21은 독립 항목으로 진행하지 않고 E-22 단계 5가 맡았다(완료).
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -97,7 +97,26 @@
 - [ ] **E-18** 과거 테마 반응 소재 TOP3 — 미착수. 선행: E-16 + E-17(완료).
 - [ ] **E-19** 유사사례 검색 엔진 + 평가 — 미착수. 외부 관문: 2인 블라인드 평가.
 - [ ] **E-20** 유사사례 화면 — 미착수. E-19 통과 전 노출 금지(현재 `HistoricalGatePage`가 gate-off 표시).
-- [ ] **E-21** 리서치 탭 자연어 질의 — 미착수. 요구사항은 2026-08-15 작성 완료(PRD FR-11·6.2, screen_spec 11.7). 3단계로 나뉨 — 1단계(선행 없음, 1차 출시에 붙일 수 있음) / 2단계(선행 E-16+E-17) / 3단계(선행 E-19).
+- [ ] **E-21** 리서치 탭 자연어 질의 — **E-22 단계 5로 이관.** 답할 질문의 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md) 4.0절 **질의 17종**이고, 요청 방식은 자연어 입력 하나다(날짜·종목을 클릭해 고르는 조회 화면은 만들지 않는다). 기존 "3단계" 구분은 데이터 확보 순서로만 남는다. 요구사항 문서는 2026-08-15 작성 완료(PRD FR-11·6.2, screen_spec 11.7).
+  - **`DAY_MOVERS` 조회 화면·공개 엔드포인트는 제거했다** — `packages/infostock/daily_read.py`의 읽기 로직은 `PostgresResearchRepository`의 `DAY_MOVERS` 경로로 흡수했고, `GET /v1/daily/movers`·`DayMoversPage.tsx`·`/movers` route·홈 진입 링크·`getDayMovers` repository 메서드·`DayMovers*` 계약 스키마·fixture를 모두 없앴다. 공개 표면은 `POST /v1/research/answers` 하나다. 답변에 dataset·parser·어휘·query 버전이 붙어 13절 조건을 채웠다. `daily_read.py` 자체는 단계 0 겹 B 대조 스크립트(`verify_answers.py`)가 쓰는 두 번째 경로라 남겼다.
+- [ ] **E-22** 회사 중심 사건 온톨로지·자연어 질의 확장 — **2026-08-17 착수, 단계 0~6 구현 완료·품질 관문 대기.** 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md)이고 [remaining_work.md](./remaining_work.md) E-22는 목차·상태만 둔다. 선행·단계 2·5는 완료됐고 단계 0·1·3·4·6 구현도 같은 commit에 담겼다. **남은 것: 사람 gold set 검수·단계 0·1·4 DB 적재·11.2절 품질 기준 통과·버전 고정·단계 7(E-19 gate).**
+  - [x] **선행** E-17 라벨 DB 적재 — 2026-08-17 `9f5e2de`. `0007`이 `ontology` 스키마와 `catalyst_vocabularies`·`catalyst_types`·`theme_history_labels`·`theme_history_label_spans` 생성. 적재 job `load_theme_catalyst_labels.py`(버전 append·idempotent). "이 소재 유형에 과거 어떤 테마가 반응했나"를 SQL 한 번으로 계산 가능해졌다.
+  - [ ] **단계 0** 질문 계약·gold set — 17종 exact enum·필수 슬롯·집계 단위·선행 단계와 재현 hash를 `query_contracts.py`로 고정했다. 겹 A는 `split` 포함 1,150문장이다. **남은 것: 겹 A 1,150건과 겹 C 보강 910건 사람 검수.** `AI_DRAFT`·`AI_CROSS_CHECKED`는 승격 판정에 쓰지 않는다.
+  - [ ] **단계 1** DailyFeaturedTheme 파싱 확장 — `0011` typed source mention, Daily 변환·idempotent 적재·worker·coverage 보고서를 구현했다. 로컬 전수 결과는 4,655 posts·213,446 mentions, `PARSE_PARTIAL` 249건, 미지원 post 0건이다. **남은 것: `0011` 적용·Daily mention DB 적재와 사람 span/role 표본 검수.** `STOCK_DAY_REASON` 실제 응답은 단계 5 범위다.
+  - [x] **단계 2** 회사 정체성·alias — 2026-08-17 `62a1b26` · `f90e9c6`. `0009`가 `core.company_entities`·`company_aliases`·`company_instruments`·`company_revisions`·`company_resolution_reviews` 생성. 사명 이력의 정본은 KRX 일별매매 종목명이다(`krx_names.py`) — 인포스탁은 과거 기록을 현재 이름으로 소급 정규화해 유효기간을 만들 수 없다. 미해결 과거 주도주는 임의 연결하지 않고 검수 대상으로 남긴다.
+  - [ ] **단계 3** history 회사 역할 연결 — `0010`, 역할 9종·근거 span·본문/주도주/구성종목 분리, idempotent 적재와 worker를 구현했다. 전수 39,696 histories가 DB에 이미 존재하며 직접 사건 history는 1,749건이다. **남은 것: 사람 회사 역할 표본으로 precision·macro F1 gate 통과.**
+  - [ ] **단계 4** 사건 구조·단계·중복 제거 — 절 분리, 단계 12종, 회사 밖 참여자·지역, 명시 프로젝트, 금액 fact, 현실 사건/테마 반응 분리, 보수적 중복 제거, revision DB 적재를 구현했다. 로컬 전수 결과는 40,104 drafts → 20,009 unique catalysts, 7,750 auto-merged catalysts, 30 possible-duplicate pairs, 28 projects, artifact hash `275651…8ac65b`이며 상태는 `AI_DRAFT`다. **남은 것: `0012` 적용·DB 적재, 프로젝트 28건·중복 후보·단계·금액 사람 검수와 11.2절 gate 통과.**
+  - [x] **단계 5** E-21 질의 17종 — 2026-08-17 `d76dd9d`. 자연어 문장 하나를 17종 QueryPlan으로 옮기는 결정론적 해석기(`query_planning.py`, LLM 미사용), 유형별 답변 계산(`query_answers.py`), Postgres 저장소(`research_postgres.py`), 공개 경계(`apps/api/research.py` + `POST /v1/research/answers`), `/research` 자연어 입력 화면, artifact 발행기(`publish_company_ontology.py`)를 만들었다.
+    - **겹 A 채점 (`score_query_goldset.py`, test split 820문장)**: 질의 유형 **98.41%** · 방향 **96.38%** · 소재 유형 **100%** · 회사 해석 85.0% · 날짜 60.31%(연도를 되찾을 수 있는 행만 보면 **93.83%**). dev split은 유형 98.79%·방향 97.33%다. dev만 보며 규칙을 고치고 test는 라운드 끝에 1회 측정했다.
+    - **날짜 60.31%의 상한은 61.83%다.** gold 날짜 행 191건 중 76건이 문장에 `6/29`만 적혀 있어 gold가 기대하는 연도를 원문에서 되찾을 수 없다. 해석기는 가장 가까운 과거로 읽는다.
+    - **회사 해석 85%의 미스는 전부 `AMBIGUOUS_ALIAS`다.** gold는 이름 접두사 충돌을 애매하다고 보지만 해석기는 정확히 일치하는 이름을 애매하다고 보지 않는다(계획서 8.1절 — 같은 alias를 두 회사가 쓸 때만 후보를 돌려준다). 규칙을 gold에 맞추면 정확한 사명 질문이 깨져서 바꾸지 않았다.
+    - **거래일 기준·발행 전 "오늘"·가르지 못한 발행일**을 전부 처리한다. Daily 조회는 `source_mention_daily.trading_date` 기준이고, 발행 전이면 직전 거래일로 답하며 실시간 값을 섞지 않는다는 사실을 답에 적는다. 한 거래일에 게시물이 여럿이면 섞였을 수 있다고 표시한다.
+    - **근거 coverage 100%를 코드가 강제한다.** 근거 없는 행이 하나라도 있으면 답을 내보내지 않고 `기록 없음`으로 끝낸다(11.2절 "답변 거부").
+    - **질의 원문은 저장하지 않는다.** POST 본문으로만 받고(URL·접근 로그에 남지 않게), 실패 사유는 `유형:사유` 집계만 남긴다. 응답에 내부 사유를 넣지 않는다.
+    - **남은 것: 사람 검수.** gold set이 전부 `AI_DRAFT`이라 `RESEARCH_VERIFIED_QUERY_TYPES`가 비어 있고, 그 상태에서는 17종 전부가 `품질 미검증`으로 답한다(11.1.2절). 검수된 유형을 env에 넣으면 그 유형만 열린다.
+  - [ ] **단계 6** 금액·실제 결과 — 계산 경로는 구현했다 (2026-08-17 `d76dd9d`). 금액은 합산 가능한 fact만 더하고 같은 고유 사건의 중복 금액을 한 번만 센다. outcome은 `SqliteOutcomeReader`가 E-16 corpus에서 T+1·T+5·T+20 실제 수익률을 읽고, **없는 값을 0으로 바꾸지 않고 `null`로 둔다.** 2010-01-01 이전 사건은 `제품 범위 밖`으로 답한다. **남은 것: `PRICE_CORPUS_PATH` 실배포 주입과 금액 exact-match 사람 검수(11.2절 98%).** corpus 파일이 없으면 결과 질문 gate가 닫힌 채로 있다.
+  - [ ] **단계 7** 유사사례 승격 — 미착수. E-19 gate 종속.
+  - **외부 관문**: gold set 사람 검수. 검수된 행이 없으면 계획서 11.2절 승격 기준을 어떤 수치로도 통과하지 못한다.
 
 ## F. 출시
 
@@ -147,13 +166,21 @@
 |---|---|---|
 | 주식장 개장 시간 | A-3 | 개장일 장중 실가동 관찰 |
 | 백업 암호문 VM 밖 보관 | F-25 후속 안전조치 | 사용자가 비밀번호 관리자 등에 직접 보관 확인 |
+| gold set 사람 검수 | E-22 단계 0 이후 전 단계의 승격 판정 + **자연어 질문 17종 공개** | `HUMAN_CONFIRMED` 라벨 확보 (계획서 11.1.2·11.2). 검수된 유형을 `RESEARCH_VERIFIED_QUERY_TYPES`에 넣으면 그 유형만 열린다 |
+| E-16 가격 corpus 배포 주입 | E-22 단계 6 결과 질문 | `research/data/daily_prices.sqlite`(1.66GB, 로컬 전용)를 운영에 두고 `PRICE_CORPUS_PATH`로 가리켜야 outcome gate가 열린다 |
 | 2인 블라인드 평가 | E-19 → E-20 | 사람 평가 통과 |
 | 과거 주가 2005~2009 원천 | E-16 잔여 구간 (E-18·E-19의 2010년 이전 사건 outcome) | KRX Open API가 미제공(실측) — 대체 원천 확보 또는 2010년 이후로 범위 확정, 사용자 판단 |
 
 ## 진행 순서 (remaining_work.md 기준, 완료분 제외)
 
 ```
-A-3 (개장 시간 필요)  [E-21 1단계 동반 가능]
-→ E-16 → E-18 → E-19 → E-20 (출시 후)
-→ E-21 2단계(E-16+E-17 후, E-17은 완료) → E-21 3단계(E-19 후)
+A-3 (개장 시간 필요)        ← 외부 관문, 병렬
+C-13 (장중 상세 갱신)
+
+E-22 단계 0·1·3·4 사람 검수 + DB 적재  ← 외부 관문(검수)
+E-22 단계 5·6 구현 완료 — 검수된 유형을 env로 열면 그대로 서비스된다
+E-22 단계 7 (E-19 gate)
+E-18 (선행 E-16 2010~ 구간·E-17 충족, 지금 착수 가능)
+E-19 → E-20 (2인 블라인드 통과 후)
+E-16 2005~2009 구간 (대체 원천 확보 여부는 사용자 판단)
 ```

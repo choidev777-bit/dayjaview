@@ -2,7 +2,7 @@ import type {
   AuthSession,
   CatalystDetailResponse,
   CatalystTop3Response,
-  DayMoversResponse,
+  ResearchAnswerResponse,
   EvidenceResponse,
   HistoricalAccessResponse,
   HistoricalEventResponse,
@@ -116,7 +116,6 @@ class LiveProductRepository implements ProductRepository {
   private readonly setTimer: (callback: () => void, delayMs: number) => TimerHandle;
   private readonly clearTimer: (handle: TimerHandle) => void;
   private readonly listeners = new Map<RepositoryResource, Set<() => void>>();
-  private readonly dayMoversCache = new Map<string, DayMoversResponse>();
   private readonly detailCache = new Map<string, ThemeDetailResponse>();
   private readonly evidenceCache = new Map<string, EvidenceResponse>();
   private readonly savedCache = new Map<SavedType | 'ALL', SavedResponse>();
@@ -245,7 +244,6 @@ class LiveProductRepository implements ProductRepository {
     this.treemapCache = null;
     this.latestRankingSnapshot = null;
     this.latestTreemapSnapshot = null;
-    this.dayMoversCache.clear();
     this.detailCache.clear();
     this.evidenceCache.clear();
     this.savedCache.clear();
@@ -336,14 +334,16 @@ class LiveProductRepository implements ProductRepository {
     return this.treemapCache;
   }
 
-  async getDayMovers(date: string): Promise<DayMoversResponse> {
-    const cached = this.dayMoversCache.get(date);
-    if (cached) return cached;
-    const response = await this.request<DayMoversResponse>(
-      `/api/v1/daily/movers?date=${encodeURIComponent(date)}`,
-    );
-    this.dayMoversCache.set(date, response);
-    return response;
+  /**
+   * 질문 문장은 URL에 싣지 않고 캐시하지도 않는다. 저장하지 않는 것이 계약이라
+   * 여기서도 남기지 않는다.
+   */
+  async answerResearchQuestion(question: string): Promise<ResearchAnswerResponse> {
+    return this.request<ResearchAnswerResponse>('/api/v1/research/answers', {
+      method: 'POST',
+      headers: { ...this.csrfHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
   }
 
   async getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse> {

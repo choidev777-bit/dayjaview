@@ -28,7 +28,7 @@ def test_complete_contract_suite_passes() -> None:
 
     assert counts["http_operations"] == 31
     assert counts["websocket_messages"] == 9
-    assert counts["fixtures"] == 45
+    assert counts["fixtures"] == 46
     assert counts["prose_json_examples"] >= 20
 
 

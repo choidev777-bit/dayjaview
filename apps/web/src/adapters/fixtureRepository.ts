@@ -4,8 +4,9 @@ import rankingDegraded from '../../../../contracts/fixtures/rankings/degraded-pa
 import rankingDelayed from '../../../../contracts/fixtures/rankings/delayed.json';
 import rankingEmpty from '../../../../contracts/fixtures/rankings/empty.json';
 import rankingLive from '../../../../contracts/fixtures/rankings/live.json';
-import dayMoversNotPublished from '../../../../contracts/fixtures/daily/movers.not-published.json';
-import dayMoversPublished from '../../../../contracts/fixtures/daily/movers.published.json';
+import researchDirectEvent from '../../../../contracts/fixtures/research/answer.company-direct-event.json';
+import researchDayMovers from '../../../../contracts/fixtures/research/answer.day-movers.json';
+import researchQualityGate from '../../../../contracts/fixtures/research/failure.quality-not-verified.json';
 import treemapExcluded from '../../../../contracts/fixtures/treemap/insufficient-coverage-excluded.json';
 import treemapLive from '../../../../contracts/fixtures/treemap/live.json';
 import detailAfterClose from '../../../../contracts/fixtures/event/after-close-confirmed.json';
@@ -44,7 +45,7 @@ import type {
   AuthSession,
   CatalystDetailResponse,
   CatalystTop3Response,
-  DayMoversResponse,
+  ResearchAnswerResponse,
   EvidenceResponse,
   HistoricalAccessResponse,
   HistoricalEventResponse,
@@ -76,7 +77,7 @@ export type SimilarFixture = 'gated' | 'demo' | 'available' | 'partial';
 export type FixtureResource =
   | 'rankings'
   | 'treemap'
-  | 'dayMovers'
+  | 'researchAnswer'
   | 'detail'
   | 'evidence'
   | 'saved'
@@ -269,12 +270,15 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         'rankings',
         rankings[options.ranking ?? (options.similar === 'demo' ? 'demo' : 'live')],
       ),
-    getDayMovers: (date: string) =>
+    // fixture는 질문의 형태만 보고 고른다. 실제 해석기는 API 뒤에 있다.
+    answerResearchQuestion: (question: string) =>
       resolveFixture(
-        'dayMovers',
-        (date >= '2026-08-15'
-          ? dayMoversNotPublished
-          : dayMoversPublished) as unknown as DayMoversResponse,
+        'researchAnswer',
+        (/직접|주체/.test(question)
+          ? researchDirectEvent
+          : /몇 번|건수/.test(question)
+            ? researchQualityGate
+            : researchDayMovers) as unknown as ResearchAnswerResponse,
       ),
     getTreemap: () => {
       if (options.replay) {

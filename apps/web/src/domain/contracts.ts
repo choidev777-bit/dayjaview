@@ -415,37 +415,83 @@ export type RepositoryResource =
   | 'evidence'
   | 'saved'
   | 'historical'
-  | 'dayMovers';
+  | 'researchAnswer';
 
-export interface DayMoversStock {
-  stockName: string;
-  stockCode: string | null;
-  closePrice: number | null;
-  changeRate: string | null;
+export type ResearchPublicReason =
+  | 'QUESTION_NOT_UNDERSTOOD'
+  | 'NO_RECORD'
+  | 'OUT_OF_SCOPE'
+  | 'QUALITY_NOT_VERIFIED';
+
+export interface ResearchEvidence {
+  sourceKind: string;
+  labelKo: string;
+  occurredOn: string | null;
+  excerpt: string;
+  start: number | null;
+  end: number | null;
 }
 
-export interface DayMoversTheme {
-  themeName: string;
-  changeRate: string | null;
-  stocks: DayMoversStock[];
+export interface ResearchRow {
+  label: string;
+  values: Record<string, unknown>;
+  evidence: ResearchEvidence[];
 }
 
-export interface DayMoversSection {
-  sectionName: string;
-  headline: string;
-  details: string[];
-  themes: DayMoversTheme[];
+export interface ResearchMetric {
+  labelKo: string;
+  value: string;
+  countUnit: string | null;
+  countUnitLabelKo: string | null;
+  sampleSize: number | null;
+  noteKo: string | null;
 }
 
-export interface DayMoversResponse {
-  data: {
-    requestedDate: string;
-    publishedDate: string | null;
-    /** 발행 전이면 NOT_PUBLISHED이며 publishedDate가 직전 거래일이다. */
-    status: 'PUBLISHED' | 'NOT_PUBLISHED' | 'NO_RECORD';
-    isFallback: boolean;
-    sections: DayMoversSection[];
-  };
+export interface ResearchExclusion {
+  code: string;
+  labelKo: string;
+  count: number;
+}
+
+export interface ResearchAnswer {
+  queryType: string;
+  countUnit: string;
+  countUnitLabelKo: string;
+  interpretation: Record<string, unknown>;
+  summaryKo: string;
+  metrics: ResearchMetric[];
+  rows: ResearchRow[];
+  exclusions: ResearchExclusion[];
+  sampleSize: number;
+  /** 근거를 붙이지 못한 행이 있으면 답이 나가지 않으므로 항상 1이다. */
+  evidenceCoverage: number;
+  humanVerified: boolean;
+  notesKo: string[];
+  versions: Record<string, string>;
+  contractVersion: string;
+}
+
+export interface ResearchCompanyCandidate {
+  seedStockCode: string;
+  canonicalName: string;
+  matchedText: string;
+  validFrom: string | null;
+  validTo: string | null;
+}
+
+export interface ResearchFailure {
+  publicReason: ResearchPublicReason;
+  publicLabelKo: string;
+  messageKo: string;
+  queryType: string | null;
+  candidates: ResearchCompanyCandidate[];
+  missingSlots: string[];
+}
+
+export interface ResearchAnswerResponse {
+  data:
+    | { status: 'ANSWERED'; answer: ResearchAnswer }
+    | { status: 'FAILED'; failure: ResearchFailure };
   meta: ResponseMeta;
 }
 
@@ -456,7 +502,7 @@ export interface ProductRepository {
   logout(): Promise<void>;
   getRankings(): Promise<RankingResponse>;
   getTreemap(): Promise<TreemapResponse>;
-  getDayMovers(date: string): Promise<DayMoversResponse>;
+  answerResearchQuestion(question: string): Promise<ResearchAnswerResponse>;
   getThemeDetail(themeId: string, eventId: string): Promise<ThemeDetailResponse>;
   getEvidence(eventId: string, cursor?: string | null): Promise<EvidenceResponse>;
   getSaved(type: SavedType | 'ALL'): Promise<SavedResponse>;

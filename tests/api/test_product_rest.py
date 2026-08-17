@@ -17,9 +17,8 @@ from apps.api import (
     create_fixture_app,
 )
 from apps.api.app_types import JsonObject
-from apps.api.cookies import SESSION_COOKIE
+from apps.api.cookies import CSRF_COOKIE, SESSION_COOKIE
 from packages.identity import GoogleIdentity, Role
-from packages.infostock import DayMovers, MoverSection, MoverStock, MoverTheme
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIXTURES = _ROOT / "contracts" / "fixtures"
@@ -323,53 +322,167 @@ def test_product_projection_rejects_operator_only_fields() -> None:
         raise AssertionError("session credential field must be rejected")
 
 
-class _StubDailyReader:
-    """DAY_MOVERS 응답 형태만 확인하는 최소 reader."""
+class _StubResearchService:
+    """질문 문장을 받아 고정 응답을 돌려주는 최소 서비스."""
 
-    def __init__(self, movers: DayMovers) -> None:
-        self._movers = movers
-        self.requested: list[date] = []
+    def __init__(self, payload: JsonObject) -> None:
+        self._payload = payload
+        self.questions: list[str] = []
 
-    def day_movers(self, requested: date) -> DayMovers:
-        self.requested.append(requested)
-        return self._movers
+    def answer(self, question: str, *, today: date) -> JsonObject:
+        self.questions.append(question)
+        return self._payload
+
+    def failure_reason_counts(self) -> dict[str, int]:
+        return {}
 
 
-def _movers(
-    *,
-    requested: date,
-    published: date | None,
-    status: str,
-) -> DayMovers:
-    section = MoverSection(
-        section_name="2차전지 등",
-        headline="K-배터리, 2분기 실적 반등 기대감 등에 상승",
-        details=("▷언론에 따르면, 배터리 업계가 2분기 실적 반등의 기반을 마련.",),
-        themes=(
-            MoverTheme(
-                theme_name="2차전지",
-                change_rate="10.86",
-                headline="K-배터리, 2분기 실적 반등 기대감 등에 상승",
-                stocks=(
-                    MoverStock("신성델타테크", "065350", 34000, "21.00"),
-                    MoverStock("에코프로", "086520", 118000, "-23.69"),
-                ),
-            ),
-        ),
+def _research_client_setup(
+    payload: JsonObject,
+) -> tuple[_StubResearchService, object, str, str]:
+    service = _StubResearchService(payload)
+    environment = create_fixture_app(
+        clock=MutableClock(), research_service=service
     )
-    return DayMovers(requested, published, status, (section,))
+    completion = _service_login(environment)
+    return service, environment, completion.session_token, completion.csrf_token
 
 
-def test_day_movers_returns_sections_with_source_quotes_and_rates() -> None:
+def _research_headers(csrf_token: str) -> dict[str, str]:
+    return {
+        "Origin": "https://dayjaview.vercel.app",
+        "X-CSRF-Token": csrf_token,
+        "Content-Type": "application/json",
+    }
+
+
+def _authenticate_for_post(
+    client: AsyncClient, session_token: str, csrf_token: str
+) -> None:
+    for name, value in ((SESSION_COOKIE, session_token), (CSRF_COOKIE, csrf_token)):
+        client.cookies.set(name, value, domain="dayjaview.vercel.app", path="/")
+
+
+def test_research_answer_returns_evidence_backed_block() -> None:
     async def scenario() -> None:
-        reader = _StubDailyReader(
-            _movers(
-                requested=date(2026, 6, 29),
-                published=date(2026, 6, 29),
-                status="PUBLISHED",
-            )
+        payload = _fixture("research/answer.day-movers.json")["data"]
+        service, environment, session_token, csrf_token = _research_client_setup(
+            cast(JsonObject, payload)
         )
-        environment = create_fixture_app(clock=MutableClock(), daily_reader=reader)
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="https://dayjaview.vercel.app",
+        ) as client:
+            _authenticate_for_post(client, session_token, csrf_token)
+            response = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers(csrf_token),
+                content=json.dumps(
+                    {"question": "어제 뭐가 올랐어?"}, ensure_ascii=False
+                ).encode("utf-8"),
+            )
+
+        assert response.status_code == 200
+        _assert_contract("ResearchAnswerResponse", response.json())
+        data = response.json()["data"]
+        assert service.questions == ["어제 뭐가 올랐어?"]
+        assert data["status"] == "ANSWERED"
+        answer = data["answer"]
+        # 근거 coverage 100%가 아니면 답 자체가 나가지 않는다(계획서 11.2절).
+        assert answer["evidenceCoverage"] == 1
+        assert all(row["evidence"] for row in answer["rows"])
+        assert answer["countUnitLabelKo"] == "Daily 섹션"
+        assert answer["versions"]["queryContract"].startswith("query-contract/")
+
+    asyncio.run(scenario())
+
+
+def test_research_quality_gate_answers_without_numbers() -> None:
+    async def scenario() -> None:
+        payload = _fixture("research/failure.quality-not-verified.json")["data"]
+        _, environment, session_token, csrf_token = _research_client_setup(
+            cast(JsonObject, payload)
+        )
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="https://dayjaview.vercel.app",
+        ) as client:
+            _authenticate_for_post(client, session_token, csrf_token)
+            response = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers(csrf_token),
+                content=json.dumps(
+                    {"question": "올해 정책 소재 몇 번 나왔어?"}, ensure_ascii=False
+                ).encode("utf-8"),
+            )
+
+        assert response.status_code == 200
+        _assert_contract("ResearchAnswerResponse", response.json())
+        data = response.json()["data"]
+        assert data["status"] == "FAILED"
+        assert data["failure"]["publicReason"] == "QUALITY_NOT_VERIFIED"
+        # 내부 사유는 응답에 넣지 않는다(계획서 8.3절).
+        assert "reason" not in data["failure"]
+        assert "answer" not in data
+
+    asyncio.run(scenario())
+
+
+def test_research_answer_rejects_bad_body_and_missing_credentials() -> None:
+    async def scenario() -> None:
+        payload = _fixture("research/answer.day-movers.json")["data"]
+        service, environment, session_token, csrf_token = _research_client_setup(
+            cast(JsonObject, payload)
+        )
+        transport = ASGITransport(app=environment.app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="https://dayjaview.vercel.app",
+        ) as client:
+            unauthenticated = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers("nope"),
+                content=json.dumps({"question": "어제"}).encode("utf-8"),
+            )
+            _authenticate_for_post(client, session_token, csrf_token)
+            without_csrf = await client.post(
+                "/v1/research/answers",
+                headers={"Origin": "https://dayjaview.vercel.app"},
+                content=json.dumps({"question": "어제"}).encode("utf-8"),
+            )
+            empty = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers(csrf_token),
+                content=json.dumps({"question": "   "}).encode("utf-8"),
+            )
+            too_long = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers(csrf_token),
+                content=json.dumps({"question": "가" * 301}, ensure_ascii=False).encode(
+                    "utf-8"
+                ),
+            )
+            extra_field = await client.post(
+                "/v1/research/answers",
+                headers=_research_headers(csrf_token),
+                content=json.dumps({"question": "어제", "userId": "x"}).encode("utf-8"),
+            )
+
+        assert unauthenticated.status_code == 401
+        assert without_csrf.status_code == 403
+        assert empty.status_code == 400
+        assert too_long.status_code == 400
+        assert extra_field.status_code == 400
+        assert service.questions == []
+
+    asyncio.run(scenario())
+
+
+def test_removed_day_movers_endpoint_is_gone() -> None:
+    async def scenario() -> None:
+        environment = create_fixture_app(clock=MutableClock())
         completion = _service_login(environment)
         transport = ASGITransport(app=environment.app)
         async with AsyncClient(
@@ -381,100 +494,6 @@ def test_day_movers_returns_sections_with_source_quotes_and_rates() -> None:
                 "/v1/daily/movers", params={"date": "2026-06-29"}
             )
 
-        assert response.status_code == 200
-        _assert_contract("DayMoversResponse", response.json())
-        data = response.json()["data"]
-        assert reader.requested == [date(2026, 6, 29)]
-        assert (data["status"], data["isFallback"]) == ("PUBLISHED", False)
-        section = data["sections"][0]
-        assert section["details"][0].startswith("▷")
-        stocks = section["themes"][0]["stocks"]
-        assert [item["changeRate"] for item in stocks] == ["21.00", "-23.69"]
-        assert stocks[0]["closePrice"] == 34000
-
-    asyncio.run(scenario())
-
-
-def test_day_movers_falls_back_to_the_last_published_day_without_inventing() -> None:
-    async def scenario() -> None:
-        reader = _StubDailyReader(
-            _movers(
-                requested=date(2026, 8, 16),
-                published=date(2026, 8, 14),
-                status="NOT_PUBLISHED",
-            )
-        )
-        environment = create_fixture_app(clock=MutableClock(), daily_reader=reader)
-        completion = _service_login(environment)
-        transport = ASGITransport(app=environment.app)
-        async with AsyncClient(
-            transport=transport,
-            base_url="https://dayjaview.vercel.app",
-        ) as client:
-            _authenticate_client(client, completion.session_token)
-            response = await client.get(
-                "/v1/daily/movers", params={"date": "2026-08-16"}
-            )
-
-        assert response.status_code == 200
-        _assert_contract("DayMoversResponse", response.json())
-        data = response.json()["data"]
-        assert data["status"] == "NOT_PUBLISHED"
-        assert data["isFallback"] is True
-        assert data["publishedDate"] == "2026-08-14"
-        assert data["requestedDate"] == "2026-08-16"
-
-    asyncio.run(scenario())
-
-
-def test_day_movers_rejects_bad_date_and_reports_missing_record() -> None:
-    async def scenario() -> None:
-        reader = _StubDailyReader(
-            _movers(requested=date(2005, 1, 1), published=None, status="NO_RECORD")
-        )
-        environment = create_fixture_app(clock=MutableClock(), daily_reader=reader)
-        completion = _service_login(environment)
-        transport = ASGITransport(app=environment.app)
-        async with AsyncClient(
-            transport=transport,
-            base_url="https://dayjaview.vercel.app",
-        ) as client:
-            _authenticate_client(client, completion.session_token)
-            invalid = await client.get(
-                "/v1/daily/movers", params={"date": "2026-6-29"}
-            )
-            missing_param = await client.get("/v1/daily/movers")
-            no_record = await client.get(
-                "/v1/daily/movers", params={"date": "2005-01-01"}
-            )
-
-        assert invalid.status_code == 400
-        assert missing_param.status_code == 400
-        assert no_record.status_code == 404
-
-    asyncio.run(scenario())
-
-
-def test_day_movers_requires_authentication() -> None:
-    async def scenario() -> None:
-        reader = _StubDailyReader(
-            _movers(
-                requested=date(2026, 6, 29),
-                published=date(2026, 6, 29),
-                status="PUBLISHED",
-            )
-        )
-        environment = create_fixture_app(clock=MutableClock(), daily_reader=reader)
-        transport = ASGITransport(app=environment.app)
-        async with AsyncClient(
-            transport=transport,
-            base_url="https://dayjaview.vercel.app",
-        ) as client:
-            response = await client.get(
-                "/v1/daily/movers", params={"date": "2026-06-29"}
-            )
-
-        assert response.status_code == 401
-        assert reader.requested == []
+        assert response.status_code == 404
 
     asyncio.run(scenario())

@@ -196,160 +196,6 @@
         "CLOSED"
       ]
     },
-    "DayMoversData": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "requestedDate",
-        "publishedDate",
-        "status",
-        "isFallback",
-        "sections"
-      ],
-      "properties": {
-        "requestedDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "publishedDate": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date"
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "PUBLISHED",
-            "NOT_PUBLISHED",
-            "NO_RECORD"
-          ]
-        },
-        "isFallback": {
-          "type": "boolean"
-        },
-        "sections": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DayMoversSection"
-          }
-        }
-      }
-    },
-    "DayMoversResponse": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "data",
-        "meta"
-      ],
-      "properties": {
-        "data": {
-          "$ref": "#/$defs/DayMoversData"
-        },
-        "meta": {
-          "$ref": "#/$defs/ResponseMeta"
-        }
-      }
-    },
-    "DayMoversSection": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "sectionName",
-        "headline",
-        "details",
-        "themes"
-      ],
-      "properties": {
-        "sectionName": {
-          "type": "string",
-          "minLength": 1
-        },
-        "headline": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "themes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DayMoversTheme"
-          }
-        }
-      }
-    },
-    "DayMoversStock": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "stockName",
-        "stockCode",
-        "closePrice",
-        "changeRate"
-      ],
-      "properties": {
-        "stockName": {
-          "type": "string",
-          "minLength": 1
-        },
-        "stockCode": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[0-9A-Z]{6}$"
-        },
-        "closePrice": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 0
-        },
-        "changeRate": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
-        }
-      }
-    },
-    "DayMoversTheme": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "themeName",
-        "changeRate",
-        "stocks"
-      ],
-      "properties": {
-        "themeName": {
-          "type": "string",
-          "minLength": 1
-        },
-        "changeRate": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^-?[0-9]+(\\.[0-9]+)?$"
-        },
-        "stocks": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/DayMoversStock"
-          }
-        }
-      }
-    },
     "ErrorCode": {
       "enum": [
         "INVALID_REQUEST",
@@ -1719,6 +1565,415 @@
         "MATCHED",
         "UNMATCHED"
       ]
+    },
+    "ResearchAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "queryType",
+        "countUnit",
+        "countUnitLabelKo",
+        "interpretation",
+        "summaryKo",
+        "metrics",
+        "rows",
+        "exclusions",
+        "sampleSize",
+        "evidenceCoverage",
+        "humanVerified",
+        "notesKo",
+        "versions",
+        "contractVersion"
+      ],
+      "properties": {
+        "queryType": {
+          "$ref": "#/$defs/ResearchQueryType"
+        },
+        "countUnit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "countUnitLabelKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "interpretation": {
+          "type": "object"
+        },
+        "summaryKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResearchMetric"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResearchRow"
+          }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResearchExclusion"
+          }
+        },
+        "sampleSize": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidenceCoverage": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1
+        },
+        "humanVerified": {
+          "type": "boolean"
+        },
+        "notesKo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "contractVersion": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ResearchAnswerData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ANSWERED",
+            "FAILED"
+          ]
+        },
+        "answer": {
+          "$ref": "#/$defs/ResearchAnswer"
+        },
+        "failure": {
+          "$ref": "#/$defs/ResearchFailure"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "answer"
+          ],
+          "not": {
+            "required": [
+              "failure"
+            ]
+          }
+        },
+        {
+          "required": [
+            "failure"
+          ],
+          "not": {
+            "required": [
+              "answer"
+            ]
+          }
+        }
+      ]
+    },
+    "ResearchAnswerResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ResearchAnswerData"
+        },
+        "meta": {
+          "$ref": "#/$defs/ResponseMeta"
+        }
+      }
+    },
+    "ResearchCompanyCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seedStockCode",
+        "canonicalName",
+        "matchedText",
+        "validFrom",
+        "validTo"
+      ],
+      "properties": {
+        "seedStockCode": {
+          "type": "string",
+          "pattern": "^[0-9A-Z]{6}$"
+        },
+        "canonicalName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "matchedText": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validFrom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "validTo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        }
+      }
+    },
+    "ResearchEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceKind",
+        "labelKo",
+        "occurredOn",
+        "excerpt",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "sourceKind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "labelKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurredOn": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "start": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "ResearchExclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "labelKo",
+        "count"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "labelKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ResearchFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicReason",
+        "publicLabelKo",
+        "messageKo",
+        "queryType",
+        "candidates",
+        "missingSlots"
+      ],
+      "properties": {
+        "publicReason": {
+          "enum": [
+            "QUESTION_NOT_UNDERSTOOD",
+            "NO_RECORD",
+            "OUT_OF_SCOPE",
+            "QUALITY_NOT_VERIFIED"
+          ]
+        },
+        "publicLabelKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "messageKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "queryType": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ResearchQueryType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResearchCompanyCandidate"
+          }
+        },
+        "missingSlots": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "ResearchMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "labelKo",
+        "value",
+        "countUnit",
+        "countUnitLabelKo",
+        "sampleSize",
+        "noteKo"
+      ],
+      "properties": {
+        "labelKo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        },
+        "countUnit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countUnitLabelKo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sampleSize": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "noteKo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ResearchQueryType": {
+      "enum": [
+        "DAY_MOVERS",
+        "PERIOD_SUMMARY",
+        "STOCK_DAY_REASON",
+        "STOCK_TOP_MOVES",
+        "STOCK_THEME_MEMBERSHIP",
+        "STOCK_COOCCURRENCE",
+        "THEME_MEMBERS",
+        "THEME_HISTORY",
+        "THEME_COMPARISON",
+        "THEME_FREQUENCY",
+        "CATALYST_THEME_REACTION",
+        "CATALYST_FREQUENCY",
+        "CATALYST_CERTAINTY",
+        "CATALYST_CONTINUATION",
+        "COMPANY_DIRECT_EVENT",
+        "COMPANY_VALUE_SUMMARY",
+        "COMPANY_HISTORICAL_OUTCOME"
+      ]
+    },
+    "ResearchQuestionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question"
+      ],
+      "properties": {
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    },
+    "ResearchRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "values",
+        "evidence"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "values": {
+          "type": "object"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ResearchEvidence"
+          }
+        }
+      }
     },
     "ResponseMeta": {
       "type": "object",

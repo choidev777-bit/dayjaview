@@ -3,10 +3,17 @@
 
 문장 하나가 어느 질의 유형이고 슬롯이 무엇인지를 채점하기 위한 표본이다.
 표본군은 22개다 — 상승·하락 대칭이 필요한 5종은 방향별로 나누고 나머지
-12종은 하나씩이다. 군마다 test 30 + dev 15를 채우고, 실패·난이도 케이스를
-따로 더한다.
+12종은 하나씩이다. 군마다 test 30 + dev 15를 채우고, 실패·난이도 케이스
+160문장을 따로 더한다(계획서 11.1.1).
 
-슬롯 값은 지어내지 않고 수집본의 실제 테마·종목·발행일에서 뽑는다.
+**dev/test는 `split` 열로 표시한다.** 겹 C가 쓰는 짝/홀 행 규칙은 1:1만
+표현할 수 있어 30:15에 쓸 수 없다. 실패·난이도 160문장은 회귀 고정용이라
+전부 test다 — 보면서 규칙을 고치면 회귀로서 값어치가 없다.
+
+슬롯 값은 지어내지 않고 수집본의 실제 테마·종목·발행일에서 뽑는다. 과거
+사명은 KRX 종목명 이력 색인(`build_krx_name_windows.py` 산출)에서 실제로
+바뀐 이름만 쓴다. 유사명 충돌도 실제 종목 목록에서 한 이름이 다른 이름의
+접두사인 쌍을 찾아 만든다.
 
 **문장은 이 스크립트가 만든 초안이라 만든 쪽 말투에 치우친다.** 실제 사용자는
 더 짧고 불완전하게 친다. 짧은 변형을 일부러 섞었지만 한계는 남는다. 운영 후
@@ -32,6 +39,12 @@ from packages.ontology import VOCABULARY
 SAMPLE_SEED = 20260817
 TEST_PER_GROUP = 30
 DEV_PER_GROUP = 15
+# 실패·난이도 케이스 160문장의 내역 (계획서 11.1.1). 전부 test split이다.
+REJECT_ROWS = 60
+HARD_SLOT_ROWS = 80
+TODAY_ROWS = 20
+TEST = "test"
+DEV = "dev"
 
 # (표본군, 질의 ID, 방향, 문장 틀). 틀 안의 {이름}은 슬롯 값으로 채운다.
 GROUPS: tuple[tuple[str, str, str | None, tuple[str, ...]], ...] = (
@@ -198,14 +211,81 @@ OUT_OF_SCOPE: tuple[tuple[str, str], ...] = (
     ("{stock} 공매도 잔고", "NOT_INTERPRETABLE"),
 )
 
-# 슬롯 해석이 어려운 문장. 기대 슬롯을 명시해 회귀로 고정한다.
-HARD_SLOTS: tuple[tuple[str, str, dict[str, str]], ...] = (
-    ("어제 뭐가 올랐어?", "DAY_MOVERS", {"date": "RELATIVE:YESTERDAY"}),
-    ("오늘 뭐 올랐어", "DAY_MOVERS", {"date": "RELATIVE:TODAY"}),
-    ("지난주 시장 어땠어?", "PERIOD_SUMMARY", {"dateRange": "RELATIVE:LAST_WEEK"}),
-    ("이번 달 상승 테마", "PERIOD_SUMMARY", {"dateRange": "RELATIVE:THIS_MONTH"}),
-    ("포스코 ICT 어떤 테마야?", "STOCK_THEME_MEMBERSHIP", {"stock": "ALIAS:포스코 ICT"}),
-    ("포스코DX 어떤 테마야?", "STOCK_THEME_MEMBERSHIP", {"stock": "포스코DX"}),
+# 난이도 ①: 지금 시각을 알아야 풀리는 상대 날짜.
+# (문장 틀, 질의 ID, 상대 표현이 들어갈 슬롯 키, 상대 표현 값, 방향)
+RELATIVE_TEMPLATES: tuple[tuple[str, str, str, str, str | None], ...] = (
+    ("어제 뭐가 올랐어?", "DAY_MOVERS", "date", "RELATIVE:YESTERDAY", "UP"),
+    ("어제 하락한 테마 알려줘", "DAY_MOVERS", "date", "RELATIVE:YESTERDAY", "DOWN"),
+    ("그저께 뭐 올랐어", "DAY_MOVERS", "date", "RELATIVE:DAY_BEFORE_YESTERDAY", "UP"),
+    ("지난 금요일 상승 테마", "DAY_MOVERS", "date", "RELATIVE:LAST_FRIDAY", "UP"),
+    ("전 거래일 뭐가 셌어?", "DAY_MOVERS", "date", "RELATIVE:PREVIOUS_TRADING_DAY", "UP"),
+    ("지난주 시장 어땠어?", "PERIOD_SUMMARY", "dateRange", "RELATIVE:LAST_WEEK", None),
+    ("이번 주 상승 흐름 정리해줘", "PERIOD_SUMMARY", "dateRange", "RELATIVE:THIS_WEEK", "UP"),
+    ("이번 달 상승 테마", "PERIOD_SUMMARY", "dateRange", "RELATIVE:THIS_MONTH", "UP"),
+    ("지난달 약세 테마 알려줘", "PERIOD_SUMMARY", "dateRange", "RELATIVE:LAST_MONTH", "DOWN"),
+    ("최근 일주일 하락장 정리", "PERIOD_SUMMARY", "dateRange", "RELATIVE:LAST_7_DAYS", "DOWN"),
+    ("최근 3개월 자주 나온 테마", "THEME_FREQUENCY", "period", "RELATIVE:LAST_3_MONTHS", None),
+    ("올해 많이 등장한 테마", "THEME_FREQUENCY", "period", "RELATIVE:THIS_YEAR", None),
+    ("작년에 자주 부각된 테마", "THEME_FREQUENCY", "period", "RELATIVE:LAST_YEAR", None),
+    ("{stock} 어제 왜 올랐어?", "STOCK_DAY_REASON", "date", "RELATIVE:YESTERDAY", "UP"),
+    ("{stock} 어제 왜 빠졌어", "STOCK_DAY_REASON", "date", "RELATIVE:YESTERDAY", "DOWN"),
+    ("{stock} 최근 한 달 크게 오른 날", "STOCK_TOP_MOVES", "period", "RELATIVE:LAST_MONTH", "UP"),
+    ("{stock} 올해 급락일 정리해줘", "STOCK_TOP_MOVES", "period", "RELATIVE:THIS_YEAR", "DOWN"),
+    ("최근 1년 {catalyst} 몇 번 나왔어?", "CATALYST_FREQUENCY", "period", "RELATIVE:LAST_12_MONTHS", None),
+    ("올해 {catalyst} 건수 알려줘", "CATALYST_FREQUENCY", "period", "RELATIVE:THIS_YEAR", None),
+    ("{stock} 최근 같이 움직인 종목", "STOCK_COOCCURRENCE", "period", "RELATIVE:RECENT", None),
+)
+
+# 난이도 ②: 한 문장에 슬롯이 셋 이상이라 하나만 잡으면 틀리는 문장.
+MULTI_SLOT_TEMPLATES: tuple[tuple[str, str, str | None], ...] = (
+    ("{stock} {year} {catalyst} 관련해서 오른 날 있어?", "STOCK_TOP_MOVES", "UP"),
+    ("{theme}랑 {theme2} {year} 중 어디가 더 셌어?", "THEME_COMPARISON", "UP"),
+    ("{year} {theme}에서 {catalyst} 몇 번 나왔어?", "CATALYST_FREQUENCY", None),
+    ("{stock} {date} {catalyst} 때문에 올랐어?", "STOCK_DAY_REASON", "UP"),
+    ("{theme} {catalyst} {year} 처음이야 다시 나온 거야?", "CATALYST_CONTINUATION", None),
+    ("{stock}이랑 {year}에 같이 오른 종목 알려줘", "STOCK_COOCCURRENCE", "UP"),
+    ("{stock} {year} 1조 넘는 수주 몇 건이야?", "COMPANY_VALUE_SUMMARY", None),
+    ("{stock} {date} 발표 뒤 흐름 {year} 기준으로", "COMPANY_HISTORICAL_OUTCOME", None),
+    ("{year} {catalyst}에 반응한 테마 중 {theme} 있었어?", "CATALYST_THEME_REACTION", None),
+    ("{theme} {year} 하락 사유 정리해줘", "THEME_HISTORY", "DOWN"),
+)
+
+# 발행 전 시각에 오늘을 묻는 문장(계획서 4.0.1). 실시간 값으로 대체하지 않고
+# 직전 거래일로 답하는지 보는 회귀 fixture다.
+TODAY_TEMPLATES: tuple[tuple[str, str, str | None], ...] = (
+    ("오늘 뭐가 올랐어?", "DAY_MOVERS", "UP"),
+    ("오늘 뭐 빠졌어", "DAY_MOVERS", "DOWN"),
+    ("오늘 상승 테마 알려줘", "DAY_MOVERS", "UP"),
+    ("오늘 약세 테마 정리해줘", "DAY_MOVERS", "DOWN"),
+    ("금일 강세 테마", "DAY_MOVERS", "UP"),
+    ("오늘 특징테마 알려줘", "DAY_MOVERS", None),
+    ("오늘장 어땠어?", "DAY_MOVERS", None),
+    ("지금 뭐가 오르고 있어?", "DAY_MOVERS", "UP"),
+    ("오늘 시장 요약해줘", "DAY_MOVERS", None),
+    ("오늘 올라간 테마 순위", "DAY_MOVERS", "UP"),
+    ("오늘 상한가 간 테마", "DAY_MOVERS", "UP"),
+    ("{stock} 오늘 왜 올랐어?", "STOCK_DAY_REASON", "UP"),
+    ("{stock} 오늘 왜 빠져", "STOCK_DAY_REASON", "DOWN"),
+    ("{stock} 금일 상승 이유", "STOCK_DAY_REASON", "UP"),
+    ("{stock} 오늘 하락 사유 알려줘", "STOCK_DAY_REASON", "DOWN"),
+    ("{stock} 지금 왜 오르는 거야", "STOCK_DAY_REASON", "UP"),
+    ("{stock} 오늘 상승 이유가 뭐야", "STOCK_DAY_REASON", "UP"),
+    ("오늘까지 이번 주 시장 어땠어?", "PERIOD_SUMMARY", None),
+    ("이번 주 오늘까지 상승 흐름", "PERIOD_SUMMARY", "UP"),
+    ("오늘 포함해서 최근 하락 테마", "PERIOD_SUMMARY", "DOWN"),
+)
+
+# 난이도 ③·④의 문장 틀. 값은 실제 데이터에서 뽑는다.
+# (문장 틀, 질의 ID, 방향)
+PAST_NAME_TEMPLATES: tuple[tuple[str, str, str | None], ...] = (
+    ("{old} 어떤 테마야?", "STOCK_THEME_MEMBERSHIP", None),
+    ("{old} {date}에 왜 올랐어?", "STOCK_DAY_REASON", "UP"),
+    ("{old} 크게 오른 날 언제야?", "STOCK_TOP_MOVES", "UP"),
+    ("{old}이랑 같이 움직인 종목", "STOCK_COOCCURRENCE", None),
+)
+AMBIGUOUS_NAME_TEMPLATES: tuple[tuple[str, str, str | None], ...] = (
+    ("{name} 어떤 테마에 속해?", "STOCK_THEME_MEMBERSHIP", None),
+    ("{name} 크게 오른 날 알려줘", "STOCK_TOP_MOVES", "UP"),
 )
 
 
@@ -228,11 +308,64 @@ def _parser() -> argparse.ArgumentParser:
         / "lists",
     )
     parser.add_argument(
+        "--krx-names",
+        type=Path,
+        default=REPOSITORY_ROOT / "research" / "ontology" / "krx_name_windows.json",
+        help="과거 사명 표본의 원천. build_krx_name_windows.py 산출물이다.",
+    )
+    parser.add_argument(
         "--out",
         type=Path,
         default=REPOSITORY_ROOT / "tests" / "ontology" / "query_goldset.tsv",
     )
     return parser
+
+
+def _past_names(path: Path) -> list[tuple[str, str, str, str]]:
+    """이름이 실제로 바뀐 종목만 (과거 이름, 현재 이름, 종목코드, 과거 창 끝).
+
+    **다른 회사가 지금 쓰고 있는 이름은 뺀다.** 예를 들어 000070은 `삼양사`에서
+    `삼양홀딩스`로 바뀌었지만 `삼양사`는 지금 145990의 이름이다. 그런 문장은
+    과거 사명 문제가 아니라 동명이인 문제이고, 정답이 하나로 정해지지 않는다.
+    """
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    windows: dict[str, list[dict[str, str]]] = {}
+    for window in payload.get("windows") or []:
+        code = str(window.get("stockCode") or "")
+        if code and window.get("name"):
+            windows.setdefault(code, []).append(window)
+    for entries in windows.values():
+        entries.sort(key=lambda item: str(item.get("firstDate") or ""))
+    live_names = {
+        str(entries[-1]["name"]): code for code, entries in windows.items() if entries
+    }
+    changed: list[tuple[str, str, str, str]] = []
+    for code, entries in windows.items():
+        names = [str(entry["name"]) for entry in entries]
+        if len({*names}) < 2:
+            continue
+        current = names[-1]
+        for entry, name in zip(entries[:-1], names[:-1], strict=True):
+            if name == current or live_names.get(name, code) != code:
+                continue
+            changed.append((name, current, code, str(entry.get("lastDate") or "")))
+    changed.sort()
+    return changed
+
+
+def _ambiguous_names(stocks: Sequence[str]) -> list[tuple[str, str]]:
+    """한 이름이 다른 이름의 접두사인 쌍. 짧은 쪽만 부르면 후보가 갈린다."""
+
+    ordered = sorted({name for name in stocks if len(name) >= 2})
+    pairs: list[tuple[str, str]] = []
+    for index, short in enumerate(ordered):
+        for longer in ordered[index + 1 :]:
+            if not longer.startswith(short):
+                break
+            if longer != short:
+                pairs.append((short, longer))
+    return pairs
 
 
 def _slot_values(
@@ -333,8 +466,62 @@ def main(argv: list[str] | None = None) -> int:
     periods = _periods(dates)
     rng = random.Random(SAMPLE_SEED)
 
+    if not arguments.krx_names.is_file():
+        print(
+            json.dumps(
+                {
+                    "status": "FAILED",
+                    "messageKo": (
+                        "과거 사명 표본의 원천이 없습니다. "
+                        "build_krx_name_windows.py를 먼저 실행하세요: "
+                        f"{arguments.krx_names}"
+                    ),
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 2
+    past_names = _past_names(arguments.krx_names)
+    ambiguous = _ambiguous_names(stocks)
+    if not past_names or not ambiguous:
+        print(
+            json.dumps(
+                {
+                    "status": "FAILED",
+                    "messageKo": "과거 사명 또는 유사명 쌍을 하나도 찾지 못했습니다.",
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 2
+
     rows: list[tuple[str, ...]] = []
     seen: set[str] = set()
+
+    def _add(
+        question_id: str,
+        group: str,
+        question: str,
+        query_id: str,
+        slots: dict[str, str],
+        split: str,
+    ) -> bool:
+        if question in seen:
+            return False
+        seen.add(question)
+        rows.append(
+            (
+                question_id,
+                group,
+                question,
+                query_id,
+                json.dumps(slots, ensure_ascii=False, sort_keys=True),
+                split,
+                "AI_DRAFT",
+            )
+        )
+        return True
+
     for group, query_id, direction, templates in GROUPS:
         wanted = TEST_PER_GROUP + DEV_PER_GROUP
         made = 0
@@ -343,22 +530,11 @@ def main(argv: list[str] | None = None) -> int:
             guard += 1
             template = templates[made % len(templates)]
             question, slots = _fill(template, rng, themes, stocks, dates, catalysts, periods)
-            if question in seen:
-                continue
-            seen.add(question)
             if direction is not None:
                 slots["direction"] = direction
-            rows.append(
-                (
-                    f"{group}-{made:03d}",
-                    group,
-                    question,
-                    query_id,
-                    json.dumps(slots, ensure_ascii=False, sort_keys=True),
-                    "AI_DRAFT",
-                )
-            )
-            made += 1
+            split = TEST if made < TEST_PER_GROUP else DEV
+            if _add(f"{group}-{made:03d}", group, question, query_id, slots, split):
+                made += 1
         if made < wanted:
             print(
                 json.dumps(
@@ -371,41 +547,133 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 2
 
-    for index, (template, reason) in enumerate(OUT_OF_SCOPE * 5):
+    # 17종 밖 문장 60건. 정적 문장이 섞여 있어 틀 색인은 guard로 돌린다 —
+    # made로 돌리면 중복된 정적 문장에서 제자리걸음한다.
+    made = 0
+    guard = 0
+    while made < REJECT_ROWS and guard < REJECT_ROWS * 60:
+        template, reason = OUT_OF_SCOPE[guard % len(OUT_OF_SCOPE)]
+        guard += 1
         question, _ = _fill(template, rng, themes, stocks, dates, catalysts, periods)
-        if question in seen:
-            continue
-        seen.add(question)
-        rows.append(
-            (
-                f"REJECT-{index:03d}",
-                "REJECT",
-                question,
-                reason,
-                "{}",
-                "AI_DRAFT",
+        if _add(f"REJECT-{made:03d}", "REJECT", question, reason, {}, TEST):
+            made += 1
+    if made < REJECT_ROWS:
+        print(
+            json.dumps(
+                {
+                    "status": "FAILED",
+                    "messageKo": f"17종 밖 표본을 {REJECT_ROWS}건 채우지 못했습니다.",
+                },
+                ensure_ascii=False,
             )
         )
-    for index, (question, query_id, slots) in enumerate(HARD_SLOTS):
-        rows.append(
-            (
-                f"HARD-{index:03d}",
-                "HARD_SLOT",
-                question,
-                query_id,
-                json.dumps(slots, ensure_ascii=False, sort_keys=True),
-                "AI_DRAFT",
+        return 2
+
+    hard = 0
+    # ① 상대 날짜 20건.
+    for template, query_id, slot_key, slot_value, direction in RELATIVE_TEMPLATES:
+        question, slots = _fill(template, rng, themes, stocks, dates, catalysts, periods)
+        slots[slot_key] = slot_value
+        if direction is not None:
+            slots["direction"] = direction
+        if _add(f"HARD-{hard:03d}", "HARD_SLOT", question, query_id, slots, TEST):
+            hard += 1
+
+    # ② 복수 슬롯 30건.
+    guard = 0
+    target = hard + 30
+    while hard < target and guard < 30 * 60:
+        template, query_id, direction = MULTI_SLOT_TEMPLATES[guard % len(MULTI_SLOT_TEMPLATES)]
+        guard += 1
+        question, slots = _fill(template, rng, themes, stocks, dates, catalysts, periods)
+        if direction is not None:
+            slots["direction"] = direction
+        if _add(f"HARD-{hard:03d}", "HARD_SLOT", question, query_id, slots, TEST):
+            hard += 1
+
+    # ③ 과거 사명 20건. 이름이 유효했던 창 안의 날짜만 쓴다.
+    guard = 0
+    target = hard + 20
+    while hard < target and guard < 20 * 60:
+        template, query_id, direction = PAST_NAME_TEMPLATES[guard % len(PAST_NAME_TEMPLATES)]
+        old, current, code, last_date = past_names[rng.randrange(len(past_names))]
+        guard += 1
+        slots = {"stock": f"ALIAS:{old}", "resolvedStock": current, "stockCode": code}
+        question = template.replace("{old}", old)
+        if "{date}" in question:
+            within = [value for value in dates if value <= last_date]
+            if not within:
+                continue
+            date = within[rng.randrange(len(within))]
+            slots["date"] = date
+            question = question.replace("{date}", date)
+        if direction is not None:
+            slots["direction"] = direction
+        if _add(f"HARD-{hard:03d}", "HARD_SLOT", question, query_id, slots, TEST):
+            hard += 1
+
+    # ④ 유사명 충돌 10건. 짧은 쪽만 부르면 후보가 둘 이상이다.
+    guard = 0
+    target = hard + 10
+    while hard < target and guard < 10 * 60:
+        template, query_id, direction = AMBIGUOUS_NAME_TEMPLATES[
+            guard % len(AMBIGUOUS_NAME_TEMPLATES)
+        ]
+        short, longer = ambiguous[rng.randrange(len(ambiguous))]
+        guard += 1
+        slots = {"stock": f"AMBIGUOUS:{short}", "candidates": f"{short}|{longer}"}
+        if direction is not None:
+            slots["direction"] = direction
+        question = template.replace("{name}", short)
+        if _add(f"HARD-{hard:03d}", "HARD_SLOT", question, query_id, slots, TEST):
+            hard += 1
+
+    if hard < HARD_SLOT_ROWS:
+        print(
+            json.dumps(
+                {
+                    "status": "FAILED",
+                    "messageKo": f"난이도 표본을 {HARD_SLOT_ROWS}건 채우지 못했습니다({hard}건).",
+                },
+                ensure_ascii=False,
             )
         )
+        return 2
+
+    # 발행 전 "오늘" 20건.
+    today = 0
+    for template, query_id, direction in TODAY_TEMPLATES:
+        question, slots = _fill(template, rng, themes, stocks, dates, catalysts, periods)
+        slots["date"] = "RELATIVE:TODAY"
+        slots["publicationState"] = "BEFORE_PUBLISH"
+        if direction is not None:
+            slots["direction"] = direction
+        if _add(f"TODAY-{today:03d}", "TODAY_BEFORE_PUBLISH", question, query_id, slots, TEST):
+            today += 1
+    if today < TODAY_ROWS:
+        print(
+            json.dumps(
+                {
+                    "status": "FAILED",
+                    "messageKo": f'발행 전 "오늘" 표본을 {TODAY_ROWS}건 채우지 못했습니다({today}건).',
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 2
 
     lines = [
         "# 질문 해석 gold set 초안 — 문장이 어느 질의 유형이고 슬롯이 무엇인지.",
         f"# seed {SAMPLE_SEED}. 표본군 {len(GROUPS)}개 × (test {TEST_PER_GROUP} + dev {DEV_PER_GROUP}).",
         "# REJECT군은 17종 밖 문장이며 gold_query_id가 거절 사유다.",
-        "# HARD_SLOT군은 상대 날짜·과거 사명처럼 슬롯 해석이 어려운 회귀 케이스다.",
+        "# HARD_SLOT군은 상대 날짜·복수 슬롯·과거 사명·유사명 충돌 회귀 케이스다.",
+        '# TODAY_BEFORE_PUBLISH군은 발행 전 "오늘" 질문이다. 직전 거래일로 답하고',
+        "#   실시간 값을 섞지 않는지 본다(계획서 4.0.1).",
+        "# split=dev는 규칙 개선용, test는 측정 전용이다. 실패·난이도 160문장은",
+        "#   회귀 고정용이라 전부 test다(계획서 11.1.1).",
         "# 문장은 스크립트가 만든 초안이라 실제 사용자 말투와 다르다(계획서 11.1.3).",
         "# review_status가 AI_DRAFT인 동안은 승격 판정에 쓰지 않는다(계획서 11.1.2).",
-        "# 열: question_id, sample_group, question, gold_query_id, gold_slots, review_status",
+        "# 열: question_id, sample_group, question, gold_query_id, gold_slots, split, review_status",
     ]
     lines.extend("\t".join(row) for row in rows)
     arguments.out.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
@@ -420,11 +688,18 @@ def main(argv: list[str] | None = None) -> int:
                 "perGroup": TEST_PER_GROUP + DEV_PER_GROUP,
                 "rejectRows": sum(1 for row in rows if row[1] == "REJECT"),
                 "hardSlotRows": sum(1 for row in rows if row[1] == "HARD_SLOT"),
+                "todayRows": sum(1 for row in rows if row[1] == "TODAY_BEFORE_PUBLISH"),
+                "splitCounts": {
+                    "test": sum(1 for row in rows if row[5] == TEST),
+                    "dev": sum(1 for row in rows if row[5] == DEV),
+                },
                 "reviewStatus": "AI_DRAFT",
                 "slotPool": {
                     "themes": len(themes),
                     "stocks": len(stocks),
                     "dates": len(dates),
+                    "pastNames": len(past_names),
+                    "ambiguousPairs": len(ambiguous),
                 },
             },
             ensure_ascii=False,
