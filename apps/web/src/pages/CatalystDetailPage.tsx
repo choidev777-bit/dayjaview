@@ -61,10 +61,10 @@ export function CatalystDetailPage() {
     <div className="page page--catalyst">
       <CatalystHeader onBack={goBack} />
 
+      {/* 과거 사례 화면과 같은 형식: 제목이 주인공, 테마 이름은 바로 아래 한 줄. */}
       <div className="page-intro">
-        <small>{detail.themeDisplayName} · 과거 상승 소재</small>
         <h1>{detail.catalystName}</h1>
-        <p>이 소재가 과거 같은 테마와 함께 기록됐던 사례를 모았습니다.</p>
+        <p className="page-intro__origin">{detail.themeDisplayName}</p>
       </div>
 
       <div className="detail-card">

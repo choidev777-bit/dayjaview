@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRepository } from '../app/RepositoryContext';
 import type { DataStatus, TreemapResponse } from '../domain/contracts';
 import { dataStatusLabel } from '../domain/formatting';
-import { isSnapshotStale, selectTreemapItems } from '../domain/treemap';
+import { TREEMAP_LAYOUT_INTERVAL_MS, isSnapshotStale, selectTreemapItems } from '../domain/treemap';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage } from '../shared/StatePanel';
@@ -33,10 +33,23 @@ function TreemapSkeleton() {
   );
 }
 
-function InsightsScreen({ response }: { response: TreemapResponse }) {
+/**
+ * 장중에는 화면이 스스로 다음 스냅샷을 받아 온다. 레이아웃은 1초에 한 번까지만 바꾼다
+ * (screen_spec 6.4). 장이 끝난 데이터에서는 값이 변하지 않으니 굳이 돌리지 않는다.
+ */
+function useLiveRefresh(dataStatus: DataStatus, refresh: () => void) {
+  useEffect(() => {
+    if (dataStatus !== 'LIVE') return undefined;
+    const timer = window.setInterval(refresh, TREEMAP_LAYOUT_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [dataStatus, refresh]);
+}
+
+function InsightsScreen({ response, refresh }: { response: TreemapResponse; refresh: () => void }) {
   const context = response.meta.marketContext;
   const items = useMemo(() => selectTreemapItems(response.data.items), [response.data.items]);
   const stale = useSnapshotStale(context.asOf, context.dataStatus);
+  useLiveRefresh(context.dataStatus, refresh);
   // 장 마감과 수신 지연에서는 마지막 화면을 그대로 두고 블록을 움직이지 않는다.
   const motion = !stale && context.dataStatus !== 'CLOSED';
   const displayContext = stale
@@ -113,5 +126,5 @@ export function InsightsPage() {
     );
   }
 
-  return <InsightsScreen response={resource.data} />;
+  return <InsightsScreen response={resource.data} refresh={resource.retry} />;
 }

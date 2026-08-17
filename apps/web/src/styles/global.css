@@ -458,12 +458,12 @@ a:focus-visible,
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  min-height: 24px;
-  padding: var(--djv-space-1) var(--djv-space-2);
+  min-height: 26px;
+  padding: var(--djv-space-1) 9px;
   border-radius: var(--djv-radius-sm);
   color: var(--djv-brand-contrast);
   background: var(--djv-color-brand-soft);
-  font-size: 10px;
+  font-size: var(--djv-font-size-caption);
   font-weight: 700;
 }
 
@@ -1061,13 +1061,7 @@ a:focus-visible,
     var(--djv-color-brand) calc(var(--tile-intensity, 0) * 92%),
     var(--djv-color-surface-muted)
   );
-  background:
-    linear-gradient(
-      to top,
-      color-mix(in srgb, var(--djv-color-on-brand) 30%, transparent) 0%,
-      transparent 58%
-    ),
-    var(--tile-fill);
+  background: var(--tile-fill);
   text-align: left;
   transition: background 700ms var(--djv-easing-standard);
 }
@@ -2076,12 +2070,13 @@ a:focus-visible,
   gap: 4px;
 }
 
+/* 태그는 잘 안 보인다는 지적이 있어 본문 뱃지와 같은 크기로 맞춘다. */
 .case-list__tags em {
-  padding: 2px 7px;
+  padding: 3px 9px;
   border-radius: var(--djv-radius-pill);
   background: var(--djv-color-brand-soft);
   color: var(--djv-brand-contrast);
-  font-size: 10px;
+  font-size: var(--djv-font-size-caption);
   font-style: normal;
   font-weight: 700;
 }
@@ -2800,9 +2795,12 @@ a:focus-visible,
 }
 
 /* 과거 사례 머리말: 테마 이름이 제목, 사건일과 사유가 그 아래. */
+/* 테마 이름은 포인트 색으로 둔다. 회색이면 그냥 부연 설명처럼 읽혀 테마인 줄 모른다. */
 .page-intro__origin {
-  margin: 0;
+  margin: var(--djv-space-1) 0 0;
   color: var(--djv-color-brand);
+  font-size: var(--djv-font-size-heading-3);
+  font-weight: 800;
 }
 
 .page-intro__date {
@@ -2875,6 +2873,8 @@ a:focus-visible,
   order: 0;
   justify-self: start;
   grid-area: badge;
+  padding: 3px 9px;
+  font-size: var(--djv-font-size-caption);
 }
 
 /* 유사사례 요약 제목의 건수 강조. 색까지 주면 제목에서 숫자만 튄다. 굵기만 올린다. */

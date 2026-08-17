@@ -11,6 +11,7 @@
  *
  * fixture adapter에서만 import하며 production 번들에 들어가지 않는다.
  */
+import intradayReplay from './intradayReplay.json';
 import legacy from './legacyDemo.json';
 import type {
   CatalystDetailResponse,
@@ -21,6 +22,7 @@ import type {
   RankingResponse,
   ResponseMeta,
   SimilarEventsResponse,
+  TreemapResponse,
 } from '../domain/contracts';
 
 interface LegacyOutcome {
@@ -453,3 +455,48 @@ export const demoCatalystDetails: Record<string, CatalystDetailResponse> = Objec
 );
 
 export { byTheme as demoThemeById, byEvent as demoThemeByEvent };
+
+
+/**
+ * 장중 재생 시연.
+ *
+ * 2026-08-14 장중 09:00~10:39에 실제로 들어온 체결(키움 실시간 `0B`)에서 뽑은
+ * 분 단위 스냅샷이다. 데모 테마의 주도 종목 등락률을 동일가중해 테마 수익률로 삼았다.
+ * 실제 서비스는 상한형 유동시총 가중이지만(PD-001), 이 화면의 목적은 값이 장중에
+ * 실제로 움직이는 걸 보여주는 것이다.
+ *
+ * 수집이 10:39에 중단돼(manifest `status: INTERRUPTED`) 거기까지만 있다.
+ */
+const replay = intradayReplay as { marketDate: string; snapshots: { at: string; items: { themeId: string; weightedReturn: number; advancingCount: number; validCount: number }[] }[] };
+
+export const demoReplayLength = replay.snapshots.length;
+
+/** `step`번째 스냅샷으로 갈아끼운 트리맵 응답. 범위를 넘으면 마지막에서 멈춘다. */
+export function demoReplayTreemap(step: number): TreemapResponse {
+  const snapshot = replay.snapshots[Math.min(Math.max(step, 0), replay.snapshots.length - 1)];
+  const bySnapshot = new Map(snapshot.items.map((row) => [row.themeId, row]));
+  const items = demoTreemap.data.items
+    .map((tile) => {
+      const live = bySnapshot.get(tile.themeId);
+      return live
+        ? { ...tile, weightedReturn: live.weightedReturn, advancingCount: live.advancingCount, validCount: live.validCount }
+        : null;
+    })
+    .filter((tile): tile is NonNullable<typeof tile> => tile !== null);
+
+  const asOfAt = `${replay.marketDate}T${snapshot.at}:00+09:00`;
+  return {
+    ...demoTreemap,
+    data: { ...demoTreemap.data, items },
+    meta: {
+      ...demoTreemap.meta,
+      marketContext: {
+        ...marketContext,
+        marketDate: replay.marketDate,
+        asOf: asOfAt,
+        dataStatus: 'LIVE' as const,
+        lastHealthyAt: asOfAt,
+      },
+    },
+  };
+}

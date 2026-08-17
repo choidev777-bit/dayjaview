@@ -31,6 +31,8 @@ import {
   demoCatalystTop3ByTheme,
   demoEvidenceByEvent,
   demoLiveHistoryByEvent,
+  demoReplayLength,
+  demoReplayTreemap,
   demoHistoricalEvents,
   demoRankings,
   demoSimilarByEvent,
@@ -89,6 +91,8 @@ export interface FixtureRepositoryOptions {
   evidence?: EvidenceFixture;
   saved?: SavedFixture;
   similar?: SimilarFixture;
+  /** 장중 재생 시연. 트리맵을 부를 때마다 다음 분 스냅샷을 준다. */
+  replay?: boolean;
   failures?: FixtureResource[];
 }
 
@@ -220,6 +224,9 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
       ];
   initialItems.forEach((item) => savedItems.set(savedKey(item), clone(item)));
 
+  // 장중 재생이 지금 몇 분째인지. 화면이 다시 부를 때마다 한 칸 나아간다.
+  let replayStep = 0;
+
   async function resolveFixture<T>(resource: FixtureResource, value: T): Promise<T> {
     if (options.latencyMs) {
       await new Promise((resolve) => window.setTimeout(resolve, options.latencyMs));
@@ -269,13 +276,20 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
           ? dayMoversNotPublished
           : dayMoversPublished) as unknown as DayMoversResponse,
       ),
-    getTreemap: () =>
-      resolveFixture(
+    getTreemap: () => {
+      if (options.replay) {
+        // 화면이 다시 부를 때마다 한 분씩 흘린다. 끝에 닿으면 처음으로 돌아간다.
+        const step = replayStep;
+        replayStep = (replayStep + 1) % demoReplayLength;
+        return resolveFixture('treemap', demoReplayTreemap(step));
+      }
+      return resolveFixture(
         'treemap',
         options.similar === 'demo' && !options.treemap
           ? (demoTreemap as unknown as TreemapResponse)
           : treemaps[options.treemap ?? 'live'],
-      ),
+      );
+    },
     getThemeDetail: (themeId, eventId) => {
       const selected = details[options.detail ?? 'single'];
       const gated = (options.similar ?? 'gated') === 'gated';

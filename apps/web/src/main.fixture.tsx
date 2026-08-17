@@ -50,6 +50,8 @@ const repository = createFixtureRepository({
     ['gated', 'demo', 'available', 'partial'],
     'demo',
   ),
+  // 장중 재생 시연은 `?replay=on`으로 켠다. 8/14 실제 체결로 만든 분 단위 스냅샷을 흘린다.
+  replay: params.get('replay') === 'on',
   failures: failure
     ? [oneOf<FixtureResource>(failure, ['rankings', 'treemap', 'detail', 'evidence', 'saved', 'historical'], 'rankings')]
     : [],
