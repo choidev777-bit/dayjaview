@@ -32,17 +32,71 @@ function EvidenceList({ evidence }: { evidence: ResearchEvidence[] }) {
   );
 }
 
+/** 서버가 주는 키 이름을 그대로 띄우면 `sectionName`·`direction`이 화면에 나온다. */
+const VALUE_LABELS: Record<string, string> = {
+  sectionName: '섹션',
+  direction: '방향',
+  themes: '테마',
+  themeName: '테마',
+  changeRate: '등락률',
+  stocks: '종목',
+  stockName: '종목',
+  stockCode: '종목코드',
+  closePrice: '종가',
+  companyName: '회사',
+  eventCount: '사건 수',
+  catalystType: '소재 유형',
+  marketDate: '날짜',
+  tradingDate: '날짜',
+};
+
+const DIRECTION_LABELS: Record<string, string> = { UP: '상승', DOWN: '하락', FLAT: '보합' };
+
+function labelOf(key: string): string {
+  return VALUE_LABELS[key] ?? key;
+}
+
+/** 테마 하나를 `테마명 +10.86% · 종목 2개`처럼 한 줄로 읽히게 만든다. */
+function themeLine(theme: Record<string, unknown>): string {
+  const name = String(theme.themeName ?? theme.themeId ?? '');
+  const rate = theme.changeRate ? ` ${theme.changeRate}` : '';
+  const stocks = Array.isArray(theme.stocks) ? theme.stocks : [];
+  const names = stocks
+    .map((stock) => {
+      const row = stock as Record<string, unknown>;
+      return `${row.stockName ?? ''}${row.changeRate ? ` ${row.changeRate}` : ''}`;
+    })
+    .filter(Boolean);
+  return names.length ? `${name}${rate} — ${names.join(', ')}` : `${name}${rate}`;
+}
+
+function renderValue(key: string, value: unknown): string {
+  if (key === 'direction') return DIRECTION_LABELS[String(value)] ?? String(value);
+  if (key === 'themes' && Array.isArray(value)) {
+    return value.map((theme) => themeLine(theme as Record<string, unknown>)).join(' / ');
+  }
+  if (key === 'closePrice' && typeof value === 'number') return `${value.toLocaleString('ko-KR')}원`;
+  if (Array.isArray(value)) return value.map((entry) => String(entry)).join(', ');
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([innerKey, innerValue]) => `${labelOf(innerKey)} ${String(innerValue)}`)
+      .join(' · ');
+  }
+  return String(value);
+}
+
 function RowValues({ values }: { values: Record<string, unknown> }) {
   const entries = Object.entries(values).filter(
-    ([, value]) => value !== null && value !== undefined && value !== '',
+    ([, value]) =>
+      value !== null && value !== undefined && value !== '' && !(Array.isArray(value) && !value.length),
   );
   if (!entries.length) return null;
   return (
     <dl className="research-row__values">
       {entries.map(([key, value]) => (
         <div key={key}>
-          <dt>{key}</dt>
-          <dd>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</dd>
+          <dt>{labelOf(key)}</dt>
+          <dd>{renderValue(key, value)}</dd>
         </div>
       ))}
     </dl>
