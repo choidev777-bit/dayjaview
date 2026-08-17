@@ -275,17 +275,18 @@ describe('근거 상태 matrix', () => {
       listeners.forEach((listener) => listener());
     });
 
+    // 이력이 남아 있으면 장중 탭을 먼저 연다. 그날 무엇을 보고 있었는지가 먼저 읽힌다.
+    expect(
+      await screen.findByText('장중에 표시했던 내용이며 현재 기준은 장 마감 후 분석입니다.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('신규 원전 협상 진전 보도')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: '장 마감 후 분석' }));
+
     expect(
       await screen.findByText('장중에 표시했던 내용과 달라졌습니다. 확정 사유를 기준으로 안내합니다.'),
     ).toBeInTheDocument();
     expect(screen.queryByText('신규 원전 협상 진전 보도')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('tab', { name: '장중 분석 이력' }));
-
-    expect(await screen.findByText('신규 원전 협상 진전 보도')).toBeInTheDocument();
-    expect(
-      screen.getByText('장중에 표시했던 내용이며 현재 기준은 장 마감 후 분석입니다.'),
-    ).toBeInTheDocument();
   });
 });
 

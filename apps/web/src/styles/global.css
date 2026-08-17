@@ -2534,17 +2534,6 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
 }
 
-.research-versions {
-  display: grid;
-  gap: 2px;
-  margin-top: var(--djv-space-4);
-  padding-top: var(--djv-space-3);
-  border-top: 1px solid var(--djv-color-border);
-  color: var(--djv-color-text-muted);
-  font-size: var(--djv-font-size-caption);
-  overflow-wrap: anywhere;
-}
-
 .research-failure strong {
   font-size: var(--djv-font-size-heading-3);
 }
@@ -3076,4 +3065,43 @@ textarea.research-form__input {
 .case-list__theme {
   border: 1px solid color-mix(in srgb, var(--djv-color-brand) 34%, transparent);
   background: var(--djv-color-brand-soft);
+}
+
+/* ------------------------------------------------------- 리서치 화면 보정 */
+
+/* 입력 영역은 카드로 감싸지 않는다. 화면 폭을 다 쓰고 아래 답변과 이어지게 둔다. */
+.research-panel {
+  padding: 0 var(--djv-space-4) var(--djv-space-4);
+}
+
+.page--research .page-intro {
+  padding-bottom: var(--djv-space-3);
+}
+
+/* 답변 카드 안 여백이 모자라 마지막 줄이 잘렸다. 아래를 넉넉히 준다. */
+.research-answer,
+.research-failure {
+  padding: var(--djv-space-4) var(--djv-space-4) var(--djv-space-5);
+}
+
+/* 값 목록이 좁은 화면에서 8rem 라벨 칸에 눌려 줄이 깨졌다. 위아래로 쌓는다. */
+.research-row__values div {
+  display: block;
+}
+
+.research-row__values dt {
+  font-size: var(--djv-font-size-caption);
+  font-weight: 700;
+}
+
+.research-row__values dd {
+  margin: 1px 0 var(--djv-space-2);
+  color: var(--djv-color-text);
+  font-size: var(--djv-font-size-label);
+  line-height: 1.55;
+}
+
+/* 답변 화면 맨 아래가 하단 탭에 가리지 않게 한다. */
+.page--research {
+  padding-bottom: var(--djv-nav-space);
 }

@@ -160,14 +160,7 @@ function AnswerBlock({ answer }: { answer: ResearchAnswer }) {
         </section>
       ) : null}
 
-      <footer className="research-versions">
-        <small>집계 단위 {answer.countUnitLabelKo} · 표본 {answer.sampleSize}</small>
-        <small>
-          {Object.entries(answer.versions)
-            .map(([key, value]) => `${key} ${value}`)
-            .join(' · ')}
-        </small>
-      </footer>
+      {/* 집계 단위·표본은 위 지표 칸에 이미 있고, 엔진 버전 목록은 화면에 둘 값이 아니다. */}
     </section>
   );
 }
@@ -229,7 +222,7 @@ export function ResearchPage() {
         <p className="page-intro__lead">무엇이 궁금하세요?</p>
       </header>
 
-      <div className="detail-card">
+      <div className="research-panel">
         <form
           className="research-form"
           onSubmit={(event) => {

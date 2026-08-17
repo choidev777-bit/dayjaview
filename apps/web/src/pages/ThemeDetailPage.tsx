@@ -571,7 +571,9 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
     }
   }
 
-  const tab = requestedTab ?? (confirmed ? 'AFTER_CLOSE' : 'LIVE');
+  // 장중 이력이 남아 있으면 그걸 먼저 보여준다. 그날 무엇을 보고 있었는지가 먼저 읽히고,
+  // 마감 뒤 확정 사유는 옆 탭에서 비교하게 된다.
+  const tab = requestedTab ?? (confirmed && !history ? 'AFTER_CLOSE' : 'LIVE');
   const changedFromLive =
     confirmed &&
     history !== null &&
