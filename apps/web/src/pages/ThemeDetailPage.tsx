@@ -358,15 +358,11 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
             <h2 id="cases-title">
               <span className="brand-icon" aria-hidden="true" />
               <em className="brand-mark">DAY-JA-VIEW</em> 케이스
-            </h2>
-            <small>
-              오늘과 비슷했던 과거
               <InfoTip label="비슷한 사례를 고르는 기준">
-                오늘 사건의 <b>원인문</b>과 관련된 과거 사건을 같은 테마 안에서 찾습니다. 수익률이 비슷한
-                사례를 고르는 게 아니라, 왜 올랐는지가 닮은 사례를 고릅니다. 그래서 결과는 오르기도 하고
-                내리기도 합니다.
+                오늘과 비슷했던 과거입니다. 수익률이 아니라 <b>왜 올랐는지</b>가 닮은 사건을 같은 테마
+                안에서 찾습니다.
               </InfoTip>
-            </small>
+            </h2>
           </div>
           <Link
             className="text-button"
@@ -398,10 +394,11 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
                       ) : null}
                       {/* 기간과 결과는 오른쪽 끝으로 보낸다. 카드마다 자리가 같아야 눈으로 훑힌다. */}
                       <b className="case-list__outcome">
-                        <small>5 거래일</small>
+                        <small>+5 거래일</small>
                         <span className={result.tone}>{result.text}</span>
                       </b>
                     </span>
+                    <IconChevronRightSmallLine size={18} aria-hidden="true" />
                   </Link>
                 </li>
               );
@@ -521,7 +518,11 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
       const response = await repository.getEvidence(eventId);
       // 장중 근거는 확정 뒤에도 이력으로 보여준다 (screen_spec 4.2 AFTER_CLOSE_CONFIRMED).
       const marketDate = response.meta.marketContext?.marketDate ?? null;
-      const stored = readViewState<LiveEvidenceHistory>(historyKey);
+      // 시연 어댑터는 그날 장중에 봤을 법한 이력을 meta에 실어 보낸다. 실제 서버 응답에는
+      // 없는 값이라 있을 때만 쓴다.
+      const seeded = (response.meta as { liveEvidenceHistory?: LiveEvidenceHistory })
+        .liveEvidenceHistory;
+      const stored = readViewState<LiveEvidenceHistory>(historyKey) ?? seeded;
       // 날짜가 바뀌면 어제 장중 이력을 오늘 것으로 보여주지 않는다.
       const kept = stored && stored.marketDate === marketDate ? stored : null;
       if (response.data.evidenceStatus === 'AFTER_CLOSE_CONFIRMED') {
@@ -879,14 +880,16 @@ export function ThemeDetailPage() {
             이름은 왼쪽, 수익률은 오른쪽에 두고 이름만 줄바꿈을 허용한다. */}
         <div className="theme-summary__head">
         <div className="theme-summary__title">
+          {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고 값이 있을 때만 놓는다.
+              둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 이 자리에 두지 않는다.
+              순위는 좌상단, 등락률은 우하단으로 고정한다. */}
+          <div className="theme-badges">
+            {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
+          </div>
           <h1>{detail.classification.displayName}</h1>
         </div>
         <div className="theme-summary__return">
-          {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고 값이 있을 때만 놓는다.
-              둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 이 자리에 두지 않는다.
-              순위는 우상단, 등락률은 우하단으로 고정하고 관심 공백을 그 사이에 끼운다. */}
           <div className="theme-badges">
-            {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
             {/* 관심 공백은 장기 미관심에만 의미가 있다. `6 거래일 만의 관심`은 알려주는 게 없다.
                 screen_spec 8.4의 기준(60거래일 이상)을 그대로 쓴다. */}
             {reaction.attentionGapTradingDays !== null &&

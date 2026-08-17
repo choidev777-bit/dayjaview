@@ -11,7 +11,6 @@ import {
   returnTone,
 } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
-import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -108,8 +107,12 @@ export function HistoricalEventPage() {
         </section>
 
         <section aria-labelledby="outcome-title">
-          <h2 id="outcome-title">당시 결과</h2>
-          <p className="section-note">사건 당시 기록된 주도 종목을 동일가중한 결과입니다.</p>
+          <h2 id="outcome-title">이 사건 뒤 주가</h2>
+          <p className="section-note">
+            사건 당일 기록된 주도 종목 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
+            {priced.toLocaleString('ko-KR')}종목을 같은 비중으로 담았다고 보고, 사건 당일 종가부터
+            1·5·20거래일 뒤까지 얼마나 움직였는지 계산했습니다.
+          </p>
           <div className="metric-grid">
             {HORIZONS.map((horizon) => {
               const outcome = outcomeText(
@@ -126,19 +129,8 @@ export function HistoricalEventPage() {
         </section>
 
         <section aria-labelledby="historical-leaders-title">
-          {/* 기준 설명 두 줄은 물음표로 접는다. 목록보다 먼저 읽힐 내용이 아니다. */}
-          <div className="section-heading">
-            <h2 id="historical-leaders-title">당시 주도 종목</h2>
-            {detail.leaders.length ? (
-              <InfoTip label="당시 주도 종목 계산 기준">
-                <strong>사건 당일 등락률</strong>입니다. 전일 종가 대비 그날 종가로 계산했습니다. 위의 `당시 결과`는
-                T+1·T+5·T+20이라 기준이 다릅니다.
-                <br />
-                당시 기록된 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
-                {priced.toLocaleString('ko-KR')}종목이 바스켓에 반영됐습니다.
-              </InfoTip>
-            ) : null}
-          </div>
+          {/* 기준을 제목에 넣으면 아래 설명 줄이 필요 없다. */}
+          <h2 id="historical-leaders-title">당시 주도 종목 당일 등락률</h2>
           {/* 현재 관련주를 과거에 소급하지 않는다. 서버가 준 당시 명단만 그대로 쓴다 (screen_spec 10.5). */}
           {detail.leaders.length ? (
             <>
@@ -237,10 +229,6 @@ function TodayOverlap({
                 );
               })}
             </ul>
-            <p className="section-note">
-              왼쪽은 이 사례 당일, 오른쪽은 오늘 등락률입니다. 같은 종목이 두 번 다 주도 종목이었다는
-              뜻이고, 오늘 결과를 예측하지 않습니다.
-            </p>
           </>
         ) : (
           <p className="section-note">오늘 주도 종목과 겹치는 종목은 없습니다.</p>

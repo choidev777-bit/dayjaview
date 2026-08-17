@@ -111,8 +111,9 @@ export function coverageStatusLabel(status: CoverageStatus): string {
   return { SUFFICIENT: '충분', PARTIAL: '일부', INSUFFICIENT: '부족' }[status];
 }
 
+/** `5 거래일`만 두면 5일째인지 5일 뒤인지 헷갈린다. 뒤로 세는 값이라 `+`를 붙인다. */
 export function horizonLabel(horizon: HistoricalHorizon): string {
-  return { 1: '다음날', 5: '5 거래일', 20: '20 거래일' }[horizon];
+  return { 1: '다음날', 5: '+5 거래일', 20: '+20 거래일' }[horizon];
 }
 
 /** 결측(UNAVAILABLE)과 관찰 미완료(PENDING)를 0%나 같은 문구로 뭉뚱그리지 않는다 (screen_spec 10.5). */

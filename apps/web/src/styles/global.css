@@ -532,12 +532,15 @@ a:focus-visible,
 
 /* 목록에 이어 붙는 아코디언. 글자 없이 화살표 하나만 두고, 구분선과 옅은 음영으로
    목록의 마지막 행처럼 보이게 한다. */
+/* 콘텐츠 카드 안쪽 여백을 거슬러 좌우 끝까지 넓힌다. 카드 아래 모서리와 맞물려
+   목록의 마지막 행처럼 보이게 하고, 자체 외곽선은 두지 않는다. */
 .expand-button--inline {
-  width: 100%;
-  margin: 0;
-  padding: 7px var(--djv-space-3);
+  width: auto;
+  margin: 0 calc(var(--djv-space-4) * -1) calc(var(--djv-space-4) * -1);
+  padding: 8px var(--djv-space-4);
+  border: 0;
   border-top: 1px solid var(--djv-color-border);
-  border-radius: 0 0 var(--djv-radius-lg) var(--djv-radius-lg);
+  border-radius: 0 0 18px 18px;
   background: var(--djv-color-surface-muted);
 }
 
@@ -1152,6 +1155,15 @@ a:focus-visible,
   display: flex;
   align-items: center;
   gap: 5px;
+  line-height: 1;
+}
+
+/* 사각형·글자·물음표가 같은 중심선에 오게 한다. */
+.treemap-legend > span > i,
+.treemap-legend .info-tip,
+.treemap-legend .info-tip__button {
+  align-self: center;
+  margin: 0;
 }
 
 .treemap-legend i {
@@ -1282,6 +1294,7 @@ a:focus-visible,
 /* 계산 기준은 주황 카드 안 오른쪽에 한 줄로 둔다. */
 .theme-summary__basis {
   display: flex;
+  order: 2;
   align-items: center;
   gap: 5px;
   margin: var(--djv-space-3) 0 0 auto;

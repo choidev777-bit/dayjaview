@@ -30,6 +30,7 @@ import {
   demoCatalystTop3,
   demoCatalystTop3ByTheme,
   demoEvidenceByEvent,
+  demoLiveHistoryByEvent,
   demoHistoricalEvents,
   demoRankings,
   demoSimilarByEvent,
@@ -325,13 +326,20 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
         },
       });
     },
-    getEvidence: (eventId) =>
-      resolveFixture(
-        'evidence',
+    getEvidence: (eventId) => {
+      const demo =
         options.similar === 'demo' && !options.evidence && demoEvidenceByEvent[eventId]
           ? (demoEvidenceByEvent[eventId] as EvidenceResponse)
-          : evidence[options.evidence ?? 'single'],
-      ),
+          : null;
+      if (!demo) return resolveFixture('evidence', evidence[options.evidence ?? 'single']);
+      // 시연은 늘 마감 뒤 데이터로 돌아서 `장중 분석 이력` 탭이 비어 있었다. 그날 장중에
+      // 봤을 법한 이력을 meta에 실어 보낸다. 계약 fixture 경로에는 붙이지 않는다.
+      const history = demoLiveHistoryByEvent[eventId];
+      return resolveFixture(
+        'evidence',
+        history ? { ...demo, meta: { ...demo.meta, liveEvidenceHistory: history } } : demo,
+      );
+    },
     async getSaved(type: SavedType | 'ALL') {
       const response: SavedResponse = {
         data: {

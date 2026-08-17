@@ -242,9 +242,56 @@ export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
         })),
         page: { nextCursor: null, hasMore: false, limit: 20 },
       },
-      meta,
+      // marketContext가 없으면 화면이 이 근거가 어느 장의 것인지 못 가려서 장중 이력을 매번 버린다.
+      meta: { ...meta, marketContext },
     },
   ]),
+);
+
+/**
+ * 시연용 장중 근거 이력.
+ *
+ * 실제로는 사용자가 장중에 화면을 봐야 이력이 쌓인다(세션 보관). 시연은 장 마감 뒤
+ * 데이터로 도는 데다 하루가 이미 끝나 있어서 `장중 분석 이력` 탭이 늘 비어 있었다.
+ * 그래서 그날 장중에 봤을 법한 상태를 미리 만들어 둔다.
+ *
+ * 장중이라 아직 확정 전이므로 상태는 `SINGLE_SOURCE`(뉴스 기반 추정)로 두고,
+ * 확정 사유보다 이른 시각을 붙인다. 확정본과 문장이 달라야 `장중과 달라졌다`가 보인다.
+ */
+const LIVE_OBSERVED_AT = `${story.marketDate}T11:40:00+09:00`;
+
+export const demoLiveHistoryByEvent: Record<
+  string,
+  {
+    evidenceStatus: 'SINGLE_SOURCE';
+    summary: string | null;
+    items: unknown[];
+    observedAt: string;
+    marketDate: string;
+  }
+> = Object.fromEntries(
+  story.themes
+    .filter((theme) => theme.evidence.length > 0)
+    .map((theme) => [
+      theme.eventId,
+      {
+        evidenceStatus: 'SINGLE_SOURCE' as const,
+        summary: null,
+        items: theme.evidence.slice(0, 2).map((item) => ({
+          newsId: `${item.newsId}-live`,
+          sourceName: item.sourceName,
+          title: item.title,
+          publishedAt: LIVE_OBSERVED_AT,
+          receivedAt: LIVE_OBSERVED_AT,
+          originalUrl: 'https://infostock.co.kr',
+          matchBasis: ['THEME'],
+          summary: item.summary,
+          qualityFlags: [],
+        })),
+        observedAt: LIVE_OBSERVED_AT,
+        marketDate: story.marketDate,
+      },
+    ]),
 );
 
 const byTheme = new Map(story.themes.map((theme) => [theme.themeId, theme]));
