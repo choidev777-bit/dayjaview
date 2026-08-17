@@ -11,7 +11,11 @@ import { useRepositoryResource } from '../shared/useRepositoryResource';
 
 const STALE_TICK_MS = 1000;
 
-function useSnapshotStale(asOf: string, dataStatus: DataStatus): boolean {
+function useSnapshotStale(
+  asOf: string,
+  dataStatus: DataStatus,
+  qualityFlags: readonly string[],
+): boolean {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -20,7 +24,7 @@ function useSnapshotStale(asOf: string, dataStatus: DataStatus): boolean {
     return () => window.clearInterval(timer);
   }, [dataStatus]);
 
-  return isSnapshotStale(asOf, now, dataStatus);
+  return isSnapshotStale(asOf, now, dataStatus, qualityFlags);
 }
 
 function TreemapSkeleton() {
@@ -36,6 +40,9 @@ function TreemapSkeleton() {
 /**
  * 장중에는 화면이 스스로 다음 스냅샷을 받아 온다. 장이 끝난 데이터에서는 값이 변하지
  * 않으니 굳이 돌리지 않는다.
+ *
+ * `retry`가 아니라 `refresh`를 쓴다. `retry`는 화면을 비우고 로딩으로 되돌려서
+ * 타일 DOM이 매번 새로 생기고, 그러면 크기 전환 애니메이션이 아예 걸리지 않는다.
  */
 function useLiveRefresh(dataStatus: DataStatus, refresh: () => void) {
   useEffect(() => {
@@ -52,7 +59,7 @@ function useLiveRefresh(dataStatus: DataStatus, refresh: () => void) {
 function InsightsScreen({ response, refresh }: { response: TreemapResponse; refresh: () => void }) {
   const context = response.meta.marketContext;
   const items = useMemo(() => selectTreemapItems(response.data.items), [response.data.items]);
-  const stale = useSnapshotStale(context.asOf, context.dataStatus);
+  const stale = useSnapshotStale(context.asOf, context.dataStatus, context.qualityFlags);
   useLiveRefresh(context.dataStatus, refresh);
   // 장 마감과 수신 지연에서는 마지막 화면을 그대로 두고 블록을 움직이지 않는다.
   const motion = !stale && context.dataStatus !== 'CLOSED';
@@ -130,5 +137,5 @@ export function InsightsPage() {
     );
   }
 
-  return <InsightsScreen response={resource.data} refresh={resource.retry} />;
+  return <InsightsScreen response={resource.data} refresh={resource.refresh} />;
 }

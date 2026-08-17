@@ -499,6 +499,8 @@ export function demoReplayTreemap(step: number): TreemapResponse {
         asOf: asOfAt,
         dataStatus: 'LIVE' as const,
         lastHealthyAt: asOfAt,
+        // 지난 날짜를 재생하는 중이라 `지금과 몇 초 차이인가`로 지연을 재면 안 된다.
+        qualityFlags: ['REPLAY'],
       },
     },
   };

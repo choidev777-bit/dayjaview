@@ -1025,13 +1025,20 @@ a:focus-visible,
 }
 
 /* 면적과 위치는 서버 수익률에서 계산한다. 값이 바뀔 때만 700ms로 이동한다. */
+/* 스냅샷이 3초에 한 번 오는데 전환이 0.7초면 2.3초는 멈춰 있어 뚝뚝 끊겨 보인다.
+   전환을 간격만큼 늘려 다음 값이 올 때까지 계속 움직이게 한다. */
 .treemap__cell {
   position: absolute;
   transition:
-    left 700ms var(--djv-easing-standard),
-    top 700ms var(--djv-easing-standard),
-    width 700ms var(--djv-easing-standard),
-    height 700ms var(--djv-easing-standard);
+    left 2900ms cubic-bezier(.16, .84, .24, 1),
+    top 2900ms cubic-bezier(.16, .84, .24, 1),
+    width 2900ms cubic-bezier(.16, .84, .24, 1),
+    height 2900ms cubic-bezier(.16, .84, .24, 1);
+}
+
+/* 값이 멈춘 화면(장 마감·수신 지연)에서는 굳이 천천히 움직일 이유가 없다. */
+.treemap[data-motion='off'] .treemap__cell {
+  transition: none;
 }
 
 .treemap[data-motion="off"] .treemap__cell,
@@ -1064,7 +1071,7 @@ a:focus-visible,
   );
   background: var(--tile-fill);
   text-align: left;
-  transition: background 700ms var(--djv-easing-standard);
+  transition: background 2900ms cubic-bezier(.16, .84, .24, 1);
 }
 
 .treemap__tile[data-tone="down"] {

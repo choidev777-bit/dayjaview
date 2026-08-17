@@ -116,7 +116,17 @@ export function treemapLabelTier(width: number, height: number): TreemapLabelTie
   return 'minimal';
 }
 
-export function isSnapshotStale(asOf: string, now: number, dataStatus: DataStatus): boolean {
+/**
+ * 장중 스냅샷이 밀렸는지. 지난 날짜를 재생하는 화면은 `지금`과 비교하면 늘 밀린 것으로
+ * 나오므로 `REPLAY` 표식이 있으면 재지 않는다.
+ */
+export function isSnapshotStale(
+  asOf: string,
+  now: number,
+  dataStatus: DataStatus,
+  qualityFlags: readonly string[] = [],
+): boolean {
+  if (qualityFlags.includes('REPLAY')) return false;
   if (dataStatus !== 'LIVE') return false;
   const asOfMs = Date.parse(asOf);
   if (Number.isNaN(asOfMs)) return false;
