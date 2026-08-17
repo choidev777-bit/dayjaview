@@ -235,7 +235,10 @@ export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
         eventId: theme.eventId,
         // 15:20은 장 마감 직후라 마감 후 분석이 아직 나오기 전이다. 장중 근거만 있고
         // `장 마감 후 분석` 탭은 준비 중 상태로 둔다.
-        evidenceStatus: 'SINGLE_SOURCE',
+        //
+        // 상태는 `REEMERGENCE`다. 구 DB에는 뉴스 수집분이 없어 근거가 전부 인포스탁
+        // 테마 기록이다. `SINGLE_SOURCE`(단일 매체 보도)라고 하면 출처와 어긋난다.
+        evidenceStatus: 'REEMERGENCE',
         items: theme.evidence.map((item) => ({
           newsId: item.newsId,
           sourceName: item.sourceName,

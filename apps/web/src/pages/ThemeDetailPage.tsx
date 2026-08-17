@@ -744,7 +744,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
                   {tab === 'LIVE' ? (
                     <p className="confirmation-note">
-                      뉴스 근거는 장중 계속 갱신되며 이후 정정될 수 있습니다.
+                      장중 근거는 계속 갱신되며 이후 정정될 수 있습니다.
                     </p>
                   ) : null}
                 </>
