@@ -146,6 +146,7 @@ function EvidenceList({
   items,
   showTime = true,
   statusNote,
+  showSource = true,
   hasMore = false,
   loadingMore = false,
   loadMoreFailed = false,
@@ -156,6 +157,8 @@ function EvidenceList({
   showTime?: boolean;
   /** 근거 상태·출처 수·확인 시각. 물음표 안에서 출처 정보와 같이 보여준다. */
   statusNote?: { label: string; note: string } | null;
+  /** 장중 이력은 그때 본 화면을 그대로 되살리는 자리라 출처 물음표까지 달지 않는다. */
+  showSource?: boolean;
   hasMore?: boolean;
   loadingMore?: boolean;
   loadMoreFailed?: boolean;
@@ -175,6 +178,7 @@ function EvidenceList({
                 접는 것이라 `영역 선택 또는 별도 상세`를 허용하는 screen_spec §8.3을 지킨다. */}
             <strong className="evidence-list__title">
               <span>{item.title}</span>
+              {showSource ? (
               <InfoTip label={`${item.title} 출처 정보`}>
                 <strong>출처</strong>
                 {item.sourceName} ·{' '}
@@ -191,6 +195,7 @@ function EvidenceList({
                   </>
                 ) : null}
               </InfoTip>
+              ) : null}
             </strong>
             {/* 인포스탁 기록은 제목과 요약이 같은 문장인 경우가 많다. 그러면 같은 글이 두 번
                 나오고, 요약 안 `주도주 : …`는 아래 `오늘의 주도 종목`과도 겹친다. */}
@@ -466,17 +471,11 @@ function CatalystTop3Section({
                 {/* `오늘과 같은 유형`은 이름보다 먼저 눈에 들어와야 왜 이 소재를 보는지가 읽힌다. */}
                 {item.matchesToday ? <em>오늘과 같은 유형</em> : null}
                 <strong>{item.catalystName}</strong>
-                {/* 상승 빈도를 확률로 바꾸지 않는다. 중앙 반응으로 적는다 (screen_spec 8.7·13.2). */}
-                <small>
-                  중앙{' '}
-                  {item.medianSameDayReturn === null
-                    ? '기록 없음'
-                    : formatReturn(item.medianSameDayReturn)}
-                </small>
               </span>
-              {/* 표본 크기는 오른쪽으로 빼서 항목끼리 바로 비교되게 한다. */}
+              {/* 표본 크기는 오른쪽으로 빼서 항목끼리 바로 비교되게 한다.
+                  중앙 반응은 소재 상세에서 기간별로 보여준다. 목록에서는 건수만 센다. */}
               <span className="catalyst-list__count">
-                <b>{item.eligibleCount.toLocaleString('ko-KR')}</b>건
+                {item.eligibleCount.toLocaleString('ko-KR')}건
               </span>
               <IconChevronRightSmallLine className="row-chevron" size={18} aria-hidden="true" />
             </Link>
@@ -690,7 +689,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                     </p>
                     {history.summary ? <p className="reason-summary">{history.summary}</p> : null}
                     {history.items.length ? (
-                      <EvidenceList items={history.items} />
+                      <EvidenceList items={history.items} showSource={false} />
                     ) : (
                       <EmptyState
                         title={evidenceStatusLabel(history.evidenceStatus)}

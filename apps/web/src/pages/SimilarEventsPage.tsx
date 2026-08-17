@@ -145,17 +145,15 @@ export function SimilarEventsPage() {
                   state={{ contextEventId: eventId, themeId }}
                 >
                   <span className="case-list__copy">
-                    <small>
-                      {formatDate(`${item.marketDate}T00:00:00+09:00`)} · {item.displayNameAtEvent}
-                    </small>
+                    {/* 당시 테마명은 날짜가 아니라 태그다. 같은 줄에 붙이면 날짜의 일부처럼 읽힌다. */}
+                    <small>{formatDate(`${item.marketDate}T00:00:00+09:00`)}</small>
                     <strong>{item.normalizedCatalystSummary}</strong>
-                    {item.similarityReasons.length ? (
-                      <span className="case-list__tags">
-                        {item.similarityReasons.map((reason) => (
-                          <em key={reason}>{reason}</em>
-                        ))}
-                      </span>
-                    ) : null}
+                    <span className="case-list__tags">
+                      <em className="case-list__theme">{item.displayNameAtEvent}</em>
+                      {item.similarityReasons.map((reason) => (
+                        <em key={reason}>{reason}</em>
+                      ))}
+                    </span>
                     <b className="case-list__outcome">
                       <small>{horizonLabel(horizon)}</small>
                       <span className={outcome.tone}>{outcome.text}</span>

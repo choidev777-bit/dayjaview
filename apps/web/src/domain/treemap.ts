@@ -76,7 +76,7 @@ export function treemapIntensity(weightedReturn: number): number {
  * 면적은 여전히 수익률 원값에 비례한다 (screen_spec §6.3). 색만 상대 기준이며,
  * 값 자체는 타일에 부호와 함께 표시하므로 색만으로 크기를 전달하지 않는다 (§13.3).
  */
-const INTENSITY_FLOOR = 0.55;
+const INTENSITY_FLOOR = 0.18;
 
 export function treemapIntensityScale(
   items: readonly { weightedReturn: number }[],

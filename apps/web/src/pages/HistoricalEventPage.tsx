@@ -71,26 +71,19 @@ export function HistoricalEventPage() {
         save={{ eventId: detail.eventId, displayName: detail.catalystSummary }}
       />
 
+      {/* 어느 테마에서 열었는지가 이 화면의 맥락이라 제목 자리에 둔다.
+          사건일과 사유는 아래 카드 안으로 내려 본문과 붙인다. */}
       <div className="page-intro">
-        {/* 어느 테마에서 열었는지가 이 화면의 맥락이라 제목 자리에 둔다.
-            들어온 맥락이 없으면(공유 링크) 사건 당시 테마명으로 대신한다. */}
         <h1 className="page-intro__origin">{detail.displayNameAtEvent}</h1>
-        <small className="page-intro__date">
-          {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
-        </small>
-        <p className="page-intro__catalyst">{detail.catalystSummary}</p>
       </div>
 
       <div className="detail-card">
-        {/* 어디서 열었는지와 겹치는 종목이 먼저다. 태그만 있는 `비슷한 이유`보다 이쪽이 증거다. */}
-        {state?.themeId && contextEventId ? (
-          <TodayOverlap
-            themeId={state.themeId}
-            contextEventId={contextEventId}
-            pastLeaders={detail.leaders}
-            marketDate={detail.marketDate}
-          />
-        ) : null}
+        <section aria-labelledby="catalyst-title">
+          <small className="page-intro__date">
+            {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
+          </small>
+          <h2 id="catalyst-title">{detail.catalystSummary}</h2>
+        </section>
 
         <section aria-labelledby="similarity-title">
           <h2 id="similarity-title">오늘과 비슷한 이유</h2>
@@ -107,6 +100,16 @@ export function HistoricalEventPage() {
             <p className="section-note">공유 태그가 기록되지 않았습니다.</p>
           )}
         </section>
+
+        {/* 겹치는 종목은 `왜 비슷한지`의 증거라 태그 바로 다음에 둔다. */}
+        {state?.themeId && contextEventId ? (
+          <TodayOverlap
+            themeId={state.themeId}
+            contextEventId={contextEventId}
+            pastLeaders={detail.leaders}
+            marketDate={detail.marketDate}
+          />
+        ) : null}
 
         <section aria-labelledby="outcome-title">
           <h2 id="outcome-title">이 사건 뒤 주가</h2>

@@ -401,6 +401,12 @@ a:focus-visible,
   background: var(--djv-color-surface-muted);
 }
 
+/* 저장한 상태의 별은 브랜드 색이다. 기본 글자색이면 까맣게 칠해져 저장 여부가 안 읽힌다. */
+.app-bar button[aria-pressed='true'] {
+  color: var(--djv-color-brand);
+  background: var(--djv-color-brand-soft);
+}
+
 .app-bar__spacer {
   width: 42px;
   height: 42px;
@@ -1058,9 +1064,8 @@ a:focus-visible,
   background:
     linear-gradient(
       to top,
-      color-mix(in srgb, var(--djv-color-on-brand) 46%, transparent) 0%,
-      color-mix(in srgb, var(--djv-color-on-brand) 18%, transparent) 44%,
-      transparent 76%
+      color-mix(in srgb, var(--djv-color-on-brand) 30%, transparent) 0%,
+      transparent 58%
     ),
     var(--tile-fill);
   text-align: left;
@@ -1076,12 +1081,13 @@ a:focus-visible,
 }
 
 /* 납작한 타일에서 flex가 이름 줄을 눌러 글자 아래가 잘리던 걸 막는다.
-   이름은 흰 기운이 옅은 위쪽에 앉으므로 흰색으로 둔다. */
+   타일 색이 1위와 꼴찌 사이에서 크게 달라져, 흰 글씨로 두면 옅은 타일에서 묻힌다.
+   어느 밝기에서도 읽히도록 본문 색을 쓴다. */
 .treemap__tile strong {
   flex: none;
   max-width: 100%;
   overflow: hidden;
-  color: var(--djv-color-on-brand);
+  color: var(--djv-color-text);
   font-size: 14px;
   line-height: 1.4;
   text-overflow: ellipsis;
@@ -1949,7 +1955,7 @@ a:focus-visible,
   min-height: 132px;
   align-items: center;
   gap: 12px;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 18px;
   padding: 18px;
   border: 1px solid var(--djv-color-border);
   border-radius: 18px;
@@ -2757,11 +2763,12 @@ a:focus-visible,
 }
 
 .catalyst-list__count {
-  color: var(--djv-color-text-muted);
-  font-size: 11px;
-  font-weight: 700;
+  color: var(--djv-color-text);
+  font-size: var(--djv-font-size-label);
+  font-weight: 800;
   text-align: right;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .catalyst-list__count b {
@@ -2775,8 +2782,9 @@ a:focus-visible,
 .reason-panel {
   margin-top: var(--djv-space-3);
   padding: var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-lg);
-  background: var(--djv-color-surface-muted);
+  background: var(--djv-color-surface);
 }
 
 /* 박스 안 첫 줄에는 구분선을 두지 않는다. 박스 테두리와 겹쳐 빈 줄처럼 보인다. */
@@ -2806,4 +2814,24 @@ a:focus-visible,
   font-weight: 700;
   line-height: 1.4;
   word-break: keep-all;
+}
+
+/* 당시 테마명 태그. 유사 이유 태그와 구분되게 테두리만 쓴다. */
+.case-list__theme {
+  border: 1px solid var(--djv-color-border);
+  background: transparent !important;
+  color: var(--djv-color-text-muted) !important;
+}
+
+/* 아코디언이 붙는 카드는 아래 모서리를 열어 둔다. 좌우 선은 남긴다. */
+.detail-panel:has(> section > .expand-button--inline),
+.detail-card:has(> section > .expand-button--inline) {
+  border-bottom: 0;
+}
+
+/* 겹치는 종목 절은 위에 구분선을 둬서 앞 절과 갈린다. */
+.detail-card > section + section {
+  margin-top: var(--djv-space-4);
+  padding-top: var(--djv-space-4);
+  border-top: 1px solid var(--djv-color-border);
 }
