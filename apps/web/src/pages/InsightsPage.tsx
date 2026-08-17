@@ -76,11 +76,11 @@ function InsightsScreen({ response }: { response: TreemapResponse }) {
           {/* 갱신 시점까지 물음표 안으로 넣는다. 범례 줄에 문장을 늘어놓으면 지저분하다.
               장이 끝났는데 `장중 갱신`이라고 적으면 화면 위 상태 줄과 어긋나므로 상태를 따라간다. */}
           <InfoTip label="면적과 색 기준" placement="up">
-            <b>면적</b>
+            <strong>면적</strong>
             테마 수익률 원값에 비례합니다. 내부 순위 점수는 사용하지 않습니다.
-            <b>색</b>
+            <strong>색</strong>
             이날 화면에 오른 테마들 사이의 상대 비교입니다. 다른 날과 직접 비교하지 마세요.
-            <b>갱신</b>
+            <strong>갱신</strong>
             {displayContext.dataStatus === 'LIVE'
               ? '수치는 장중 갱신됩니다.'
               : `수치는 ${dataStatusLabel(displayContext.dataStatus)} 기준입니다.`}

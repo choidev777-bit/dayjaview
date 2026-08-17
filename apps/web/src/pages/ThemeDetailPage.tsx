@@ -127,6 +127,21 @@ function SaveThemeButton({
   );
 }
 
+/**
+ * 요약이 제목과 사실상 같은 문장인지. 인포스탁 기록은 제목 뒤에 `(주도주 : …)`만 덧붙는
+ * 경우가 많아, 괄호 뒤를 떼고 비교한다.
+ */
+function sameSentence(title: string, summary: string): boolean {
+  const strip = (text: string) =>
+    text
+      .replace(/\(주도주[^)]*\)/g, '')
+      .replace(/\s+/g, '')
+      .trim();
+  const a = strip(title);
+  const b = strip(summary);
+  return a === b || b.startsWith(a) || a.startsWith(b);
+}
+
 function EvidenceList({
   items,
   showTime = true,
@@ -161,7 +176,7 @@ function EvidenceList({
             <strong className="evidence-list__title">
               <span>{item.title}</span>
               <InfoTip label={`${item.title} 출처 정보`}>
-                <b>출처</b>
+                <strong>출처</strong>
                 {item.sourceName} ·{' '}
                 {item.publishedAt
                   ? formatTime(item.publishedAt)
@@ -171,13 +186,15 @@ function EvidenceList({
                 </a>
                 {statusNote ? (
                   <>
-                    <b>{statusNote.label}</b>
+                    <strong>{statusNote.label}</strong>
                     {statusNote.note}
                   </>
                 ) : null}
               </InfoTip>
             </strong>
-            <p>{item.summary}</p>
+            {/* 인포스탁 기록은 제목과 요약이 같은 문장인 경우가 많다. 그러면 같은 글이 두 번
+                나오고, 요약 안 `주도주 : …`는 아래 `오늘의 주도 종목`과도 겹친다. */}
+            {item.summary && !sameSentence(item.title, item.summary) ? <p>{item.summary}</p> : null}
             {item.qualityFlags.some((flag) => evidenceFlagLabel(flag)) ? (
               <p className="evidence-list__basis">
                 {item.qualityFlags.map((flag) => {
@@ -254,7 +271,7 @@ function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          <span>{expanded ? '접기' : '더 보기'}</span>
+          <span className="visually-hidden">{expanded ? '주도 종목 접기' : '주도 종목 더 보기'}</span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
       ) : null}
@@ -316,8 +333,8 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
         {/* `이벤트 스터디`는 버튼처럼 보여서 제목 옆에서 내려 설명 문장에 녹인다.
             분모가 되는 건수는 표본 크기라 굵게 둔다 (screen_spec 8.8 표본 부족 경고). */}
         <p className="section-note">
-          비슷했던 <strong>과거 {total.toLocaleString('ko-KR')}건</strong>에서 당시 주도 종목의 반응을 모은
-          이벤트 스터디예요.
+          비슷했던 <strong>과거 {total.toLocaleString('ko-KR')}건</strong>에서 당시 주도 종목이 어떻게
+          움직였는지 모아 중앙값으로 봤어요.
         </p>
         {/* 칸 안은 값만 둔다. `중앙`과 기간별 분모는 아래 계산 기준에서 밝힌다
             (screen_spec 8.8 `대표를 사용한다면 계산 기준에서 중앙값임을 명시한다`). */}
@@ -421,16 +438,19 @@ function CatalystTop3Section({
   const { items, qualityNote } = resource.data.data;
   if (!items.length) return null;
   // 유효 유형이 1~2개면 `TOP3`라고 부르지 않는다 (screen_spec 8.7).
-  const heading = items.length >= 3 ? `과거 ${themeName} 반응 TOP3` : `과거 ${themeName} 반응 기록`;
+  const tail = items.length >= 3 ? '반응 TOP3' : '반응 기록';
 
   return (
     <section aria-labelledby="catalyst-top-title">
       <div className="section-heading">
         <div>
-          <h2 id="catalyst-top-title">{heading}</h2>
+          {/* 테마 이름이 길면 `반응 TOP3`만 남고 잘려 보인다. 이름과 꼬리말을 아예 다른 줄로 둔다. */}
+          <h2 id="catalyst-top-title">
+            <span className="catalyst-heading__theme">과거 {themeName}</span>
+            <span className="catalyst-heading__tail">{tail}</span>
+          </h2>
         </div>
       </div>
-      <p className="section-note">인포스탁 히스토리에 기록된 사례 기준</p>
       <ol className="catalyst-list">
         {items.slice(0, 3).map((item, index) => (
           <li key={item.catalystId}>
@@ -456,7 +476,14 @@ function CatalystTop3Section({
           </li>
         ))}
       </ol>
-      {qualityNote ? <p className="section-note">{qualityNote}</p> : null}
+      {/* 품질 주의는 화면에서 빼고 발표 때 말로 설명한다
+          (바탕화면 `발표자-구두설명-체크리스트.md`). 물음표 안에는 남긴다. */}
+      {qualityNote ? (
+        <InfoTip label="소재 유형 기준">
+          <strong>소재 유형 기준</strong>
+          {qualityNote}
+        </InfoTip>
+      ) : null}
     </section>
   );
 }
@@ -852,9 +879,12 @@ export function ThemeDetailPage() {
             이름은 왼쪽, 수익률은 오른쪽에 두고 이름만 줄바꿈을 허용한다. */}
         <div className="theme-summary__head">
         <div className="theme-summary__title">
-          {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고, 값이 있을 때만 병렬로 놓는다.
-              둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 시안에서 이 자리에
-              두지 않았다. */}
+          <h1>{detail.classification.displayName}</h1>
+        </div>
+        <div className="theme-summary__return">
+          {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고 값이 있을 때만 놓는다.
+              둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 이 자리에 두지 않는다.
+              순위는 우상단, 등락률은 우하단으로 고정하고 관심 공백을 그 사이에 끼운다. */}
           <div className="theme-badges">
             {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
             {/* 관심 공백은 장기 미관심에만 의미가 있다. `6 거래일 만의 관심`은 알려주는 게 없다.
@@ -866,22 +896,8 @@ export function ThemeDetailPage() {
               </span>
             ) : null}
           </div>
-          <h1>{detail.classification.displayName}</h1>
-        </div>
-        <div className="theme-summary__return">
-          {/* `테마 수익률` 알약 대신 물음표를 둔다. 이 값이 무엇인지는 계산 기준이 더 정확히 답한다. */}
-          <strong>
-            {formatReturn(reaction.weightedReturn)}
-            <button
-              ref={calculationTriggerRef}
-              className="info-tip__button"
-              type="button"
-              aria-label="계산 기준 보기"
-              onClick={() => setCalculationOpen(true)}
-            >
-              ?
-            </button>
-          </strong>
+          {/* 계산 기준은 카드 밖 지표 줄 옆으로 옮겼다. 큰 숫자에 붙이면 자리가 애매하다. */}
+          <strong>{formatReturn(reaction.weightedReturn)}</strong>
           {/* 평상시 `활성`은 뱃지 자리를 차지할 만한 정보가 아니다. 다만 확정 대기·약화·종료는
               screen_spec 4.4가 표시를 요구하므로 그때만 상태를 붙인다. */}
           {detail.lifecycleStatus === 'ACTIVE' && detail.reconciliationStatus !== 'UNMATCHED' ? null : (
@@ -892,6 +908,17 @@ export function ThemeDetailPage() {
         </div>
         </div>
         {/* 시안의 가로 3열 칩. 세 번째 칸은 시안이 `거래대금`인데 계약에 그 값이 없어 Coverage를 쓴다. */}
+        <button
+          ref={calculationTriggerRef}
+          className="theme-summary__basis"
+          type="button"
+          onClick={() => setCalculationOpen(true)}
+        >
+          계산 기준
+          <span className="info-tip__button" aria-hidden="true">
+            ?
+          </span>
+        </button>
         <div className="theme-stats">
           <article>
             <span>상승 종목</span>
@@ -1014,9 +1041,6 @@ export function ThemeDetailPage() {
         )}
       </div>
 
-      <p className="notice">
-        장중 정보는 이후 정정될 수 있습니다. 과거에 관측된 데이터와 확인된 뉴스 근거를 함께 보여줍니다.
-      </p>
 
       {calculationOpen ? (
         <div className="sheet-backdrop" role="presentation" onMouseDown={closeCalculation}>

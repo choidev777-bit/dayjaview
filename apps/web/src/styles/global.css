@@ -530,15 +530,40 @@ a:focus-visible,
   font-weight: 700;
 }
 
-/* 목록에 이어 붙는 아코디언. 알약 버튼으로 한 줄을 통째로 쓰지 않고,
-   구분선과 옅은 음영으로 목록의 마지막 행처럼 보이게 한다. */
+/* 목록에 이어 붙는 아코디언. 글자 없이 화살표 하나만 두고, 구분선과 옅은 음영으로
+   목록의 마지막 행처럼 보이게 한다. */
 .expand-button--inline {
   width: 100%;
   margin: 0;
-  padding: 9px var(--djv-space-3);
+  padding: 7px var(--djv-space-3);
   border-top: 1px solid var(--djv-color-border);
   border-radius: 0 0 var(--djv-radius-lg) var(--djv-radius-lg);
   background: var(--djv-color-surface-muted);
+}
+
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 테마 이름이 길면 꼬리말을 다음 줄로 내린다. */
+.catalyst-heading__theme,
+.catalyst-heading__tail {
+  display: block;
+}
+
+.catalyst-heading__theme {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.page-intro__date {
+  font-size: var(--djv-font-size-heading-3);
+  font-weight: 800;
 }
 
 .expand-button i {
@@ -1016,12 +1041,23 @@ a:focus-visible,
   border: 1px solid var(--djv-color-border);
   border-radius: 18px;
   color: var(--djv-color-text);
-  /* 타일을 진하게 칠한다. 옅게 두면 강한 날에 순위 차이가 눈에 안 들어온다. */
-  background: color-mix(
+  /*
+   * 타일을 진하게 칠하되(옅으면 강한 날에 순위 차이가 안 보인다), 글자가 앉는 아래쪽에는
+   * 흰 기운을 겹쳐 깐다. 그래야 등락색 숫자를 테두리 없이도 읽을 수 있다.
+   */
+  --tile-fill: color-mix(
     in srgb,
     var(--djv-color-brand) calc(var(--tile-intensity, 0) * 92%),
     var(--djv-color-surface-muted)
   );
+  background:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--djv-color-on-brand) 46%, transparent) 0%,
+      color-mix(in srgb, var(--djv-color-on-brand) 18%, transparent) 44%,
+      transparent 76%
+    ),
+    var(--tile-fill);
   text-align: left;
   transition: background 700ms var(--djv-easing-standard);
 }
@@ -1035,7 +1071,7 @@ a:focus-visible,
 }
 
 /* 납작한 타일에서 flex가 이름 줄을 눌러 글자 아래가 잘리던 걸 막는다.
-   타일이 진해져서 테마명은 흰색으로 둔다. */
+   이름은 흰 기운이 옅은 위쪽에 앉으므로 흰색으로 둔다. */
 .treemap__tile strong {
   flex: none;
   max-width: 100%;
@@ -1049,10 +1085,10 @@ a:focus-visible,
 
 /* 타일이 진해져서 상승 빨강이 배경에 묻힌다. 색은 등락색 그대로 두고 흰 테두리를 둘러
    읽히게 한다. 색을 흰색으로 바꾸면 상승·하락 구분이 사라진다 (screen_spec §13.3). */
+/* 테두리를 두르면 글자가 뭉갠다. 대신 타일 아래쪽에 흰 기운을 깔아
+   (`.treemap__tile` 배경 참고) 등락색 그대로 읽히게 한다. */
 .treemap__tile b {
   font-size: 16px;
-  paint-order: stroke fill;
-  -webkit-text-stroke: 1.6px var(--djv-color-on-brand);
 }
 
 .treemap__tile small {
@@ -1230,11 +1266,12 @@ a:focus-visible,
   gap: 2px;
 }
 
-/* 물음표는 숫자 오른쪽 위에 붙인다. 인라인으로 흘리면 줄 높이가 좁아 아래로 빠진다. */
+/* 순위 뱃지는 우상단, 등락률은 우하단. 사이에 관심 공백 뱃지가 들어간다. */
+.theme-summary__return .theme-badges {
+  justify-content: flex-end;
+}
+
 .theme-summary__return > strong {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
   font-size: 36px;
   font-weight: 900;
   line-height: .98;
@@ -1242,9 +1279,24 @@ a:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
-.theme-summary__return > strong .info-tip__button {
-  margin-top: 2px;
-  flex: none;
+/* 계산 기준은 주황 카드 안 오른쪽에 한 줄로 둔다. */
+.theme-summary__basis {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: var(--djv-space-3) 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--djv-color-on-brand);
+  font-family: inherit;
+  font-size: var(--djv-font-size-caption);
+  font-weight: 700;
+}
+
+.theme-summary__basis .info-tip__button {
+  color: var(--djv-brand-contrast);
+  background: var(--djv-color-on-brand);
 }
 
 /* 시안 `.themeBadges`. 값이 없으면 영역째 사라져야 제목이 위로 붙는다 (시안 §4.2). */
@@ -1899,10 +1951,11 @@ a:focus-visible,
 }
 
  /* 데자뷰 케이스는 `언제 있었던 일인가`가 먼저 읽혀야 한다. 회색 캡션으로 두면
-    제목에 묻힌다. 포인트 색으로 올리고 글자도 키운다. */
+    제목에 묻히므로 포인트 색으로 올린다. 다만 아래 등락률과 크기가 같으면 둘 중
+    무엇을 먼저 볼지 헷갈려서, 날짜는 한 단계 작게 둔다. */
 .case-list__copy small {
   color: var(--djv-brand-contrast);
-  font-size: var(--djv-font-size-label);
+  font-size: var(--djv-font-size-caption);
   font-weight: 700;
   letter-spacing: -.01em;
 }
@@ -2231,26 +2284,34 @@ a:focus-visible,
   font-weight: 800;
 }
 
-/* 저장 해제는 항상 오른쪽 끝에 둔다. space-between으로 두면 상세 보기가 없는 항목에서
-   저장 해제가 왼쪽으로 옮겨가 줄마다 위치가 달라진다. */
-.saved-row__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--djv-space-3);
+/* 카드 전체가 이동 버튼이라 저장 해제는 카드 위에 겹쳐 띄운다.
+   링크 안에 버튼을 넣으면 중첩이 돼서 못 쓴다. */
+.saved-row-wrap {
+  position: relative;
 }
 
-.saved-row__actions a {
-  margin-right: auto;
+.saved-row--link {
+  padding-right: 56px;
+  color: inherit;
+  text-decoration: none;
 }
 
-.saved-row__actions a {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  color: var(--djv-brand-contrast);
-  font-size: var(--djv-font-size-caption);
-  font-weight: 800;
+.saved-row__remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--djv-color-border);
+  border-radius: 50%;
+  color: var(--djv-color-text-muted);
+  background: var(--djv-color-surface);
+}
+
+.saved-row__remove:disabled {
+  opacity: 0.5;
 }
 
 .library-empty {
@@ -2387,15 +2448,23 @@ a:focus-visible,
 }
 
 
-/* 소제목처럼 쓰는 줄. 두 번째부터는 위에 간격을 준다. */
-.info-tip__panel b {
+/*
+ * 줄바꿈 규칙: `strong`은 소제목이라 한 줄을 차지하고, `b`는 문장 안 강조라 흐름을 끊지 않는다.
+ * 둘을 한 태그로 쓰면 `오늘 사건의 <b>원인문</b>과 관련된`이 세 줄로 쪼개진다.
+ */
+.info-tip__panel strong {
   display: block;
   color: var(--djv-color-text);
   font-weight: 700;
 }
 
-.info-tip__panel b:not(:first-child) {
+.info-tip__panel strong:not(:first-child) {
   margin-top: 7px;
+}
+
+.info-tip__panel b {
+  color: var(--djv-color-text);
+  font-weight: 700;
 }
 
 .info-tip__panel a {

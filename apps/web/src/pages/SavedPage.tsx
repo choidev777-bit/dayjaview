@@ -1,4 +1,5 @@
 import { useRef, useState, type KeyboardEvent } from 'react';
+import { IconXmarkLine } from '@karrotmarket/react-monochrome-icon';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { SavedItem, SavedType } from '../domain/contracts';
@@ -59,8 +60,12 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
     }
   }
 
-  return (
-    <article className="saved-row">
+  /*
+   * 카드 전체가 이동이다. `상세 보기` 버튼을 따로 두면 누를 곳이 두 군데로 갈린다.
+   * 저장 해제는 링크 안에 넣을 수 없어(중첩 금지) 카드 위에 겹쳐 띄운다.
+   */
+  const body = (
+    <>
       <div className="saved-row__topline">
         <span className="badge">{savedTypeLabel(item.savedType)}</span>
         <span>저장 {formatDate(item.savedAt)}</span>
@@ -90,14 +95,33 @@ function SavedRow({ item, onRemove }: { item: SavedItem; onRemove: (item: SavedI
           <span>{reachable ? '지금 열어볼 수 있는 과거 사례' : '지금은 열 수 없는 과거 사례'}</span>
         </div>
       ) : null}
-      <div className="saved-row__actions">
-        {link ? <Link to={link}>상세 보기</Link> : null}
-        <button type="button" className="text-button" onClick={remove} disabled={removing}>
-          {removing ? '저장 해제 중' : '저장 해제'}
-        </button>
-      </div>
-      {failed ? <p role="alert">저장을 해제하지 못했습니다. 다시 시도해 주세요.</p> : null}
-    </article>
+    </>
+  );
+
+  return (
+    <div className="saved-row-wrap">
+      {link ? (
+        <Link className="saved-row saved-row--link" to={link}>
+          {body}
+        </Link>
+      ) : (
+        <article className="saved-row">{body}</article>
+      )}
+      <button
+        type="button"
+        className="saved-row__remove"
+        onClick={remove}
+        disabled={removing}
+        aria-label={`${item.displayName} 저장 해제`}
+      >
+        <IconXmarkLine size={20} aria-hidden="true" />
+      </button>
+      {failed ? (
+        <p className="confirmation-note" role="alert">
+          저장을 해제하지 못했습니다. 다시 시도해 주세요.
+        </p>
+      ) : null}
+    </div>
   );
 }
 

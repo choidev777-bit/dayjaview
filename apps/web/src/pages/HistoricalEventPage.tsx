@@ -73,8 +73,9 @@ export function HistoricalEventPage() {
       />
 
       <div className="page-intro">
-        <small>
-          {detail.displayNameAtEvent} · {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
+        {/* 테마 이름은 아래 `열어봄` 줄과 겹친다. 여기서는 사건일만 크게 둔다. */}
+        <small className="page-intro__date">
+          {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
         </small>
         <h1>{detail.catalystSummary}</h1>
       </div>
@@ -130,7 +131,7 @@ export function HistoricalEventPage() {
             <h2 id="historical-leaders-title">당시 주도 종목</h2>
             {detail.leaders.length ? (
               <InfoTip label="당시 주도 종목 계산 기준">
-                <b>사건 당일 등락률</b>입니다. 전일 종가 대비 그날 종가로 계산했습니다. 위의 `당시 결과`는
+                <strong>사건 당일 등락률</strong>입니다. 전일 종가 대비 그날 종가로 계산했습니다. 위의 `당시 결과`는
                 T+1·T+5·T+20이라 기준이 다릅니다.
                 <br />
                 당시 기록된 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
@@ -211,7 +212,7 @@ function TodayOverlap({
     <>
       {/* 어디서 타고 들어왔는지는 맥락일 뿐이라 제목 위에 한 줄로만 둔다. */}
       <p className="today-origin">
-        오늘 <strong>{today.classification.displayName}</strong>에서 열어봄
+        <strong>{today.classification.displayName}</strong>에서 열어봄
       </p>
 
       <section aria-labelledby="overlap-title">

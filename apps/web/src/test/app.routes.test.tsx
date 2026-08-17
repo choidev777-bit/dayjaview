@@ -196,7 +196,9 @@ describe('관심 route shell', () => {
     expect(await screen.findByText('스페이스X(SpaceX)')).toBeInTheDocument();
     expect(screen.getByText('접근 제한 과거 이벤트')).toBeInTheDocument();
     expect(screen.getByText('현재 확인할 수 없음')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: '상세 보기' })).toBeInTheDocument();
+    // 카드 전체가 이동 링크다. 열 수 있는 항목만 링크가 되고 접근 제한 항목은 링크가 아니다.
+    expect(screen.getByRole('link', { name: /스페이스X/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /접근 제한 과거 이벤트/ })).not.toBeInTheDocument();
   });
 
   it('필터 tablist는 방향키로 이동하고 URL 상태에 맞춰 빈 상태를 표시한다', async () => {
@@ -224,7 +226,7 @@ describe('관심 route shell', () => {
     const user = userEvent.setup();
     render(<App repository={createFixtureRepository({ saved: 'library' })} initialEntries={['/saved']} />);
 
-    await user.click(await screen.findByRole('button', { name: '저장 해제' }));
+    await user.click(await screen.findByRole('button', { name: /저장 해제/ }));
 
     expect(await screen.findByText('저장한 항목이 없습니다')).toBeInTheDocument();
   });

@@ -36,7 +36,7 @@ describe('접근성 foundation', () => {
       />,
     );
 
-    const trigger = await screen.findByRole('button', { name: '계산 기준 보기' });
+    const trigger = await screen.findByRole('button', { name: /계산 기준/ });
     await user.click(trigger);
     expect(screen.getByRole('dialog', { name: '계산 기준' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '계산 기준 닫기' })).toHaveFocus();
