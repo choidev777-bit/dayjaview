@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRepository } from '../app/RepositoryContext';
 import type { DataStatus, TreemapResponse } from '../domain/contracts';
 import { dataStatusLabel } from '../domain/formatting';
-import { TREEMAP_LAYOUT_INTERVAL_MS, isSnapshotStale, selectTreemapItems } from '../domain/treemap';
+import { REPLAY_INTERVAL_MS, isSnapshotStale, selectTreemapItems } from '../domain/treemap';
 import { DataStatusBar } from '../shared/DataStatusBar';
 import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage } from '../shared/StatePanel';
@@ -34,13 +34,13 @@ function TreemapSkeleton() {
 }
 
 /**
- * 장중에는 화면이 스스로 다음 스냅샷을 받아 온다. 레이아웃은 1초에 한 번까지만 바꾼다
- * (screen_spec 6.4). 장이 끝난 데이터에서는 값이 변하지 않으니 굳이 돌리지 않는다.
+ * 장중에는 화면이 스스로 다음 스냅샷을 받아 온다. 장이 끝난 데이터에서는 값이 변하지
+ * 않으니 굳이 돌리지 않는다.
  */
 function useLiveRefresh(dataStatus: DataStatus, refresh: () => void) {
   useEffect(() => {
     if (dataStatus !== 'LIVE') return undefined;
-    const timer = window.setInterval(refresh, TREEMAP_LAYOUT_INTERVAL_MS);
+    const timer = window.setInterval(refresh, REPLAY_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [dataStatus, refresh]);
 }

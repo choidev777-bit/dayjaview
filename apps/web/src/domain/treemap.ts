@@ -10,6 +10,8 @@ export const TREEMAP_GAP = 5;
 /** 숫자·색상은 500ms, 레이아웃은 1초 (treemap plan §5.4, screen_spec §6.4). */
 export const TREEMAP_VALUE_INTERVAL_MS = 500;
 export const TREEMAP_LAYOUT_INTERVAL_MS = 1000;
+/** 장중 재생 시연 간격. 1초로 흘리면 눈이 못 따라가서 3초에 한 분씩 넘긴다. */
+export const REPLAY_INTERVAL_MS = 3000;
 
 const STALE_THRESHOLD_MS = 3000;
 const NEUTRAL_BAND = 0.001;
@@ -51,6 +53,18 @@ export function treemapRows(items: TreemapItem[]): TreemapItem[][] {
   while (rest.length) {
     rows.push(rest.slice(0, TREEMAP_TAIL_ROW));
     rest = rest.slice(TREEMAP_TAIL_ROW);
+  }
+  // 마지막 줄에 하나만 남으면 가로로 길게 깔려 혼자 띠처럼 보인다. 앞 줄에서 하나를
+  // 내려 두 칸으로 만든다. 앞 줄이 둘뿐이면 그냥 앞 줄에 붙인다.
+  const last = rows[rows.length - 1];
+  const prev = rows[rows.length - 2];
+  if (rows.length >= 2 && last.length === 1) {
+    if (prev.length > 2) {
+      last.unshift(prev.pop() as TreemapItem);
+    } else {
+      prev.push(...last);
+      rows.pop();
+    }
   }
   return rows;
 }

@@ -1050,7 +1050,8 @@ a:focus-visible,
   padding: var(--djv-space-3);
   overflow: hidden;
   border: 1px solid var(--djv-color-border);
-  border-radius: 18px;
+  /* 카드·컨텐츠 박스와 같은 곡률을 쓴다. 타일만 다르면 겹쳐 놓았을 때 어긋나 보인다. */
+  border-radius: var(--djv-radius-lg);
   color: var(--djv-color-text);
   /*
    * 타일을 진하게 칠하되(옅으면 강한 날에 순위 차이가 안 보인다), 글자가 앉는 아래쪽에는
