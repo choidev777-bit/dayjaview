@@ -1,5 +1,6 @@
 import { useRepository } from '../app/RepositoryContext';
 import { formatLongDate } from '../domain/formatting';
+import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorPage, LoadingState } from '../shared/StatePanel';
 import { ThemeRankingWheel } from '../shared/ThemeRankingWheel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -28,7 +29,11 @@ export function TodayPage() {
         <strong>{formatLongDate(`${context.marketDate}T00:00:00+09:00`)}</strong>
         <h1>오늘 많이 오른 테마예요</h1>
       </div>
-      {/* 홈은 순위만 보여준다. 데이터 상태·기준 시각은 실시간 화면과 테마 상세에 남는다. */}
+      {/* 박스로 세우면 목록보다 먼저 읽힌다. 제목 밑에 회색 한 줄로만 둔다.
+          기준 시각·데이터 상태 표시 자체는 screen_spec §3.2·§5.2가 요구한다. */}
+      <div className="home-status">
+        <DataStatusBar context={context} />
+      </div>
       {data.items.length ? (
         <ThemeRankingWheel items={data.items} />
       ) : (

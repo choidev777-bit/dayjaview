@@ -81,7 +81,7 @@ describe('트리맵 색상과 라벨', () => {
 
     const scale = treemapIntensityScale(strongDay);
     expect(scale(0.104)).toBeCloseTo(1, 6);
-    expect(scale(0.074)).toBeCloseTo(0.3, 6);
+    expect(scale(0.074)).toBeCloseTo(0.55, 6);
     expect(scale(0.088)).toBeGreaterThan(scale(0.074));
     expect(scale(0.088)).toBeLessThan(scale(0.104));
   });

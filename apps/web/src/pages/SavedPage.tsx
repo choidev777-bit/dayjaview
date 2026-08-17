@@ -13,10 +13,14 @@ import {
 import { EmptyState, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
 
+/*
+ * 종목 저장은 만들지 않는다. 돌아갈 종목 상세 화면이 없어서다 (screen_spec 8.6).
+ * 다만 이전에 저장된 종목이 서버에 남아 있을 수 있어 `전체`에서는 계속 보이게 두고
+ * 필터 칩만 뺀다.
+ */
 const filters = [
   ['ALL', '전체'],
   ['THEME', '테마'],
-  ['STOCK', '종목'],
   ['EVENT', '이벤트'],
 ] as const;
 

@@ -545,15 +545,14 @@ a:focus-visible,
 
 /* -------------------------------------------------------- 상태 표현 */
 
+/* 배경 박스 없이 한 줄로 둔다. 기준 시각은 필요할 때 확인하는 값이라 카드로 세울 게 아니다. */
 .data-status {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--djv-space-1) var(--djv-space-2);
-  padding: 10px var(--djv-space-3);
-  border-radius: var(--djv-radius-md);
+  padding: 2px 0;
   color: var(--djv-color-text-muted);
-  background: var(--djv-color-brand-soft);
   font-size: var(--djv-font-size-caption);
 }
 
@@ -569,13 +568,8 @@ a:focus-visible,
 
 /* 회색 위의 갈색 글씨만으로는 경고가 어중간하게 읽힌다. 띠 자체를 옅은 경고색으로 깔아
    `보통 안내`가 아니라 `지금 상태가 정상이 아니다`로 먼저 보이게 한다. */
-.data-status--delayed,
-.data-status--degraded,
-.data-status--closed,
-.data-status--preopen {
-  background: var(--djv-color-warning-soft);
-}
-
+/* 상태는 배경 대신 글자 색으로만 구분한다. 색만으로 전달하지 않도록 문구도 함께 적는다
+   (screen_spec §4.2 · §13.3). */
 .data-status--delayed strong,
 .data-status--degraded strong,
 .data-status--closed strong,
@@ -752,7 +746,10 @@ a:focus-visible,
   letter-spacing: -.04em;
 }
 
-/* 홈 상단 상태 바는 뺐다. .data-status 자체는 실시간 화면이 계속 쓴다. */
+.home-status {
+  flex: none;
+  padding: 0 var(--djv-space-5) 10px;
+}
 
 .wheel {
   position: relative;
@@ -1008,9 +1005,10 @@ a:focus-visible,
   border: 1px solid var(--djv-color-border);
   border-radius: 18px;
   color: var(--djv-color-text);
+  /* 타일을 진하게 칠한다. 옅게 두면 강한 날에 순위 차이가 눈에 안 들어온다. */
   background: color-mix(
     in srgb,
-    var(--djv-color-brand) calc(var(--tile-intensity, 0) * 42%),
+    var(--djv-color-brand) calc(var(--tile-intensity, 0) * 92%),
     var(--djv-color-surface-muted)
   );
   text-align: left;
@@ -1025,18 +1023,23 @@ a:focus-visible,
   );
 }
 
-/* 납작한 타일에서 flex가 이름 줄을 눌러 글자 아래가 잘리던 걸 막는다. */
+/* 납작한 타일에서 flex가 이름 줄을 눌러 글자 아래가 잘리던 걸 막는다.
+   타일이 진해져서 테마명은 흰색으로 둔다. */
 .treemap__tile strong {
   flex: none;
   max-width: 100%;
   overflow: hidden;
+  color: var(--djv-color-on-brand);
   font-size: 14px;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* 타일이 진해져서 상승 빨강은 배경에 묻힌다. 값도 흰색으로 둔다.
+   방향은 색이 아니라 부호(+/−)로 읽힌다 (screen_spec §13.3). */
 .treemap__tile b {
+  color: var(--djv-color-on-brand);
   font-size: 16px;
 }
 
@@ -1165,8 +1168,18 @@ a:focus-visible,
   background: var(--djv-brand-header);
 }
 
+/* 이름은 왼쪽, 수익률은 오른쪽. 이름이 길면 이름만 접히고 수익률은 줄지 않는다. */
+.theme-summary__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--djv-space-3);
+}
+
 .theme-summary__title {
   display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--djv-space-2);
@@ -1178,6 +1191,9 @@ a:focus-visible,
   font-weight: 900;
   line-height: 1.12;
   letter-spacing: -.045em;
+  /* `광섬 / 유 등)`처럼 단어 중간에서 끊기지 않게 한다. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .theme-summary .status-chip,
@@ -1195,9 +1211,10 @@ a:focus-visible,
 
 .theme-summary__return {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-top: var(--djv-space-3);
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .theme-summary__return > strong {
@@ -2262,6 +2279,85 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-label);
   line-height: 1.6;
+}
+
+/* ------------------------------------------------------------- 물음표 툴팁 */
+
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+.info-tip__button {
+  display: grid;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--djv-color-text-muted);
+  background: var(--djv-color-surface-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.info-tip__button[aria-expanded='true'] {
+  color: var(--djv-color-on-brand);
+  background: var(--djv-color-brand);
+}
+
+.info-tip__panel {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  right: 0;
+  bottom: auto;
+  width: max-content;
+  max-width: min(268px, 74vw);
+  padding: 10px var(--djv-space-3);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-md);
+  color: var(--djv-color-text-muted);
+  background: var(--djv-color-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  font-size: var(--djv-font-size-caption);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: normal;
+  text-align: left;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.info-tip__panel[data-placement='up'] {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+
+.info-tip__panel b {
+  display: block;
+  color: var(--djv-color-text);
+  font-weight: 700;
+}
+
+.info-tip__panel a {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--djv-color-brand);
+  font-weight: 700;
+}
+
+/* 주황 헤더 안에서는 반대 톤으로 뒤집는다. */
+.theme-summary .info-tip__button {
+  color: var(--djv-brand-contrast);
+  background: color-mix(in srgb, var(--djv-color-on-brand) 70%, transparent);
 }
 
 /* ------------------------------------------------------------- 특징테마 */

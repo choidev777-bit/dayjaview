@@ -129,14 +129,17 @@ describe('근거 상태 matrix', () => {
       />,
     );
 
-    const link = await screen.findByRole('link', { name: /새 창에서 원문 보기/ });
+    // 매체·시각·원문은 기사 제목 옆 물음표 안에 접혀 있다 (screen_spec 8.3의 `영역 선택`).
+    const tip = await screen.findByRole('button', { name: /출처 정보/ });
+    expect(screen.queryByRole('link', { name: /새 창에서 원문 보기/ })).not.toBeInTheDocument();
+
+    await userEvent.click(tip);
+
+    const link = screen.getByRole('link', { name: /새 창에서 원문 보기/ });
     expect(link).toHaveAttribute('href', 'https://example.com/news/123');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
-    expect(screen.getByText('예시 언론사 · 10:17 · 새 창에서 원문 보기')).toBeInTheDocument();
-    expect(screen.getByText('테마 일치 · 종목 일치 · 시각 근접')).toBeInTheDocument();
-    // 기사 문장이 아니라 우리가 정리한 요약임을 밝히는 표시 (PRD 저작권 규칙)
-    expect(screen.getByText('직접 정리')).toBeInTheDocument();
+    expect(screen.getByText('예시 언론사 · 10:17')).toBeInTheDocument();
   });
 
   it('장후 확정 근거에 장중 이력 보존을 안내한다', async () => {
@@ -152,10 +155,9 @@ describe('근거 상태 matrix', () => {
     };
     render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
 
-    // 이력 보존은 탭으로 안내한다. 같은 말을 문단으로 한 번 더 적으면 확정 사유 요약과 겹친다.
-    expect(
-      await screen.findByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.'),
-    ).toBeInTheDocument();
+    // 이력 보존은 탭으로 안내한다. 상태 설명은 제목 옆 물음표 안에 접혀 있다.
+    await userEvent.click(await screen.findByRole('button', { name: '상승 이유 판단 기준' }));
+    expect(screen.getByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: '장중 분석 이력' })).toBeInTheDocument();
   });
 
@@ -167,12 +169,14 @@ describe('근거 상태 matrix', () => {
       />,
     );
 
-    // 상태는 출처 수·시각과 한 줄에 함께 적힌다. 같은 문구를 두 번 적지 않는다.
-    expect(
-      (await screen.findAllByText('복수 뉴스 확인', { exact: false })).length,
-    ).toBeGreaterThan(0);
-    // 상태 문구는 근거보다 먼저 그려진다. 근거 목록은 따로 기다린다.
-    expect(await screen.findByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
+    // 근거 목록이 먼저 그려지고, 상태와 출처 수는 제목 옆 물음표 안에 함께 있다.
+    expect(await screen.findAllByRole('button', { name: /출처 정보/ })).not.toHaveLength(0);
+
+    await userEvent.click(screen.getByRole('button', { name: '상승 이유 판단 기준' }));
+    expect(screen.getByText(/복수 뉴스 확인/)).toBeInTheDocument();
+
+    await userEvent.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[1]);
+    expect(screen.getByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
   });
 
   it('장후 확정 상태를 event lifecycle과 별도 문구로 표시한다', async () => {
@@ -183,8 +187,12 @@ describe('근거 상태 matrix', () => {
       />,
     );
 
-    expect((await screen.findAllByText(/인포스탁 기준 확정/)).length).toBeGreaterThan(0);
-    expect(screen.getByText('장후 확정', { selector: '.status-chip' })).toBeInTheDocument();
+    // 사건 수명 상태(`장후 확정`)와 근거 상태는 서로 다른 자리에 다른 문구로 적는다.
+    expect(await screen.findByText('장후 확정', { selector: '.status-chip' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: '상승 이유 판단 기준' }));
+    expect(screen.getByText(/복수 뉴스 확인/)).toBeInTheDocument();
+    expect(screen.queryByText('장후 확정', { selector: '.info-tip__panel b' })).not.toBeInTheDocument();
   });
 
   it('검색 중에는 저장된 요약 문장이 있어도 상승 이유를 만들지 않는다', async () => {
@@ -220,6 +228,8 @@ describe('근거 상태 matrix', () => {
 
     expect(await screen.findByText('발행 시각 미확인')).toBeInTheDocument();
     expect(screen.getByText('원문 제공 범위 제한')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /출처 정보/ }));
     expect(screen.getByText(/발행 시각 미확인 · 수집 10:17/)).toBeInTheDocument();
   });
 

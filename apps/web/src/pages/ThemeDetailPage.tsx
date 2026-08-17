@@ -9,7 +9,6 @@ import {
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type {
-  DataStatus,
   EvidenceItem,
   EvidenceResponse,
   EvidenceStatus,
@@ -28,11 +27,11 @@ import {
   formatTime,
   hasConfirmedEvidence,
   horizonLabel,
-  matchBasisLabel,
   outcomeText,
   returnTone,
 } from '../domain/formatting';
 import { CoverageIndicator } from '../shared/CoverageIndicator';
+import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage, ErrorState, LoadingState } from '../shared/StatePanel';
 import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -154,29 +153,35 @@ function EvidenceList({
         {visible.map((item) => (
           <li key={item.newsId} data-time={showTime ? 'true' : 'false'}>
             {showTime ? <span>{formatTime(item.publishedAt)}</span> : null}
-            <a href={item.originalUrl} target="_blank" rel="noreferrer">
-              <strong>{item.title}</strong>
-              <span>
-                {item.sourceName} ·{' '}
-                {item.publishedAt
-                  ? formatTime(item.publishedAt)
-                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}{' '}
-                · 새 창에서 원문 보기
-              </span>
-            </a>
+            {/* 매체·발행 시각·원문 링크는 지우지 않고 물음표 안으로 접는다. 규칙이
+                `영역 선택 또는 별도 상세`를 허용한다 (screen_spec §8.3). */}
+            <strong>
+              {item.title}
+              <InfoTip label={`${item.title} 출처 정보`}>
+                <b>
+                  {item.sourceName} ·{' '}
+                  {item.publishedAt
+                    ? formatTime(item.publishedAt)
+                    : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}
+                </b>
+                <a href={item.originalUrl} target="_blank" rel="noreferrer">
+                  새 창에서 원문 보기
+                </a>
+              </InfoTip>
+            </strong>
             <p>{item.summary}</p>
-            <p className="evidence-list__basis">
-              <span className="badge">직접 정리</span>
-              {item.matchBasis.map(matchBasisLabel).join(' · ')}
-              {item.qualityFlags.map((flag) => {
-                const label = evidenceFlagLabel(flag);
-                return label ? (
-                  <span key={flag} className="badge">
-                    {label}
-                  </span>
-                ) : null;
-              })}
-            </p>
+            {item.qualityFlags.some((flag) => evidenceFlagLabel(flag)) ? (
+              <p className="evidence-list__basis">
+                {item.qualityFlags.map((flag) => {
+                  const label = evidenceFlagLabel(flag);
+                  return label ? (
+                    <span key={flag} className="badge">
+                      {label}
+                    </span>
+                  ) : null;
+                })}
+              </p>
+            ) : null}
           </li>
         ))}
       </ul>
@@ -213,66 +218,17 @@ function EvidenceList({
  * `주도` 라벨은 첫 번째 종목에만 붙인다. 나머지도 주도 종목이지만, 라벨을 다 붙이면
  * Leader Score 1위가 누구인지 사라진다 (screen_spec 8.6).
  *
- * 종목 상세는 후속 범위라 행을 링크로 만들지 않는다. 대신 행마다 관심 저장을 둔다
- * (screen_spec 8.6 `종목 상세가 준비되지 않았다면 종목 행을 잘못된 링크로 만들지 않는다`).
+ * 종목 상세가 후속 범위라 행을 링크로 만들지 않는다 (screen_spec 8.6). 저장해도
+ * 돌아갈 화면이 없어 종목 저장도 두지 않는다. 종목 상세가 생기면 그때 함께 만든다.
  */
-function LeaderList({
-  leaders,
-  context,
-}: {
-  leaders: ThemeDetail['leaders'];
-  /** 저장 목록이 종목 행에 요구하는 현재 상태를 만들 재료 (screen_spec 12.1). */
-  context: { eventId: string; dataStatus: DataStatus; asOf: string } | null;
-}) {
-  const repository = useRepository();
+function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
   const [expanded, setExpanded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const saved = useRepositoryResource(
-    repository,
-    'saved',
-    () => repository.getSaved('STOCK'),
-    [repository],
-  );
   const visible = expanded ? leaders : leaders.slice(0, VISIBLE_LEADERS);
   const hidden = leaders.length - visible.length;
 
-  const savedIds =
-    saved.status === 'success'
-      ? new Set(saved.data.data.items.map((item) => item.targetId))
-      : null;
-
-  async function toggle(stockId: string, name: string) {
-    setFailed(false);
-    try {
-      if (savedIds?.has(stockId)) {
-        await repository.removeSaved({ savedType: 'STOCK', targetId: stockId });
-      } else {
-        const leader = leaders.find((row) => row.stockId === stockId);
-        await repository.saveSaved({
-          savedType: 'STOCK',
-          targetId: stockId,
-          displayName: name,
-          currentState:
-            context && leader
-              ? {
-                  eventId: context.eventId,
-                  eventState: 'ACTIVE',
-                  weightedReturn: leader.return ?? 0,
-                  dataStatus: context.dataStatus,
-                  asOf: context.asOf,
-                }
-              : null,
-        });
-      }
-      saved.retry();
-    } catch {
-      setFailed(true);
-    }
-  }
-
   return (
     <>
-      <ol className="leader-list leader-list--savable">
+      <ol className="leader-list">
         {visible.map((leader, index) => (
           <li key={leader.stockId}>
             <div>
@@ -280,20 +236,6 @@ function LeaderList({
               {index === 0 ? <span className="badge">주도</span> : null}
             </div>
             <strong className={returnTone(leader.return)}>{formatReturn(leader.return)}</strong>
-            <button
-              type="button"
-              className="leader-list__save"
-              aria-pressed={savedIds?.has(leader.stockId) ?? false}
-              aria-label={`${leader.name} ${savedIds?.has(leader.stockId) ? '저장 해제' : '관심에 저장'}`}
-              disabled={savedIds === null}
-              onClick={() => toggle(leader.stockId, leader.name)}
-            >
-              {savedIds?.has(leader.stockId) ? (
-                <IconStarFill size={18} aria-hidden="true" />
-              ) : (
-                <IconStarLine size={18} aria-hidden="true" />
-              )}
-            </button>
           </li>
         ))}
       </ol>
@@ -309,11 +251,6 @@ function LeaderList({
           </span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
-      ) : null}
-      {failed ? (
-        <p className="confirmation-note" role="alert">
-          종목 저장 상태를 바꾸지 못했습니다. 다시 시도해 주세요.
-        </p>
       ) : null}
     </>
   );
@@ -640,7 +577,18 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
   return (
     <section aria-labelledby="reason-title">
       <div className="section-heading">
-        <h2 id="reason-title">오늘 왜 올랐을까요?</h2>
+        <h2 id="reason-title">
+          오늘 왜 올랐을까요?
+          {/* 근거 상태·출처 수·확인 시각은 늘 띄우면 요약보다 먼저 읽힌다. 물음표로 접는다. */}
+          <InfoTip label="상승 이유 판단 기준">
+            <b>
+              {evidenceStatusLabel(evidenceStatus)}
+              {summary.sourceCount > 0 ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳` : ''}
+              {summary.latestPublishedAt ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}` : ''}
+            </b>
+            {evidenceStatusNote(evidenceStatus)}
+          </InfoTip>
+        </h2>
       </div>
 
       <div
@@ -674,12 +622,6 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
           장 마감 후 분석
         </button>
       </div>
-
-      <p className="section-note">
-        {evidenceStatusLabel(evidenceStatus)}
-        {summary.sourceCount > 0 ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳` : ''}
-        {summary.latestPublishedAt ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}` : ''}
-      </p>
 
       <div
         role="tabpanel"
@@ -763,7 +705,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
 
                   {items.length ? (
                     <>
-                      <p className="section-note">{evidenceStatusNote(evidenceStatus)}</p>
+                      {/* 상태 설명은 제목 옆 물음표로 옮겼다. */}
                       <EvidenceList
                         items={items}
                         showTime={tab === 'LIVE'}
@@ -903,6 +845,9 @@ export function ThemeDetailPage() {
       </header>
 
       <section className="theme-summary">
+        {/* 테마명과 수익률을 위아래로 쌓으면 주황 카드만 화면의 절반을 먹는다.
+            이름은 왼쪽, 수익률은 오른쪽에 두고 이름만 줄바꿈을 허용한다. */}
+        <div className="theme-summary__head">
         <div className="theme-summary__title">
           {/* 시안 §4.2: 뱃지 자리는 순위와 관심 공백 둘뿐이고, 값이 있을 때만 병렬로 놓는다.
               둘 다 없으면 `:empty`로 영역이 사라진다. 사건 상태(활성·약화)는 시안에서 이 자리에
@@ -930,6 +875,7 @@ export function ThemeDetailPage() {
               {eventStatusLabel(detail.lifecycleStatus, detail.reconciliationStatus)}
             </span>
           )}
+        </div>
         </div>
         {/* 시안의 가로 3열 칩. 세 번째 칸은 시안이 `거래대금`인데 계약에 그 값이 없어 Coverage를 쓴다. */}
         <div className="theme-stats">
@@ -1042,18 +988,7 @@ export function ThemeDetailPage() {
                 <h2 id="leaders-title">오늘의 주도 종목</h2>
               </div>
               {detail.leaders.length ? (
-                <LeaderList
-                  leaders={detail.leaders}
-                  context={
-                    calculationContext
-                      ? {
-                          eventId: detail.eventId,
-                          dataStatus: calculationContext.dataStatus,
-                          asOf: calculationContext.asOf,
-                        }
-                      : null
-                  }
-                />
+                <LeaderList leaders={detail.leaders} />
               ) : (
                 <EmptyState
                   title="확인된 주도 종목이 없습니다"

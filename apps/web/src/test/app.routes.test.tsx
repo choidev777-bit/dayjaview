@@ -47,7 +47,9 @@ describe('인증과 route shell', () => {
     await user.keyboard(' ');
 
     expect(await screen.findByRole('heading', { level: 1, name: '원전수출' })).toBeInTheDocument();
-    expect(screen.getByText(/뉴스 기반 추정/, { selector: '.section-note' })).toBeInTheDocument();
+    // 근거 상태는 제목 옆 물음표 안에 접혀 있다.
+    await user.click(await screen.findByRole('button', { name: '상승 이유 판단 기준' }));
+    expect(screen.getByText(/뉴스 기반 추정/)).toBeInTheDocument();
   });
 
   it('인사이트 타일은 접근 가능한 이름과 canonical 상세 이동을 제공한다', async () => {
@@ -199,16 +201,23 @@ describe('관심 route shell', () => {
 
   it('필터 tablist는 방향키로 이동하고 URL 상태에 맞춰 빈 상태를 표시한다', async () => {
     const user = userEvent.setup();
-    render(<App repository={createFixtureRepository()} initialEntries={['/saved']} />);
+    // 이벤트만 저장된 fixture라 `테마` 탭이 빈 상태가 된다.
+    render(<App repository={createFixtureRepository({ saved: 'unavailable' })} initialEntries={['/saved']} />);
 
     const allTab = await screen.findByRole('tab', { name: '전체' });
     allTab.focus();
     await user.keyboard('{ArrowRight}');
 
     await waitFor(() => expect(screen.getByRole('tab', { name: '테마' })).toHaveAttribute('aria-selected', 'true'));
-    await user.keyboard('{ArrowRight}');
     expect(await screen.findByText('저장한 항목이 없습니다')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: '종목' })).toHaveFocus();
+    expect(screen.getByRole('tab', { name: '테마' })).toHaveFocus();
+
+    // 종목 저장은 없앴다. 테마 다음은 이벤트다.
+    await user.keyboard('{ArrowRight}');
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: '이벤트' })).toHaveAttribute('aria-selected', 'true'),
+    );
+    expect(screen.queryByRole('tab', { name: '종목' })).not.toBeInTheDocument();
   });
 
   it('저장 해제는 fixture adapter 상태를 갱신한다', async () => {

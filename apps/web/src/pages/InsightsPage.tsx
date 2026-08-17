@@ -4,6 +4,7 @@ import type { DataStatus, TreemapResponse } from '../domain/contracts';
 import { dataStatusLabel } from '../domain/formatting';
 import { isSnapshotStale, selectTreemapItems } from '../domain/treemap';
 import { DataStatusBar } from '../shared/DataStatusBar';
+import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage } from '../shared/StatePanel';
 import { ThemeTreemap } from '../shared/ThemeTreemap';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -71,18 +72,19 @@ function InsightsScreen({ response }: { response: TreemapResponse }) {
       <div className="treemap-legend">
         <span>
           <i aria-hidden="true" />
-          면적: 테마 수익률 · 색: 이날 상대 비교
+          면적: 테마 수익률
+          <InfoTip label="면적과 색 기준" placement="up">
+            <b>면적</b>은 테마 수익률 원값에 비례합니다. 내부 순위 점수는 사용하지 않습니다.
+            <br />
+            <b>색</b>은 이날 화면에 오른 테마들 사이의 상대 비교입니다. 다른 날과 직접 비교하지 마세요.
+          </InfoTip>
         </span>
         {/* 장이 끝났는데 `장중 갱신`이라고 적으면 화면 위 상태 띠와 어긋난다. */}
         <span>
           {displayContext.dataStatus === 'LIVE' ? '수치는 장중 갱신' : `수치는 ${dataStatusLabel(displayContext.dataStatus)} 기준`}
         </span>
       </div>
-      {/* 색을 그날 범위로 정규화했으므로 `면적과 색상이 같은 원값`이라고 쓰면 사실과 다르다. */}
-      <p className="section-note notice">
-        면적은 테마 수익률 원값에 비례합니다. 색은 이날 화면에 오른 테마들 사이의 상대 비교라 다른 날과
-        직접 비교하지 마세요. 내부 순위 점수는 사용하지 않습니다.
-      </p>
+      {/* 면적·색 기준 설명은 범례 옆 물음표로 옮겼다. */}
     </div>
   );
 }
