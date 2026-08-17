@@ -6,7 +6,7 @@ import { CoverageIndicator } from './CoverageIndicator';
 import { readViewState, writeViewState } from './viewState';
 
 const CARD_GAP = 8;
-const INTRO_STEP_MS = 800;
+const INTRO_STEP_MS = 1000;
 /** 끌어 옮긴 거리를 그대로 스크롤에 주면 카드가 손보다 빨리 지나간다 (팀 요청). */
 const DRAG_DAMPING = 0.55;
 /** 휠 한 번에 카드 여러 장이 넘어가지 않게 줄인다. */

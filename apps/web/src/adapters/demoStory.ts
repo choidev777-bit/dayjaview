@@ -465,7 +465,10 @@ export { byTheme as demoThemeById, byEvent as demoThemeByEvent };
  * 실제 서비스는 상한형 유동시총 가중이지만(PD-001), 이 화면의 목적은 값이 장중에
  * 실제로 움직이는 걸 보여주는 것이다.
  *
- * 수집이 10:39에 중단돼(manifest `status: INTERRUPTED`) 거기까지만 있다.
+ * 수집은 10:39에 중단됐지만(manifest `status: INTERRUPTED`), 그날 오전에 시장이 내려가
+ * 10시 무렵부터는 `weightedReturn > 0`인 테마가 1개 이하로 줄어 트리맵이 비었다.
+ * screen_spec 6.3이 상승 테마만 올리도록 정해 놓아 화면이 정직하게 비는 것이라,
+ * 상승 테마가 5개 이상 유지되는 09:00~09:56 구간만 남겨 반복한다.
  */
 const replay = intradayReplay as { marketDate: string; snapshots: { at: string; items: { themeId: string; weightedReturn: number; advancingCount: number; validCount: number }[] }[] };
 

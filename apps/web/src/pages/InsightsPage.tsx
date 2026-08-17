@@ -40,7 +40,11 @@ function TreemapSkeleton() {
 function useLiveRefresh(dataStatus: DataStatus, refresh: () => void) {
   useEffect(() => {
     if (dataStatus !== 'LIVE') return undefined;
-    const timer = window.setInterval(refresh, REPLAY_INTERVAL_MS);
+    const timer = window.setInterval(() => {
+      // 설명 시트를 읽는 중이면 건너뛴다. 갱신하면 화면이 새로 그려지며 시트가 닫힌다.
+      if (document.querySelector('.info-tip__panel')) return;
+      refresh();
+    }, REPLAY_INTERVAL_MS);
     return () => window.clearInterval(timer);
   }, [dataStatus, refresh]);
 }
@@ -88,7 +92,7 @@ function InsightsScreen({ response, refresh }: { response: TreemapResponse; refr
           면적: 테마 수익률
           {/* 갱신 시점까지 물음표 안으로 넣는다. 범례 줄에 문장을 늘어놓으면 지저분하다.
               장이 끝났는데 `장중 갱신`이라고 적으면 화면 위 상태 줄과 어긋나므로 상태를 따라간다. */}
-          <InfoTip label="면적과 색 기준" placement="up">
+          <InfoTip label="면적과 색 기준">
             <strong>면적</strong>
             테마 수익률 원값에 비례합니다. 내부 순위 점수는 사용하지 않습니다.
             <strong>색</strong>

@@ -223,49 +223,68 @@ export function ResearchPage() {
 
   return (
     <div className="page page--research">
+      {/* 다른 탭과 같은 머리말 형식: 화면 이름이 제목이고 안내는 그 아래 한 단계 작게. */}
       <header className="page-intro">
-        <small>데이터 리서치</small>
-        <h1>무엇이 궁금하세요?</h1>
-        <p>질문하면 보유한 과거 데이터 안에서 답을 찾아요. 근거 없는 답은 만들지 않습니다.</p>
+        <h1>데이터 리서치</h1>
+        <p className="page-intro__lead">무엇이 궁금하세요?</p>
       </header>
 
-      <form
-        className="research-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void ask(question);
-        }}
-      >
-        <label htmlFor="research-question">질문</label>
-        <textarea
-          id="research-question"
-          value={question}
-          maxLength={MAX_LENGTH}
-          rows={2}
-          placeholder="예: 어제 뭐가 올랐어?"
-          onChange={(event) => setQuestion(event.target.value)}
-        />
-        <button type="submit" className="button" disabled={pending || !question.trim()}>
-          {pending ? '찾는 중' : '질문하기'}
-        </button>
-      </form>
+      <div className="detail-card">
+        <form
+          className="research-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void ask(question);
+          }}
+        >
+          <label className="visually-hidden" htmlFor="research-question">
+            질문
+          </label>
+          {/* 손잡이로 높이를 늘리게 두면 화면이 들쭉날쭉해진다. 글이 길어지면 스스로 커진다. */}
+          <textarea
+            id="research-question"
+            className="research-form__input"
+            value={question}
+            maxLength={MAX_LENGTH}
+            rows={1}
+            placeholder="예: 어제 뭐가 올랐어?"
+            onChange={(event) => setQuestion(event.target.value)}
+            onInput={(event) => {
+              const field = event.currentTarget;
+              field.style.height = 'auto';
+              field.style.height = `${field.scrollHeight}px`;
+            }}
+          />
+          <button
+            type="submit"
+            className="research-form__submit"
+            disabled={pending || !question.trim()}
+          >
+            {pending ? '찾는 중' : '질문하기'}
+          </button>
+        </form>
 
-      <ul className="research-examples">
-        {EXAMPLES.map((example) => (
-          <li key={example}>
-            <button
-              type="button"
-              className="button button--secondary"
-              onClick={() => {
-                setQuestion(example);
-                void ask(example);
-              }}
-            >
-              {example}
-            </button>
-          </li>
-        ))}
-      </ul>
+        <p className="research-examples__title">이런 걸 물어볼 수 있어요</p>
+        <ul className="research-examples">
+          {EXAMPLES.map((example) => (
+            <li key={example}>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuestion(example);
+                  void ask(example);
+                }}
+              >
+                {example}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <p className="section-note">
+          보유한 과거 데이터 안에서만 답합니다. 근거 없는 답은 만들지 않습니다.
+        </p>
+      </div>
 
       {error ? <p className="research-failure">{error}</p> : null}
       {result?.data.status === 'ANSWERED' ? <AnswerBlock answer={result.data.answer} /> : null}
