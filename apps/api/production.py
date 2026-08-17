@@ -32,7 +32,13 @@ from packages.identity import (
 )
 from packages.identity.postgres import DbConnection
 from packages.identity.security import Clock
-from packages.infostock import PostgresDailyFeaturedReader
+from packages.ontology.outcomes import SqliteOutcomeReader
+from packages.ontology.query_answers import OUTCOME_RANGE_FROM, QueryAvailability
+from packages.ontology.query_contracts import QueryType
+from packages.ontology.research_postgres import (
+    PostgresResearchRepository,
+    load_question_catalog,
+)
 from packages.operator import (
     InMemoryOperatorRepository,
     OperatorRepository,
@@ -44,6 +50,7 @@ from .config import ApiSettings
 from .operator_boundary import StaticOperatorStatusSource
 from .product import EmptyProductReadRepository, ProductReadRepository
 from .realtime import RealtimeSnapshotHub
+from .research import ResearchBoundary
 
 GOOGLE_CLIENT_ID_ENV = "GOOGLE_OAUTH_CLIENT_ID"
 GOOGLE_CLIENT_SECRET_ENV = "GOOGLE_OAUTH_CLIENT_SECRET"
@@ -51,6 +58,10 @@ IDENTITY_DATABASE_DSN_ENV = "DATABASE_URL"
 # 특징테마는 인포스탁 적재 DB에 있다. 워커 env는 이 이름만 준다.
 INFOSTOCK_DATABASE_DSN_ENV = "INFOSTOCK_DATABASE_URL"
 CURSOR_SIGNING_SECRET_ENV = "SESSION_SIGNING_SECRET"
+# 사람 검수를 통과해 공개할 질의 유형(쉼표 구분). 비면 전부 품질 미검증이다.
+RESEARCH_VERIFIED_QUERY_TYPES_ENV = "RESEARCH_VERIFIED_QUERY_TYPES"
+# E-16 일봉 corpus 경로. 없으면 결과 질문 gate가 닫힌다.
+PRICE_CORPUS_PATH_ENV = "PRICE_CORPUS_PATH"
 DEPLOYMENT_VERSION_ENV = "DAYJAVIEW_DEPLOYMENT_VERSION"
 DEPLOYMENT_COMMIT_ENV = "DAYJAVIEW_COMMIT"
 
@@ -126,7 +137,9 @@ def create_production_app(
         connect=connect,
         closers=closers,
     )
-    daily_reader = _daily_reader(environment, connect=connect, closers=closers)
+    research_service = _research_service(
+        environment, connect=connect, closers=closers, clock=effective_clock
+    )
     runtime_status = operator_status or RuntimeOperatorStatus(
         deployment_version=(
             environment.get(DEPLOYMENT_VERSION_ENV, "").strip() or "local"
@@ -140,7 +153,7 @@ def create_production_app(
         operator_status_source=StaticOperatorStatusSource(runtime_status),
         settings=settings,
         product_repository=product_repository or EmptyProductReadRepository(),
-        daily_reader=daily_reader,
+        research_service=research_service,
         realtime_hub=effective_hub,
         operator_repository=effective_operator_repository,
         clock=effective_clock,
@@ -237,13 +250,18 @@ def _identity_repository(
     return PostgresIdentityRepository(connection), POSTGRES_STORE
 
 
-def _daily_reader(
+def _research_service(
     environment: Mapping[str, str],
     *,
     connect: DbConnect | None,
     closers: list[Callable[[], None]],
-) -> PostgresDailyFeaturedReader | None:
-    """특징테마 읽기 전용 연결. DSN이 없으면 기능을 열지 않는다."""
+    clock: Clock,
+) -> ResearchBoundary | None:
+    """리서치 읽기 전용 연결. DSN이 없으면 기능을 열지 않는다.
+
+    사람 검수를 통과한 질의 유형만 연다(계획서 11.1.2). 검수된 행이 없으면
+    `RESEARCH_VERIFIED_QUERY_TYPES`가 비고 모든 유형이 `품질 미검증`으로 답한다.
+    """
 
     dsn = environment.get(INFOSTOCK_DATABASE_DSN_ENV, "").strip() or environment.get(
         IDENTITY_DATABASE_DSN_ENV, ""
@@ -262,7 +280,50 @@ def _daily_reader(
     close = getattr(connection, "close", None)
     if callable(close):
         closers.append(close)
-    return PostgresDailyFeaturedReader(cast(Any, connection))
+    price_reader = _price_reader(environment, closers=closers)
+    return ResearchBoundary(
+        catalog=lambda: load_question_catalog(cast(Any, connection)),
+        repository=PostgresResearchRepository(
+            cast(Any, connection), price_reader=price_reader
+        ),
+        availability=QueryAvailability(
+            human_verified=_verified_query_types(environment),
+            outcome_gate_open=price_reader is not None,
+            outcome_range_from=(
+                OUTCOME_RANGE_FROM
+                if price_reader is None
+                else price_reader.price_range_from()
+            ),
+        ),
+    )
+
+
+def _verified_query_types(environment: Mapping[str, str]) -> frozenset[QueryType]:
+    raw = environment.get(RESEARCH_VERIFIED_QUERY_TYPES_ENV, "").strip()
+    if not raw:
+        return frozenset()
+    values: set[QueryType] = set()
+    for item in raw.split(","):
+        name = item.strip()
+        if not name:
+            continue
+        values.add(QueryType(name))
+    return frozenset(values)
+
+
+def _price_reader(
+    environment: Mapping[str, str],
+    *,
+    closers: list[Callable[[], None]],
+) -> SqliteOutcomeReader | None:
+    """E-16 가격 corpus. 없으면 결과 질문 gate를 닫아 둔다."""
+
+    path = environment.get(PRICE_CORPUS_PATH_ENV, "").strip()
+    if not path:
+        return None
+    reader = SqliteOutcomeReader(path)
+    closers.append(reader.close)
+    return reader
 
 
 def _operator_repository(

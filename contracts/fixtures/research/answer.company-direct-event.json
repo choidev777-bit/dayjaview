@@ -1,0 +1,124 @@
+{
+  "data": {
+    "status": "ANSWERED",
+    "answer": {
+      "queryType": "COMPANY_DIRECT_EVENT",
+      "countUnit": "CATALYST",
+      "countUnitLabelKo": "고유 사건",
+      "interpretation": {
+        "queryType": "COMPANY_DIRECT_EVENT",
+        "countUnit": "CATALYST",
+        "countUnitLabelKo": "고유 사건",
+        "direction": null,
+        "date": null,
+        "period": {
+          "from": "2024-01-01",
+          "to": "2024-12-31",
+          "literal": "2024년",
+          "expression": null
+        },
+        "company": {
+          "seedStockCode": "012450",
+          "canonicalName": "한화에어로스페이스",
+          "matchedText": "한화에어로스페이스",
+          "basis": "CURRENT_NAME"
+        },
+        "themes": [],
+        "catalystType": null,
+        "amountCondition": null,
+        "roles": [
+          "ACTOR",
+          "ISSUER",
+          "CONTRACTOR",
+          "TARGET"
+        ]
+      },
+      "summaryKo": "한화에어로스페이스가 직접 주체인 고유 사건은 2건입니다(이름이 등장한 고유 사건 9건 중).",
+      "metrics": [
+        {
+          "labelKo": "직접 사건",
+          "value": "2",
+          "countUnit": "CATALYST",
+          "countUnitLabelKo": "고유 사건",
+          "sampleSize": 9,
+          "noteKo": null
+        },
+        {
+          "labelKo": "원천 기록",
+          "value": "5",
+          "countUnit": "SOURCE_RECORD",
+          "countUnitLabelKo": "원천 기록",
+          "sampleSize": null,
+          "noteKo": null
+        },
+        {
+          "labelKo": "테마 반응",
+          "value": "5",
+          "countUnit": "THEME_REACTION",
+          "countUnitLabelKo": "테마 반응",
+          "sampleSize": null,
+          "noteKo": null
+        }
+      ],
+      "rows": [
+        {
+          "label": "2024-07-19 · 계약 체결",
+          "values": {
+            "catalystId": "catalyst_aaaaaaaaaaaaaaaaaaaaaaaa",
+            "eventStage": "SIGNED",
+            "certainty": "CONFIRMED",
+            "roles": [
+              "CONTRACTOR"
+            ],
+            "themeNames": [
+              "방위산업/전쟁 및 테러"
+            ],
+            "geographyCodes": [
+              "PL"
+            ],
+            "projectId": null,
+            "sourceRecordCount": 3
+          },
+          "evidence": [
+            {
+              "sourceKind": "ONTOLOGY_CATALYST",
+              "labelKo": "2024-07-19 · 방위산업/전쟁 및 테러",
+              "occurredOn": "2024-07-19",
+              "excerpt": "한화에어로스페이스가 폴란드와 천무 2차 실행계약 체결",
+              "start": 0,
+              "end": 30
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "code": "LEADER_OR_RELATED_ONLY",
+          "labelKo": "주도주·관련주로만 등장해 직접 사건이 아닌 기록",
+          "count": 7
+        }
+      ],
+      "sampleSize": 9,
+      "evidenceCoverage": 1,
+      "humanVerified": true,
+      "notesKo": [],
+      "versions": {
+        "answerContract": "answer-contract/1.0.0",
+        "companyMaster": "company-master/1.0.0",
+        "dailyParser": "daily-mention-transform/1.0.0",
+        "datasetHash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "dedupPolicy": "event-dedup/1.0.1",
+        "ontologyVocabulary": "1.2.0",
+        "queryContract": "query-contract/1.0.0",
+        "queryPlanner": "query-planner/1.0.0"
+      },
+      "contractVersion": "answer-contract/1.0.0"
+    }
+  },
+  "meta": {
+    "requestId": "req_research_direct_event",
+    "apiVersion": "1",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-29T09:41:00.000Z"
+  }
+}

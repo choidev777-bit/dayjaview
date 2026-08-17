@@ -1,0 +1,99 @@
+{
+  "data": {
+    "status": "ANSWERED",
+    "answer": {
+      "queryType": "DAY_MOVERS",
+      "countUnit": "DAILY_SECTION",
+      "countUnitLabelKo": "Daily 섹션",
+      "interpretation": {
+        "queryType": "DAY_MOVERS",
+        "countUnit": "DAILY_SECTION",
+        "countUnitLabelKo": "Daily 섹션",
+        "direction": "UP",
+        "date": {
+          "value": "2026-06-29",
+          "literal": "2026-06-29",
+          "expression": null
+        },
+        "period": null,
+        "company": null,
+        "themes": [],
+        "catalystType": null,
+        "amountCondition": null,
+        "tradingDate": "2026-06-29"
+      },
+      "summaryKo": "2026-06-29에 오른 특징테마 섹션은 1개입니다.",
+      "metrics": [
+        {
+          "labelKo": "오른 섹션",
+          "value": "1",
+          "countUnit": "DAILY_SECTION",
+          "countUnitLabelKo": "Daily 섹션",
+          "sampleSize": 2,
+          "noteKo": null
+        }
+      ],
+      "rows": [
+        {
+          "label": "K-배터리, 2분기 실적 반등 기대감 등에 상승",
+          "values": {
+            "sectionName": "2차전지 등",
+            "direction": "UP",
+            "themes": [
+              {
+                "themeName": "2차전지",
+                "changeRate": "+10.86%",
+                "stocks": [
+                  {
+                    "stockName": "신성델타테크",
+                    "stockCode": "065350",
+                    "closePrice": 34000,
+                    "changeRate": "+21.00%"
+                  }
+                ]
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "sourceKind": "INFOSTOCK_DAILY_DESCRIPTION",
+              "labelKo": "2026-06-29 특징테마 · 2차전지 등",
+              "occurredOn": "2026-06-29",
+              "excerpt": "K-배터리, 2분기 실적 반등 기대감 등에 상승",
+              "start": null,
+              "end": null
+            }
+          ]
+        }
+      ],
+      "exclusions": [
+        {
+          "code": "DIRECTION_MISMATCH",
+          "labelKo": "질문한 방향과 반대인 섹션",
+          "count": 1
+        }
+      ],
+      "sampleSize": 2,
+      "evidenceCoverage": 1,
+      "humanVerified": true,
+      "notesKo": [],
+      "versions": {
+        "answerContract": "answer-contract/1.0.0",
+        "companyMaster": "company-master/1.0.0",
+        "dailyParser": "daily-mention-transform/1.0.0",
+        "datasetHash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "dedupPolicy": "event-dedup/1.0.1",
+        "ontologyVocabulary": "1.2.0",
+        "queryContract": "query-contract/1.0.0",
+        "queryPlanner": "query-planner/1.0.0"
+      },
+      "contractVersion": "answer-contract/1.0.0"
+    }
+  },
+  "meta": {
+    "requestId": "req_research_day_movers",
+    "apiVersion": "1",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-29T09:40:00.000Z"
+  }
+}

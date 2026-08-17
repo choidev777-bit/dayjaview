@@ -120,42 +120,42 @@ describe('하단 탭과 즐겨찾기 route shell', () => {
     expect(screen.getAllByRole('navigation')).toHaveLength(1);
   });
 
-  it('리서치 탭은 화면 자리만 두고 답변을 만들지 않는다', async () => {
+  it('리서치 탭은 자연어 입력 하나만 두고 근거와 함께 답한다', async () => {
+    const user = userEvent.setup();
     render(<App repository={createFixtureRepository()} initialEntries={['/research']} />);
 
     expect(await screen.findByRole('heading', { name: '무엇이 궁금하세요?' })).toBeInTheDocument();
-    expect(screen.getByText('준비 중인 화면이에요')).toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-  });
+    // 공개 표면은 자연어 입력 하나다. 날짜를 고르는 조회 화면을 두지 않는다.
+    expect(screen.queryByLabelText('날짜')).not.toBeInTheDocument();
 
-  it('발행 전 날짜를 열면 대체 사실을 알리고 직전 거래일 결과를 보여준다', async () => {
-    render(<App repository={createFixtureRepository()} initialEntries={['/movers']} />);
+    await user.type(screen.getByLabelText('질문'), '어제 뭐가 올랐어?');
+    await user.click(screen.getByRole('button', { name: '질문하기' }));
 
     expect(
-      await screen.findByRole('heading', { name: '이날 뭐가 움직였나요?' }),
+      await screen.findByText('2026-06-29에 오른 특징테마 섹션은 1개입니다.'),
     ).toBeInTheDocument();
-    expect(await screen.findByText(/특징테마가 발행되지 않았어요/)).toBeInTheDocument();
-    expect(screen.getByText(/직전 거래일/)).toBeInTheDocument();
-    expect(screen.getByText('+3.26%')).toBeInTheDocument();
+    expect(screen.getByText('Daily 섹션 기준')).toBeInTheDocument();
+    expect(screen.getAllByText('K-배터리, 2분기 실적 반등 기대감 등에 상승')).toHaveLength(2);
+    expect(screen.getByText('질문한 방향과 반대인 섹션 1건')).toBeInTheDocument();
   });
 
-  it('발행된 날짜는 원문 문단과 상승·하락을 나눠 보여준다', async () => {
+  it('사람 검수를 통과하지 않은 유형은 수치 대신 품질 미검증으로 답한다', async () => {
     const user = userEvent.setup();
+    render(<App repository={createFixtureRepository()} initialEntries={['/research']} />);
+
+    await user.type(await screen.findByLabelText('질문'), '올해 정책 소재 몇 번 나왔어?');
+    await user.click(screen.getByRole('button', { name: '질문하기' }));
+
+    expect(await screen.findByText('품질 미검증')).toBeInTheDocument();
+    expect(
+      screen.getByText(/사람 검수를 통과하지 않아 수치를 내보내지 않습니다/),
+    ).toBeInTheDocument();
+  });
+
+  it('없어진 특징테마 조회 화면은 더 이상 열리지 않는다', async () => {
     render(<App repository={createFixtureRepository()} initialEntries={['/movers']} />);
 
-    const input = await screen.findByLabelText('날짜');
-    await user.clear(input);
-    await user.type(input, '2026-06-29');
-
-    expect(await screen.findByText('오른 테마')).toBeInTheDocument();
-    expect(screen.getByText('빠진 테마')).toBeInTheDocument();
-    expect(
-      screen.getByText(/중국 업체들의 저가 공세와 전기차 수요 축소/),
-    ).toBeInTheDocument();
-    expect(screen.getByText('+21.00%')).toBeInTheDocument();
-    expect(screen.getByText('-3.26%')).toBeInTheDocument();
-    expect(screen.getByText('34,000원')).toBeInTheDocument();
-    expect(screen.queryByText(/발행되지 않았어요/)).not.toBeInTheDocument();
+    expect(await screen.findByText('페이지를 찾을 수 없습니다')).toBeInTheDocument();
   });
 
   it('홈 순위 휠은 목록 의미와 방향키 이동을 제공한다', async () => {

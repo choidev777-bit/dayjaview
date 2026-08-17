@@ -1,0 +1,19 @@
+{
+  "data": {
+    "status": "FAILED",
+    "failure": {
+      "publicReason": "QUALITY_NOT_VERIFIED",
+      "publicLabelKo": "품질 미검증",
+      "messageKo": "이 질문 유형은 아직 사람 검수를 통과하지 않아 수치를 내보내지 않습니다.",
+      "queryType": "CATALYST_FREQUENCY",
+      "candidates": [],
+      "missingSlots": []
+    }
+  },
+  "meta": {
+    "requestId": "req_research_quality_gate",
+    "apiVersion": "1",
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-06-29T09:42:00.000Z"
+  }
+}

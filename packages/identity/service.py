@@ -297,6 +297,27 @@ class IdentityService:
         )
         return principal
 
+    def authorize_question(
+        self,
+        *,
+        session_token: str | None,
+        origin: str | None,
+        csrf_token: str | None,
+        csrf_cookie: str | None,
+    ) -> SessionPrincipal:
+        """리서치 질문 POST의 로그인과 CSRF를 검증한다.
+
+        저장은 하지 않지만 질문 문장이 URL·접근 로그에 남지 않도록 POST로 받으며,
+        그래서 다른 POST와 같은 CSRF 3중 검사를 그대로 적용한다.
+        """
+
+        return self._authorize_mutation(
+            session_token=session_token,
+            origin=origin,
+            csrf_token=csrf_token,
+            csrf_cookie=csrf_cookie,
+        )
+
     def logout(
         self,
         *,

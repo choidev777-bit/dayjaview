@@ -14,6 +14,7 @@ tags:
   - name: Auth
   - name: Market
   - name: Themes
+  - name: Research
   - name: Evidence
   - name: Saved
   - name: Historical
@@ -215,42 +216,41 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
         "503":
           $ref: "#/components/responses/Unavailable"
-  /v1/daily/movers:
-    get:
-      tags: [Themes]
-      operationId: getDayMovers
-      summary: 특징테마 하루치의 상승·하락 섹션을 조회한다
+  /v1/research/answers:
+    post:
+      tags: [Research]
+      operationId: answerResearchQuestion
+      summary: 자연어 질문 하나를 닫힌 질의 17종으로 해석해 답한다
       description: >-
-        발행 전 날짜를 물으면 실시간 값으로 대체하지 않는다. status가
-        NOT_PUBLISHED이면 publishedDate의 직전 거래일 결과를 돌려준다.
-        등락률·종가는 원문 표에 적힌 값이며 재계산하지 않는다.
+        공개 표면은 이 자연어 입력 하나다. 질문 문장은 저장하지 않으며 URL에도
+        싣지 않는다(그래서 GET이 아니라 POST다). 답변 수치는 저장된 값을 세거나
+        더한 것이고 LLM이 만들지 않는다. 해석하지 못하거나 기록이 없거나 제품
+        범위 밖이거나 사람 검수 전이면 status가 FAILED이고 publicReason이
+        그 네 상태를 가른다.
       parameters:
-        - name: date
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
+        - $ref: "#/components/parameters/Origin"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas/stage0.schema.json#/$defs/ResearchQuestionRequest"
       x-stage0-fixtures:
-        - daily/movers.published.json
-        - daily/movers.not-published.json
+        - research/answer.day-movers.json
+        - research/answer.company-direct-event.json
+        - research/failure.quality-not-verified.json
       responses:
         "200":
-          description: 하루치 특징테마 섹션
+          description: 답변 블록 또는 공개 실패 상태
           content:
             application/json:
               schema:
-                $ref: "./schemas/stage0.schema.json#/$defs/DayMoversResponse"
+                $ref: "./schemas/stage0.schema.json#/$defs/ResearchAnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthenticated"
-        "404":
-          description: 요청 날짜 이전에 발행된 특징테마가 없다
-          content:
-            application/json:
-              schema:
-                $ref: "./schemas/stage0.schema.json#/$defs/ErrorResponse"
         "503":
           $ref: "#/components/responses/Unavailable"
   /v1/themes/{themeId}/events/{eventId}:

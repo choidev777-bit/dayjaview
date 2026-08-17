@@ -206,22 +206,31 @@ DailyFeaturedTheme는 장 마감 후 발행된다. 그날 게시물이 아직 �
 
 ### 4.1 회사 질의 상세
 
-회사 질문은 닫힌 질의 유형으로만 제공한다. 각 유형은 허용 슬롯, 집계 단위, 필수 근거를 고정한다.
+**구현 대상은 4.0절 17종뿐이다.** 그중 회사 질의는 세 개이며 아래가 그 상세 규칙이다. 각 유형은 허용 슬롯, 집계 단위, 필수 근거를 고정한다.
 
-| 질의 ID | 고객 질문 예시 | 기본 집계 단위 | 필요한 구조 | 출시 조건 |
-|---|---|---|---|---|
-| `COMPANY_APPEARANCE` | “한화에어로스페이스는 언제부터 몇 번 등장했어?” | 원천 관측 | 회사 식별, source mention | 회사 식별 완료 |
-| `COMPANY_THEME_ASSOCIATION` | “이 회사는 어떤 테마와 자주 연결됐어?” | 고유 테마 반응 | 회사·테마·역할 | 회사 역할 완료 |
-| `COMPANY_DIRECT_EVENT` | “회사가 직접 발표한 사건만 알려줘.” | 고유 catalyst | `ACTOR`·`ISSUER` 역할 | 회사 역할 완료 |
-| `COMPANY_CATALYST_DISTRIBUTION` | “주요 사건 유형은 무엇이었어?” | 고유 catalyst | 회사 역할, 소재 유형 | 확장 gold set 통과 |
-| `COMPANY_EVENT_STAGE` | “수주 기대와 본계약을 구분해줘.” | 고유 catalyst | 사건 단계, 확실성 | 단계 평가 통과 |
-| `COMPANY_COUNTERPARTY` | “폴란드와 관련된 계약은 무엇이야?” | 고유 catalyst | 상대방, 국가, 프로젝트 | 엔티티 평가 통과 |
-| `COMPANY_VALUE_SUMMARY` | “확정 수주액 합계는 얼마야?” | 중복 제거된 금액 fact | 금액·통화·단계·중복 제거 | 수치 exact-match gate 통과 |
-| `COMPANY_IMPACT_HISTORY` | “하락 원인이 된 회사 사건만 알려줘.” | 회사 영향 관측 | 회사별 영향, 테마 방향 분리 | 영향 평가 통과 |
-| `COMPANY_COOCCURRENCE` | “같이 자주 부각된 종목은?” | 고유 catalyst 공동 등장 | 종목 식별, 역할, 중복 제거 | 공동 등장 계약 완료 |
-| `COMPANY_DAILY_FEATURED` | “그날 Daily Featured에 왜 나왔어?” | Daily 섹션·catalyst | Daily 섹션 분리와 회사 역할 | Daily gate 통과 |
-| `COMPANY_HISTORICAL_OUTCOME` | “수주 뒤 T+5 실제 반응은 어땠어?” | 회사 또는 당시 주도주 outcome | E-16 가격·기업행위·benchmark | E-16 및 outcome gate 통과 |
-| `COMPANY_SIMILAR_CASE` | “비슷한 과거 회사 사건은?” | 승인된 검색 결과 | ontology·hybrid 검색 | E-19 통과 |
+| 질의 ID | 4.0절 번호 | 고객 질문 예시 | 기본 집계 단위 | 필요한 구조 | 출시 조건 |
+|---|---|---|---|---|---|
+| `COMPANY_DIRECT_EVENT` | 15 | “회사가 직접 발표한 사건만 알려줘.” | 고유 catalyst | `ACTOR`·`ISSUER` 역할 | 회사 역할 완료 |
+| `COMPANY_VALUE_SUMMARY` | 16 | “확정 수주액 합계는 얼마야?” | 중복 제거된 금액 fact | 금액·통화·단계·중복 제거 | 수치 exact-match gate 통과 |
+| `COMPANY_HISTORICAL_OUTCOME` | 17 | “수주 뒤 T+5 실제 반응은 어땠어?” | 회사 또는 당시 주도주 outcome | E-16 가격·기업행위·benchmark | E-16 및 outcome gate 통과 |
+
+### 4.1.1 17종에 넣지 않은 회사 질의 후보
+
+2026-08-16 초안이 회사 질의 12종을 늘어놓았으나, 2026-08-17 제품 결정이 **전체를 17종으로 닫으면서** 그중 3종만 남았다. 나머지 9종은 폐기가 아니라 **대기**다. 세 갈래로 갈린다.
+
+| 후보 ID | 처리 | 근거 |
+|---|---|---|
+| `COMPANY_DAILY_FEATURED` | **3번 `STOCK_DAY_REASON`이 흡수** | 같은 질문이다 — "이 종목이 이날 왜 나왔나". 집계 단위도 Daily 섹션으로 같다 |
+| `COMPANY_COOCCURRENCE` | **6번 `STOCK_COOCCURRENCE`가 흡수** | 같은 질문이다. 회사 축과 종목 축을 따로 둘 이유가 없다 |
+| `COMPANY_EVENT_STAGE` | **13번 `CATALYST_CERTAINTY`가 부분 흡수** | 확정·기대 구분은 13번이 답한다. `BID`·`SIGNED` 같은 단계 해상도는 17종 밖이다 |
+| `COMPANY_APPEARANCE` | 17종 밖 · 유형 확대 후보 | 단계 3 산출물로 계산은 되지만 질문 유형으로 열지 않았다 |
+| `COMPANY_THEME_ASSOCIATION` | 17종 밖 · 유형 확대 후보 | 5번은 **현재** 테마 구성이라 과거 연결 이력을 답하지 못한다 |
+| `COMPANY_CATALYST_DISTRIBUTION` | 17종 밖 · 유형 확대 후보 | 단계 4 필요 |
+| `COMPANY_COUNTERPARTY` | 17종 밖 · 열린 질의 후보 | 상대방·국가·프로젝트를 이어 타는 질문이라 3.3절 대상이다 |
+| `COMPANY_IMPACT_HISTORY` | 17종 밖 · 유형 확대 후보 | 단계 4 + 회사 영향 축 필요 |
+| `COMPANY_SIMILAR_CASE` | 17종 밖 · E-19 gate | 단계 7 |
+
+이 9종은 `query_contracts.py` enum에 넣지 않는다. 넣으면 구현·gold set·채점 대상이 26종으로 벌어지고, 4.0절 제품 결정과 어긋난다. 여는 경로는 둘뿐이다 — 4.0절대로 **운영 중 실패 사유 집계를 보고 유형을 늘리거나**, 3.3절 전환 조건을 채워 **열린 질의를 열거나**.
 
 ### 4.2 집계 단위 규칙
 
@@ -631,7 +640,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 
 할 일:
 
-- 4.0절 17종의 질의 ID·슬롯·집계 단위를 기계 enum으로 고정한다. 4.1절 회사 질의는 그 부분집합이다.
+- 4.0절 17종의 질의 ID·슬롯·집계 단위를 기계 enum으로 고정한다. **enum은 정확히 17개다** — 4.1절 회사 질의 3종은 그 안에 있고, 4.1.1절 후보 9종은 넣지 않는다.
 - 유형마다 상승·하락 양쪽 표본을 넣는다. Daily 종목 행의 22.8%가 하락이므로 상승만 뽑으면 하락 답을 검증하지 못한다.
 - 직접 사건, 주도주 전용, 과거 사명, 복합 사건, 금액, Daily 형식을 층화 표집한다.
 - 발행 전 시각에 오늘을 묻는 회귀 fixture를 넣는다 — 직전 거래일로 대체하고 실시간 값을 섞지 않는지 본다.
@@ -662,7 +671,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 
 완료 조건:
 
-- `COMPANY_DAILY_FEATURED` 질문이 날짜·테마·회사 역할·근거와 함께 그날 종가·등락률을 반환한다.
+- `STOCK_DAY_REASON`(3번) 질문이 날짜·테마·근거와 함께 그날 종가·등락률을 반환한다. 회사 역할은 단계 3이 붙이므로 이 단계의 완료 조건이 아니다.
 - 섹션 상세 문단이 근거 span과 함께 조회된다.
 - 부분 파싱 원문을 성공으로 오표시하지 않는다.
 
@@ -706,7 +715,8 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 
 완료 조건:
 
-- `COMPANY_APPEARANCE`, `COMPANY_THEME_ASSOCIATION`, `COMPANY_DIRECT_EVENT` 질의를 결정론적으로 계산할 수 있다.
+- `COMPANY_DIRECT_EVENT`(15번) 질의를 결정론적으로 계산할 수 있다.
+- 11.4절 검증 예시 4문항이 서로 다른 답을 낸다 — 특히 "언급된 기록 수"와 "직접 행동한 고유 사건 수"가 갈린다. 이 둘은 질의 유형이 아니라 같은 저장 구조를 세는 단위 차이이며, 유형으로 여는 것은 4.1.1절 대기 항목이다.
 - `LEADER`만 있는 기록이 회사 자체 사건 집계에 들어가지 않는다.
 
 ### 단계 4. 사건 구조·단계·중복 제거
@@ -727,7 +737,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 
 할 일:
 
-- 질의 classifier와 slot resolver를 구현한다. 회사 질의는 그 부분집합이다.
+- 질의 classifier와 slot resolver를 구현한다. 17종 전부이며 회사 질의 3종(4.1절)이 그 안에 있다.
 - QueryPlan별 repository 함수를 만든다. `DAY_MOVERS`는 단계 1에서 만든 `daily_read.py`를 흡수한다.
 - 답변 수치·근거·미제시 사유를 API 계약에 추가한다.
 - 모든 답변에 dataset·parser·어휘·query 버전을 붙인다(13절 조건).
@@ -735,6 +745,7 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 - **Daily 조회 기준을 발행일에서 거래일로 바꾼다**(아래 단서).
 - `/research` 예시 질문을 현재 열린 유형만 반영하도록 갱신한다.
 - 직전 회사·기간 슬롯을 이어받을 때 해석 블록에 표시한다.
+- **3.3절 전환 조건 5개의 충족 여부를 표로 갱신한다**(13절 마지막 조건). 이 단계에서 단계 4 완료·11.2절 수치·근거 표시·질의 검증 형태가 모두 확정되므로, 그 시점의 실제 값으로 3.3절 표를 고친다. 이후 단계 6·7에서 값이 바뀌면 같은 표를 다시 고친다.
 
 완료 조건:
 
@@ -815,51 +826,70 @@ LLM은 이 plan에 없는 필터를 추가하거나 SQL을 작성하지 않는�
 
 구현 시 다음 위치를 기준으로 한다.
 
+`+`는 이미 만든 것, `-`는 아직 없는 것이다(2026-08-17 워킹트리 기준). E-17에서 온 `vocabulary.py`·`transform.py`·`labeling.py`·`models.py`·`postgres.py`·`label_theme_history.py`는 이 확장의 기반이므로 목록에 다시 적지 않는다.
+
 ```text
 packages/ontology/
-  company_entities.py
-  company_postgres.py
-  krx_names.py
-  participants.py
-  projects.py
-  event_structure.py
-  company_roles.py
-  event_dedup.py
-  query_contracts.py
++ company_entities.py        단계 2
++ company_postgres.py        단계 2
++ krx_names.py               단계 2
++ company_roles.py           단계 3
+- participants.py            단계 4
+- projects.py                단계 4
+- event_structure.py         단계 4
+- event_dedup.py             단계 4
+- query_contracts.py         단계 0 — 17종 enum. 단계 0 잔여의 첫 항목이다
 
 apps/worker-batch/ontology/
-  build_company_master.py
-  build_krx_name_windows.py
-  label_company_events.py
-  label_daily_events.py
-  publish_company_ontology.py
++ load_theme_catalyst_labels.py   선행
++ build_query_goldset.py          단계 0 겹 A
++ build_goldset_supplement.py     단계 0 겹 C 보강
++ build_blind_review_input.py     단계 0 겹 C 눈가림 입력
++ merge_blind_review.py           단계 0 겹 C 독립 판정 대조
++ verify_answers.py               단계 0 겹 B 두 경로 대조
++ score_gold_set.py               채점(E-17에서 이어짐, review_status 처리 추가)
++ audit_keyword_contexts.py       어휘 충돌 감사(E-17에서 이어짐)
++ build_krx_name_windows.py       단계 2
++ build_company_master.py         단계 2
++ label_company_events.py         단계 3
+- label_daily_events.py           단계 1 잔여 — Daily 관계를 catalyst mention으로
+- publish_company_ontology.py     단계 5
 
 tests/ontology/
-  test_krx_names.py
-  company_goldset_dev.tsv
-  company_goldset_test.tsv
-  test_company_entities.py
-  test_company_postgres.py
-  test_company_roles.py
-  test_event_structure.py
-  test_event_dedup.py
-  test_company_queries.py
++ goldset_v1.tsv             겹 C 원본 1,000건 (5열·HUMAN_CONFIRMED)
++ goldset_supplement.tsv     겹 C 보강 910건 (6열)
++ query_goldset.tsv          겹 A 1,150문장 (split 열)
++ test_goldset.py            세 gold set 무결성
++ test_krx_names.py          단계 2
++ test_company_entities.py   단계 2
++ test_company_postgres.py   단계 2
++ test_company_roles.py      단계 3
++ test_company_role_postgres.py  단계 3
+- test_event_structure.py    단계 4
+- test_event_dedup.py        단계 4
+- test_company_queries.py    단계 5
 
-research/ontology/
-  company_labels.jsonl
-  company_score_*.json
-  daily_coverage_report.json
-  company_ontology_artifact.json
+research/ontology/          (gitignore — 원문이 실려 로컬 전용)
++ krx_name_windows.json      단계 2
++ company_master_report.json 단계 2
++ company_labels.jsonl       단계 3
++ company_role_report.json   단계 3
++ answer_review_queue.json   단계 0 겹 B 불일치 큐
++ goldset_score{,_dev,_test}.json  채점 결과
+- daily_coverage_report.json 단계 1 잔여
+- company_ontology_artifact.json  단계 5
 
 infra/migrations/
-  0007_theme_catalyst_labels.sql
-  0008_daily_relation_details.sql
-  0009_company_identity.sql
++ 0007_theme_catalyst_labels.sql   선행
++ 0008_daily_relation_details.sql  단계 1
++ 0009_company_identity.sql        단계 2
++ 0010_history_company_roles.sql   단계 3
+- 단계 4의 catalyst·participant·project 테이블은 그 뒤 번호로 나간다
 ```
 
 `0007_theme_catalyst_labels.sql`은 선행 단계의 기존 E-17 라벨 적재용이며, 회사 확장 migration보다 앞선다. 적재 job은 `apps/worker-batch/ontology/load_theme_catalyst_labels.py`로 두고 `label_theme_history.py`의 파일 산출 책임과 분리한다.
 
-단계 1의 Daily 파싱 확장은 기존 `packages/infostock/daily.py`의 `parse_daily_html_body`를 고치고, 늘어난 필드를 `packages/infostock/models.py`의 `DailyRelation`에 더한다. 새 Daily 파서 모듈을 만들지 않는다. 관계 유형과 시세 컬럼은 `0008_daily_relation_details.sql`이 담으며, 회사 정체성 migration은 그 뒤 `0009`가 된다. `0009`는 단계 2 범위인 회사·alias·회사-종목·이력·검수만 담는다. 단계 3·4의 사건 구조 테이블은 그 뒤 번호로 나간다.
+단계 1의 Daily 파싱 확장은 기존 `packages/infostock/daily.py`의 `parse_daily_html_body`를 고치고, 늘어난 필드를 `packages/infostock/models.py`의 `DailyRelation`에 더한다. 새 Daily 파서 모듈을 만들지 않는다. 관계 유형과 시세 컬럼은 `0008_daily_relation_details.sql`이 담으며, 회사 정체성 migration은 그 뒤 `0009`가 된다. `0009`는 단계 2 범위인 회사·alias·회사-종목·이력·검수만 담는다. 단계 3의 history 회사 역할 테이블은 `0010_history_company_roles.sql`이고, 단계 4의 catalyst·participant·project 테이블은 그 뒤 번호로 나간다.
 
 현재 `packages/ontology`를 확장한다. 같은 분류 책임을 별도 최상위 패키지로 복제하지 않는다.
 
@@ -893,29 +923,41 @@ tracked gold set에는 source key와 라벨만 둔다. 저작권 원문과 key j
 
 정답지는 하나가 아니라 세 겹이며 채점 대상이 다르다. C가 A·B의 바닥이다 — C가 틀리면 A·B가 맞아도 답이 틀린다.
 
-| 겹 | 채점 대상 | 규모 | 산출 |
-|---|---|---|---|
-| A. 질문 해석 | 문장 → 질의 유형·슬롯 | 약 1,150문장 | `tests/ontology/query_goldset_{dev,test}.tsv` |
-| B. 답변 수치 | QueryPlan 결과가 맞나 | 유형당 8건, 약 136건 | `tests/ontology/answer_goldset.tsv` |
-| C. 온톨로지 라벨 | 소재 유형·방향·확실성 | 기존 1,000건 + **844건 보강** | `tests/ontology/goldset_v1.tsv` 확장 |
+| 겹 | 채점 대상 | 규모 | 산출 | dev/test 표시 |
+|---|---|---|---|---|
+| A. 질문 해석 | 문장 → 질의 유형·슬롯 | 1,150문장 | `tests/ontology/query_goldset.tsv` | `split` 열 |
+| B. 답변 수치 | QueryPlan 결과가 맞나 | 유형당 8건, 약 136건 | `verify_answers.py` 대조 + `research/ontology/answer_review_queue.json` | 해당 없음 |
+| C. 온톨로지 라벨 | 소재 유형·방향·확실성 | 기존 1,000건 + **910건 보강** | `goldset_v1.tsv` + `goldset_supplement.tsv` | 행 번호 짝/홀 |
 
 A 표본군은 22개다 — 상승·하락 대칭이 필요한 5종(`DAY_MOVERS`, `PERIOD_SUMMARY`, `STOCK_DAY_REASON`, `STOCK_TOP_MOVES`, `THEME_COMPARISON`)은 방향별로 나누고 나머지 12종은 하나씩이다. 군마다 test 30 + dev 15에 실패·난이도 케이스 160문장(17종 밖 질문 60, 과거 사명·동명이인·상대 날짜·복수 슬롯 80, 발행 전 "오늘" 20)을 더한다.
 
-C의 844건은 실측으로 나온 수다. test 500건 표본에서 유형당 30건을 못 채우는 유형이 28종 중 23종이며(콘텐츠 성과 기대 2.1건, 구조조정·신용 2.2건, 인수합병 3.1건 …), dev까지 채우는 데 필요한 추가 라벨이 844건이다.
+**A의 dev/test는 파일 안 `split` 열로 표시한다.** C가 쓰는 짝/홀 행 규칙(`score_gold_set.py --subset`)은 1:1 비율만 표현할 수 있어 A의 30:15에 쓸 수 없다. 실패·난이도 160문장은 회귀 고정용이라 전부 `test`다 — 이 문장들을 보며 규칙을 고치면 회귀로서 값어치가 없어진다.
 
-B는 사람이 전건을 보지 않는다. 같은 답을 두 경로로 계산해 일치하면 통과시키고 불일치만 검수 큐로 올린다.
+C의 보강분은 실측으로 정한 규모다. test 500건 표본에서 유형당 30건을 못 채우는 유형이 28종 중 23종이며(콘텐츠 성과 기대 2.1건, 구조조정·신용 2.2건, 인수합병 3.1건 …), dev까지 채우는 데 필요한 추가 라벨이 844건으로 계산됐다. 실제 표집은 희소 유형 하한을 맞추느라 910건이 됐다.
+
+B는 사람이 전건을 보지 않는다. 같은 답을 두 경로로 계산해(제품 읽기 모델 ↔ 원문 재파싱) 일치하면 통과시키고 불일치만 검수 큐로 올린다. 그래서 B에는 고정 정답 파일이 없고 대조 스크립트와 불일치 큐가 그 자리를 대신한다. 두 경로가 같은 버그를 공유하면 못 잡는다는 한계는 C가 받는다.
 
 ### 11.1.2 라벨 출처 표시와 승격 제한
 
 2026-08-17 제품 결정으로 **AI 초안을 사람 검수 없이 먼저 쓴다.** 속도를 얻는 대신 정답지가 AI의 오차를 그대로 물려받으므로, 그 상태로 잰 정확도를 승격 근거로 쓰면 안 된다. 다음 규칙으로 이 선택을 되돌릴 수 있게 유지한다.
 
-- 세 겹 모두 행마다 `review_status`를 둔다 — `AI_DRAFT` 또는 `HUMAN_CONFIRMED`.
-- 채점 결과 JSON에 표본군별 `humanConfirmedRatio`를 반드시 넣는다.
-- **11.2절 승격 기준은 `HUMAN_CONFIRMED` 행만으로 판정한다.** `AI_DRAFT`만 있는 표본군은 정확도를 `측정 불가`로 표시하고 해당 질문 유형을 열지 않는다.
+- 세 겹 모두 행마다 `review_status`를 둔다. 값은 셋이다.
+
+| 값 | 뜻 | 승격 판정 |
+|---|---|---|
+| `AI_DRAFT` | 현재 transform의 자기 출력이거나 스크립트가 만든 초안 | 쓰지 않는다 |
+| `AI_CROSS_CHECKED` | 독립 판정(원문만 본 별도 경로)이 같은 답을 낸 행 | **쓰지 않는다** |
+| `HUMAN_CONFIRMED` | 사람이 원문을 보고 확정한 행 | 이것만 센다 |
+
+- `AI_CROSS_CHECKED`는 "사람이 나중에 봐도 된다"는 뜻이지 "맞다"는 뜻이 아니다. 두 경로의 오차가 상관되면 같이 틀린다. 검수 큐 우선순위를 낮추는 용도이며 게이트에서는 `AI_DRAFT`와 같이 취급한다.
+- 채점 결과 JSON에 표본군별 `humanConfirmedRatio`와 `reviewStatusCounts`를 반드시 넣는다.
+- **11.2절 승격 기준은 `HUMAN_CONFIRMED` 행만으로 판정한다.** 검수된 행이 없는 표본군은 정확도를 `측정 불가`로 표시하고 해당 질문 유형을 열지 않는다.
 - 화면과 답변에는 그 유형이 아직 사람 검증 전임을 표시한다.
 - 사람 검수는 나중에 행 단위로 올릴 수 있다. 비율이 오르면 잠긴 유형이 자동으로 열린다.
 
-즉 `AI_DRAFT`만으로도 개발·회귀 테스트는 굴러가지만 **출시 게이트는 통과하지 못한다.** 게이트를 열려면 검수가 필요하다.
+**`goldset_v1.tsv` 1,000건은 예외다.** 이 파일은 `review_status` 열이 생기기 전 형식(5열)이고, E-17에서 원문만 보고 붙인 블라인드 수동 라벨이다. `score_gold_set.py`가 5열 행을 `HUMAN_CONFIRMED`로 읽어 채점한다(`_read_goldset`). 따라서 C겹은 이미 검수된 1,000건을 가지고 있고, 보강 910건만 검수 대기다. 새로 만드는 파일은 6열 형식을 쓴다.
+
+즉 `AI_DRAFT`·`AI_CROSS_CHECKED`만으로도 개발·회귀 테스트는 굴러가지만 **출시 게이트는 통과하지 못한다.** 게이트를 열려면 검수가 필요하다.
 
 ### 11.1.3 질문 문장 초안의 한계
 
@@ -995,7 +1037,8 @@ precision을 recall보다 우선한다. 연결하지 못한 기록은 허용하�
 
 - [ ] 기존 E-17 라벨이 버전과 함께 DB에 적재돼 SQL로 join된다.
 - [ ] gold set 각 표본군이 test split 기준 30건 이상이거나 `측정 불가`로 표시된다.
-- [ ] gold set 행마다 `review_status`가 있고, 승격 판정이 `HUMAN_CONFIRMED` 행만 쓴다.
+- [ ] gold set 행마다 `review_status`가 있고(`goldset_v1.tsv` 5열 형식은 11.1.2절 예외), 승격 판정이 `HUMAN_CONFIRMED` 행만 쓴다.
+- [ ] 겹 A gold set에 `split` 열이 있고 test split을 규칙 개선에 쓰지 않는다.
 - [ ] 회사·종목·alias·유효기간이 분리돼 있다.
 - [ ] 기존 `stock_id`와 history leader·Daily relation을 재사용한다.
 - [ ] 회사 역할과 근거 span이 revision으로 저장된다.

@@ -49,8 +49,8 @@ export function TodayPage() {
           }
         />
       )}
-      <Link className="movers-entry" to="/movers">
-        특징테마로 이날 무엇이 오르고 빠졌는지 보기
+      <Link className="movers-entry" to="/research">
+        리서치에서 이날 무엇이 오르고 빠졌는지 물어보기
       </Link>
     </div>
   );

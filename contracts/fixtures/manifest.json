@@ -174,12 +174,16 @@
       "schema": "ErrorResponse"
     },
     {
-      "path": "daily/movers.published.json",
-      "schema": "DayMoversResponse"
+      "path": "research/answer.day-movers.json",
+      "schema": "ResearchAnswerResponse"
     },
     {
-      "path": "daily/movers.not-published.json",
-      "schema": "DayMoversResponse"
+      "path": "research/answer.company-direct-event.json",
+      "schema": "ResearchAnswerResponse"
+    },
+    {
+      "path": "research/failure.quality-not-verified.json",
+      "schema": "ResearchAnswerResponse"
     }
   ],
   "invariantSeries": [
