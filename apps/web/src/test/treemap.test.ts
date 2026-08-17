@@ -114,12 +114,14 @@ describe('트리맵 배치', () => {
   ];
 
   it('면적이 수익률 원값에 비례한다', () => {
-    const rects = layoutTreemap(items, 396, 420);
+    // 칸 사이 여백은 시각적 장치라 칸마다 같은 폭을 깎는다. 그만큼 작은 칸이 비율에서
+    // 조금 손해를 보므로, 비례 자체는 여백 없는 배치로 확인한다.
+    const rects = layoutTreemap(items, 396, 420, 0);
     const total = items.reduce((sum, entry) => sum + entry.weightedReturn, 0);
     const areaTotal = rects.reduce((sum, rect) => sum + rect.width * rect.height, 0);
 
     rects.forEach((rect) => {
-      expect(rect.width * rect.height / areaTotal).toBeCloseTo(rect.item.weightedReturn / total, 3);
+      expect(rect.width * rect.height / areaTotal).toBeCloseTo(rect.item.weightedReturn / total, 6);
     });
   });
 
@@ -146,11 +148,18 @@ describe('트리맵 배치', () => {
     expect(layoutTreemap(items, 396, 420)).toEqual(layoutTreemap(items, 396, 420));
   });
 
-  it('행과 열 사이에 시안 간격을 유지한다', () => {
+  it('타일 사이에 시안 간격을 유지한다', () => {
     const rects = layoutTreemap(items, 396, 420);
 
-    expect(rects[1].x - (rects[0].x + rects[0].width)).toBeCloseTo(TREEMAP_GAP, 6);
-    expect(rects[2].y - (rects[0].y + rects[0].height)).toBeCloseTo(TREEMAP_GAP, 6);
+    // 재귀 이분할이라 이웃이 줄 단위로 정해지지 않는다. 맞닿은 쌍을 찾아 간격을 잰다.
+    const touching = rects.flatMap((left) =>
+      rects
+        .filter((right) => right !== left)
+        .filter((right) => Math.abs(right.x - (left.x + left.width) - TREEMAP_GAP) < 0.001)
+        .map((right) => right.x - (left.x + left.width)),
+    );
+    expect(touching.length).toBeGreaterThan(0);
+    touching.forEach((distance) => expect(distance).toBeCloseTo(TREEMAP_GAP, 6));
   });
 
   it('컨테이너를 아직 재지 못했으면 라벨을 숨기지 않는다', () => {

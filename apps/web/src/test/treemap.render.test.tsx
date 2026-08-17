@@ -72,20 +72,21 @@ describe('실시간 트리맵 렌더링', () => {
     vi.unstubAllGlobals();
   });
 
-  it('시안 3단 배치로 그리고 면적이 큰 테마가 위에 온다', () => {
+  it('면적이 큰 테마가 먼저 오고 칸 모양이 지나치게 길쭉하지 않다', () => {
     renderTreemap();
 
     const boxes = tileBoxes();
     expect(boxes).toHaveLength(8);
-    const rowTops = [...new Set(boxes.map((box) => box.top))].sort((left, right) => left - right);
-    expect(rowTops).toHaveLength(3);
-    expect(boxes.filter((box) => box.top === rowTops[0])).toHaveLength(2);
-    expect(boxes.filter((box) => box.top === rowTops[1])).toHaveLength(3);
-    expect(boxes.filter((box) => box.top === rowTops[2])).toHaveLength(3);
 
     const areas = boxes.map((box) => box.width * box.height);
     expect(areas[0]).toBeGreaterThan(areas[1]);
     expect(areas[1]).toBeGreaterThan(areas.at(-1) ?? 0);
+
+    // 재귀 이분할은 줄 수를 고정하지 않는다. 대신 어느 칸도 띠처럼 눕지 않아야 한다.
+    boxes.forEach((box) => {
+      const ratio = Math.max(box.width / box.height, box.height / box.width);
+      expect(ratio).toBeLessThan(6);
+    });
   });
 
   it('블록 크기에 따라 라벨을 줄이되 접근성 이름은 유지한다', () => {

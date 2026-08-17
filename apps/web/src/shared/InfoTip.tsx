@@ -52,9 +52,17 @@ export function InfoTip({
         <>
           {/* 화면이 갱신되면 툴팁이 물음표를 따라 움직여 읽기 어려웠다. 화면 아래에 고정해
               올라오게 하고, 바깥을 누르면 닫는다. */}
-          <span className="info-tip__scrim" aria-hidden="true" />
+          <button
+            type="button"
+            className="info-tip__scrim"
+            aria-label="설명 닫기"
+            onClick={() => setOpen(false)}
+          />
           <span className="info-tip__panel" id={id} role="note" ref={panelRef}>
             {children}
+            <button type="button" className="info-tip__close" onClick={() => setOpen(false)}>
+              닫기
+            </button>
           </span>
         </>
       ) : null}

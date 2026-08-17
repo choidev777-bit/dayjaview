@@ -2857,7 +2857,8 @@ a:focus-visible,
 }
 
 /* 과거 사례 머리말: 테마 이름이 제목, 사건일과 사유가 그 아래. */
-/* 테마 이름은 포인트 색으로 둔다. 회색이면 그냥 부연 설명처럼 읽혀 테마인 줄 모른다. */
+/* 테마 이름은 어느 화면에서든 같은 포인트 색이어야 `이건 테마다`가 읽힌다.
+   주황 카드 헤더와 같은 색을 쓴다. */
 .page-intro__origin {
   margin: var(--djv-space-1) 0 0;
   color: var(--djv-color-brand);
@@ -2880,12 +2881,6 @@ a:focus-visible,
   word-break: keep-all;
 }
 
-/* 당시 테마명 태그. 유사 이유 태그와 구분되게 테두리만 쓴다. */
-.case-list__theme {
-  border: 1px solid var(--djv-color-border);
-  background: transparent !important;
-  color: var(--djv-color-text-muted) !important;
-}
 
 /* 아코디언이 붙는 카드는 외곽선을 지우고 아코디언 음영을 그대로 카드의 아랫변으로 쓴다. */
 .detail-panel:has(.expand-button--inline),
@@ -3050,4 +3045,39 @@ textarea.research-form__input {
   font-size: var(--djv-font-size-caption);
   font-weight: 600;
   text-align: left;
+}
+
+/* 시트 안 닫기 버튼. 스크림을 눌러도 닫히지만 버튼이 있어야 닫을 수 있다는 걸 안다. */
+.info-tip__close {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  margin-top: var(--djv-space-4);
+  border: 0;
+  border-radius: var(--djv-radius-lg);
+  color: var(--djv-color-text);
+  background: var(--djv-color-surface-muted);
+  font-family: inherit;
+  font-size: var(--djv-font-size-body);
+  font-weight: 700;
+}
+
+/* 스크림은 버튼이지만 화면에는 어두운 막으로만 보인다. */
+.info-tip__scrim {
+  padding: 0;
+  border: 0;
+  appearance: none;
+}
+
+/* 테마 이름은 어느 화면에서든 같은 포인트 색이어야 `이건 테마다`가 읽힌다.
+   주황 카드 헤더와 같은 색을 쓴다. */
+.today-origin strong,
+.case-list__theme,
+.catalyst-heading__theme {
+  color: var(--djv-color-brand);
+}
+
+.case-list__theme {
+  border: 1px solid color-mix(in srgb, var(--djv-color-brand) 34%, transparent);
+  background: var(--djv-color-brand-soft);
 }
