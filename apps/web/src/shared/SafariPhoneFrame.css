@@ -1,0 +1,139 @@
+/*
+ * Fixture 전용 iPhone Safari 목업 스타일.
+ * PWA 없이 모바일 브라우저로 열었을 때 주소창·하단 메뉴가 화면을 얼마나 깎는지
+ * 로컬에서 눈으로 확인하려고 쓴다. 실제 제품 진입점에는 로드되지 않는다.
+ *
+ * 치수 근거: iPhone 15/16 논리 해상도 393x852 · 상단 주소창 배치(Single Tab).
+ * 852 - 54(상태) - 52(주소) - 48(하단 메뉴) - 26(홈 인디케이터) = 672px가 실제 웹 영역.
+ */
+
+.safari-preview {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  background: #3a3a3c;
+}
+
+.safari-preview__device {
+  width: 393px;
+  height: 852px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 44px;
+  background: var(--djv-browser-chrome, #f2f2f7);
+  color: var(--djv-browser-text, #1c1c1e);
+  box-shadow: 0 0 0 10px #1c1c1e, 0 24px 60px rgb(0 0 0 / 45%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* 상태 표시줄 — 노치 영역 포함 54px */
+.safari-preview__status {
+  flex: 0 0 54px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 30px 6px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.safari-preview__status-icons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.safari-preview__status-icons svg {
+  display: block;
+  height: 12px;
+  width: auto;
+}
+
+/* 주소창 52px */
+.safari-preview__address {
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 12px 8px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--djv-browser-chrome-strong, #e5e5ea);
+  font-size: 15px;
+  color: var(--djv-browser-text, #1c1c1e);
+}
+
+.safari-preview__address-lock,
+.safari-preview__address-refresh {
+  color: var(--djv-browser-muted, #6e6e73);
+  font-size: 14px;
+}
+
+.safari-preview__address-label {
+  flex: 1;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+/* 실제 웹 콘텐츠 영역 — 여기가 앱이 쓸 수 있는 전부다 */
+.safari-preview__viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  display: block;
+  background: var(--djv-color-bg, #ffffff);
+}
+
+/* 하단 Safari 메뉴 48px */
+.safari-preview__toolbar {
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 14px;
+  border-top: 1px solid rgb(0 0 0 / 8%);
+  background: var(--djv-browser-chrome, #f2f2f7);
+}
+
+.safari-preview__toolbar button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #007aff;
+  cursor: default;
+}
+
+.safari-preview__toolbar button svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.safari-preview__toolbar button:nth-child(2) {
+  color: var(--djv-browser-muted, #6e6e73);
+  opacity: 0.4;
+}
+
+/* 홈 인디케이터 26px */
+.safari-preview__home-indicator {
+  flex: 0 0 26px;
+  position: relative;
+  background: var(--djv-browser-chrome, #f2f2f7);
+}
+
+.safari-preview__home-indicator::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 140px;
+  height: 5px;
+  border-radius: 3px;
+  background: #1c1c1e;
+  transform: translateX(-50%);
+}
