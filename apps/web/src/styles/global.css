@@ -640,17 +640,6 @@ a:focus-visible,
   animation: none;
 }
 
-.live-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: var(--djv-space-2);
-  color: var(--djv-color-market-up);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .04em;
-}
-
 .state-note {
   margin: 0 var(--djv-space-3) var(--djv-space-2);
   padding: 10px var(--djv-space-3);

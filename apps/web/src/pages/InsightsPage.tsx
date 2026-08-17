@@ -73,14 +73,10 @@ function InsightsScreen({ response, refresh }: { response: TreemapResponse; refr
 
   return (
     <div className="page page--insights">
+      {/* LIVE 표시는 하단 탭에 이미 있다. 제목 옆에 또 달면 같은 화면에 두 번 나온다.
+          지금이 실시간인지는 바로 아래 상태 줄이 문구로 알려 준다. */}
       <header className="page-intro">
         <h1>실시간 테마 중계</h1>
-        {displayContext.dataStatus === 'LIVE' ? (
-          <div className="live-status">
-            <span className="live-dot" aria-hidden="true" />
-            LIVE
-          </div>
-        ) : null}
       </header>
       <div className="page-status">
         <DataStatusBar context={displayContext} />
