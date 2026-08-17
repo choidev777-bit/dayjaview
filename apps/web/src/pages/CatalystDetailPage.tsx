@@ -156,15 +156,11 @@ export function CatalystDetailPage() {
           {detail.events.length > VISIBLE_EVENTS ? (
             <button
               type="button"
-              className="expand-button case-list__more"
+              className="expand-button expand-button--inline case-list__more"
               aria-expanded={expanded}
               onClick={() => setExpanded((current) => !current)}
             >
-              <span>
-                {expanded
-                  ? '사건 접기'
-                  : `사건 ${(detail.events.length - VISIBLE_EVENTS).toLocaleString('ko-KR')}건 더 보기`}
-              </span>
+              <span className="visually-hidden">{expanded ? '사건 접기' : '사건 더 보기'}</span>
               <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
             </button>
           ) : null}

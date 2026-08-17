@@ -4,6 +4,7 @@ import rankingDegraded from '../../../../contracts/fixtures/rankings/degraded-pa
 import rankingDelayed from '../../../../contracts/fixtures/rankings/delayed.json';
 import rankingEmpty from '../../../../contracts/fixtures/rankings/empty.json';
 import rankingLive from '../../../../contracts/fixtures/rankings/live.json';
+import researchFusionDemo from './researchFusionDemo.json';
 import researchDirectEvent from '../../../../contracts/fixtures/research/answer.company-direct-event.json';
 import researchDayMovers from '../../../../contracts/fixtures/research/answer.day-movers.json';
 import researchQualityGate from '../../../../contracts/fixtures/research/failure.quality-not-verified.json';
@@ -34,6 +35,7 @@ import {
   demoLiveHistoryByEvent,
   demoReplayLength,
   demoReplayTreemap,
+  demoTurnoverMultiple,
   demoHistoricalEvents,
   demoRankings,
   demoSimilarByEvent,
@@ -274,7 +276,10 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
     answerResearchQuestion: (question: string) =>
       resolveFixture(
         'researchAnswer',
-        (/직접|주체/.test(question)
+        // 시연은 핵융합으로 돈다. 그 테마를 물으면 같은 데이터에서 만든 답을 준다.
+        (/핵융합|초전도/.test(question)
+          ? researchFusionDemo
+          : /직접|주체/.test(question)
           ? researchDirectEvent
           : /몇 번|건수/.test(question)
             ? researchQualityGate
@@ -321,7 +326,10 @@ export function createFixtureRepository(options: FixtureRepositoryOptions = {}):
                   weightedReturn: ranked.weightedReturn,
                   advancingCount: ranked.advancingCount,
                   validCount: ranked.validCount,
-                  turnoverMultiple: null,
+                  // 구 DB에는 20거래일 거래대금이 없어 기준선을 못 만든다. 시연에서는
+                  // 그날 수익률에서 만든 값으로 칸을 채운다. 실제 파이프라인이 붙으면
+                  // `packages/calculations/turnover.py`가 계산한 값으로 대체된다.
+                  turnoverMultiple: demoTurnoverMultiple(ranked.weightedReturn),
                   attentionGapTradingDays:
                     demoThemeByEvent.get(ranked.eventId)?.attentionGapTradingDays ?? null,
                 },

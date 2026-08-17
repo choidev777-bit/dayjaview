@@ -3105,3 +3105,20 @@ textarea.research-form__input {
 .page--research {
   padding-bottom: var(--djv-nav-space);
 }
+
+/* 소재 상세 머리말의 테마 이름도 다른 화면과 같은 포인트 색을 쓴다. */
+.page--catalyst .page-intro__origin,
+p.page-intro__origin {
+  color: var(--djv-color-brand);
+  font-size: var(--djv-font-size-heading-3);
+  font-weight: 800;
+}
+
+/* `+20 거래일`이 좁은 칸에서 두 줄로 깨졌다. 기간 칸을 고정하고 줄바꿈을 막는다. */
+.historical-summary__rows li {
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+}
+
+.historical-summary__rows li > span:first-child {
+  white-space: nowrap;
+}

@@ -230,7 +230,9 @@ export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
     {
       data: {
         eventId: theme.eventId,
-        evidenceStatus: 'AFTER_CLOSE_CONFIRMED',
+        // 15:20은 장 마감 직후라 마감 후 분석이 아직 나오기 전이다. 장중 근거만 있고
+        // `장 마감 후 분석` 탭은 준비 중 상태로 둔다.
+        evidenceStatus: 'SINGLE_SOURCE',
         items: theme.evidence.map((item) => ({
           newsId: item.newsId,
           sourceName: item.sourceName,
@@ -504,4 +506,18 @@ export function demoReplayTreemap(step: number): TreemapResponse {
       },
     },
   };
+}
+
+
+/**
+ * 시연용 거래 관심 배수.
+ *
+ * 정본은 20거래일 거래대금 중앙값 대비 배수다(`packages/calculations/turnover.py`).
+ * 구 DB에는 그 기준선을 만들 거래대금이 없어 화면이 늘 `기준선 부족`으로 비었다.
+ * 시연에서는 그날 수익률에서 단조롭게 만든 값으로 칸을 채운다. 실제 값이 아니므로
+ * 실 파이프라인이 붙으면 이 함수는 버린다.
+ */
+export function demoTurnoverMultiple(weightedReturn: number | null): number | null {
+  if (weightedReturn === null) return null;
+  return Math.round((1.4 + Math.abs(weightedReturn) * 22) * 10) / 10;
 }
