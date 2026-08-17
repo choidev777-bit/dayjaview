@@ -1442,15 +1442,11 @@ a:focus-visible,
 }
 
 /* 탭 패널이 생기면서 section이 한 단계 안으로 들어갔다. 시안처럼 두 자리 모두에 같은 여백을 준다. */
+/* 절마다 아래 선을 긋지 않는다. 절 사이 회색 띠가 그 역할을 한다.
+   둘 다 두면 선이 세 줄로 겹쳐 보인다. */
 .detail-card > section,
 .detail-panel > section {
   padding: var(--djv-space-6) var(--djv-space-4);
-  border-bottom: 1px solid var(--djv-color-border);
-}
-
-.detail-card > section:last-child,
-.detail-panel > section:last-child {
-  border-bottom: 0;
 }
 
 .detail-card h2 {
@@ -2881,8 +2877,8 @@ a:focus-visible,
   display: block;
   height: 8px;
   margin: 0 calc(var(--djv-space-4) * -1) var(--djv-space-4);
-  border-top: 1px solid var(--djv-color-border);
-  border-bottom: 1px solid var(--djv-color-border);
+  border-top: 1px solid #0000000a;
+  border-bottom: 1px solid #0000000a;
   background: var(--djv-color-surface-muted);
 }
 
