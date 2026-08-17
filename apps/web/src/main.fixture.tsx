@@ -60,10 +60,10 @@ const repository = createFixtureRepository({
 const root = document.getElementById('root');
 if (!root) throw new Error('애플리케이션 root를 찾을 수 없습니다.');
 
-// Fixture 기본 화면은 비교용 iPhone Safari 프레임으로 연다. 실제 제품/실 API 진입점은
-// 그대로 두고, 주소창과 하단 Safari 메뉴를 숨기려면 `?frame=plain`을 사용한다.
+// 실기기에서는 브라우저가 이미 주소창과 하단 메뉴를 갖고 있다. 목업 프레임은 데스크톱에서
+// 그 높이를 재보려고 만든 것이라 `?frame=phone`으로 명시할 때만 켠다.
 createRoot(root).render(
   <StrictMode>
-    {params.get('frame') === 'plain' ? <App repository={repository} /> : <SafariPhoneFrame />}
+    {params.get('frame') === 'phone' ? <SafariPhoneFrame /> : <App repository={repository} />}
   </StrictMode>,
 );

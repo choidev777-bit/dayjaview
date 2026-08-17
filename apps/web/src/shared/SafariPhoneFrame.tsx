@@ -5,10 +5,11 @@ import './SafariPhoneFrame.css';
  * 같은 문서 안에서 div로 감싸면 앱의 `position: fixed`(하단 탭)와 `100dvh`가
  * 목업이 아니라 브라우저 창 전체를 기준으로 잡아서, 정작 확인하려는
  * "주소창·하단 메뉴에 깎인 높이"가 재현되지 않는다. iframe은 자체 뷰포트를 가진다.
+ * 안쪽은 프레임 없이 열어야 하므로 `frame` 값을 `phone`이 아닌 것으로 바꿔 넘긴다.
  */
 function innerSrc() {
   const url = new URL(window.location.href);
-  url.searchParams.set('frame', 'plain');
+  url.searchParams.set('frame', 'off');
   return url.toString();
 }
 
