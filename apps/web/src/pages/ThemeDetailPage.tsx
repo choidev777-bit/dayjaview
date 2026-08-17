@@ -130,6 +130,7 @@ function SaveThemeButton({
 function EvidenceList({
   items,
   showTime = true,
+  statusNote,
   hasMore = false,
   loadingMore = false,
   loadMoreFailed = false,
@@ -138,6 +139,8 @@ function EvidenceList({
   items: EvidenceItem[];
   /** 장중 근거는 몇 시에 들어왔는지가 중요하다. 마감 후 확정 사유는 시각이 하나뿐이라 뺀다. */
   showTime?: boolean;
+  /** 근거 상태·출처 수·확인 시각. 물음표 안에서 출처 정보와 같이 보여준다. */
+  statusNote?: { label: string; note: string } | null;
   hasMore?: boolean;
   loadingMore?: boolean;
   loadMoreFailed?: boolean;
@@ -153,20 +156,25 @@ function EvidenceList({
         {visible.map((item) => (
           <li key={item.newsId} data-time={showTime ? 'true' : 'false'}>
             {showTime ? <span>{formatTime(item.publishedAt)}</span> : null}
-            {/* 매체·발행 시각·원문 링크는 지우지 않고 물음표 안으로 접는다. 규칙이
-                `영역 선택 또는 별도 상세`를 허용한다 (screen_spec §8.3). */}
-            <strong>
-              {item.title}
+            {/* 매체·발행 시각·원문 링크와 근거 상태를 물음표 하나에 모은다. 지우는 게 아니라
+                접는 것이라 `영역 선택 또는 별도 상세`를 허용하는 screen_spec §8.3을 지킨다. */}
+            <strong className="evidence-list__title">
+              <span>{item.title}</span>
               <InfoTip label={`${item.title} 출처 정보`}>
-                <b>
-                  {item.sourceName} ·{' '}
-                  {item.publishedAt
-                    ? formatTime(item.publishedAt)
-                    : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}
-                </b>
+                <b>출처</b>
+                {item.sourceName} ·{' '}
+                {item.publishedAt
+                  ? formatTime(item.publishedAt)
+                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}
                 <a href={item.originalUrl} target="_blank" rel="noreferrer">
                   새 창에서 원문 보기
                 </a>
+                {statusNote ? (
+                  <>
+                    <b>{statusNote.label}</b>
+                    {statusNote.note}
+                  </>
+                ) : null}
               </InfoTip>
             </strong>
             <p>{item.summary}</p>
@@ -242,13 +250,11 @@ function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
       {hidden > 0 || expanded ? (
         <button
           type="button"
-          className="expand-button"
+          className="expand-button expand-button--inline"
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          <span>
-            {expanded ? '주도 종목 접기' : `주도 종목 ${hidden.toLocaleString('ko-KR')}개 더 보기`}
-          </span>
+          <span>{expanded ? '접기' : '더 보기'}</span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
       ) : null}
@@ -306,34 +312,22 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
       <section aria-labelledby="dejavu-summary-title">
         <div className="section-heading">
           <h2 id="dejavu-summary-title">과거엔 어땠을까요?</h2>
-          <span>이벤트 스터디</span>
         </div>
+        {/* `이벤트 스터디`는 버튼처럼 보여서 제목 옆에서 내려 설명 문장에 녹인다.
+            분모가 되는 건수는 표본 크기라 굵게 둔다 (screen_spec 8.8 표본 부족 경고). */}
         <p className="section-note">
-          비슷했던 과거 {total.toLocaleString('ko-KR')}건에서 당시 주도 종목의 반응을 모았어요.
+          비슷했던 <strong>과거 {total.toLocaleString('ko-KR')}건</strong>에서 당시 주도 종목의 반응을 모은
+          이벤트 스터디예요.
         </p>
-        {/* 시안은 `평균`이라고 썼지만 정본 지표는 중앙값이다 (screen_spec 8.8). 분모도 기간마다 따로 적는다. */}
+        {/* 칸 안은 값만 둔다. `중앙`과 기간별 분모는 아래 계산 기준에서 밝힌다
+            (screen_spec 8.8 `대표를 사용한다면 계산 기준에서 중앙값임을 명시한다`). */}
         <div className="metric-grid">
-          {/* 시안은 이 칸을 브랜드색 하나로 칠했지만, 그러면 +4.0%와 −46.0%가 같은 색이라
-              올랐는지 내렸는지 한눈에 안 보인다. 같은 화면의 유사사례 요약도 이미 등락색을
-              쓰고 있어 화면끼리도 어긋났다. 등락색으로 맞춘다. */}
           {data.summary.map((row) => (
             <article key={row.horizonTradingDays} data-tone={returnTone(row.medianReturn)}>
               <span>{horizonLabel(row.horizonTradingDays)}</span>
-              {/* `중앙 +22.6%`처럼 한 덩어리로 두면 폭이 모자란 칸만 두 줄로 접혀 칸 높이가
-                  제각각이 된다. `중앙`을 항상 윗줄에 따로 두어 세 칸 높이를 맞춘다. */}
               <strong className={returnTone(row.medianReturn)}>
-                {row.medianReturn === null ? (
-                  '기록 없음'
-                ) : (
-                  <>
-                    <i>중앙</i>
-                    {formatReturn(row.medianReturn)}
-                  </>
-                )}
+                {row.medianReturn === null ? '기록 없음' : formatReturn(row.medianReturn)}
               </strong>
-              <small>
-                {row.positiveCount.toLocaleString('ko-KR')}/{row.observedCount.toLocaleString('ko-KR')}건 상승
-              </small>
             </article>
           ))}
         </div>
@@ -345,9 +339,17 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
             {/* 제품 이름 부분만 포인트 색으로 둔다. `케이스`까지 물들이면 제목이 아니라
                 배지처럼 읽힌다. */}
             <h2 id="cases-title">
+              <span className="brand-icon" aria-hidden="true" />
               <em className="brand-mark">DAY-JA-VIEW</em> 케이스
             </h2>
-            <small>오늘과 비슷했던 과거</small>
+            <small>
+              오늘과 비슷했던 과거
+              <InfoTip label="비슷한 사례를 고르는 기준">
+                오늘 사건의 <b>원인문</b>과 관련된 과거 사건을 같은 테마 안에서 찾습니다. 수익률이 비슷한
+                사례를 고르는 게 아니라, 왜 올랐는지가 닮은 사례를 고릅니다. 그래서 결과는 오르기도 하고
+                내리기도 합니다.
+              </InfoTip>
+            </small>
           </div>
           <Link
             className="text-button"
@@ -377,12 +379,12 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
                           ))}
                         </span>
                       ) : null}
+                      {/* 기간과 결과는 오른쪽 끝으로 보낸다. 카드마다 자리가 같아야 눈으로 훑힌다. */}
                       <b className="case-list__outcome">
                         <small>5 거래일</small>
                         <span className={result.tone}>{result.text}</span>
                       </b>
                     </span>
-                    <IconChevronRightSmallLine size={18} aria-hidden="true" />
                   </Link>
                 </li>
               );
@@ -577,18 +579,8 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
   return (
     <section aria-labelledby="reason-title">
       <div className="section-heading">
-        <h2 id="reason-title">
-          오늘 왜 올랐을까요?
-          {/* 근거 상태·출처 수·확인 시각은 늘 띄우면 요약보다 먼저 읽힌다. 물음표로 접는다. */}
-          <InfoTip label="상승 이유 판단 기준">
-            <b>
-              {evidenceStatusLabel(evidenceStatus)}
-              {summary.sourceCount > 0 ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳` : ''}
-              {summary.latestPublishedAt ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}` : ''}
-            </b>
-            {evidenceStatusNote(evidenceStatus)}
-          </InfoTip>
-        </h2>
+        {/* 근거 상태 설명은 기사 옆 물음표 하나로 합쳤다. 제목에도 붙이면 같은 말이 두 번 나온다. */}
+        <h2 id="reason-title">오늘 왜 올랐을까요?</h2>
       </div>
 
       <div
@@ -709,6 +701,17 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                       <EvidenceList
                         items={items}
                         showTime={tab === 'LIVE'}
+                        statusNote={{
+                          label:
+                            evidenceStatusLabel(evidenceStatus) +
+                            (summary.sourceCount > 0
+                              ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳`
+                              : '') +
+                            (summary.latestPublishedAt
+                              ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}`
+                              : ''),
+                          note: evidenceStatusNote(evidenceStatus),
+                        }}
                         hasMore={hasMore}
                         loadingMore={pagination.loading}
                         loadMoreFailed={pagination.failed}
@@ -866,8 +869,19 @@ export function ThemeDetailPage() {
           <h1>{detail.classification.displayName}</h1>
         </div>
         <div className="theme-summary__return">
-          <strong>{formatReturn(reaction.weightedReturn)}</strong>
-          <p className="theme-summary__pill">테마 수익률</p>
+          {/* `테마 수익률` 알약 대신 물음표를 둔다. 이 값이 무엇인지는 계산 기준이 더 정확히 답한다. */}
+          <strong>
+            {formatReturn(reaction.weightedReturn)}
+            <button
+              ref={calculationTriggerRef}
+              className="info-tip__button"
+              type="button"
+              aria-label="계산 기준 보기"
+              onClick={() => setCalculationOpen(true)}
+            >
+              ?
+            </button>
+          </strong>
           {/* 평상시 `활성`은 뱃지 자리를 차지할 만한 정보가 아니다. 다만 확정 대기·약화·종료는
               screen_spec 4.4가 표시를 요구하므로 그때만 상태를 붙인다. */}
           {detail.lifecycleStatus === 'ACTIVE' && detail.reconciliationStatus !== 'UNMATCHED' ? null : (
@@ -1004,15 +1018,6 @@ export function ThemeDetailPage() {
         장중 정보는 이후 정정될 수 있습니다. 과거에 관측된 데이터와 확인된 뉴스 근거를 함께 보여줍니다.
       </p>
 
-      <button
-        ref={calculationTriggerRef}
-        className="text-button"
-        type="button"
-        onClick={() => setCalculationOpen(true)}
-      >
-        계산 기준 보기
-      </button>
-
       {calculationOpen ? (
         <div className="sheet-backdrop" role="presentation" onMouseDown={closeCalculation}>
           <section
@@ -1059,6 +1064,12 @@ export function ThemeDetailPage() {
               <dd>
                 값이 없는 종목은 0으로 바꾸지 않고 계산에서 빼며, 몇 종목이 반영됐는지를 Coverage
                 상태로 함께 표시합니다.
+              </dd>
+              {/* 칸 안에서 뺀 `중앙`과 기간별 분모를 여기서 밝힌다 (screen_spec 8.8). */}
+              <dt>과거 사례 수치</dt>
+              <dd>
+                `과거엔 어땠을까요`의 기간별 값은 평균이 아니라 <b>중앙값</b>입니다. 기간마다 결과가
+                확인된 사례 수가 다를 수 있어 분모를 따로 셉니다. 상승 빈도이며 확률·성공률이 아닙니다.
               </dd>
               <dt>고지</dt>
               <dd>관측된 값이며 미래 수익률 예측이 아닙니다.</dd>

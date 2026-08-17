@@ -47,8 +47,8 @@ describe('인증과 route shell', () => {
     await user.keyboard(' ');
 
     expect(await screen.findByRole('heading', { level: 1, name: '원전수출' })).toBeInTheDocument();
-    // 근거 상태는 제목 옆 물음표 안에 접혀 있다.
-    await user.click(await screen.findByRole('button', { name: '상승 이유 판단 기준' }));
+    // 근거 상태는 기사 옆 물음표 안에 접혀 있다.
+    await user.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[0]);
     expect(screen.getByText(/뉴스 기반 추정/)).toBeInTheDocument();
   });
 

@@ -530,6 +530,17 @@ a:focus-visible,
   font-weight: 700;
 }
 
+/* 목록에 이어 붙는 아코디언. 알약 버튼으로 한 줄을 통째로 쓰지 않고,
+   구분선과 옅은 음영으로 목록의 마지막 행처럼 보이게 한다. */
+.expand-button--inline {
+  width: 100%;
+  margin: 0;
+  padding: 9px var(--djv-space-3);
+  border-top: 1px solid var(--djv-color-border);
+  border-radius: 0 0 var(--djv-radius-lg) var(--djv-radius-lg);
+  background: var(--djv-color-surface-muted);
+}
+
 .expand-button i {
   width: 7px;
   height: 7px;
@@ -1036,11 +1047,12 @@ a:focus-visible,
   white-space: nowrap;
 }
 
-/* 타일이 진해져서 상승 빨강은 배경에 묻힌다. 값도 흰색으로 둔다.
-   방향은 색이 아니라 부호(+/−)로 읽힌다 (screen_spec §13.3). */
+/* 타일이 진해져서 상승 빨강이 배경에 묻힌다. 색은 등락색 그대로 두고 흰 테두리를 둘러
+   읽히게 한다. 색을 흰색으로 바꾸면 상승·하락 구분이 사라진다 (screen_spec §13.3). */
 .treemap__tile b {
-  color: var(--djv-color-on-brand);
   font-size: 16px;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1.6px var(--djv-color-on-brand);
 }
 
 .treemap__tile small {
@@ -1099,7 +1111,8 @@ a:focus-visible,
   font-size: 10px;
 }
 
-.treemap-legend span {
+/* 직계 자식만. 그냥 `span`으로 두면 안에 들어온 툴팁 패널까지 flex가 돼 글이 세로로 쪼개진다. */
+.treemap-legend > span {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -1217,12 +1230,21 @@ a:focus-visible,
   gap: 2px;
 }
 
+/* 물음표는 숫자 오른쪽 위에 붙인다. 인라인으로 흘리면 줄 높이가 좁아 아래로 빠진다. */
 .theme-summary__return > strong {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
   font-size: 36px;
   font-weight: 900;
   line-height: .98;
   letter-spacing: -.05em;
   font-variant-numeric: tabular-nums;
+}
+
+.theme-summary__return > strong .info-tip__button {
+  margin-top: 2px;
+  flex: none;
 }
 
 /* 시안 `.themeBadges`. 값이 없으면 영역째 사라져야 제목이 위로 붙는다 (시안 §4.2). */
@@ -1384,7 +1406,7 @@ a:focus-visible,
   min-width: 0;
   flex-direction: column;
   align-items: center;
-  padding: 14px 6px;
+  padding: 11px 6px;
   border-radius: var(--djv-radius-md);
   background: var(--djv-color-surface-muted);
   text-align: center;
@@ -1395,13 +1417,14 @@ a:focus-visible,
   font-size: 11px;
 }
 
+/* `중앙`과 분모를 계산 기준으로 옮겨 값만 남았다. 그만큼 칸을 줄인다. */
 .metric-grid strong {
   display: flex;
-  min-height: 44px;
+  min-height: 26px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: var(--djv-space-2);
+  margin-top: 5px;
   color: var(--djv-brand-contrast);
   font-size: 17px;
   font-weight: 800;
@@ -1853,12 +1876,13 @@ a:focus-visible,
 
 /* 시안은 결과를 오른쪽 칸이 아니라 제목 아래 줄에 둔다. 그래야 제목이 폭을 다 써서
    `체코 원전 우선협상대상자 선정`이 잘리지 않고, 카드도 시안만큼 커진다. */
+/* 화살표를 뺐으므로 한 칸으로 둔다. */
 .case-list a {
   display: grid;
   min-height: 132px;
   align-items: center;
   gap: 12px;
-  grid-template-columns: minmax(0, 1fr) 18px;
+  grid-template-columns: minmax(0, 1fr);
   padding: 18px;
   border: 1px solid var(--djv-color-border);
   border-radius: 18px;
@@ -1889,47 +1913,65 @@ a:focus-visible,
   font-style: normal;
 }
 
+/* 데자뷰 케이스 제목 앞 모래시계. 홈 로고와 같은 자산을 쓴다. */
+.brand-icon {
+  display: inline-block;
+  width: 13px;
+  height: 16px;
+  margin-right: 5px;
+  vertical-align: -2px;
+  background: var(--djv-color-brand);
+  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+}
+
 /* 오늘 화면과 이 과거 사례를 잇는 칸. 겹치는 종목 목록은 다른 화면의 종목 줄과
    같은 형태로 맞춘다. 여기만 글머리표 목록으로 두면 화면이 어긋난다. */
-.today-link {
-  margin-top: var(--djv-space-3);
-  padding-top: var(--djv-space-3);
-  border-top: 1px solid var(--djv-color-border);
+/* 어디서 타고 들어왔는지. 맥락일 뿐이라 제목 위에 한 줄로만 둔다. */
+.today-origin {
+  margin: 0 0 var(--djv-space-2);
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
 }
 
-.today-link p {
-  margin: 0;
-}
-
-.today-link p + p {
-  margin-top: var(--djv-space-3);
-}
-
-.today-link strong {
+.today-origin strong {
   color: var(--djv-color-brand);
   font-weight: 800;
 }
 
-.today-link__stocks {
-  margin: var(--djv-space-1) 0 0;
+/* 같은 종목의 당시 값과 오늘 값을 나란히 놓는 두 열 비교. */
+.overlap-list {
+  margin: var(--djv-space-2) 0 0;
   padding: 0;
   list-style: none;
 }
 
-.today-link__stocks li {
+.overlap-list li {
   display: grid;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
   gap: 10px;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) 72px 72px;
   border-top: 1px solid var(--djv-color-border);
 }
 
-.today-link__stocks li:first-child {
+.overlap-list li:first-child {
   border-top: 0;
 }
 
-.today-link__stocks strong {
+.overlap-list__head {
+  min-height: 0;
+  padding-bottom: 4px;
+  color: var(--djv-color-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.overlap-list__head span {
+  text-align: right;
+}
+
+.overlap-list strong {
   overflow: hidden;
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-label);
@@ -1938,18 +1980,11 @@ a:focus-visible,
   white-space: nowrap;
 }
 
-.today-link__stocks span {
+.overlap-list li:not(.overlap-list__head) span {
   font-size: var(--djv-font-size-label);
   font-weight: 800;
   text-align: right;
-}
-
-.today-link__stocks small {
-  min-width: 26px;
-  color: var(--djv-color-text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 제목은 줄바꿈을 허용한다. 한 줄로 자르면 사건 이름이 통째로 사라진다. */
@@ -1978,9 +2013,11 @@ a:focus-visible,
 }
 
 /* 시안처럼 `T+5 +4.6%`를 아래 줄에 크게 둔다. */
+/* 기간과 결과는 카드마다 같은 자리(오른쪽 끝)에 두어야 눈으로 훑힌다. */
 .case-list__outcome {
   display: flex;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 6px;
   font-size: 17px;
   font-weight: 800;
@@ -2290,26 +2327,34 @@ a:focus-visible,
   margin-left: 5px;
 }
 
+/* 기사 제목 줄. 제목은 왼쪽에서 접히고 물음표는 오른쪽 끝에 붙는다. */
+.evidence-list__title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--djv-space-2);
+}
+
+.evidence-list__title .info-tip {
+  flex: none;
+  margin: 3px 0 0;
+}
+
 .info-tip__button {
   display: grid;
-  width: 17px;
-  height: 17px;
+  width: 14px;
+  height: 14px;
   padding: 0;
   place-items: center;
   border: 0;
   border-radius: 50%;
-  color: var(--djv-color-text-muted);
-  background: var(--djv-color-surface-muted);
+  color: var(--djv-color-on-brand);
+  background: var(--djv-color-brand);
   font-family: inherit;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
-}
-
-.info-tip__button[aria-expanded='true'] {
-  color: var(--djv-color-on-brand);
-  background: var(--djv-color-brand);
 }
 
 .info-tip__panel {
@@ -2318,8 +2363,9 @@ a:focus-visible,
   top: calc(100% + 6px);
   right: 0;
   bottom: auto;
-  width: max-content;
-  max-width: min(268px, 74vw);
+  /* `max-content`로 두면 안에 block 요소가 있을 때 폭이 세로로 접힌다. 고정 폭을 준다. */
+  display: block;
+  width: min(272px, calc(100vw - 32px));
   padding: 10px var(--djv-space-3);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-md);
@@ -2341,10 +2387,15 @@ a:focus-visible,
 }
 
 
+/* 소제목처럼 쓰는 줄. 두 번째부터는 위에 간격을 준다. */
 .info-tip__panel b {
   display: block;
   color: var(--djv-color-text);
   font-weight: 700;
+}
+
+.info-tip__panel b:not(:first-child) {
+  margin-top: 7px;
 }
 
 .info-tip__panel a {
@@ -2354,10 +2405,10 @@ a:focus-visible,
   font-weight: 700;
 }
 
-/* 주황 헤더 안에서는 반대 톤으로 뒤집는다. */
+/* 주황 헤더 위에서는 반대 톤으로 뒤집는다. */
 .theme-summary .info-tip__button {
   color: var(--djv-brand-contrast);
-  background: color-mix(in srgb, var(--djv-color-on-brand) 70%, transparent);
+  background: var(--djv-color-on-brand);
 }
 
 /* ------------------------------------------------------------- 특징테마 */

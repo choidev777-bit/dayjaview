@@ -11,6 +11,7 @@ import {
   returnTone,
 } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
+import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -79,6 +80,16 @@ export function HistoricalEventPage() {
       </div>
 
       <div className="detail-card">
+        {/* 어디서 열었는지와 겹치는 종목이 먼저다. 태그만 있는 `비슷한 이유`보다 이쪽이 증거다. */}
+        {state?.themeId && contextEventId ? (
+          <TodayOverlap
+            themeId={state.themeId}
+            contextEventId={contextEventId}
+            pastLeaders={detail.leaders}
+            marketDate={detail.marketDate}
+          />
+        ) : null}
+
         <section aria-labelledby="similarity-title">
           <h2 id="similarity-title">오늘과 비슷한 이유</h2>
           {/* 보정되지 않은 `93% 유사` 같은 수치 유사도는 쓰지 않는다 (screen_spec 10.3). */}
@@ -93,15 +104,6 @@ export function HistoricalEventPage() {
           ) : (
             <p className="section-note">공유 태그가 기록되지 않았습니다.</p>
           )}
-          {/* 어느 화면을 타고 들어왔는지, 그리고 오늘 주도 종목과 실제로 겹치는 종목이 누구인지
-              같이 보여준다. 태그만 있으면 `왜 비슷한지`가 말로만 남는다. */}
-          {state?.themeId && contextEventId ? (
-            <TodayOverlap
-              themeId={state.themeId}
-              contextEventId={contextEventId}
-              pastLeaders={detail.leaders}
-            />
-          ) : null}
         </section>
 
         <section aria-labelledby="outcome-title">
@@ -123,19 +125,22 @@ export function HistoricalEventPage() {
         </section>
 
         <section aria-labelledby="historical-leaders-title">
-          <h2 id="historical-leaders-title">당시 주도 종목</h2>
+          {/* 기준 설명 두 줄은 물음표로 접는다. 목록보다 먼저 읽힐 내용이 아니다. */}
+          <div className="section-heading">
+            <h2 id="historical-leaders-title">당시 주도 종목</h2>
+            {detail.leaders.length ? (
+              <InfoTip label="당시 주도 종목 계산 기준">
+                <b>사건 당일 등락률</b>입니다. 전일 종가 대비 그날 종가로 계산했습니다. 위의 `당시 결과`는
+                T+1·T+5·T+20이라 기준이 다릅니다.
+                <br />
+                당시 기록된 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
+                {priced.toLocaleString('ko-KR')}종목이 바스켓에 반영됐습니다.
+              </InfoTip>
+            ) : null}
+          </div>
           {/* 현재 관련주를 과거에 소급하지 않는다. 서버가 준 당시 명단만 그대로 쓴다 (screen_spec 10.5). */}
           {detail.leaders.length ? (
             <>
-              {/* 어느 기간의 수익률인지 적어 준다. 위의 `당시 결과`는 T+1·T+5·T+20이고
-                  여기는 사건 당일이라 기준이 다르다. */}
-              <p className="section-note">
-                사건 당일 등락률입니다. 전일 종가 대비 그날 종가로 계산했습니다.
-              </p>
-              <p className="section-note">
-                당시 기록된 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
-                {priced.toLocaleString('ko-KR')}종목이 바스켓에 반영됐습니다.
-              </p>
               <ol className="leader-list">
                 {detail.leaders.map((leader) => (
                   <li key={leader.stockId}>
@@ -179,10 +184,12 @@ function TodayOverlap({
   themeId,
   contextEventId,
   pastLeaders,
+  marketDate,
 }: {
   themeId: string;
   contextEventId: string;
   pastLeaders: HistoricalEventResponse['data']['leaders'];
+  marketDate: string;
 }) {
   const repository = useRepository();
   const resource = useRepositoryResource(
@@ -198,28 +205,47 @@ function TodayOverlap({
   const pastIds = new Set(pastLeaders.map((leader) => leader.stockId));
   const shared = today.leaders.filter((leader) => pastIds.has(leader.stockId));
 
+  const pastReturn = new Map(pastLeaders.map((leader) => [leader.stockId, leader.return]));
+
   return (
-    <div className="today-link">
-      <p className="section-note">
-        오늘 <strong>{today.classification.displayName}</strong>에서 이 사례를 열었습니다.
+    <>
+      {/* 어디서 타고 들어왔는지는 맥락일 뿐이라 제목 위에 한 줄로만 둔다. */}
+      <p className="today-origin">
+        오늘 <strong>{today.classification.displayName}</strong>에서 열어봄
       </p>
-      {shared.length ? (
-        <>
-          <p className="section-note">오늘 주도 종목과 겹치는 종목</p>
-          <ul className="today-link__stocks">
-            {shared.map((leader) => (
-              <li key={leader.stockId}>
-                <strong>{leader.name}</strong>
-                <span className={returnTone(leader.return)}>{formatReturn(leader.return)}</span>
-                <small>오늘</small>
+
+      <section aria-labelledby="overlap-title">
+        <h2 id="overlap-title">오늘과 겹치는 종목</h2>
+        {shared.length ? (
+          <>
+            {/* 오늘 값만 두면 비교가 안 된다. 같은 종목이 그때는 어땠는지 나란히 놓는다. */}
+            <ul className="overlap-list">
+              <li className="overlap-list__head" aria-hidden="true">
+                <span />
+                <span>{formatDate(`${marketDate}T00:00:00+09:00`)}</span>
+                <span>오늘</span>
               </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <p className="section-note">오늘 주도 종목과 겹치는 종목은 없습니다.</p>
-      )}
-    </div>
+              {shared.map((leader) => {
+                const then = pastReturn.get(leader.stockId) ?? null;
+                return (
+                  <li key={leader.stockId}>
+                    <strong>{leader.name}</strong>
+                    <span className={returnTone(then)}>{formatReturn(then)}</span>
+                    <span className={returnTone(leader.return)}>{formatReturn(leader.return)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="section-note">
+              왼쪽은 이 사례 당일, 오른쪽은 오늘 등락률입니다. 같은 종목이 두 번 다 주도 종목이었다는
+              뜻이고, 오늘 결과를 예측하지 않습니다.
+            </p>
+          </>
+        ) : (
+          <p className="section-note">오늘 주도 종목과 겹치는 종목은 없습니다.</p>
+        )}
+      </section>
+    </>
   );
 }
 

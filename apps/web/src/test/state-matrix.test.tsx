@@ -139,7 +139,7 @@ describe('근거 상태 matrix', () => {
     expect(link).toHaveAttribute('href', 'https://example.com/news/123');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
-    expect(screen.getByText('예시 언론사 · 10:17')).toBeInTheDocument();
+    expect(screen.getByText(/예시 언론사 · 10:17/)).toBeInTheDocument();
   });
 
   it('장후 확정 근거에 장중 이력 보존을 안내한다', async () => {
@@ -155,9 +155,9 @@ describe('근거 상태 matrix', () => {
     };
     render(<App repository={repository} initialEntries={['/themes/thm_nuclear/events/evt_current']} />);
 
-    // 이력 보존은 탭으로 안내한다. 상태 설명은 제목 옆 물음표 안에 접혀 있다.
-    await userEvent.click(await screen.findByRole('button', { name: '상승 이유 판단 기준' }));
-    expect(screen.getByText('장 마감 후 인포스탁 기준으로 확정된 사유입니다.')).toBeInTheDocument();
+    // 이력 보존은 탭으로 안내한다. 상태 설명은 기사 옆 물음표 안에 접혀 있다.
+    await userEvent.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[0]);
+    expect(screen.getByText(/장 마감 후 인포스탁 기준으로 확정된 사유입니다\./)).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: '장중 분석 이력' })).toBeInTheDocument();
   });
 
@@ -172,10 +172,8 @@ describe('근거 상태 matrix', () => {
     // 근거 목록이 먼저 그려지고, 상태와 출처 수는 제목 옆 물음표 안에 함께 있다.
     expect(await screen.findAllByRole('button', { name: /출처 정보/ })).not.toHaveLength(0);
 
-    await userEvent.click(screen.getByRole('button', { name: '상승 이유 판단 기준' }));
-    expect(screen.getByText(/복수 뉴스 확인/)).toBeInTheDocument();
-
     await userEvent.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[1]);
+    expect(screen.getByText(/복수 뉴스 확인/)).toBeInTheDocument();
     expect(screen.getByText('두번째 예시 언론사', { exact: false })).toBeInTheDocument();
   });
 
@@ -190,7 +188,7 @@ describe('근거 상태 matrix', () => {
     // 사건 수명 상태(`장후 확정`)와 근거 상태는 서로 다른 자리에 다른 문구로 적는다.
     expect(await screen.findByText('장후 확정', { selector: '.status-chip' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: '상승 이유 판단 기준' }));
+    await userEvent.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[0]);
     expect(screen.getByText(/복수 뉴스 확인/)).toBeInTheDocument();
     expect(screen.queryByText('장후 확정', { selector: '.info-tip__panel b' })).not.toBeInTheDocument();
   });
