@@ -1019,10 +1019,10 @@ a:focus-visible,
 .treemap__cell {
   position: absolute;
   transition:
-    left 2900ms cubic-bezier(.16, .84, .24, 1),
-    top 2900ms cubic-bezier(.16, .84, .24, 1),
-    width 2900ms cubic-bezier(.16, .84, .24, 1),
-    height 2900ms cubic-bezier(.16, .84, .24, 1);
+    left 1600ms cubic-bezier(.22, .68, .3, 1),
+    top 1600ms cubic-bezier(.22, .68, .3, 1),
+    width 1600ms cubic-bezier(.22, .68, .3, 1),
+    height 1600ms cubic-bezier(.22, .68, .3, 1);
 }
 
 /* 값이 멈춘 화면(장 마감·수신 지연)에서는 굳이 천천히 움직일 이유가 없다. */
@@ -1060,7 +1060,7 @@ a:focus-visible,
   );
   background: var(--tile-fill);
   text-align: left;
-  transition: background 2900ms cubic-bezier(.16, .84, .24, 1);
+  transition: background 1600ms cubic-bezier(.22, .68, .3, 1);
 }
 
 .treemap__tile[data-tone="down"] {
@@ -3121,4 +3121,55 @@ p.page-intro__origin {
 
 .historical-summary__rows li > span:first-child {
   white-space: nowrap;
+}
+
+/* 타일에 입체감. 위는 밝고 아래는 눌린 느낌을 얹어 평면에서 떼어 놓는다. */
+.treemap__tile {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 34%),
+    inset 0 -1px 0 rgb(0 0 0 / 6%),
+    0 2px 6px -2px rgb(0 0 0 / 14%);
+}
+
+/* 새로 들어온 타일은 자리를 옮겨 온 게 아니라 나타난 것이다. 크기 전환 대신 서서히 뜬다. */
+@keyframes treemap-cell-in {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.treemap__cell {
+  animation: treemap-cell-in 420ms var(--djv-easing-standard);
+}
+
+.treemap[data-motion='off'] .treemap__cell {
+  animation: none;
+}
+
+/* 물어본 질문을 답변 위에 되짚어 준다. 입력창은 비워 두므로 여기가 유일한 기록이다. */
+.research-asked {
+  margin: 0 var(--djv-space-4) var(--djv-space-3);
+  padding: 11px var(--djv-space-4);
+  border-radius: var(--djv-radius-lg) var(--djv-radius-lg) var(--djv-radius-lg) 4px;
+  color: var(--djv-color-text);
+  background: var(--djv-color-brand-soft);
+  font-size: var(--djv-font-size-label);
+  font-weight: 700;
+}
+
+@keyframes nudge-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+
+.research-form__submit[data-nudge='true'] {
+  animation: nudge-shake 380ms var(--djv-easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .treemap__cell,
+  .research-form__submit[data-nudge='true'] {
+    animation: none;
+  }
 }

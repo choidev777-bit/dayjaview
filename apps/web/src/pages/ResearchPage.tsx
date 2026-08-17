@@ -195,12 +195,22 @@ export function ResearchPage() {
   const [question, setQuestion] = useState('');
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<ResearchAnswerResponse | null>(null);
+  /** 답변 위에 되짚어 줄 질문. 입력창은 물어본 뒤 비우므로 따로 들고 있는다. */
+  const [asked, setAsked] = useState<string | null>(null);
+  /** 빈 채로 눌렀을 때 버튼을 한 번 흔든다. */
+  const [nudge, setNudge] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const ask = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed) return;
+      if (!trimmed) {
+        setNudge(true);
+        window.setTimeout(() => setNudge(false), 420);
+        return;
+      }
+      setAsked(trimmed);
+      setQuestion('');
       setPending(true);
       setError(null);
       try {
@@ -249,10 +259,13 @@ export function ResearchPage() {
               field.style.height = `${field.scrollHeight}px`;
             }}
           />
+          {/* 비활성으로 두면 왜 못 누르는지 모른다. 늘 누를 수 있게 두고, 빈 채로 누르면
+              한 번 흔들어 알려 준다. */}
           <button
             type="submit"
             className="research-form__submit"
-            disabled={pending || !question.trim()}
+            data-nudge={nudge ? 'true' : 'false'}
+            disabled={pending}
           >
             {pending ? '찾는 중' : '질문하기'}
           </button>
@@ -264,10 +277,7 @@ export function ResearchPage() {
             <li key={example}>
               <button
                 type="button"
-                onClick={() => {
-                  setQuestion(example);
-                  void ask(example);
-                }}
+                onClick={() => void ask(example)}
               >
                 {example}
               </button>
@@ -280,6 +290,7 @@ export function ResearchPage() {
         </p>
       </div>
 
+      {asked ? <p className="research-asked">{asked}</p> : null}
       {error ? <p className="research-failure">{error}</p> : null}
       {result?.data.status === 'ANSWERED' ? <AnswerBlock answer={result.data.answer} /> : null}
       {result?.data.status === 'FAILED' ? <FailureBlock failure={result.data.failure} /> : null}
