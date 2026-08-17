@@ -47,9 +47,8 @@ describe('인증과 route shell', () => {
     await user.keyboard(' ');
 
     expect(await screen.findByRole('heading', { level: 1, name: '원전수출' })).toBeInTheDocument();
-    // 근거 상태는 기사 옆 물음표 안에 접혀 있다.
-    await user.click((await screen.findAllByRole('button', { name: /출처 정보/ }))[0]);
-    expect(screen.getByText(/뉴스 기반 추정/)).toBeInTheDocument();
+    // 출처는 제목 아래 옅은 한 줄로 있다.
+    expect(await screen.findByRole('link', { name: /예시 언론사/ })).toBeInTheDocument();
   });
 
   it('인사이트 타일은 접근 가능한 이름과 canonical 상세 이동을 제공한다', async () => {

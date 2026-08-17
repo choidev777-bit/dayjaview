@@ -135,14 +135,9 @@ export function CatalystDetailPage() {
                     }}
                   >
                     <span className="case-list__copy">
-                      {/* 주도 종목은 날짜가 아니라 종목이다. 같은 줄에 붙이면 날짜의 일부처럼 읽힌다. */}
+                      {/* 주도 종목은 사례를 여는 화면에 이미 있다. 목록 카드에는 두지 않는다. */}
                       <small>{formatDate(`${event.marketDate}T00:00:00+09:00`)}</small>
                       <strong>{event.normalizedCatalystSummary}</strong>
-                      {event.leaderName ? (
-                        <span className="case-list__tags">
-                          <em className="case-list__leader">{event.leaderName}</em>
-                        </span>
-                      ) : null}
                     <b className="case-list__outcome">
                       <small>당일</small>
                       <span className={returnTone(event.sameDayReturn)}>

@@ -78,14 +78,10 @@ export function HistoricalEventPage() {
           {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
         </small>
         <h1>{detail.catalystSummary}</h1>
+        <p className="page-intro__origin">{detail.displayNameAtEvent}</p>
       </div>
 
       <div className="detail-card">
-        <section aria-labelledby="origin-title">
-          <h2 id="origin-title" className="page-intro__origin">
-            {detail.displayNameAtEvent}
-          </h2>
-        </section>
 
         <section aria-labelledby="similarity-title">
           <h2 id="similarity-title">오늘과 비슷한 이유</h2>

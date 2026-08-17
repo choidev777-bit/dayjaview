@@ -145,7 +145,6 @@ function sameSentence(title: string, summary: string): boolean {
 function EvidenceList({
   items,
   showTime = true,
-  statusNote,
   showSource = true,
   hasMore = false,
   loadingMore = false,
@@ -155,8 +154,6 @@ function EvidenceList({
   items: EvidenceItem[];
   /** 장중 근거는 몇 시에 들어왔는지가 중요하다. 마감 후 확정 사유는 시각이 하나뿐이라 뺀다. */
   showTime?: boolean;
-  /** 근거 상태·출처 수·확인 시각. 물음표 안에서 출처 정보와 같이 보여준다. */
-  statusNote?: { label: string; note: string } | null;
   /** 장중 이력은 그때 본 화면을 그대로 되살리는 자리라 출처 물음표까지 달지 않는다. */
   showSource?: boolean;
   hasMore?: boolean;
@@ -178,25 +175,18 @@ function EvidenceList({
                 접는 것이라 `영역 선택 또는 별도 상세`를 허용하는 screen_spec §8.3을 지킨다. */}
             <strong className="evidence-list__title">
               <span>{item.title}</span>
-              {showSource ? (
-              <InfoTip label={`${item.title} 출처 정보`}>
-                <strong>출처</strong>
+            </strong>
+            {/* 물음표를 화면마다 달면 눈이 아파서 옅은 한 줄로 되돌린다. 매체·시각·원문은
+                지울 수 없다 (screen_spec §4.2 SINGLE_SOURCE `매체·시각·원문 제공`). */}
+            {showSource ? (
+              <a className="evidence-list__source" href={item.originalUrl} target="_blank" rel="noreferrer">
                 {item.sourceName} ·{' '}
                 {item.publishedAt
                   ? formatTime(item.publishedAt)
-                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}
-                <a href={item.originalUrl} target="_blank" rel="noreferrer">
-                  새 창에서 원문 보기
-                </a>
-                {statusNote ? (
-                  <>
-                    <strong>{statusNote.label}</strong>
-                    {statusNote.note}
-                  </>
-                ) : null}
-              </InfoTip>
-              ) : null}
-            </strong>
+                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}{' '}
+                · 원문
+              </a>
+            ) : null}
             {/* 인포스탁 기록은 제목과 요약이 같은 문장인 경우가 많다. 그러면 같은 글이 두 번
                 나오고, 요약 안 `주도주 : …`는 아래 `오늘의 주도 종목`과도 겹친다. */}
             {item.summary && !sameSentence(item.title, item.summary) ? <p>{item.summary}</p> : null}
@@ -732,17 +722,7 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
                       <EvidenceList
                         items={items}
                         showTime={tab === 'LIVE'}
-                        statusNote={{
-                          label:
-                            evidenceStatusLabel(evidenceStatus) +
-                            (summary.sourceCount > 0
-                              ? ` · 출처 ${summary.sourceCount.toLocaleString('ko-KR')}곳`
-                              : '') +
-                            (summary.latestPublishedAt
-                              ? ` · 최근 확인 ${formatTime(summary.latestPublishedAt)}`
-                              : ''),
-                          note: evidenceStatusNote(evidenceStatus),
-                        }}
+                        
                         hasMore={hasMore}
                         loadingMore={pagination.loading}
                         loadMoreFailed={pagination.failed}

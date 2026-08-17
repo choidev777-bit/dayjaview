@@ -80,6 +80,8 @@ export function SimilarEventsPage() {
 
   const summary = data.summary.find((row) => row.horizonTradingDays === horizon);
   const smallSample = isSmallSample(summary);
+  // 사례들은 같은 테마에서 나왔다. 당시 테마명이면 어느 테마의 과거인지 알리는 데 충분하다.
+  const themeName = data.items[0]?.displayNameAtEvent ?? null;
 
   return (
     <div className="page page--cases">
@@ -87,6 +89,8 @@ export function SimilarEventsPage() {
 
       <div className="page-intro">
         <h1>과거에는 이런 일이 있었어요</h1>
+        {/* 어느 테마의 과거인지가 없으면 어디서 왔는지 알 수 없다. 상세 화면과 형식을 맞춘다. */}
+        {themeName ? <p className="page-intro__origin">{themeName}</p> : null}
       </div>
 
       <section className="historical-summary" aria-labelledby="similar-summary-title">
@@ -182,14 +186,13 @@ export function SimilarEventsPage() {
       {data.items.length > VISIBLE_CASES ? (
         <button
           type="button"
-          className="expand-button case-list__more"
+          className="expand-button expand-button--inline case-list__more"
           aria-expanded={expanded}
           onClick={() => patchParams({ cases: expanded ? null : 'all' })}
         >
-          <span>
-            {expanded
-              ? '사례 접기'
-              : `사례 ${(data.items.length - VISIBLE_CASES).toLocaleString('ko-KR')}건 더 보기`}
+          {/* 아코디언 모양은 테마 상세와 맞춘다. 글자 없이 화살표만 둔다. */}
+          <span className="visually-hidden">
+            {expanded ? '사례 접기' : '사례 더 보기'}
           </span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
