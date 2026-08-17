@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-16 · 기준 commit `5ae7a92` (**뉴스·장후 작업 실운영 배선, cron·복원·재부팅 검증 완료**) · `uv run pytest -q` 590 passed·1 skipped
+- **마지막 갱신**: 2026-08-17 · 기준 commit `f90e9c6` (**E-22 회사 온톨로지 착수 — 선행·단계 2 완료, 단계 0·1 부분, 단계 3 진행 중**) · `uv run pytest -q` 642 passed·10 skipped (2026-08-17 측정, E-22 단계 3 미커밋분 포함)
 
 ## 요약
 
@@ -12,10 +12,10 @@
 | B. 뉴스 근거 | 4 / 4 | — |
 | C. 화면 | 2 / 3 | C-13 |
 | D. 매일 자동 운영 | 3 / 3 | — |
-| E. 과거 연구 | 1 / 6 | E-16, E-18 ~ E-21 |
+| E. 과거 연구 | 1 / 7 | E-16, E-18 ~ E-22 |
 | F. 출시 | 5 / 5 | — |
 
-**1차 출시선(A+B+C+D+F) 기준으로 A-3 장중 관찰 1건과 백업 암호문 외부 보관 확인 1건만 남았다.** E는 출시 후 — 다만 **E-21 1단계는 1차 출시에 붙일 수 있다. E-17(온톨로지)은 완료됐다.**
+**1차 출시선(A+B+C+D+F) 기준으로 A-3 장중 관찰 1건과 백업 암호문 외부 보관 확인 1건만 남았다.** E는 출시 후 진행 중 — **E-17(온톨로지)은 완료**됐고, 그 확장인 **E-22가 2026-08-17에 착수돼 9단계 중 2단계가 끝났다.** E-21은 독립 항목으로 진행하지 않고 E-22 단계 5가 맡는다.
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -97,7 +97,19 @@
 - [ ] **E-18** 과거 테마 반응 소재 TOP3 — 미착수. 선행: E-16 + E-17(완료).
 - [ ] **E-19** 유사사례 검색 엔진 + 평가 — 미착수. 외부 관문: 2인 블라인드 평가.
 - [ ] **E-20** 유사사례 화면 — 미착수. E-19 통과 전 노출 금지(현재 `HistoricalGatePage`가 gate-off 표시).
-- [ ] **E-21** 리서치 탭 자연어 질의 — 미착수. 요구사항은 2026-08-15 작성 완료(PRD FR-11·6.2, screen_spec 11.7). 3단계로 나뉨 — 1단계(선행 없음, 1차 출시에 붙일 수 있음) / 2단계(선행 E-16+E-17) / 3단계(선행 E-19).
+- [ ] **E-21** 리서치 탭 자연어 질의 — **E-22 단계 5로 이관.** 답할 질문의 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md) 4.0절 **질의 17종**이고, 요청 방식은 자연어 입력 하나다(날짜·종목을 클릭해 고르는 조회 화면은 만들지 않는다). 기존 "3단계" 구분은 데이터 확보 순서로만 남는다. 요구사항 문서는 2026-08-15 작성 완료(PRD FR-11·6.2, screen_spec 11.7).
+  - **`DAY_MOVERS`(17종 중 1번)는 이미 나가 있다** — `ab02b80`이 `packages/infostock/daily_read.py` · `GET /v1/daily/movers` · `apps/web/src/pages/DayMoversPage.tsx` · 홈 진입 링크까지 만들었다. 계획서 결정 이전에 만든 조회 화면 형태라 **E-22 단계 5에서 화면과 공개 엔드포인트를 제거하고** 읽기 함수만 QueryPlan으로 흡수한다. 지금 응답에는 dataset·parser 버전이 없어 계획서 13절 조건을 아직 어긴다.
+- [ ] **E-22** 회사 중심 사건 온톨로지·자연어 질의 확장 — **2026-08-17 착수, 진행 중.** 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md)이고 [remaining_work.md](./remaining_work.md) E-22는 목차·상태만 둔다. 9단계 중 **선행·단계 2 완료 · 단계 0·1 부분 · 단계 3 진행 중**.
+  - [x] **선행** E-17 라벨 DB 적재 — 2026-08-17 `9f5e2de`. `0007`이 `ontology` 스키마와 `catalyst_vocabularies`·`catalyst_types`·`theme_history_labels`·`theme_history_label_spans` 생성. 적재 job `load_theme_catalyst_labels.py`(버전 append·idempotent). "이 소재 유형에 과거 어떤 테마가 반응했나"를 SQL 한 번으로 계산 가능해졌다.
+  - [ ] **단계 0** 질문 계약·gold set — 부분. 17종 확정 `695e6f1`, gold set 3겹 초안 `5a74188`·`5f4ff10`, 눈가림 검수 입력 `5dd9c9e`, 독립 판정 대조 `925e665`. **남은 것 3개**: ① 질의 ID·슬롯·집계 단위 기계 enum(`packages/ontology/query_contracts.py` 미생성) ② 3겹 전부 `AI_DRAFT`/`AI_CROSS_CHECKED` — 계획서 11.1.2에 따라 사람 검수 없이는 승격 판정 불가 ③ `tests/ontology/goldset_v1.tsv`에 `review_status` 열 자체가 없다.
+  - [ ] **단계 1** DailyFeaturedTheme 파싱 확장 — 부분. 상세 문단 보존·등락률 표 값 분해·섹션별 설명은 `d7db311`(`0008`), 운영 반입은 `237073a`. **남은 것 3개**: ① `PARSE_PARTIAL` 1,294건 형식군 감사 ② Daily 관계를 catalyst mention으로 변환(`source_mention` 계열 테이블 미생성) ③ `research/ontology/daily_coverage_report.json`. 완료 조건인 `COMPANY_DAILY_FEATURED` 응답은 아직 안 된다.
+  - [x] **단계 2** 회사 정체성·alias — 2026-08-17 `62a1b26` · `f90e9c6`. `0009`가 `core.company_entities`·`company_aliases`·`company_instruments`·`company_revisions`·`company_resolution_reviews` 생성. 사명 이력의 정본은 KRX 일별매매 종목명이다(`krx_names.py`) — 인포스탁은 과거 기록을 현재 이름으로 소급 정규화해 유효기간을 만들 수 없다. 미해결 과거 주도주는 임의 연결하지 않고 검수 대상으로 남긴다.
+  - [ ] **단계 3** history 회사 역할 연결 — 진행 중. 워킹트리에 `0010_history_company_roles.sql`(`history_company_role_revisions`·`history_company_mentions`·`history_company_roles`), `packages/ontology/company_roles.py`, `label_company_events.py`, 테스트 2건이 미커밋 상태.
+  - [ ] **단계 4** 사건 구조·단계·중복 제거 — 미착수.
+  - [ ] **단계 5** E-21 질의 17종 — 미착수. `DAY_MOVERS` 조회 화면·공개 엔드포인트 제거가 이 단계에 포함된다.
+  - [ ] **단계 6** 금액·실제 결과 — 미착수. E-16 gate 종속.
+  - [ ] **단계 7** 유사사례 승격 — 미착수. E-19 gate 종속.
+  - **외부 관문**: gold set 사람 검수. 검수된 행이 없으면 계획서 11.2절 승격 기준을 어떤 수치로도 통과하지 못한다.
 
 ## F. 출시
 
@@ -147,13 +159,19 @@
 |---|---|---|
 | 주식장 개장 시간 | A-3 | 개장일 장중 실가동 관찰 |
 | 백업 암호문 VM 밖 보관 | F-25 후속 안전조치 | 사용자가 비밀번호 관리자 등에 직접 보관 확인 |
+| gold set 사람 검수 | E-22 단계 0 이후 전 단계의 승격 판정 | `HUMAN_CONFIRMED` 라벨 확보 (계획서 11.1.2·11.2) |
 | 2인 블라인드 평가 | E-19 → E-20 | 사람 평가 통과 |
 | 과거 주가 2005~2009 원천 | E-16 잔여 구간 (E-18·E-19의 2010년 이전 사건 outcome) | KRX Open API가 미제공(실측) — 대체 원천 확보 또는 2010년 이후로 범위 확정, 사용자 판단 |
 
 ## 진행 순서 (remaining_work.md 기준, 완료분 제외)
 
 ```
-A-3 (개장 시간 필요)  [E-21 1단계 동반 가능]
-→ E-16 → E-18 → E-19 → E-20 (출시 후)
-→ E-21 2단계(E-16+E-17 후, E-17은 완료) → E-21 3단계(E-19 후)
+A-3 (개장 시간 필요)        ← 외부 관문, 병렬
+C-13 (장중 상세 갱신)
+
+E-22 단계 0·1 잔여 → 단계 3 → 단계 4 → 단계 5(= E-21 질의 17종)
+                  → 단계 6(E-16 gate) → 단계 7(E-19 gate)
+E-18 (선행 E-16 2010~ 구간·E-17 충족, 지금 착수 가능)
+E-19 → E-20 (2인 블라인드 통과 후)
+E-16 2005~2009 구간 (대체 원천 확보 여부는 사용자 판단)
 ```
