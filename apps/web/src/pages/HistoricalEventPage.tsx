@@ -71,18 +71,20 @@ export function HistoricalEventPage() {
         save={{ eventId: detail.eventId, displayName: detail.catalystSummary }}
       />
 
-      {/* 어느 테마에서 열었는지가 이 화면의 맥락이라 제목 자리에 둔다.
-          사건일과 사유는 아래 카드 안으로 내려 본문과 붙인다. */}
+      {/* 이 화면의 주인공은 그날 무슨 일이 있었나다. 날짜와 사건 사유를 제목 자리에 둔다.
+          테마 이름은 어느 테마에서 열었는지를 알려 주는 맥락이라 카드 안으로 내린다. */}
       <div className="page-intro">
-        <h1 className="page-intro__origin">{detail.displayNameAtEvent}</h1>
+        <small className="page-intro__date">
+          {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
+        </small>
+        <h1>{detail.catalystSummary}</h1>
       </div>
 
       <div className="detail-card">
-        <section aria-labelledby="catalyst-title">
-          <small className="page-intro__date">
-            {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
-          </small>
-          <h2 id="catalyst-title">{detail.catalystSummary}</h2>
+        <section aria-labelledby="origin-title">
+          <h2 id="origin-title" className="page-intro__origin">
+            {detail.displayNameAtEvent}
+          </h2>
         </section>
 
         <section aria-labelledby="similarity-title">

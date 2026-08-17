@@ -2319,16 +2319,21 @@ a:focus-visible,
 
 .saved-row__remove {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   place-items: center;
-  border: 1px solid var(--djv-color-border);
+  border: 0;
   border-radius: 50%;
   color: var(--djv-color-text-muted);
-  background: var(--djv-color-surface);
+  background: var(--djv-color-surface-muted);
+}
+
+.saved-row__remove svg {
+  width: 15px;
+  height: 15px;
 }
 
 .saved-row__remove:disabled {
@@ -2802,9 +2807,8 @@ a:focus-visible,
 
 .page-intro__date {
   display: block;
-  margin-top: var(--djv-space-2);
-  color: var(--djv-color-text-muted);
-  font-size: var(--djv-font-size-caption);
+  color: var(--djv-brand-contrast);
+  font-size: var(--djv-font-size-label);
   font-weight: 700;
 }
 
@@ -2829,9 +2833,52 @@ a:focus-visible,
   border-bottom: 0;
 }
 
-/* 겹치는 종목 절은 위에 구분선을 둬서 앞 절과 갈린다. */
+/* 절 사이 구분선은 한 줄만. detail-card가 이미 자식 사이에 선을 그어서, 여기서 또 그으면
+   두 줄이 겹쳐 보인다. 위쪽 여백만 준다. */
 .detail-card > section + section {
   margin-top: var(--djv-space-4);
-  padding-top: var(--djv-space-4);
-  border-top: 1px solid var(--djv-color-border);
+}
+
+/* 유사사례 카드: 화살표를 오른쪽 끝에 바짝 붙이고 결과도 오른쪽으로 민다. */
+.case-list a {
+  padding-right: 10px;
+  column-gap: 4px;
+}
+
+.case-list a > svg {
+  align-self: center;
+  color: var(--djv-color-text-muted);
+}
+
+/* 주도 종목 태그는 유사 이유 태그와 톤을 다르게 둔다. */
+.case-list__leader {
+  border: 1px solid var(--djv-color-border);
+  background: transparent !important;
+  color: var(--djv-color-text-muted) !important;
+}
+
+/* TOP3: `오늘과 같은 유형` 뱃지를 이름 왼쪽 위가 아니라 같은 줄 오른쪽에 둔다.
+   위로 쌓으면 이름이 칸 아래로 밀려 내려간다. */
+.catalyst-list__copy {
+  display: grid;
+  align-items: center;
+  gap: 2px 6px;
+  grid-template-areas: 'name badge';
+  grid-template-columns: minmax(0, auto) 1fr;
+}
+
+.catalyst-list__copy strong {
+  grid-area: name;
+}
+
+.catalyst-list__copy em {
+  order: 0;
+  justify-self: start;
+  grid-area: badge;
+}
+
+/* 유사사례 요약 제목의 건수 강조. */
+.historical-summary h2 b {
+  color: var(--djv-color-brand);
+  font-weight: 800;
 }

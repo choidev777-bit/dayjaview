@@ -81,7 +81,7 @@ describe('인증과 route shell', () => {
     );
 
     // 기간마다 분모가 다르다(14·14·12). 한 분모로 합치면 이 표기가 무너진다 (screen_spec 8.8).
-    expect(await screen.findByText('비슷했던 과거 14건')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /비슷했던 과거 14건/ })).toBeInTheDocument();
     expect(screen.getByText('10 / 14건 상승')).toBeInTheDocument();
     expect(screen.getByText('6 / 12건 상승')).toBeInTheDocument();
     // fixture 사례에는 T+5 결과가 없다. 0%가 아니라 결측으로 적어야 한다.

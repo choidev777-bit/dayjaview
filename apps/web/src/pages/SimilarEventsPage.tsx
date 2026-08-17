@@ -5,6 +5,7 @@ import { useRepository } from '../app/RepositoryContext';
 import type { HistoricalHorizon, HistoricalSummary } from '../domain/contracts';
 import { formatDate, formatReturn, horizonLabel, outcomeText, returnTone } from '../domain/formatting';
 import { asRepositoryError } from '../domain/repositoryErrors';
+import { InfoTip } from '../shared/InfoTip';
 import { EmptyState, ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
 import { useGoBack } from '../shared/useGoBack';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -90,7 +91,12 @@ export function SimilarEventsPage() {
 
       <section className="historical-summary" aria-labelledby="similar-summary-title">
         <h2 id="similar-summary-title">
-          비슷했던 과거 {(summary?.eligibleCount ?? data.items.length).toLocaleString('ko-KR')}건
+          비슷했던 과거{' '}
+          <b>{(summary?.eligibleCount ?? data.items.length).toLocaleString('ko-KR')}건</b>
+          <InfoTip label="비슷한 사례를 고르는 기준">
+            수익률이 아니라 <b>왜 올랐는지</b>가 닮은 사건을 같은 테마 안에서 찾습니다. 결과는 사례를
+            고른 뒤에 붙였고, 고를 때는 쓰지 않았습니다.
+          </InfoTip>
         </h2>
         {/* 건수 바로 아래에 둔다. 카드 맨 아래면 기간 토글에 붙어 어느 값에 걸린 경고인지
             흐려진다 (screen_spec 8.8 `표본 부족 경고를 요약 가까이에`). */}
@@ -148,12 +154,13 @@ export function SimilarEventsPage() {
                     {/* 당시 테마명은 날짜가 아니라 태그다. 같은 줄에 붙이면 날짜의 일부처럼 읽힌다. */}
                     <small>{formatDate(`${item.marketDate}T00:00:00+09:00`)}</small>
                     <strong>{item.normalizedCatalystSummary}</strong>
-                    <span className="case-list__tags">
-                      <em className="case-list__theme">{item.displayNameAtEvent}</em>
-                      {item.similarityReasons.map((reason) => (
-                        <em key={reason}>{reason}</em>
-                      ))}
-                    </span>
+                    {item.similarityReasons.length ? (
+                      <span className="case-list__tags">
+                        {item.similarityReasons.map((reason) => (
+                          <em key={reason}>{reason}</em>
+                        ))}
+                      </span>
+                    ) : null}
                     <b className="case-list__outcome">
                       <small>{horizonLabel(horizon)}</small>
                       <span className={outcome.tone}>{outcome.text}</span>
