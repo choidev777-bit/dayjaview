@@ -10,13 +10,7 @@ import type {
 import { asRepositoryError } from '../domain/repositoryErrors';
 
 /** 계약서 4.0절 17종 중 지금 물어볼 수 있는 형태의 예시. */
-const EXAMPLES = [
-  '핵융합 테마 과거에 어땠어?',
-  '어제 뭐가 올랐어?',
-  '이번 주 시장 어땠어?',
-  '한화에어로스페이스가 직접 한 일만 알려줘',
-  '2차전지 테마에 어떤 종목이 있어?',
-] as const;
+const EXAMPLES = ['이번 주 시장 어땠어?', '2차전지 테마에 어떤 종목이 있어?'] as const;
 
 const MAX_LENGTH = 300;
 

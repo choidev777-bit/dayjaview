@@ -2834,10 +2834,10 @@ a:focus-visible,
   background: var(--djv-color-surface);
 }
 
-/* 박스 안 첫 줄에는 구분선을 두지 않는다. 박스 테두리와 겹쳐 빈 줄처럼 보인다. */
+/* 박스 안 첫 줄에는 구분선을 두지 않는다. 박스 테두리와 겹쳐 빈 줄처럼 보인다.
+   다만 여백까지 없애면 글이 위쪽에 붙어 아래와 균형이 깨진다. 선만 없앤다. */
 .reason-panel > *:first-child {
   margin-top: 0;
-  padding-top: 0;
   border-top: 0;
 }
 
@@ -2973,7 +2973,7 @@ textarea.research-form__input {
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-lg);
   color: var(--djv-color-text);
-  background: var(--djv-color-surface-muted);
+  background: var(--djv-color-surface);
   font-family: inherit;
   font-size: var(--djv-font-size-body);
   line-height: 1.5;

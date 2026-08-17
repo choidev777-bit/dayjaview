@@ -223,6 +223,9 @@ export const demoTreemap = {
   meta: { ...meta, marketContext },
 };
 
+/** 장중에 근거가 잡힌 시각. 화면 기준 시각(15:20)보다 앞선다. */
+const LIVE_OBSERVED_AT = `${story.marketDate}T10:30:00+09:00`;
+
 /** 그날 그 테마의 사건 문장을 근거 항목으로 둔다. 뉴스 수집분이 없어 원문 링크는 없다. */
 export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
   story.themes.map((theme) => [
@@ -237,8 +240,10 @@ export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
           newsId: item.newsId,
           sourceName: item.sourceName,
           title: item.title,
-          publishedAt: asOf,
-          receivedAt: asOf,
+          // 15:20은 화면의 기준 시각이고, 기사는 그전에 들어왔다. 장중에 실제로
+          // 근거가 잡힌 시각을 쓴다.
+          publishedAt: LIVE_OBSERVED_AT,
+          receivedAt: LIVE_OBSERVED_AT,
           originalUrl: 'https://infostock.co.kr',
           matchBasis: ['THEME'],
           summary: item.summary,
@@ -262,8 +267,6 @@ export const demoEvidenceByEvent: Record<string, unknown> = Object.fromEntries(
  * 장중이라 아직 확정 전이므로 상태는 `SINGLE_SOURCE`(뉴스 기반 추정)로 두고,
  * 확정 사유보다 이른 시각을 붙인다. 확정본과 문장이 달라야 `장중과 달라졌다`가 보인다.
  */
-const LIVE_OBSERVED_AT = `${story.marketDate}T11:40:00+09:00`;
-
 export const demoLiveHistoryByEvent: Record<
   string,
   {
