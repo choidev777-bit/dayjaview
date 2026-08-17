@@ -437,7 +437,10 @@ function CatalystTop3Section({
       <div className="section-heading">
         {/* 테마 이름이 길면 `반응 TOP3`만 남고 잘려 보인다. 이름과 꼬리말을 아예 다른 줄로 둔다. */}
         <h2 id="catalyst-top-title">
-          <span className="catalyst-heading__theme">과거 {themeName}</span>
+          {/* `과거`는 접두어일 뿐이다. 포인트 색은 테마 이름에만 준다. */}
+          <span className="catalyst-heading__theme">
+            과거 <em>{themeName}</em>
+          </span>
           <span className="catalyst-heading__tail">{tail}</span>
         </h2>
         {/* 품질 주의는 화면에서 빼고 발표 때 말로 설명한다

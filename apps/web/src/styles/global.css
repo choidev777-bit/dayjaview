@@ -3065,8 +3065,9 @@ textarea.research-form__input {
    주황 카드 헤더와 같은 색을 쓴다. */
 .today-origin strong,
 .case-list__theme,
-.catalyst-heading__theme {
+.catalyst-heading__theme em {
   color: var(--djv-color-brand);
+  font-style: normal;
 }
 
 .case-list__theme {
