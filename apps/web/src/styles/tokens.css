@@ -30,13 +30,15 @@
    * PWA가 아니라 모바일 브라우저로 열리는 걸 전제로 잡은 스케일이다.
    * iPhone 393x852에서 Safari 주소창·하단 메뉴를 빼면 실제 웹 영역은 672px뿐이라,
    * 제목 계열을 한 단계씩 낮춰 본문이 보일 자리를 만든다.
-   * 실기기로 보니 전반적으로 작아서 한 단계씩 되올렸다. 본문 16px·라벨 14px이 하한이다.
+   * 한 번 키웠다가 되돌렸다. 작아 보였던 건 Pretendard가 안 실려 시스템 글꼴로 떨어져
+   * 있었기 때문이다. 웹폰트를 싣고 나니 원래 크기가 맞다.
+   * 본문 15px·캡션 12px은 토스 TDS(`body-2` 15/1.5, `caption` 12/1.4)와도 같은 값이다.
    */
-  --djv-font-size-caption: 13px;
-  --djv-font-size-label: 14px;
-  --djv-font-size-body: 16px;
+  --djv-font-size-caption: 12px;
+  --djv-font-size-label: 13px;
+  --djv-font-size-body: 15px;
   --djv-font-size-heading-3: 17px;
-  --djv-font-size-heading-2: 19px;
+  --djv-font-size-heading-2: 20px;
   --djv-font-size-heading-1: 22px;
   --djv-font-size-display: 28px;
 
