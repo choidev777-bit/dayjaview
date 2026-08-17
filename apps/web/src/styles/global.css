@@ -113,7 +113,7 @@ a:focus-visible,
 .bottom-navigation a.is-active {
   color: var(--djv-color-brand);
   background: var(--djv-color-brand-soft);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 크기는 시안 `.footer button:nth-child(2)::after`와 같다. 다만 시안은 칸 오른쪽 끝(`right`)에
@@ -130,7 +130,7 @@ a:focus-visible,
   color: var(--djv-color-on-brand);
   background: var(--djv-color-market-up);
   font-size: 7px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: .02em;
   /* min-width가 글자 폭보다 넓어서 기본 좌측 정렬이면 글자가 상자 왼쪽에 쏠린다. */
@@ -320,7 +320,7 @@ a:focus-visible,
 .error-page h1 {
   margin: 0;
   font-size: var(--djv-font-size-heading-2);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.03em;
 }
 
@@ -353,13 +353,13 @@ a:focus-visible,
 .page-intro > small {
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .page-intro h1 {
   margin: 5px 0 0;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
   letter-spacing: -.04em;
 }
@@ -385,7 +385,7 @@ a:focus-visible,
 .app-bar > strong {
   color: var(--djv-color-text);
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -464,7 +464,7 @@ a:focus-visible,
   color: var(--djv-brand-contrast);
   background: var(--djv-color-brand-soft);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* -------------------------------------------------------------- button */
@@ -478,7 +478,7 @@ a:focus-visible,
   padding: 0 var(--djv-space-5);
   border: 0;
   border-radius: var(--djv-radius-md);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .button:disabled {
@@ -505,7 +505,7 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
   background: transparent;
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .icon-button {
@@ -533,7 +533,7 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
   background: var(--djv-color-surface-muted);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 목록에 이어 붙는 아코디언. 글자 없이 화살표 하나만 두고, 구분선과 옅은 음영으로
@@ -572,7 +572,7 @@ a:focus-visible,
 
 .page-intro__date {
   font-size: var(--djv-font-size-heading-3);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .expand-button i {
@@ -604,7 +604,7 @@ a:focus-visible,
 .data-status strong {
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-caption);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .data-status p {
@@ -673,14 +673,14 @@ a:focus-visible,
 .state-panel__title {
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-label);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .state-panel .eyebrow {
   margin: 0;
   color: var(--djv-brand-contrast);
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: .06em;
 }
 
@@ -716,7 +716,7 @@ a:focus-visible,
 .coverage--partial strong,
 .coverage--insufficient strong {
   color: var(--djv-color-warning);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .coverage-band {
@@ -767,7 +767,7 @@ a:focus-visible,
   display: block;
   color: var(--djv-color-brand);
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.14;
   letter-spacing: -.03em;
 }
@@ -775,7 +775,7 @@ a:focus-visible,
 .home-title h1 {
   margin: 0;
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.14;
   letter-spacing: -.04em;
 }
@@ -925,14 +925,14 @@ a:focus-visible,
   background: var(--djv-color-surface-muted);
   color: var(--djv-color-text-muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
 }
 
 .wheel-card[data-top="true"] .wheel-card__rank {
   background: var(--djv-color-brand-soft);
   color: var(--djv-brand-contrast);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 상승 종목 줄을 뺐으니 이름을 카드 세로 가운데에 둔다. */
@@ -974,7 +974,7 @@ a:focus-visible,
 
 .wheel-card__value {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -.01em;
 }
 
@@ -1200,7 +1200,7 @@ a:focus-visible,
   overflow: hidden;
   color: var(--djv-color-on-brand);
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -.03em;
   text-align: center;
   text-overflow: ellipsis;
@@ -1248,7 +1248,7 @@ a:focus-visible,
 .theme-summary h1 {
   margin: 0;
   font-size: 24px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1.12;
   letter-spacing: -.045em;
   /* `광섬 / 유 등)`처럼 단어 중간에서 끊기지 않게 한다. */
@@ -1265,7 +1265,7 @@ a:focus-visible,
   color: var(--djv-color-on-brand);
   background: color-mix(in srgb, var(--djv-color-on-brand) 28%, transparent);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.02em;
 }
 
@@ -1284,7 +1284,7 @@ a:focus-visible,
 
 .theme-summary__return > strong {
   font-size: 36px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: .98;
   letter-spacing: -.05em;
   font-variant-numeric: tabular-nums;
@@ -1303,7 +1303,7 @@ a:focus-visible,
   color: var(--djv-color-on-brand);
   font-family: inherit;
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .theme-summary__basis .info-tip__button {
@@ -1332,7 +1332,7 @@ a:focus-visible,
   background: var(--djv-color-on-brand);
   color: var(--djv-brand-contrast);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.02em;
 }
 
@@ -1345,7 +1345,7 @@ a:focus-visible,
   background: transparent;
   color: var(--djv-color-on-brand);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.02em;
 }
 
@@ -1374,14 +1374,14 @@ a:focus-visible,
 .theme-stats span {
   color: rgba(255, 255, 255, .85);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -.02em;
 }
 
 .theme-stats strong {
   color: var(--djv-color-on-brand);
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -.03em;
   font-variant-numeric: tabular-nums;
 }
@@ -1410,7 +1410,7 @@ a:focus-visible,
   background: transparent;
   color: var(--djv-color-text-muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -.02em;
   transition: color var(--djv-motion-fast) var(--djv-easing-standard);
 }
@@ -1419,7 +1419,7 @@ a:focus-visible,
   z-index: 2;
   background: var(--djv-color-surface);
   color: var(--djv-brand-contrast);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .detail-tabs button:first-child[aria-selected="true"] {
@@ -1491,7 +1491,7 @@ a:focus-visible,
   margin-top: 5px;
   color: var(--djv-brand-contrast);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   /* `+22.6%`가 칸 폭보다 넓어도 줄을 접지 않고 글자를 좁혀 칸 높이를 지킨다. */
   white-space: nowrap;
 }
@@ -1501,7 +1501,7 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
   font-size: 11px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -1561,7 +1561,7 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
   background: transparent;
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .reason-tabs button[aria-selected="true"] {
@@ -1705,7 +1705,7 @@ a:focus-visible,
 .leader-list__missing {
   color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -1736,7 +1736,7 @@ a:focus-visible,
 .historical-summary h2 {
   margin: 0;
   font-size: var(--djv-font-size-body);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 건수 바로 아래에 붙는 경고. 옅은 경고색 띠로 감싸 본문 글과 구분한다. */
@@ -1745,7 +1745,7 @@ a:focus-visible,
   margin: var(--djv-space-2) 0 0;
   color: var(--djv-color-warning);
   font-size: var(--djv-font-size-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .historical-summary__rows {
@@ -1778,7 +1778,7 @@ a:focus-visible,
 }
 
 .historical-summary__rows b {
-  font-weight: 800;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -1819,7 +1819,7 @@ a:focus-visible,
 
 .detail-panel .metric-grid span {
   color: var(--djv-color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 과거 사례 결과는 값에 따라 칸 배경도 같이 바뀐다. 배경을 분홍으로 고정하면
@@ -1838,7 +1838,7 @@ a:focus-visible,
 
 .page--case-detail .metric-grid span {
   color: var(--djv-color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .page--catalyst .metric-grid article {
@@ -1859,7 +1859,7 @@ a:focus-visible,
 
 .page--catalyst .metric-grid span {
   color: var(--djv-color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 시안 `.wireBody .caseHero, .wireBody .catalystHero { border: 0 }` — 과거 화면의 인트로에는
@@ -1885,7 +1885,7 @@ a:focus-visible,
   margin-top: var(--djv-space-4);
   color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calculation-basis dt:first-of-type {
@@ -1916,7 +1916,7 @@ a:focus-visible,
   background: transparent;
   color: var(--djv-color-text-muted);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .horizon-toggle button[aria-selected="true"] {
@@ -1968,7 +1968,7 @@ a:focus-visible,
 .case-list__copy small {
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -.01em;
 }
 
@@ -2001,7 +2001,7 @@ a:focus-visible,
 
 .today-origin strong {
   color: var(--djv-color-brand);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 같은 종목의 당시 값과 오늘 값을 나란히 놓는 두 열 비교. */
@@ -2029,7 +2029,7 @@ a:focus-visible,
   padding-bottom: 4px;
   color: var(--djv-color-text-muted);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .overlap-list__head span {
@@ -2040,14 +2040,14 @@ a:focus-visible,
   overflow: hidden;
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-label);
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .overlap-list li:not(.overlap-list__head) span {
   font-size: var(--djv-font-size-label);
-  font-weight: 800;
+  font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -2055,7 +2055,7 @@ a:focus-visible,
 /* 제목은 줄바꿈을 허용한다. 한 줄로 자르면 사건 이름이 통째로 사라진다. */
 .case-list__copy strong {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
   letter-spacing: -.02em;
   word-break: keep-all;
@@ -2075,7 +2075,7 @@ a:focus-visible,
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-caption);
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 시안처럼 `T+5 +4.6%`를 아래 줄에 크게 둔다. */
@@ -2086,13 +2086,13 @@ a:focus-visible,
   justify-content: flex-end;
   gap: 6px;
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .case-list__outcome small {
   color: var(--djv-color-text-muted);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .case-list__more {
@@ -2161,7 +2161,7 @@ a:focus-visible,
   background: var(--djv-color-brand-soft);
   color: var(--djv-brand-contrast);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .catalyst-list span {
@@ -2180,7 +2180,7 @@ a:focus-visible,
 .catalyst-list strong {
   overflow: hidden;
   font-size: var(--djv-font-size-body);
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2198,7 +2198,7 @@ a:focus-visible,
   color: var(--djv-brand-contrast);
   font-size: 10px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------- 즐겨찾기 */
@@ -2244,7 +2244,7 @@ a:focus-visible,
   border-color: var(--djv-color-brand);
   color: var(--djv-brand-contrast);
   background: var(--djv-color-brand-soft);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .saved-list {
@@ -2287,14 +2287,14 @@ a:focus-visible,
 .saved-row__state strong {
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .saved-row__state .market-up,
 .saved-row__state .market-down,
 .saved-row__state .market-flat {
   font-size: var(--djv-font-size-label);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 카드 전체가 이동 버튼이라 저장 해제는 카드 위에 겹쳐 띄운다.
@@ -2579,7 +2579,7 @@ a:focus-visible,
   background: var(--djv-color-brand);
   font-family: inherit;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
 }
@@ -2617,7 +2617,7 @@ a:focus-visible,
 .info-tip__panel strong {
   display: block;
   color: var(--djv-color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .info-tip__panel strong:not(:first-child) {
@@ -2626,14 +2626,14 @@ a:focus-visible,
 
 .info-tip__panel b {
   color: var(--djv-color-text);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .info-tip__panel a {
   display: inline-block;
   margin-top: 4px;
   color: var(--djv-color-brand);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 주황 헤더 위에서는 반대 톤으로 뒤집는다. */
@@ -2685,14 +2685,14 @@ a:focus-visible,
 .login-card__copy small {
   color: var(--djv-brand-contrast);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: .06em;
 }
 
 .login-card__copy h1 {
   margin: var(--djv-space-2) 0 0;
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -.04em;
 }
 
@@ -2806,13 +2806,13 @@ a:focus-visible,
   background: var(--djv-color-brand-soft);
   font-size: 10px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .catalyst-list__count {
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-label);
-  font-weight: 800;
+  font-weight: 700;
   text-align: right;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -2821,7 +2821,7 @@ a:focus-visible,
 .catalyst-list__count b {
   color: var(--djv-color-text);
   font-size: var(--djv-font-size-label);
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2848,20 +2848,20 @@ a:focus-visible,
   margin: var(--djv-space-1) 0 0;
   color: var(--djv-color-brand);
   font-size: var(--djv-font-size-heading-3);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .page-intro__date {
   display: block;
   color: var(--djv-brand-contrast);
   font-size: var(--djv-font-size-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .page-intro__catalyst {
   margin: 2px 0 0;
   font-size: var(--djv-font-size-heading-3);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.4;
   word-break: keep-all;
 }
@@ -2921,7 +2921,7 @@ a:focus-visible,
 
 /* 유사사례 요약 제목의 건수 강조. 색까지 주면 제목에서 숫자만 튄다. 굵기만 올린다. */
 .historical-summary h2 b {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* 근거 출처 한 줄. 제목 아래 옅게 둔다. */
@@ -2958,7 +2958,7 @@ a:focus-visible,
   margin: var(--djv-space-1) 0 0;
   color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-heading-3);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .research-form {
@@ -2996,7 +2996,7 @@ textarea.research-form__input {
   background: var(--djv-color-brand);
   font-family: inherit;
   font-size: var(--djv-font-size-body);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .research-form__submit:disabled {
@@ -3008,7 +3008,7 @@ textarea.research-form__input {
   margin: var(--djv-space-5) 0 var(--djv-space-2);
   color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .research-examples {
@@ -3044,7 +3044,7 @@ textarea.research-form__input {
   background: var(--djv-color-surface-muted);
   font-family: inherit;
   font-size: var(--djv-font-size-body);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* 스크림은 버튼이지만 화면에는 어두운 막으로만 보인다. */
@@ -3091,7 +3091,7 @@ textarea.research-form__input {
 
 .research-row__values dt {
   font-size: var(--djv-font-size-caption);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .research-row__values dd {
@@ -3111,7 +3111,7 @@ textarea.research-form__input {
 p.page-intro__origin {
   color: var(--djv-color-brand);
   font-size: var(--djv-font-size-heading-3);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 /* `+20 거래일`이 좁은 칸에서 두 줄로 깨졌다. 기간 칸을 고정하고 줄바꿈을 막는다. */
@@ -3153,7 +3153,7 @@ p.page-intro__origin {
   color: var(--djv-color-text);
   background: var(--djv-color-brand-soft);
   font-size: var(--djv-font-size-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 @keyframes nudge-shake {
