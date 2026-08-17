@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { App } from '../app/App';
 import { createFixtureRepository, type RankingFixture } from '../adapters/fixtureRepository';
 import { RepositoryError } from '../domain/repositoryErrors';
+import { DataStatusBar } from '../shared/DataStatusBar';
 
 describe('시장 데이터 상태 matrix', () => {
   it.each<[RankingFixture, string]>([
@@ -11,10 +12,13 @@ describe('시장 데이터 상태 matrix', () => {
     ['delayed', '수신 지연'],
     ['degraded', '일부 데이터 지연'],
     ['closed', '장 마감'],
+    // 홈은 순위만 보여주기로 해서 상태 바가 빠졌다. 상태 표현 자체는 화면이 아니라
+    // 계약 fixture의 marketContext를 기준으로 확인한다.
   ])('%s 계약 fixture를 %s 상태로 표현한다', async (ranking, label) => {
-    render(<App repository={createFixtureRepository({ ranking })} initialEntries={['/today']} />);
+    const { meta } = await createFixtureRepository({ ranking }).getRankings();
+    render(<DataStatusBar context={meta.marketContext} />);
 
-    expect(await screen.findByText(label, { selector: '.data-status strong' })).toBeInTheDocument();
+    expect(screen.getByText(label, { selector: '.data-status strong' })).toBeInTheDocument();
   });
 
   it('Coverage 미달 metric을 0%로 바꾸지 않고 계산 불가로 표시한다', async () => {

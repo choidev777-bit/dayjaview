@@ -71,15 +71,17 @@ function InsightsScreen({ response }: { response: TreemapResponse }) {
       <div className="treemap-legend">
         <span>
           <i aria-hidden="true" />
-          면적: 테마 수익률
+          면적: 테마 수익률 · 색: 이날 상대 비교
         </span>
         {/* 장이 끝났는데 `장중 갱신`이라고 적으면 화면 위 상태 띠와 어긋난다. */}
         <span>
           {displayContext.dataStatus === 'LIVE' ? '수치는 장중 갱신' : `수치는 ${dataStatusLabel(displayContext.dataStatus)} 기준`}
         </span>
       </div>
+      {/* 색을 그날 범위로 정규화했으므로 `면적과 색상이 같은 원값`이라고 쓰면 사실과 다르다. */}
       <p className="section-note notice">
-        면적과 색상은 같은 테마 수익률 원값을 사용합니다. 내부 순위 점수는 사용하지 않습니다.
+        면적은 테마 수익률 원값에 비례합니다. 색은 이날 화면에 오른 테마들 사이의 상대 비교라 다른 날과
+        직접 비교하지 마세요. 내부 순위 점수는 사용하지 않습니다.
       </p>
     </div>
   );

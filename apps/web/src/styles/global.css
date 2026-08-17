@@ -752,10 +752,7 @@ a:focus-visible,
   letter-spacing: -.04em;
 }
 
-.home-status {
-  flex: none;
-  padding: 0 var(--djv-space-5) var(--djv-space-3);
-}
+/* 홈 상단 상태 바는 뺐다. .data-status 자체는 실시간 화면이 계속 쓴다. */
 
 .wheel {
   position: relative;
@@ -2269,18 +2266,7 @@ a:focus-visible,
 
 /* ------------------------------------------------------------- 특징테마 */
 
-.movers-entry {
-  display: block;
-  margin: var(--djv-space-4);
-  padding: var(--djv-space-4);
-  border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-lg);
-  background: var(--djv-color-surface);
-  color: var(--djv-color-text);
-  font-size: var(--djv-font-size-label);
-  text-align: center;
-  text-decoration: none;
-}
+/* 홈의 진입 링크(.movers-entry)는 뺐다. 어디에 놓을지 정해지면 다시 만든다. */
 
 .movers-date {
   display: flex;

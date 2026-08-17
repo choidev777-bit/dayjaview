@@ -8,6 +8,7 @@ import {
   layoutTreemap,
   selectTreemapItems,
   treemapIntensity,
+  treemapIntensityScale,
   treemapLabelTier,
   treemapRows,
 } from '../domain/treemap';
@@ -71,6 +72,23 @@ describe('트리맵 색상과 라벨', () => {
     expect(treemapIntensity(0.05)).toBe(1);
     expect(treemapIntensity(0.12)).toBe(1);
     expect(treemapIntensity(-0.025)).toBeCloseTo(0.5, 6);
+  });
+
+  it('강한 날에도 색이 뭉치지 않게 그날 범위로 다시 편다', () => {
+    // 전부 5%를 넘겨서 고정 기준으로는 12개가 모두 1이 되던 상황이다.
+    const strongDay = [item('a', 0.104), item('b', 0.088), item('c', 0.074)];
+    strongDay.forEach((entry) => expect(treemapIntensity(entry.weightedReturn)).toBe(1));
+
+    const scale = treemapIntensityScale(strongDay);
+    expect(scale(0.104)).toBeCloseTo(1, 6);
+    expect(scale(0.074)).toBeCloseTo(0.3, 6);
+    expect(scale(0.088)).toBeGreaterThan(scale(0.074));
+    expect(scale(0.088)).toBeLessThan(scale(0.104));
+  });
+
+  it('값이 하나뿐이거나 모두 같으면 고정 기준으로 돌아간다', () => {
+    expect(treemapIntensityScale([item('a', 0.02)])(0.02)).toBeCloseTo(treemapIntensity(0.02), 6);
+    expect(treemapIntensityScale([])(0.03)).toBeCloseTo(treemapIntensity(0.03), 6);
   });
 
   it('블록 크기로 라벨 단계를 정한다', () => {

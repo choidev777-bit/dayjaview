@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { formatLongDate } from '../domain/formatting';
-import { DataStatusBar } from '../shared/DataStatusBar';
 import { EmptyState, ErrorPage, LoadingState } from '../shared/StatePanel';
 import { ThemeRankingWheel } from '../shared/ThemeRankingWheel';
 import { useRepositoryResource } from '../shared/useRepositoryResource';
@@ -30,9 +28,7 @@ export function TodayPage() {
         <strong>{formatLongDate(`${context.marketDate}T00:00:00+09:00`)}</strong>
         <h1>오늘 많이 오른 테마예요</h1>
       </div>
-      <div className="home-status">
-        <DataStatusBar context={context} />
-      </div>
+      {/* 홈은 순위만 보여준다. 데이터 상태·기준 시각은 실시간 화면과 테마 상세에 남는다. */}
       {data.items.length ? (
         <ThemeRankingWheel items={data.items} />
       ) : (
@@ -49,9 +45,8 @@ export function TodayPage() {
           }
         />
       )}
-      <Link className="movers-entry" to="/movers">
-        특징테마로 이날 무엇이 오르고 빠졌는지 보기
-      </Link>
+      {/* 특징테마(/movers)는 라우트만 살려 두고 진입 링크는 붙이지 않는다.
+          어느 화면에 놓을지 정해지면 그때 연결한다. */}
     </div>
   );
 }

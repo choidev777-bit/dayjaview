@@ -66,6 +66,35 @@ export function treemapIntensity(weightedReturn: number): number {
   return Math.min(Math.abs(weightedReturn) / FULL_INTENSITY_RETURN, 1);
 }
 
+/**
+ * 그날 화면에 올라온 테마들의 범위로 색을 다시 편다.
+ *
+ * 고정 5% 기준만 쓰면 강한 날에는 12개가 전부 상한(1)에 붙어 같은 색이 된다.
+ * 실제로 2026-08-10은 +7.4%~+10.4%라 모든 타일이 구분되지 않았다. 그래서
+ * 그날의 최소~최대를 INTENSITY_FLOOR~1로 다시 매핑해 순서가 색으로 읽히게 한다.
+ *
+ * 면적은 여전히 수익률 원값에 비례한다 (screen_spec §6.3). 색만 상대 기준이며,
+ * 값 자체는 타일에 부호와 함께 표시하므로 색만으로 크기를 전달하지 않는다 (§13.3).
+ */
+const INTENSITY_FLOOR = 0.3;
+
+export function treemapIntensityScale(
+  items: readonly { weightedReturn: number }[],
+): (weightedReturn: number) => number {
+  const magnitudes = items.map((item) => Math.abs(item.weightedReturn));
+  const min = magnitudes.length ? Math.min(...magnitudes) : 0;
+  const max = magnitudes.length ? Math.max(...magnitudes) : 0;
+  const span = max - min;
+
+  // 한 종류만 있거나 전부 같은 값이면 나눌 게 없다. 고정 기준으로 돌아간다.
+  if (span <= 0) return treemapIntensity;
+
+  return (weightedReturn) => {
+    const ratio = (Math.abs(weightedReturn) - min) / span;
+    return INTENSITY_FLOOR + Math.min(Math.max(ratio, 0), 1) * (1 - INTENSITY_FLOOR);
+  };
+}
+
 /** 블록 크기별 라벨 단계 (treemap plan §5.3). 어느 단계든 접근성 이름은 테마명 + 수익률이다. */
 export function treemapLabelTier(width: number, height: number): TreemapLabelTier {
   if (width >= 110 && height >= 70) return 'full';
@@ -97,6 +126,8 @@ export function layoutTreemap(
   const total = rowSums.reduce((sum, value) => sum + value, 0);
   if (total <= 0) return [];
 
+  // 색은 그날 화면에 오른 테마들끼리 비교해서 정한다.
+  const intensityOf = treemapIntensityScale(items);
   const measured = width > 0 && height > 0;
   const usableHeight = Math.max(0, height - gap * (rows.length - 1));
   const rowWidths = rows.map((row) => Math.max(0, width - gap * (row.length - 1)));
@@ -122,7 +153,7 @@ export function layoutTreemap(
         width: tileWidth,
         height: rowHeight,
         tone: treemapTone(item.weightedReturn),
-        intensity: treemapIntensity(item.weightedReturn),
+        intensity: intensityOf(item.weightedReturn),
         // 아직 컨테이너를 재보기 전이면 라벨을 숨기지 않는다.
         tier: measured ? treemapLabelTier(tileWidth, rowHeight) : 'full',
       });

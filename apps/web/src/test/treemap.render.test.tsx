@@ -98,7 +98,9 @@ describe('실시간 트리맵 렌더링', () => {
       '/themes/thm_%EC%9B%90%EC%A0%84%EC%88%98%EC%B6%9C/events/evt_%EC%9B%90%EC%A0%84%EC%88%98%EC%B6%9C',
     );
     expect(largest.dataset.tier).toBe('full');
-    expect(largest).toHaveTextContent('3 / 4종목 상승');
+    // 타일 본문은 테마명 + 수익률만 둔다. 상승 종목 수는 접근성 이름에만 남긴다.
+    expect(largest).toHaveTextContent('+2.7%');
+    expect(largest).not.toHaveTextContent('3 / 4종목 상승');
 
     const smallest = within(map).getByRole('link', { name: /2차전지, 테마 수익률 \+0\.7%/ });
     expect(smallest.dataset.tier).toBe('compact');

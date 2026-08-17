@@ -105,15 +105,12 @@ export function ThemeTreemap({ items, motion }: { items: TreemapItem[]; motion: 
               style={{ '--tile-intensity': rect.intensity } as React.CSSProperties}
               aria-label={`${item.displayName}, 테마 수익률 ${value}, 관련주 ${item.advancingCount} / ${item.validCount}종목 상승`}
             >
+              {/* 타일에는 테마명과 수익률만 둔다 (screen_spec §6.3). 상승 종목 수는
+                  타일이 빽빽해 보여서 뺐고, 테마 상세와 접근성 이름에는 그대로 남는다. */}
               <strong>{item.displayName}</strong>
               {rect.tier === 'minimal' ? null : (
                 <b className={returnTone(item.weightedReturn)}>{value}</b>
               )}
-              {rect.tier === 'full' ? (
-                <small>
-                  {item.advancingCount} / {item.validCount}종목 상승
-                </small>
-              ) : null}
             </Link>
           </li>
         );
