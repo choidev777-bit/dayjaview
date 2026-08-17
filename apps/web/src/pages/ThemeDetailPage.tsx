@@ -266,7 +266,7 @@ function LeaderList({ leaders }: { leaders: ThemeDetail['leaders'] }) {
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
         >
-          <span className="visually-hidden">{expanded ? '주도 종목 접기' : '주도 종목 더 보기'}</span>
+          <span>{expanded ? '접기' : '더 보기'}</span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
       ) : null}

@@ -191,9 +191,7 @@ export function SimilarEventsPage() {
           onClick={() => patchParams({ cases: expanded ? null : 'all' })}
         >
           {/* 아코디언 모양은 테마 상세와 맞춘다. 글자 없이 화살표만 둔다. */}
-          <span className="visually-hidden">
-            {expanded ? '사례 접기' : '사례 더 보기'}
-          </span>
+          <span>{expanded ? '접기' : '더 보기'}</span>
           <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
         </button>
       ) : null}

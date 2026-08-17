@@ -160,7 +160,7 @@ export function CatalystDetailPage() {
               aria-expanded={expanded}
               onClick={() => setExpanded((current) => !current)}
             >
-              <span className="visually-hidden">{expanded ? '사건 접기' : '사건 더 보기'}</span>
+              <span>{expanded ? '접기' : '더 보기'}</span>
               <i aria-hidden="true" data-open={expanded ? 'true' : 'false'} />
             </button>
           ) : null}
