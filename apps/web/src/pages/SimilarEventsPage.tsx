@@ -85,9 +85,7 @@ export function SimilarEventsPage() {
       <GateHeader onBack={goBack} title="과거 사례 전체보기" />
 
       <div className="page-intro">
-        <small>과거 관측 요약</small>
         <h1>과거에는 이런 일이 있었어요</h1>
-        <p>오늘과 사건 원인문이 관련된 사례입니다.</p>
       </div>
 
       <section className="historical-summary" aria-labelledby="similar-summary-title">

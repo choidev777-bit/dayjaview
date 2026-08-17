@@ -282,15 +282,13 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
                   <strong>{item.classification.displayName}</strong>
                   {badge ? <span className="badge wheel-card__badge">{badge}</span> : null}
                 </span>
-                <small className="wheel-card__meta">
-                  {item.coverage.status === 'SUFFICIENT' &&
-                  item.advancingCount !== null &&
-                  item.validCount !== null ? (
-                    `${item.advancingCount.toLocaleString('ko-KR')} / ${item.validCount.toLocaleString('ko-KR')}종목 상승`
-                  ) : (
+                {/* 상승 종목 수는 테마 상세의 `상승 종목` 칸에 있다. 목록에서는 이름과 수익률만
+                    남겨 줄을 하나로 줄인다. Coverage 미달만 상태로 알린다 (screen_spec 4.5). */}
+                {item.coverage.status === 'SUFFICIENT' ? null : (
+                  <small className="wheel-card__meta">
                     <CoverageIndicator coverage={item.coverage} />
-                  )}
-                </small>
+                  </small>
+                )}
               </span>
               <b className={`wheel-card__value ${returnTone(item.weightedReturn)}`}>
                 {formatReturn(item.weightedReturn)}

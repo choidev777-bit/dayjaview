@@ -440,13 +440,19 @@ function CatalystTop3Section({
   return (
     <section aria-labelledby="catalyst-top-title">
       <div className="section-heading">
-        <div>
-          {/* 테마 이름이 길면 `반응 TOP3`만 남고 잘려 보인다. 이름과 꼬리말을 아예 다른 줄로 둔다. */}
-          <h2 id="catalyst-top-title">
-            <span className="catalyst-heading__theme">과거 {themeName}</span>
-            <span className="catalyst-heading__tail">{tail}</span>
-          </h2>
-        </div>
+        {/* 테마 이름이 길면 `반응 TOP3`만 남고 잘려 보인다. 이름과 꼬리말을 아예 다른 줄로 둔다. */}
+        <h2 id="catalyst-top-title">
+          <span className="catalyst-heading__theme">과거 {themeName}</span>
+          <span className="catalyst-heading__tail">{tail}</span>
+        </h2>
+        {/* 품질 주의는 화면에서 빼고 발표 때 말로 설명한다
+            (바탕화면 `발표자-구두설명-체크리스트.md`). 물음표 안에는 남긴다. */}
+        {qualityNote ? (
+          <InfoTip label="소재 유형 기준">
+            <strong>소재 유형 기준</strong>
+            {qualityNote}
+          </InfoTip>
+        ) : null}
       </div>
       <ol className="catalyst-list">
         {items.slice(0, 3).map((item, index) => (
@@ -456,31 +462,27 @@ function CatalystTop3Section({
               state={{ themeId, eventId }}
             >
               <b>{index + 1}</b>
-              <span>
+              <span className="catalyst-list__copy">
+                {/* `오늘과 같은 유형`은 이름보다 먼저 눈에 들어와야 왜 이 소재를 보는지가 읽힌다. */}
+                {item.matchesToday ? <em>오늘과 같은 유형</em> : null}
                 <strong>{item.catalystName}</strong>
-                {/* 상승 빈도를 확률로 바꾸지 않는다. 건수와 중앙 반응으로 적는다 (screen_spec 8.7·13.2).
-                    `오늘과 같은 유형`은 같은 줄에 붙인다. 줄을 따로 두면 아래 항목 구분선과 겹친다. */}
+                {/* 상승 빈도를 확률로 바꾸지 않는다. 중앙 반응으로 적는다 (screen_spec 8.7·13.2). */}
                 <small>
-                  {item.eligibleCount.toLocaleString('ko-KR')}건 · 당일 중앙 반응{' '}
+                  중앙{' '}
                   {item.medianSameDayReturn === null
                     ? '기록 없음'
                     : formatReturn(item.medianSameDayReturn)}
-                  {item.matchesToday ? <em>오늘과 같은 유형</em> : null}
                 </small>
+              </span>
+              {/* 표본 크기는 오른쪽으로 빼서 항목끼리 바로 비교되게 한다. */}
+              <span className="catalyst-list__count">
+                <b>{item.eligibleCount.toLocaleString('ko-KR')}</b>건
               </span>
               <IconChevronRightSmallLine className="row-chevron" size={18} aria-hidden="true" />
             </Link>
           </li>
         ))}
       </ol>
-      {/* 품질 주의는 화면에서 빼고 발표 때 말로 설명한다
-          (바탕화면 `발표자-구두설명-체크리스트.md`). 물음표 안에는 남긴다. */}
-      {qualityNote ? (
-        <InfoTip label="소재 유형 기준">
-          <strong>소재 유형 기준</strong>
-          {qualityNote}
-        </InfoTip>
-      ) : null}
     </section>
   );
 }
@@ -643,7 +645,9 @@ function ReasonSection({ eventId, summary }: { eventId: string; summary: Evidenc
         </button>
       </div>
 
+      {/* 탭 아래 내용이 배경 위에 그냥 떠 있어서 어느 탭의 내용인지 경계가 없었다. 박스로 묶는다. */}
       <div
+        className="reason-panel"
         role="tabpanel"
         id="reason-panel"
         aria-labelledby={tab === 'LIVE' ? 'reason-tab-live' : 'reason-tab-after-close'}

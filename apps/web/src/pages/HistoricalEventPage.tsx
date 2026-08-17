@@ -72,11 +72,13 @@ export function HistoricalEventPage() {
       />
 
       <div className="page-intro">
-        {/* 테마 이름은 아래 `열어봄` 줄과 겹친다. 여기서는 사건일만 크게 둔다. */}
+        {/* 어느 테마에서 열었는지가 이 화면의 맥락이라 제목 자리에 둔다.
+            들어온 맥락이 없으면(공유 링크) 사건 당시 테마명으로 대신한다. */}
+        <h1 className="page-intro__origin">{detail.displayNameAtEvent}</h1>
         <small className="page-intro__date">
           {formatDate(`${detail.marketDate}T00:00:00+09:00`)}
         </small>
-        <h1>{detail.catalystSummary}</h1>
+        <p className="page-intro__catalyst">{detail.catalystSummary}</p>
       </div>
 
       <div className="detail-card">
@@ -202,11 +204,6 @@ function TodayOverlap({
 
   return (
     <>
-      {/* 어디서 타고 들어왔는지는 맥락일 뿐이라 제목 위에 한 줄로만 둔다. */}
-      <p className="today-origin">
-        <strong>{today.classification.displayName}</strong>에서 열어봄
-      </p>
-
       <section aria-labelledby="overlap-title">
         <h2 id="overlap-title">오늘과 겹치는 종목</h2>
         {shared.length ? (

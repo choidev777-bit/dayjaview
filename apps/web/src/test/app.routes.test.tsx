@@ -94,7 +94,8 @@ describe('인증과 route shell', () => {
       <App repository={createFixtureRepository()} initialEntries={['/events/evt_historical']} />,
     );
 
-    expect(await screen.findByRole('heading', { level: 1, name: '마이크로 LED 양산 발표' })).toBeInTheDocument();
+    // 제목 자리는 `어느 테마에서 열었는가`가 차지하고, 사건 사유는 그 아래 문단이다.
+    expect(await screen.findByText('마이크로 LED 양산 발표')).toBeInTheDocument();
     expect(screen.getByText('과거 예시 종목')).toBeInTheDocument();
     expect(screen.getByText(/미래 결과는 유사사례를 고를 때 사용하지 않았습니다/)).toBeInTheDocument();
   });
