@@ -309,3 +309,55 @@ def test_collect_daily_stores_raw_snapshots_and_resumes(tmp_path: Path) -> None:
     assert second["krxRequests"] == 0
     assert second["openDartRequests"] == 0
     assert krx_calls == [] and dart_calls == []
+
+
+def test_collect_daily_runs_at_kst_midnight_rollover(tmp_path: Path) -> None:
+    """거래일이 넘어가는 KST 00:00에 그날치를 수집해도 as_of가 미래가 아니다.
+
+    TradingDayLoop은 KST 자정에 그날 세션을 세운다. 그 시각 UTC는 아직 전날
+    15:00이라, 거래일(KST 날짜)의 자정을 UTC로 붙이면 as_of가 collected_at보다
+    9시간 늦어 SourceMetadata 검증에 걸렸다.
+    """
+
+    def krx_handler(request: httpx.Request) -> httpx.Response:
+        traded = (
+            request.url.params["basDd"] == "20260813"
+            and request.url.path.endswith("stk_bydd_trd")
+        )
+        return httpx.Response(
+            200,
+            json={"OutBlock_1": [KRX_ROW] if traded else []},
+            request=request,
+        )
+
+    def dart_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("corpCode.xml"):
+            return httpx.Response(200, content=_corp_code_zip(), request=request)
+        return httpx.Response(
+            200,
+            json={
+                "status": "000",
+                "message": "정상",
+                "list": _DART_ROWS[request.url.path.rsplit("/", 1)[-1]],
+            },
+            request=request,
+        )
+
+    result = _worker().collect(
+        _arguments(tmp_path, market_date=date(2026, 8, 14)),
+        environment={"KRX_API_KEY": "krx-secret", "OPENDART_API_KEY": "dart-secret"},
+        krx_client=httpx.Client(transport=httpx.MockTransport(krx_handler)),
+        dart_client=httpx.Client(transport=httpx.MockTransport(dart_handler)),
+        now=aware("2026-08-14T00:00:00+09:00"),
+    )
+
+    assert result["status"] == "COMPLETE"
+    stored = _reference_modules()["parsers"].load_collected_snapshot(
+        json.loads(
+            (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-14.json").read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+    assert stored.metadata.as_of.date() == date(2026, 8, 14)
+    assert stored.metadata.as_of <= stored.metadata.collected_at

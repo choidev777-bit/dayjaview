@@ -18,6 +18,8 @@ from importlib import import_module
 from pathlib import Path
 from typing import Any
 
+from packages.pipeline.trading_day import KST
+
 STOCK_CODE_RE = re.compile(r"^[0-9A-Z]{6}$")
 REPORT_DATASETS = (
     "OPENDART_STOCK_TOTAL",
@@ -190,7 +192,7 @@ def collect(
                 as_of=datetime.combine(
                     market_date,
                     datetime.min.time(),
-                    tzinfo=UTC,
+                    tzinfo=KST,
                 ),
                 collected_at=collected_at,
             )
