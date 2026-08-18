@@ -18,5 +18,9 @@ UNION ALL SELECT 'news_item', count(*) FROM news.items
 UNION ALL SELECT 'ontology_label', count(*) FROM ontology.theme_history_labels
 UNION ALL SELECT 'ontology_label_span', count(*) FROM ontology.theme_history_label_spans
 UNION ALL SELECT 'ontology_catalyst_type', count(*) FROM ontology.catalyst_types
+UNION ALL SELECT 'e22_daily_mention', count(*) FROM ontology.source_mention_daily
+UNION ALL SELECT 'e22_company_entity', count(*) FROM core.company_entities
+UNION ALL SELECT 'e22_company_role', count(*) FROM ontology.history_company_roles
+UNION ALL SELECT 'e22_catalyst_revision', count(*) FROM ontology.catalyst_revisions
 UNION ALL SELECT 'applied_migration', count(*) FROM dayjaview_fixture.schema_migrations
 ORDER BY 1\""

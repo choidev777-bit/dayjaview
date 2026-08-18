@@ -30,7 +30,7 @@ from .transform import parse_cause_sentence
 if TYPE_CHECKING:
     from packages.infostock.models import ImportBundle, StockReference, ThemeHistory
 
-COMPANY_ROLE_TRANSFORM_VERSION = "company-role-transform/1.0.3"
+COMPANY_ROLE_TRANSFORM_VERSION = "company-role-transform/1.0.4"
 
 CompanyRole = Literal[
     "ACTOR",
@@ -180,6 +180,8 @@ _GENERIC_ACTION_MARKERS = (
     "완료",
     "중단",
     "취소",
+    # 수출·협력 '합의'의 주어는 행동 주체다(검수 R-145).
+    "합의",
 )
 _PASSIVE_TARGET_MARKERS = (
     "인수 대상",
@@ -193,8 +195,13 @@ _PASSIVE_TARGET_MARKERS = (
     "피인수",
     "피소",
 )
-_REGULATORY_TARGET_MARKERS = ("제재", "규제")
-_ACQUISITION_TARGET_MARKERS = ("인수", "매각")
+# 일시정지·실사는 당국이 회사에 내리는 조치다(검수 R-027·R-144).
+_REGULATORY_TARGET_MARKERS = ("제재", "규제", "일시정지", "실사")
+# 편입은 대상 회사 입장에서 피인수다(검수 R-158).
+_ACQUISITION_TARGET_MARKERS = ("인수", "매각", "편입")
+# "X로 Y 선정"의 Y는 선정의 대상이다(검수 R-005·R-012·R-013).
+_SELECTION_MARKERS = ("선정", "지정", "포함", "결정")
+_TRAILING_RO_RE = re.compile(r"[가-힣]로\s*$")
 _BENEFIT_MARKERS = ("반사 수혜", "반사수혜", "수혜")
 _ADVERSE_MARKERS = (
     "피해 우려",
@@ -445,12 +452,37 @@ def _marker_after(
     limit = min(stop, start + max_distance)
     found: list[tuple[int, int]] = []
     for marker in markers:
-        position = text.find(marker, start, limit)
-        if position >= 0:
-            found.append((position, position + len(marker)))
+        cursor = start
+        while True:
+            position = text.find(marker, cursor, limit)
+            if position < 0:
+                break
+            if not _misleading_marker(text, marker, position):
+                found.append((position, position + len(marker)))
+                break
+            cursor = position + len(marker)
     if not found:
         return None
     return min(found, key=lambda item: (item[0], -(item[1] - item[0])))
+
+
+def _misleading_marker(text: str, marker: str, position: int) -> bool:
+    """철자만 겹치는 표지를 거른다 (2026-08-19 사람 검수)."""
+
+    end = position + len(marker)
+    # 투자심리 위축은 회사의 투자 행동이 아니다(R-007).
+    if marker == "투자" and text[end : end + 2] == "심리":
+        return True
+    # '2차 피해'·이용자/고객 피해의 피해자는 그 앞 명사다 — 회사가 아니다
+    # (R-172~R-179).
+    if marker.startswith("피해"):
+        before = text[max(0, position - 10) : position]
+        if "2차" in before or any(
+            word in before
+            for word in ("이용자", "고객", "소비자", "가입자", "소액결제")
+        ):
+            return True
+    return False
 
 
 def _right_boundary(text: str, start: int) -> int:
@@ -507,6 +539,8 @@ def _body_occurrences(
 
     occurrences: list[_BodyOccurrence] = []
     for start, end, value in candidates:
+        if _generic_noun_usage(text, value, start, end):
+            continue
         resolution = resolve_company(master, value, as_of=as_of)
         if (
             resolution.status == "UNKNOWN"
@@ -516,6 +550,32 @@ def _body_occurrences(
             _BodyOccurrence(text=value, start=start, end=end, resolution=resolution)
         )
     return tuple(occurrences)
+
+
+def _generic_noun_usage(text: str, value: str, start: int, end: int) -> bool:
+    """일반명사·지역명과 철자가 같은 회사명을 문맥으로 거른다.
+
+    "혜택 대상 포함"의 '대상'은 (주)대상이 아니고, "강원 구제역 발생"의
+    '강원'은 지역이다 (2026-08-19 사람 검수 R-121·R-143).
+    """
+
+    if value == "대상":
+        # '대상'은 조사·쉼표가 바로 붙을 때만 회사로 본다. "혜택 대상",
+        # "中 대상 규제"의 대상은 일반명사다(R-121·R-131).
+        return text[end : end + 1] not in {",", "은", "는", "이", "가", "의"}
+    if value == "강원":
+        after = text[end : end + 8]
+        return after.startswith("도") or any(
+            word in after for word in ("구제역", "ASF", "지역", "도내")
+        )
+    # 회사명 뒤에 직함·자회사·법인이 붙으면 회사 본체의 역할이 아니다 —
+    # "삼성전자 부회장", "한화오션 美 자회사"(검수 R-025·R-116·R-118).
+    if re.match(
+        r"\s*(?:美|미국|인도|중국|유럽)?\s*(?:부회장|회장|사장|대표이사|의장|자회사|(?:판매)?법인(?!세))",
+        text[end : end + 10],
+    ):
+        return True
+    return False
 
 
 def _resolution_fields(
@@ -568,6 +628,12 @@ def _is_counterparty(
     if event is None:
         return None
     between = text[occurrence.end : event[0]]
+    # "A와 공동 수주"의 A, "A와 B, … 수주"의 A는 상대방이 아니라
+    # 공동 주체다(검수 R-099).
+    if "공동" in between:
+        return None
+    if re.match(r"\s*(?:측\s*)?(?:와|과)(?:의)?\s*[가-힣A-Za-z0-9·]+\s*,", between):
+        return None
     return event if _COUNTERPARTY_PARTICLE_RE.match(between) else None
 
 
@@ -584,6 +650,13 @@ def _is_subject(
     direct_match = _DIRECT_SUBJECT_PARTICLE_RE.match(between)
     explicit = prefix_match is not None or direct_match is not None
     if not explicit and marker_start - occurrence.end > 12:
+        return False
+    # 조사 없이 '…로' 뒤에 오거나 '…로' 앞에 놓인 회사는 행동의 목적어다 —
+    # "최선호주로 삼성전기 선정", "한국산 후판 덤핑제로 결정"(검수 R-005·R-013).
+    if not explicit and (
+        _TRAILING_RO_RE.search(text[: occurrence.start])
+        or _TRAILING_RO_RE.search(between)
+    ):
         return False
     for other in occurrences:
         if occurrence.end <= other.start < marker_start:
@@ -638,6 +711,12 @@ def _role_evidence(
     stop = _right_boundary(text, occurrence.end)
     found: dict[CompanyRole, tuple[int, int]] = {}
 
+    # ' 및 '은 별개 사건의 이음이다 — 대상·수혜·피해 표지는 회사가 속한
+    # 이음 앞 구간에서만 찾는다. "A 수주 달성 및 규제 강화에 따른 수혜"의
+    # 규제·수혜는 A의 역할 근거가 아니다(검수 R-111·R-140~R-168).
+    segment_break = text.find(" 및 ", occurrence.end)
+    segment_stop = stop if segment_break < 0 else min(stop, segment_break)
+
     counterparty_event = _is_counterparty(text, occurrence, stop=stop)
     if counterparty_event is not None:
         found["COUNTERPARTY"] = counterparty_event
@@ -646,21 +725,21 @@ def _role_evidence(
         text,
         occurrence.end,
         _PASSIVE_TARGET_MARKERS,
-        stop=stop,
+        stop=segment_stop,
         max_distance=48,
     )
     regulatory_target = _marker_after(
         text,
         occurrence.end,
         _REGULATORY_TARGET_MARKERS,
-        stop=stop,
+        stop=segment_stop,
         max_distance=48,
     )
     acquisition_target = _marker_after(
         text,
         occurrence.end,
         _ACQUISITION_TARGET_MARKERS,
-        stop=stop,
+        stop=segment_stop,
         max_distance=32,
     )
     target_event = passive_target or regulatory_target
@@ -668,6 +747,18 @@ def _role_evidence(
         text, occurrence, acquisition_target[0], occurrences
     ):
         target_event = acquisition_target
+    # "X로 Y 선정·결정", "Y … 후보 선정"의 Y는 대상이다
+    # (검수 R-005·R-012·R-013).
+    if target_event is None:
+        selection = _marker_after(
+            text, occurrence.end, _SELECTION_MARKERS, stop=segment_stop, max_distance=48
+        )
+        if selection is not None and (
+            _TRAILING_RO_RE.search(text[: occurrence.start])
+            or _TRAILING_RO_RE.search(text[occurrence.end : selection[0]])
+            or text[max(0, selection[0] - 4) : selection[0]].strip().endswith("후보")
+        ):
+            target_event = selection
     if target_event is not None and _no_company_between(
         occurrence, target_event[0], occurrences
     ):
@@ -677,9 +768,13 @@ def _role_evidence(
         text,
         occurrence.end,
         _BENEFIT_MARKERS,
-        stop=stop,
+        stop=segment_stop,
         max_distance=48,
     )
+    # "…에 따른 수혜"는 그 원인 사건의 수혜자(관련주)를 말한다 —
+    # 원인 사건의 주체가 아니다(검수 R-164·R-166).
+    if benefit is not None and "따른" in text[occurrence.end : benefit[0]]:
+        benefit = None
     if benefit is not None and _no_company_between(occurrence, benefit[0], occurrences):
         found["BENEFICIARY"] = benefit
 
@@ -687,7 +782,7 @@ def _role_evidence(
         text,
         occurrence.end,
         _ADVERSE_MARKERS,
-        stop=stop,
+        stop=segment_stop,
         max_distance=48,
     )
     if adverse is not None and _no_company_between(occurrence, adverse[0], occurrences):
@@ -732,6 +827,17 @@ def _role_evidence(
         and _is_subject(text, occurrence, action[0], occurrences)
     ):
         found["ACTOR"] = action
+
+    # 행동 표지가 수혜 표지보다 가까우면 회사는 주체다 — 투자·계약의
+    # 주체를 수혜자로 뒤집어 읽는 오류가 검수 30건 중 27건이었다.
+    # "감산 수혜"처럼 수혜가 더 가까우면 수혜가 맞다(R-140~R-168, R-155).
+    if "BENEFICIARY" in found:
+        benefit_start = found["BENEFICIARY"][0]
+        if any(
+            role in found and found[role][0] < benefit_start
+            for role in ("ACTOR", "CONTRACTOR", "ISSUER")
+        ):
+            del found["BENEFICIARY"]
 
     return tuple(
         CompanyRoleEvidence(

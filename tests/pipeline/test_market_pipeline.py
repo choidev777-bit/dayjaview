@@ -477,7 +477,11 @@ def test_close_market_discards_candidates_and_closes_active_events() -> None:
         for event in view.events
     }
     assert statuses == {"thm_full": "CLOSED", "thm_thin": "DISCARDED"}
-    assert view.rankings.payload == {"items": []}
+    # 마감 뒤에도 그날 최종 순위는 남는다 (screen_spec 4.1·5.7 최종값 고정).
+    # DISCARDED로 끝난 후보는 공개된 적이 없으므로 그대로 빠진다.
+    items = view.rankings.payload["items"]
+    assert [item["classification"]["themeId"] for item in items] == ["thm_full"]
+    assert items[0]["lifecycleStatus"] == "CLOSED"
 
     # 이미 종결된 테마는 다시 닫아도 상태가 변하지 않는다.
     pipeline.close_market(now=BASE + timedelta(hours=8))
@@ -485,6 +489,80 @@ def test_close_market_discards_candidates_and_closes_active_events() -> None:
         event.canonical_theme_id: event.lifecycle_status.value
         for event in pipeline.current_events()
     } == statuses
+
+
+def test_restore_final_snapshots_serves_the_day_after_a_restart() -> None:
+    """재기동 후 복원: 목록·트리맵·상태가 그날 최종값(CLOSED)으로 고정된다."""
+
+    source = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        source.apply_update(_update(stock_id, seconds=index + 1))
+    source.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    final = source.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    assert final.rankings.payload["items"]
+    close_at = BASE + timedelta(hours=7)
+
+    rebooted = _pipeline()
+    view = rebooted.restore_final_snapshots(
+        final.rankings, final.treemap, close_at=close_at
+    )
+
+    assert rebooted.latest_rankings is not None
+    assert rebooted.latest_rankings.payload == final.rankings.payload
+    assert rebooted.latest_rankings.data_status is DataStatus.CLOSED
+    assert rebooted.latest_treemap is not None
+    assert rebooted.latest_treemap.data_status is DataStatus.CLOSED
+    assert rebooted.last_data_status is DataStatus.CLOSED
+    assert rebooted.last_as_of == close_at
+    assert view.rankings is rebooted.latest_rankings
+
+
+def test_publishing_after_close_keeps_ticking_without_reopening_events() -> None:
+    """마감 뒤 계속 publish해도 CLOSED가 ACTIVE로 되돌지 않는다.
+
+    되돌리려 하면 도메인 상태기계가 InvalidStateTransition을 올려 장 마감 후
+    tick이 통째로 죽는다(운영 2026-08-18 실측).
+    """
+
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    pipeline.close_market(now=BASE + timedelta(hours=7))
+
+    for offset in range(1, 40):
+        view = pipeline.publish(
+            now=BASE + timedelta(hours=7, seconds=offset * 2),
+            data_status=DataStatus.CLOSED,
+        )
+
+    assert {event.lifecycle_status.value for event in view.events} == {"CLOSED"}
+    assert view.rankings.payload["items"]
+
+
+def test_publishing_after_close_keeps_ticking_without_reopening_events() -> None:
+    """마감 뒤 계속 publish해도 CLOSED가 ACTIVE로 되돌지 않는다.
+
+    되돌리려 하면 도메인 상태기계가 InvalidStateTransition을 올려 장 마감 후
+    tick이 통째로 죽는다(운영 2026-08-18 실측).
+    """
+
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    pipeline.close_market(now=BASE + timedelta(hours=7))
+
+    for offset in range(1, 40):
+        view = pipeline.publish(
+            now=BASE + timedelta(hours=7, seconds=offset * 2),
+            data_status=DataStatus.CLOSED,
+        )
+
+    assert {event.lifecycle_status.value for event in view.events} == {"CLOSED"}
+    assert view.rankings.payload["items"]
 
 
 def test_duplicate_updates_do_not_change_published_values() -> None:

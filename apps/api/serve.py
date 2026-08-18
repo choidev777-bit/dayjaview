@@ -60,6 +60,7 @@ from packages.realtime import (
     PostgresSnapshotRepository,
     ReadSnapshot,
     SnapshotRepository,
+    SnapshotTopic,
     StockRealtimeUpdate,
 )
 
@@ -572,6 +573,13 @@ class LiveSessionController:
             snapshot_repository=self._snapshot_repository,
             history=self._history,
         )
+        close_at = session_close_at(market_date, close_time=MARKET_CLOSE_KST)
+        if datetime.now(UTC) >= close_at:
+            restored = self._restore_closed_day(pipeline, close_at=close_at)
+            if restored:
+                return None
+            # 그날 발행분이 없으면(하루 종일 껐거나 무데이터) 아래 live 조립으로
+            # 진행해 기존과 같이 빈 CLOSED 상태를 정직하게 발행한다.
         adapter = LiveKiwoomAdapter(
             mode=self._mode,
             app_key=self._app_key,
@@ -614,6 +622,44 @@ class LiveSessionController:
                 market_date, close_time=MARKET_CLOSE_KST
             ),
         )
+
+    def _restore_closed_day(
+        self,
+        pipeline: MarketDataPipeline,
+        *,
+        close_at: datetime,
+    ) -> bool:
+        """장 마감 후 부팅: 그날 마지막 장중 발행분을 DB에서 되살려 서빙한다.
+
+        키움 접속과 발행 루프 없이 최종값 고정으로 답한다(screen_spec 4.1·5.7).
+        재기동 전 프로세스가 쌓은 스냅샷이 있어야 하며, 없으면 False.
+        """
+
+        market_date = pipeline.market_date
+        rankings = self._snapshot_repository.latest_for_market_date(
+            topic=SnapshotTopic.THEME_RANK,
+            params=RANKINGS_PARAMS,
+            market_date=market_date,
+            as_of_until=close_at,
+        )
+        treemap = self._snapshot_repository.latest_for_market_date(
+            topic=SnapshotTopic.THEME_TREEMAP,
+            params=TREEMAP_PARAMS,
+            market_date=market_date,
+            as_of_until=close_at,
+        )
+        if rankings is None or treemap is None:
+            return False
+        view = pipeline.restore_final_snapshots(rankings, treemap, close_at=close_at)
+        self._handle.switch(pipeline)
+        publish_view_to_hub(self._hub, view)
+        LOG.info(
+            "%s 장 마감 후 부팅: 최종 발행분을 복원했습니다 (rankings %d건, 기준 %s)",
+            market_date,
+            len(view.rankings.payload.get("items", ())),
+            rankings.as_of.isoformat(),
+        )
+        return True
 
     def _load_universe(self, market_date: date) -> ThemeUniverse:
         now = datetime.now(UTC)

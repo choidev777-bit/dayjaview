@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
@@ -165,6 +165,7 @@ class MarketDataPipeline:
         self._latest_treemap: ReadSnapshot | None = None
         self._last_as_of: datetime | None = None
         self._last_data_status: DataStatus = DataStatus.PREOPEN
+        self._market_closed = False
 
     @property
     def market_date(self) -> date:
@@ -610,8 +611,12 @@ class MarketDataPipeline:
 
         for update in self._aggregator.drain(self._hot):
             self._latest_metrics[update.theme_id] = update
-        for theme_id in sorted(self._latest_metrics):
-            self._evaluate_theme(self._latest_metrics[theme_id], now=now)
+        # 마감 뒤에는 lifecycle을 다시 평가하지 않는다. 계속 평가하면 hysteresis가
+        # 아직 조건을 만족하는 테마를 CLOSED에서 ACTIVE로 되돌리려 하고, 도메인
+        # 상태기계가 이를 거부해 tick이 통째로 죽는다(운영 2026-08-18 실측).
+        if not self._market_closed:
+            for theme_id in sorted(self._latest_metrics):
+                self._evaluate_theme(self._latest_metrics[theme_id], now=now)
 
         self._last_data_status = data_status
         as_of = self._last_as_of or now
@@ -642,6 +647,37 @@ class MarketDataPipeline:
             events=self.current_events(),
         )
 
+    def restore_final_snapshots(
+        self,
+        rankings: ReadSnapshot,
+        treemap: ReadSnapshot,
+        *,
+        close_at: datetime,
+    ) -> PublishedView:
+        """재기동으로 잃은 그날 마지막 발행분을 읽기 표면에 되살린다.
+
+        장 마감 이후 부팅에서만 쓴다. 장중 계산 상태(메트릭·hysteresis)는
+        복원하지 않으므로 테마 상세는 비고, 목록·트리맵·상태 문구만 그날
+        최종값으로 고정된다 (screen_spec 4.1·5.7).
+        """
+
+        if rankings.market_date != self._market_date:
+            raise ValueError(
+                f"복원 스냅샷의 market_date가 다릅니다: {rankings.market_date}"
+            )
+        restored_rankings = replace(rankings, data_status=DataStatus.CLOSED)
+        restored_treemap = replace(treemap, data_status=DataStatus.CLOSED)
+        self._market_closed = True
+        self._latest_rankings = restored_rankings
+        self._latest_treemap = restored_treemap
+        self._last_as_of = close_at
+        self._last_data_status = DataStatus.CLOSED
+        return PublishedView(
+            rankings=restored_rankings,
+            treemap=restored_treemap,
+            events=self.current_events(),
+        )
+
     def close_market(self, *, now: datetime) -> None:
         """장 마감 시점에 남은 테마를 hysteresis market_closed 규칙으로 닫는다.
 
@@ -649,6 +685,7 @@ class MarketDataPipeline:
         전이가 Event 저장소에도 기록된다. 이미 종결된 테마는 건너뛴다.
         """
 
+        self._market_closed = True
         for theme_id in sorted(self._latest_metrics):
             state = self._hysteresis.get(theme_id)
             if state is None or state.lifecycle_status in (
@@ -807,6 +844,11 @@ class MarketDataPipeline:
         )
 
     def _ranking_items(self, *, now: datetime) -> list[dict[str, object]]:
+        rankable = (
+            (LifecycleStatus.ACTIVE, LifecycleStatus.WEAKENING, LifecycleStatus.CLOSED)
+            if self._market_closed
+            else (LifecycleStatus.ACTIVE, LifecycleStatus.WEAKENING)
+        )
         candidates: list[tuple[Decimal, str, CanonicalEvent, ThemeMetrics]] = []
         for theme_id, update in self._latest_metrics.items():
             event_id = self._event_ids.get(theme_id)
@@ -815,10 +857,10 @@ class MarketDataPipeline:
             )
             if event is None:
                 continue
-            if event.lifecycle_status not in (
-                LifecycleStatus.ACTIVE,
-                LifecycleStatus.WEAKENING,
-            ):
+            # 장중 CLOSED는 그 테마의 상승이 끝났다는 뜻이라 목록에서 빠진다.
+            # 장 마감 뒤에는 전 테마가 CLOSED이고, 그때는 그날 최종값을 그대로
+            # 세워 둔다 (screen_spec 4.1·5.7 — 장후 최종값 고정).
+            if event.lifecycle_status not in rankable:
                 continue
             metrics = update.metrics
             if not metrics.rank_eligible:

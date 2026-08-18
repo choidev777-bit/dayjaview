@@ -101,13 +101,17 @@ def test_unspecified_stage_has_no_invented_evidence() -> None:
 
 def test_stage_detection_uses_current_semantic_state_not_bare_substrings() -> None:
     cases = {
-        "中 VBP 입찰 결과 오스템임플란트 최다 수량 낙찰 소식": EventStage.PREFERRED_BIDDER,
+        # 낙찰은 수주 확정 결과다 — 2026-08-19 사람 검수(S-008)가 재정의했다.
+        "中 VBP 입찰 결과 오스템임플란트 최다 수량 낙찰 소식": EventStage.SIGNED,
         "NCC 연쇄 가동 중단 우려": EventStage.RUMOR,
         "환경영향평가 협의 완료 및 본 공사 착수 소식": EventStage.EXECUTING,
         "오는 3월 데이터센터 착공 계획": EventStage.RUMOR,
-        "이란 핵협상 타결 소식": EventStage.SIGNED,
-        "가격 협상이 결렬됐다는 소식": EventStage.CANCELLED,
-        "정부, 희토류 비축 계획 차질 소식": EventStage.DELAYED,
+        # 핵협상 타결은 외교 사건의 종결 — 2026-08-19 사람 검수(S-134)가 재정의했다.
+        "이란 핵협상 타결 소식": EventStage.COMPLETED,
+        # 협상 결렬은 협상 국면 사건 — 2026-08-19 사람 검수(S-137)가 재정의했다.
+        "가격 협상이 결렬됐다는 소식": EventStage.DISCUSSION,
+        # 계획 차질은 계획 단계 사건 — 2026-08-19 사람 검수(S-307)가 재정의했다.
+        "정부, 희토류 비축 계획 차질 소식": EventStage.UNSPECIFIED,
         "규제 개선 정책 연구 착수 소식": EventStage.EXECUTING,
         "미래 교통수단 지원 방안 모색 소식": EventStage.REVIEW,
     }
@@ -348,3 +352,65 @@ def test_structured_leader_alone_never_becomes_direct_company_role() -> None:
 
     assert draft.company_roles == ()
     assert draft.reaction.leader_stock_codes == (_CODE,)
+
+
+def test_value_extraction_blocks_unrealized_and_context_mismatched_amounts() -> None:
+    """2026-08-19 사람 검수가 잡은 금액 오류 유형을 고정한다."""
+
+    # 돌파는 최소치다 — 합산하면 안 된다(M-027).
+    breakthrough = extract_catalyst_values("방산 기업 수주 잔액 100조원 돌파 소식")
+    assert [item.eligible_for_sum for item in breakthrough] == [False]
+
+    # 해지·무산·사실무근 절의 금액은 성사액이 아니다(M-035·M-057).
+    cancelled = extract_catalyst_values("테슬라와 3.8조원 규모 양극재 공급 계약 사실상 해지 소식")
+    assert [item.eligible_for_sum for item in cancelled] == [False]
+
+    # 유상증자 조달액은 시설투자가 아니다(M-056).
+    raised = extract_catalyst_values("확보 목적 2조원 규모 유상증자 결정")
+    assert raised == ()
+
+    # 전력 이탈 규모는 생산·설비 용량이 아니다(M-002).
+    assert extract_catalyst_values("데이터센터 1.5GW 전력 이탈 쇼크") == ()
+
+    # 조·억이 쉼표로 이어진 외화는 전체 자릿수로 읽는다(M-065).
+    compound = extract_catalyst_values("전기차 생산 위해 1조,2000억 달러 투자 소식")
+    assert [item.normalized_value for item in compound] == [Decimal("1200000000000")]
+
+    # 숫자 안 쉼표는 절 경계가 아니고, 괄호 삽입구가 표지 거리를 막지 않는다(M-033).
+    clauses = split_event_clauses(
+        "대한조선 2,760억원(최근 매출액대비 25.67%) 규모 원유운반석 2척 수주 소식 등에 상승"
+    )
+    values = [
+        value
+        for clause in clauses
+        for value in extract_catalyst_values(clause.text, offset=clause.start)
+    ]
+    money = [value for value in values if value.unit == "KRW"]
+    assert [item.normalized_value for item in money] == [Decimal("276000000000")]
+
+
+def test_stage_detection_follows_2026_08_19_human_review_rulings() -> None:
+    """사람 검수가 재정의한 단계 판정을 고정한다."""
+
+    cases = {
+        # 낙찰 = 수주 확정(S-008)
+        "中 입찰 결과 최다 수량 낙찰 소식": EventStage.SIGNED,
+        # 지연 우려·기대도 지연 사건이다(S-094·S-096)
+        "애플 MR 헤드셋 출시 지연 우려 지속": EventStage.DELAYED,
+        "비과세 한도 축소 연기 기대감": EventStage.DELAYED,
+        # 검토는 기대·우려가 붙어도 검토다(S-182·S-200)
+        "증권거래세 개편 검토 기대감 지속": EventStage.REVIEW,
+        "美 반도체법 보조금 재검토 우려": EventStage.REVIEW,
+        # 논의 예정은 아직 열리지 않았다(S-120)
+        "국방장관과 방위산업 협력 논의 예정 소식": EventStage.RUMOR,
+        # 협상 진전 기대는 진행 중 협상이다(S-127)
+        "종전 협상 진전 기대감": EventStage.DISCUSSION,
+        # 협상 결렬은 협상 국면 사건이다(S-137)
+        "가격에 대한 2차 협상 결렬 소식": EventStage.DISCUSSION,
+        # 국채 경매·입찰 불참은 사업 입찰이 아니다(S-014·S-016)
+        "미국 20년물 입찰 부진 속 지수 하락": EventStage.UNSPECIFIED,
+        # 이행 가속·원년·방안 발언은 실행 개시가 아니다(S-142·S-169)
+        "합의 이행 가속화에 합의": EventStage.UNSPECIFIED,
+    }
+    for raw_text, expected in cases.items():
+        assert detect_event_stage(raw_text).stage is expected, raw_text

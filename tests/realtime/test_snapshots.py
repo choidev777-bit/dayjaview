@@ -104,6 +104,45 @@ def test_sequence_scope_is_stream_topic_and_normalized_params() -> None:
     assert other_stream.sequence == 1
 
 
+def test_latest_for_market_date_survives_stream_restart_and_skips_post_close() -> None:
+    """재기동으로 stream이 바뀌어도 그날 마감 이전 마지막 발행분을 찾는다."""
+
+    repository = InMemorySnapshotRepository()
+    writer = VersionedSnapshotWriter(repository)
+    close_at = START + timedelta(seconds=100)
+
+    writer.publish(publication("intraday-1", seconds=10, payload={"items": [1]}))
+    final = writer.publish(
+        publication("intraday-2", seconds=90, payload={"items": [1, 2]})
+    )
+    # 재기동 후 새 stream이 마감 뒤(as_of > close_at) 빈 발행을 계속한다.
+    writer.publish(
+        publication(
+            "post-close-empty",
+            stream_id="stream_restarted_20260814",
+            seconds=200,
+            payload={"items": []},
+        )
+    )
+
+    restored = repository.latest_for_market_date(
+        topic=SnapshotTopic.THEME_RANK,
+        params={"limit": 10},
+        market_date=MARKET_DATE,
+        as_of_until=close_at,
+    )
+    assert restored == final
+    assert (
+        repository.latest_for_market_date(
+            topic=SnapshotTopic.THEME_RANK,
+            params={"limit": 10},
+            market_date=MARKET_DATE + timedelta(days=1),
+            as_of_until=close_at + timedelta(days=1),
+        )
+        is None
+    )
+
+
 def test_same_publication_id_with_different_snapshot_is_rejected() -> None:
     repository = InMemorySnapshotRepository()
     original = publication("same-publication")

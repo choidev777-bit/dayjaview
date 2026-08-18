@@ -36,7 +36,9 @@ mkdir -p /opt/dayjaview/data/infostock-import \
          /opt/dayjaview/data/infostock-daily \
          /opt/dayjaview/data/reference-data \
          /opt/dayjaview/data/intraday-history \
-         /opt/dayjaview/data/infostock-increment
+         /opt/dayjaview/data/infostock-increment \
+         /opt/dayjaview/data/price-corpus \
+         /opt/dayjaview/data/ontology
 chown -R 10001:10001 /opt/dayjaview/data
 mkdir -p /opt/dayjaview/backup && chmod 700 /opt/dayjaview/backup
 mkdir -p /etc/dayjaview && chmod 700 /etc/dayjaview

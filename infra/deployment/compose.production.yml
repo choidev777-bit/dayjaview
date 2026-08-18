@@ -169,6 +169,8 @@ services:
       - /opt/dayjaview/data/infostock-import:/workspace/data/infostock-import:ro
       - /opt/dayjaview/data/reference-data:/workspace/data/reference-data
       - /opt/dayjaview/data/intraday-history:/workspace/data/intraday-history
+      # E-16 일봉 corpus. 파일이 없으면 비어 있고 outcome gate는 닫힌 채다.
+      - /opt/dayjaview/data/price-corpus:/workspace/data/price-corpus:ro
     healthcheck:
       test:
         - CMD

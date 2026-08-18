@@ -28,11 +28,15 @@ from .projects import (
 )
 from .transform import classify_catalyst, parse_cause_sentence
 
-EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.9"
+EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.10"
 _CLAUSE_BREAK_RE = re.compile(
     r"[;；]\s*|\n+|(?<=[.!?。])\s+|(?<=소식)[,·]\s*(?=[가-힣A-Za-z0-9])"
 )
-_SOFT_CLAUSE_BREAK_RE = re.compile(r"\s+및\s+|[,·]\s*")
+# 쉼표가 숫자 이음(2,760 / 1조,2000억) 안에 있으면 절 경계가 아니다 —
+# 여기서 가르면 금액 자릿수가 통째로 틀린다(검수 M-033·M-065).
+_SOFT_CLAUSE_BREAK_RE = re.compile(
+    r"\s+및\s+|·\s*|(?<![0-9조억만]),\s*|,\s*(?![0-9])"
+)
 _EDGE_RE = re.compile(r"^[\s,·:：-]+|[\s,·:：-]+$")
 _ACTION_MARKERS = (
     "공급계약 체결",
@@ -89,6 +93,12 @@ _COMPOUND_KRW_RE = re.compile(
 _COMPOUND_FOREIGN_MONEY_RE = re.compile(
     r"(?P<high>\d[\d,]*(?:\.\d+)?)\s*억\s*"
     r"(?P<low>\d[\d,]*(?:\.\d+)?)\s*만\s*"
+    r"(?P<currency>달러|유로|엔)(?P<band>대)?(?![가-힣A-Za-z0-9])"
+)
+# "1조,2000억 달러"처럼 조·억이 쉼표로 이어진 외화 표기. 뒤 억 단위만 잡으면
+# 자릿수가 통째로 틀린다(검수 M-065).
+_COMPOUND_JO_FOREIGN_RE = re.compile(
+    r"(?P<jo>\d+(?:\.\d+)?)\s*조\s*,?\s*(?P<eok>\d[\d,]*)\s*억\s*"
     r"(?P<currency>달러|유로|엔)(?P<band>대)?(?![가-힣A-Za-z0-9])"
 )
 _MONEY_RE = re.compile(
@@ -521,11 +531,12 @@ def _basis(text: str, start: int, end: int) -> ValueBasis:
         return ValueBasis.COMPANY_SHARE
     if "최대" in window:
         return ValueBasis.UP_TO
-    if "이상" in window or "초과" in window or "상회" in window:
+    if any(marker in window for marker in ("이상", "초과", "상회", "돌파")):
         return ValueBasis.LOWER_BOUND
     if (
         _APPROX_RE.search(window) is not None
         or "추정" in window
+        or "필요" in window
         or re.search(r"(?:원|달러|유로|엔)\s*대", window) is not None
     ):
         return ValueBasis.ESTIMATE
@@ -542,16 +553,26 @@ def _currency(code: str) -> str:
     return {"원": "KRW", "달러": "USD", "유로": "EUR", "엔": "JPY"}[code]
 
 
+_PAREN_RE = re.compile(r"\([^)]*\)")
+
+
 def _money_fact_type(text: str, start: int, end: int) -> ValueFactType | None:
-    prefix = text[max(0, start - 16) : start]
+    # "2,760억원(최근 매출액대비 25.67%) 규모 … 수주"처럼 괄호 삽입구가
+    # 표지와의 거리를 벌린다 — 거리 계산 전에 괄호를 걷어낸다(검수 M-033).
+    before = _PAREN_RE.sub("", text[max(0, start - 44) : start])
+    after = _PAREN_RE.sub("", text[end : min(len(text), end + 44)])
     if any(
-        marker in prefix
+        marker in before[-16:]
         for marker in ("시총", "시가총액", "기업가치", "매출액", "영업이익", "주가")
     ):
         return None
-    window_start = max(0, start - 28)
-    window_end = min(len(text), end + 36)
-    window = text[window_start:window_end].replace("공급망", "")
+    # 유상증자·투자 계획 곁의 금액은 계약도 집행된 시설투자도 아니다
+    # (검수 M-029·M-056). 창을 좁게 잡아 이웃 절의 금액은 건드리지 않는다.
+    near = before[-12:] + after[:16]
+    if any(marker in near for marker in ("증자", "자금조달", "투자 계획")):
+        return None
+    window = (before[-28:] + "|" + after[:36]).replace("공급망", "")
+    pivot = len(before[-28:])
 
     candidates: list[tuple[int, ValueFactType]] = []
     for fact_type, markers in (
@@ -564,8 +585,11 @@ def _money_fact_type(text: str, start: int, end: int) -> ValueFactType | None:
                 position = window.find(marker, cursor)
                 if position < 0:
                     break
-                absolute = window_start + position
-                distance = min(abs(absolute - start), abs(absolute - end))
+                distance = (
+                    pivot - (position + len(marker))
+                    if position < pivot
+                    else position - pivot
+                )
                 if distance <= 18:
                     candidates.append((distance, fact_type))
                 cursor = position + len(marker)
@@ -589,11 +613,20 @@ def _eligible_for_sum(
     return not ("에서" in window and "까지" in window)
 
 
+# 절 안에 이 표지가 있으면 그 금액은 성사된 값이 아니다 — 합산에서 뺀다
+# (검수 M-035·M-039·M-057: 해지·무산·사실무근 금액이 합계에 들어갔다).
+_SUM_BLOCKED_MARKERS = ("해지", "무산", "취소", "철회", "백지화", "사실무근")
+
+
 def extract_catalyst_values(
     text: str, *, offset: int = 0
 ) -> tuple[CatalystValueDraft, ...]:
     values: list[CatalystValueDraft] = []
     occupied: list[tuple[int, int]] = []
+    sum_blocked = any(marker in text for marker in _SUM_BLOCKED_MARKERS)
+
+    def _summable(start: int, end: int, basis: ValueBasis) -> bool:
+        return _eligible_for_sum(text, start, end, basis) and not sum_blocked
 
     for match in _COMPOUND_KRW_RE.finditer(text):
         start, end = match.span()
@@ -612,7 +645,32 @@ def extract_catalyst_values(
                 unit="KRW",
                 currency="KRW",
                 value_basis=basis,
-                eligible_for_sum=_eligible_for_sum(text, start, end, basis),
+                eligible_for_sum=_summable(start, end, basis),
+                evidence_start=offset + start,
+                evidence_end=offset + end,
+            )
+        )
+        occupied.append((start, end))
+
+    for match in _COMPOUND_JO_FOREIGN_RE.finditer(text):
+        start, end = match.span()
+        fact_type = _money_fact_type(text, start, end)
+        if fact_type is None:
+            continue
+        currency = _currency(match.group("currency"))
+        normalized = _decimal(match.group("jo")) * Decimal(10**12) + _decimal(
+            match.group("eok")
+        ) * Decimal(10**8)
+        basis = _basis(text, start, end)
+        values.append(
+            CatalystValueDraft(
+                fact_type=fact_type,
+                reported_value=match.group(0),
+                normalized_value=normalized,
+                unit=currency,
+                currency=currency,
+                value_basis=basis,
+                eligible_for_sum=_summable(start, end, basis),
                 evidence_start=offset + start,
                 evidence_end=offset + end,
             )
@@ -621,6 +679,8 @@ def extract_catalyst_values(
 
     for match in _COMPOUND_FOREIGN_MONEY_RE.finditer(text):
         start, end = match.span()
+        if any(start < old_end and old_start < end for old_start, old_end in occupied):
+            continue
         fact_type = _money_fact_type(text, start, end)
         if fact_type is None:
             continue
@@ -637,7 +697,7 @@ def extract_catalyst_values(
                 unit=currency,
                 currency=currency,
                 value_basis=basis,
-                eligible_for_sum=_eligible_for_sum(text, start, end, basis),
+                eligible_for_sum=_summable(start, end, basis),
                 evidence_start=offset + start,
                 evidence_end=offset + end,
             )
@@ -663,7 +723,7 @@ def extract_catalyst_values(
                 unit=currency,
                 currency=currency,
                 value_basis=basis,
-                eligible_for_sum=_eligible_for_sum(text, start, end, basis),
+                eligible_for_sum=_summable(start, end, basis),
                 evidence_start=offset + start,
                 evidence_end=offset + end,
             )
@@ -715,6 +775,10 @@ def extract_catalyst_values(
             start < old_end and old_start < end
             for old_start, old_end in capacity_occupied
         ):
+            continue
+        # 전력 이탈·부족 규모는 생산·설비 용량이 아니다(검수 M-002).
+        capacity_window = text[max(0, start - 12) : min(len(text), end + 12)]
+        if any(marker in capacity_window for marker in ("이탈", "부족")):
             continue
         unit = match.group("unit")
         normalized = _decimal(match.group("number"))

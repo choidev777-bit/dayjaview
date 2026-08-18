@@ -267,6 +267,15 @@ class SnapshotRepository(Protocol):
         params: dict[str, object],
     ) -> ReadSnapshot | None: ...
 
+    def latest_for_market_date(
+        self,
+        *,
+        topic: SnapshotTopic,
+        params: dict[str, object],
+        market_date: date,
+        as_of_until: datetime,
+    ) -> ReadSnapshot | None: ...
+
 
 class InMemorySnapshotRepository:
     """Atomic durable-contract double that survives writer reconstruction."""
@@ -381,6 +390,42 @@ class InMemorySnapshotRepository:
         with self._lock:
             snapshot_id = self._latest.get((stream_id, topic, params_key))
             return None if snapshot_id is None else self._snapshots[snapshot_id]
+
+    def latest_for_market_date(
+        self,
+        *,
+        topic: SnapshotTopic,
+        params: dict[str, object],
+        market_date: date,
+        as_of_until: datetime,
+    ) -> ReadSnapshot | None:
+        """그 거래일에 발행된 스냅샷 중 as_of_until 이전의 마지막 것.
+
+        stream을 가리지 않는다. 재기동으로 stream_id가 바뀐 뒤에도 그날의
+        마지막 장중 발행분을 찾는 복원 경로가 쓴다. as_of_until(장 마감)을
+        넘긴 발행분은 마감 후 빈 재발행이므로 제외한다.
+        """
+
+        params_key = _opaque("params", _canonical_json(params))
+        with self._lock:
+            candidates = [
+                snapshot
+                for snapshot in self._snapshots.values()
+                if snapshot.topic is topic
+                and snapshot.params_key == params_key
+                and snapshot.market_date == market_date
+                and snapshot.as_of <= as_of_until
+            ]
+        if not candidates:
+            return None
+        return max(
+            candidates,
+            key=lambda snapshot: (
+                snapshot.as_of,
+                snapshot.generated_at,
+                snapshot.sequence,
+            ),
+        )
 
 
 class VersionedSnapshotWriter:

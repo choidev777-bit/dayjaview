@@ -483,6 +483,13 @@ def _rate(value: Decimal | None) -> str:
     return f"{'+' if value >= 0 else ''}{format(value, 'f')}%"
 
 
+def _display_limit_exclusions(total: int, limit: int) -> tuple[AnswerExclusion, ...]:
+    """행이 표시 한도를 넘어 잘렸으면 몇 개를 생략했는지 답에 남긴다."""
+    if total <= limit:
+        return ()
+    return (AnswerExclusion("DISPLAY_LIMIT", "화면 표시 한도로 생략", total - limit),)
+
+
 def _matches_direction(
     plan: QueryPlan, rate: Decimal | None
 ) -> bool:
@@ -627,9 +634,11 @@ def _answer_day_movers(
                                 }
                                 for stock in theme.stocks[:8]
                             ],
+                            "stockTotal": len(theme.stocks),
                         }
                         for theme in section.themes[:6]
                     ],
+                    "themeTotal": len(section.themes),
                 },
                 evidence=_section_evidence(day, section),
             )
@@ -663,7 +672,7 @@ def _answer_day_movers(
             ),
         ),
         rows=tuple(rows[:limit]),
-        exclusions=exclusions,
+        exclusions=exclusions + _display_limit_exclusions(len(rows), limit),
         versions=_versions(repository, plan),
         sample_size=len(day.sections),
         human_verified=plan.query_type in availability.human_verified,
@@ -758,7 +767,8 @@ def _answer_period_summary(
             (AnswerExclusion("DIRECTION_MISMATCH", "질문한 방향과 반대인 섹션", excluded),)
             if excluded
             else ()
-        ),
+        )
+        + _display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=section_total,
         human_verified=plan.query_type in availability.human_verified,
@@ -799,6 +809,7 @@ def _answer_stock_day_reason(
                             "changeRate": _rate(stock.change_rate),
                             "themeChangeRate": _rate(theme.change_rate),
                             "details": list(section.details[:3]),
+                            "detailTotal": len(section.details),
                         },
                         evidence=_section_evidence(day, section),
                     )
@@ -830,7 +841,7 @@ def _answer_stock_day_reason(
             ),
         ),
         rows=tuple(rows[:limit]),
-        exclusions=(),
+        exclusions=_display_limit_exclusions(len(rows), limit),
         versions=_versions(repository, plan),
         sample_size=len(day.sections),
         human_verified=plan.query_type in availability.human_verified,
@@ -906,7 +917,7 @@ def _answer_stock_top_moves(
             ),
         ),
         rows=rows,
-        exclusions=tuple(exclusions),
+        exclusions=tuple(exclusions) + _display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=len(rows_raw),
         human_verified=plan.query_type in availability.human_verified,
@@ -970,7 +981,7 @@ def _answer_stock_theme_membership(
             ),
         ),
         rows=rows,
-        exclusions=exclusions,
+        exclusions=exclusions + _display_limit_exclusions(len(memberships), limit),
         versions=_versions(repository, plan),
         sample_size=len(memberships),
         human_verified=plan.query_type in availability.human_verified,
@@ -1028,7 +1039,8 @@ def _answer_theme_members(
             )
             if len(described) != len(members)
             else ()
-        ),
+        )
+        + _display_limit_exclusions(len(members), limit),
         versions=_versions(repository, plan),
         sample_size=len(members),
         human_verified=plan.query_type in availability.human_verified,
@@ -1100,7 +1112,7 @@ def _answer_theme_history(
             ),
         ),
         rows=rows,
-        exclusions=(),
+        exclusions=_display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=len(records),
         human_verified=plan.query_type in availability.human_verified,
@@ -1292,7 +1304,7 @@ def _answer_theme_frequency(
             ),
         ),
         rows=rows,
-        exclusions=(),
+        exclusions=_display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=unique,
         human_verified=plan.query_type in availability.human_verified,
@@ -1358,7 +1370,7 @@ def _answer_catalyst_theme_reaction(
             ),
         ),
         rows=rows,
-        exclusions=(),
+        exclusions=_display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=len(items),
         human_verified=plan.query_type in availability.human_verified,
@@ -1662,7 +1674,7 @@ def _answer_stock_cooccurrence(
             ),
         ),
         rows=rows,
-        exclusions=(),
+        exclusions=_display_limit_exclusions(len(ordered), limit),
         versions=_versions(repository, plan),
         sample_size=len(items),
         human_verified=plan.query_type in availability.human_verified,
@@ -1720,6 +1732,7 @@ def _answer_company_direct_event(
                     }
                 ),
                 "themeNames": list(item.theme_names[:4]),
+                "themeNameTotal": len(item.theme_names),
                 "geographyCodes": list(item.geography_codes),
                 "projectId": item.project_id,
                 "sourceRecordCount": item.source_record_count,
@@ -1763,7 +1776,8 @@ def _answer_company_direct_event(
             )
             if leader_only > 0
             else ()
-        ),
+        )
+        + _display_limit_exclusions(len(direct), limit),
         versions=_versions(repository, plan),
         sample_size=len(every),
         human_verified=plan.query_type in availability.human_verified,
@@ -1882,7 +1896,7 @@ def _answer_company_value_summary(
             ),
         ),
         rows=rows,
-        exclusions=tuple(exclusions),
+        exclusions=tuple(exclusions) + _display_limit_exclusions(len(unique_facts), limit),
         versions=_versions(repository, plan),
         sample_size=len(facts),
         human_verified=plan.query_type in availability.human_verified,
@@ -2023,7 +2037,7 @@ def _answer_company_historical_outcome(
         ),
         metrics=tuple(metrics),
         rows=rows,
-        exclusions=tuple(exclusions),
+        exclusions=tuple(exclusions) + _display_limit_exclusions(len(observations), limit),
         versions=_versions(repository, plan),
         sample_size=len(observations),
         human_verified=plan.query_type in availability.human_verified,

@@ -171,8 +171,9 @@ function renderValue(key: string, value: unknown): string {
   return String(value);
 }
 
-/** 섹션 > 테마 > 종목 3단 중첩. 한 칸에 이어붙이면 500자짜리 문장 하나가 된다. */
-function ThemeList({ themes }: { themes: Record<string, unknown>[] }) {
+/** 섹션 > 테마 > 종목 3단 중첩. 한 칸에 이어붙이면 500자짜리 문장 하나가 된다.
+ *  서버는 테마 6개·종목 8개까지만 보낸다. 총 개수를 받아 "외 N개"로 잘림을 알린다. */
+function ThemeList({ themes, total }: { themes: Record<string, unknown>[]; total: number | null }) {
   return (
     <ul className="research-themes">
       {themes.map((theme, index) => {
@@ -181,6 +182,7 @@ function ThemeList({ themes }: { themes: Record<string, unknown>[] }) {
         const stocks = Array.isArray(theme.stocks)
           ? (theme.stocks as Record<string, unknown>[])
           : [];
+        const stockTotal = countOf(theme.stockTotal) ?? stocks.length;
         return (
           <li key={`${name}:${index}`}>
             <p className="research-theme__head">
@@ -198,23 +200,43 @@ function ThemeList({ themes }: { themes: Record<string, unknown>[] }) {
                     </li>
                   );
                 })}
+                {stockTotal > stocks.length ? (
+                  <li className="research-more">외 {stockTotal - stocks.length}개 종목</li>
+                ) : null}
               </ul>
             ) : null}
           </li>
         );
       })}
+      {total !== null && total > themes.length ? (
+        <li className="research-more">외 {total - themes.length}개 테마</li>
+      ) : null}
     </ul>
   );
 }
 
-function RowValues({ values }: { values: Record<string, unknown> }) {
+/** 근거 칸에 그대로 나오는 문장. 값칸에서 한 번 더 보여주지 않는다. */
+const EVIDENCE_DEDUP_KEYS = new Set(['reason', 'sectionHeadline', 'details']);
+
+function countOf(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function RowValues({
+  values,
+  evidenceTexts,
+}: {
+  values: Record<string, unknown>;
+  evidenceTexts: ReadonlySet<string>;
+}) {
   const entries = Object.entries(values).filter(
     ([key, value]) =>
       key in VALUE_LABELS &&
       value !== null &&
       value !== undefined &&
       value !== '' &&
-      !(Array.isArray(value) && !value.length),
+      !(Array.isArray(value) && !value.length) &&
+      !(EVIDENCE_DEDUP_KEYS.has(key) && typeof value === 'string' && evidenceTexts.has(value)),
   );
   if (!entries.length) return null;
   return (
@@ -225,12 +247,39 @@ function RowValues({ values }: { values: Record<string, unknown> }) {
             <div key={key}>
               <dt>{labelOf(key)}</dt>
               <dd>
-                <ThemeList themes={value as Record<string, unknown>[]} />
+                <ThemeList
+                  themes={value as Record<string, unknown>[]}
+                  total={countOf(values.themeTotal)}
+                />
+              </dd>
+            </div>
+          );
+        }
+        if (key === 'details' && Array.isArray(value)) {
+          const paragraphs = value.map((entry) => String(entry));
+          const fresh = paragraphs.filter((paragraph) => !evidenceTexts.has(paragraph));
+          const total = countOf(values.detailTotal) ?? paragraphs.length;
+          const unseen = total - paragraphs.length;
+          if (!fresh.length && unseen <= 0) return null;
+          return (
+            <div key={key}>
+              <dt>{labelOf(key)}</dt>
+              <dd>
+                {fresh.map((paragraph, paragraphIndex) => (
+                  <p key={paragraphIndex}>{paragraph}</p>
+                ))}
+                {unseen > 0 ? (
+                  <p className="research-more">원문에 문단 {unseen}개 더 있음</p>
+                ) : null}
               </dd>
             </div>
           );
         }
         const text = renderValue(key, value);
+        const hiddenNames =
+          key === 'themeNames' && Array.isArray(value)
+            ? Math.max(0, (countOf(values.themeNameTotal) ?? value.length) - value.length)
+            : 0;
         const tone =
           key === 'direction'
             ? DIRECTION_CLASS[String(value)]
@@ -240,7 +289,10 @@ function RowValues({ values }: { values: Record<string, unknown> }) {
         return (
           <div key={key}>
             <dt>{labelOf(key)}</dt>
-            <dd className={tone}>{text}</dd>
+            <dd className={tone}>
+              {text}
+              {hiddenNames > 0 ? <span className="research-more"> 외 {hiddenNames}개</span> : null}
+            </dd>
           </div>
         );
       })}
@@ -249,11 +301,16 @@ function RowValues({ values }: { values: Record<string, unknown> }) {
 }
 
 function RowBlock({ row }: { row: ResearchRow }) {
+  const evidenceTexts = new Set(row.evidence.map((item) => item.excerpt));
+  /* 행 제목과 같은 문장을 근거가 또 들고 있으면 한 번만 보인다.
+     그 근거가 유일한 근거면 남긴다 — 근거 없는 답처럼 보이면 안 된다. */
+  const deduped = row.evidence.filter((item) => item.excerpt !== row.label);
+  const evidence = deduped.length ? deduped : row.evidence;
   return (
     <li className="research-row">
       <strong>{row.label}</strong>
-      <RowValues values={row.values} />
-      <EvidenceList evidence={row.evidence} />
+      <RowValues values={row.values} evidenceTexts={evidenceTexts} />
+      <EvidenceList evidence={evidence} />
     </li>
   );
 }

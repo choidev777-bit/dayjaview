@@ -223,7 +223,29 @@ def _load_histories_and_role_sample(
                 "theme_name": str(history.get("themeName") or ""),
                 "event_date": str(history.get("eventDate") or ""),
             }
+            # 구조 참조(주도주·구성종목) mention은 이름만 근거로 남아, rawText만
+            # 보여주면 검수자가 그 이름이 어느 명단에서 왔는지 확인할 수 없다.
+            # 특히 RELATED의 출처인 구성종목 명단은 rawText에 아예 없다.
+            # 같은 history의 같은 종류 mention을 모아 명단 자체를 같이 싣는다.
+            reference_names: dict[str, list[str]] = {}
+            reference_slot: dict[int, tuple[str, int]] = {}
+            for sibling_index, sibling in enumerate(history.get("mentions", [])):
+                sibling_kind = str(sibling.get("mentionKind") or "")
+                if sibling_kind == "BODY":
+                    continue
+                names = reference_names.setdefault(sibling_kind, [])
+                names.append(str(sibling.get("mentionText") or ""))
+                reference_slot[sibling_index] = (sibling_kind, len(names))
             for mention_index, mention in enumerate(history.get("mentions", [])):
+                slot = reference_slot.get(mention_index)
+                if slot is None:
+                    reference_list = ""
+                    reference_position = ""
+                else:
+                    slot_kind, slot_position = slot
+                    slot_names = reference_names[slot_kind]
+                    reference_list = ", ".join(slot_names)
+                    reference_position = f"{slot_position}/{len(slot_names)}"
                 for role_index, role in enumerate(mention.get("roles", [])):
                     candidate_role = str(role["role"])
                     role_population[candidate_role] += 1
@@ -258,6 +280,8 @@ def _load_histories_and_role_sample(
                             "candidate_evidence_end": role.get("end", ""),
                             "candidate_extraction_basis": role.get("extractionBasis")
                             or "",
+                            "candidate_reference_list": reference_list,
+                            "candidate_reference_position": reference_position,
                             "independent_role": "",
                             "independent_mention_resolution": "",
                             "independent_evidence_ok": "",
@@ -1154,6 +1178,8 @@ PACK_COLUMNS: dict[str, tuple[str, ...]] = {
         "candidate_evidence_start",
         "candidate_evidence_end",
         "candidate_extraction_basis",
+        "candidate_reference_list",
+        "candidate_reference_position",
         "independent_role",
         "independent_mention_resolution",
         "independent_evidence_ok",
@@ -1351,6 +1377,13 @@ def _validate_written_packs(
                 )
                 if not valid:
                     raise RuntimeError(f"{name} 역할 evidence가 원천과 다릅니다.")
+                # 구조 참조는 이름만으로는 검증할 수 없다. 출처 명단을 반드시 싣는다.
+                if source == "STRUCTURED_REFERENCE":
+                    listed = row["candidate_reference_list"].split(", ")
+                    if row["mention_text"] not in listed:
+                        raise RuntimeError(
+                            f"{name} 구조 참조에 출처 명단이 없습니다."
+                        )
                 checked_spans += 1
             elif name == "event_stages_candidate.tsv":
                 keyword = row["candidate_stage_keyword"]
