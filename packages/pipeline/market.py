@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
@@ -644,6 +644,37 @@ class MarketDataPipeline:
         return PublishedView(
             rankings=rankings,
             treemap=treemap,
+            events=self.current_events(),
+        )
+
+    def restore_final_snapshots(
+        self,
+        rankings: ReadSnapshot,
+        treemap: ReadSnapshot,
+        *,
+        close_at: datetime,
+    ) -> PublishedView:
+        """재기동으로 잃은 그날 마지막 발행분을 읽기 표면에 되살린다.
+
+        장 마감 이후 부팅에서만 쓴다. 장중 계산 상태(메트릭·hysteresis)는
+        복원하지 않으므로 테마 상세는 비고, 목록·트리맵·상태 문구만 그날
+        최종값으로 고정된다 (screen_spec 4.1·5.7).
+        """
+
+        if rankings.market_date != self._market_date:
+            raise ValueError(
+                f"복원 스냅샷의 market_date가 다릅니다: {rankings.market_date}"
+            )
+        restored_rankings = replace(rankings, data_status=DataStatus.CLOSED)
+        restored_treemap = replace(treemap, data_status=DataStatus.CLOSED)
+        self._market_closed = True
+        self._latest_rankings = restored_rankings
+        self._latest_treemap = restored_treemap
+        self._last_as_of = close_at
+        self._last_data_status = DataStatus.CLOSED
+        return PublishedView(
+            rankings=restored_rankings,
+            treemap=restored_treemap,
             events=self.current_events(),
         )
 

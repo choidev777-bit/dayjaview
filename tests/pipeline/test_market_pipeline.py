@@ -491,6 +491,32 @@ def test_close_market_discards_candidates_and_closes_active_events() -> None:
     } == statuses
 
 
+def test_restore_final_snapshots_serves_the_day_after_a_restart() -> None:
+    """재기동 후 복원: 목록·트리맵·상태가 그날 최종값(CLOSED)으로 고정된다."""
+
+    source = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        source.apply_update(_update(stock_id, seconds=index + 1))
+    source.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    final = source.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    assert final.rankings.payload["items"]
+    close_at = BASE + timedelta(hours=7)
+
+    rebooted = _pipeline()
+    view = rebooted.restore_final_snapshots(
+        final.rankings, final.treemap, close_at=close_at
+    )
+
+    assert rebooted.latest_rankings is not None
+    assert rebooted.latest_rankings.payload == final.rankings.payload
+    assert rebooted.latest_rankings.data_status is DataStatus.CLOSED
+    assert rebooted.latest_treemap is not None
+    assert rebooted.latest_treemap.data_status is DataStatus.CLOSED
+    assert rebooted.last_data_status is DataStatus.CLOSED
+    assert rebooted.last_as_of == close_at
+    assert view.rankings is rebooted.latest_rankings
+
+
 def test_publishing_after_close_keeps_ticking_without_reopening_events() -> None:
     """마감 뒤 계속 publish해도 CLOSED가 ACTIVE로 되돌지 않는다.
 

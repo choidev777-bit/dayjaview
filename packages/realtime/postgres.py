@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Sequence
+from datetime import date, datetime
 from typing import Any, Protocol
 
 from .snapshots import (
@@ -211,6 +212,35 @@ class PostgresSnapshotRepository:
                  LIMIT 1
                 """,
                 (stream_id, topic.value, params_key),
+            )
+            row = cursor.fetchone()
+            return None if row is None else ReadSnapshot.from_dict(_json_object(row[0]))
+        finally:
+            cursor.close()
+
+    def latest_for_market_date(
+        self,
+        *,
+        topic: SnapshotTopic,
+        params: dict[str, object],
+        market_date: date,
+        as_of_until: datetime,
+    ) -> ReadSnapshot | None:
+        """그 거래일 as_of_until 이전의 마지막 발행분 (stream 무관, 복원용)."""
+
+        params_key = _opaque("params", _canonical_json(params))
+        cursor = self._connection.cursor()
+        try:
+            cursor.execute(
+                """
+                SELECT snapshot_json
+                  FROM serving.realtime_snapshots
+                 WHERE topic = %s AND params_key = %s
+                   AND market_date = %s AND as_of <= %s
+                 ORDER BY as_of DESC, generated_at DESC, sequence DESC
+                 LIMIT 1
+                """,
+                (topic.value, params_key, market_date, as_of_until),
             )
             row = cursor.fetchone()
             return None if row is None else ReadSnapshot.from_dict(_json_object(row[0]))
