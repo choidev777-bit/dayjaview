@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="핵심 기술 개요">
+  <title>핵심 기술 개요</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-08" data-title="핵심 기술 개요">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">CORE TECHNOLOGY</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">흩어진 기록을 비교 가능한 Event 데이터로</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">08</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">서비스의 핵심은 ‘많은 데이터’가 아니라 ‘비교할 수 있는 데이터’입니다.</tspan></text>
+    <text x="107" y="245.78" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="107" dy="0">01</tspan></text>
+    <text x="150" y="238.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="start" letter-spacing="1.1" data-editable="text"><tspan x="150" dy="0">COLLECT</tspan></text>
+    <rect x="74" y="286" width="250" height="230" rx="24" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="199" cy="346" r="25" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="199" y="416.24" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="199" dy="0">20년치</tspan><tspan x="199" dy="34">테마 기록 수집</tspan></text>
+    <polygon points="332,395.28 353.08,395.28 353.08,386 366,402 353.08,418 353.08,408.72 332,408.72" fill="#FD9F28" data-editable="shape"/>
+    <text x="407" y="245.78" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">02</tspan></text>
+    <text x="450" y="238.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="start" letter-spacing="1.1" data-editable="text"><tspan x="450" dy="0">STRUCTURE</tspan></text>
+    <rect x="374" y="286" width="250" height="230" rx="24" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="499" cy="346" r="25" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="499" y="416.24" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="499" dy="0">문장을</tspan><tspan x="499" dy="34">Event로 분해</tspan></text>
+    <polygon points="632,395.28 653.08,395.28 653.08,386 666,402 653.08,418 653.08,408.72 632,408.72" fill="#FD9F28" data-editable="shape"/>
+    <text x="707" y="245.78" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="707" dy="0">03</tspan></text>
+    <text x="750" y="238.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="start" letter-spacing="1.1" data-editable="text"><tspan x="750" dy="0">CONNECT</tspan></text>
+    <rect x="674" y="286" width="250" height="230" rx="24" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="799" cy="346" r="25" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="799" y="416.24" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="799" dy="0">개체와 관계를</tspan><tspan x="799" dy="34">온톨로지로 연결</tspan></text>
+    <polygon points="932,395.28 953.08,395.28 953.08,386 966,402 953.08,418 953.08,408.72 932,408.72" fill="#FD9F28" data-editable="shape"/>
+    <text x="1007" y="245.78" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1007" dy="0">04</tspan></text>
+    <text x="1050" y="238.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="start" letter-spacing="1.1" data-editable="text"><tspan x="1050" dy="0">ANSWER</tspan></text>
+    <rect x="974" y="286" width="250" height="230" rx="24" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="1099" cy="346" r="25" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1099" y="416.24" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1099" dy="0">과거 비교와</tspan><tspan x="1099" dy="34">질문 응답에 활용</tspan></text>
+    <rect x="200" y="568" width="880" height="62" rx="31" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="640" y="606.13" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">원문 → 의미 구조 → 관계 → 실제 시장 반응</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

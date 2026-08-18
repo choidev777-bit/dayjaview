@@ -79,6 +79,14 @@ def import_bundle(bundle: ImportBundle, store: InfostockStore) -> ImportResult:
         completed = transaction.find_completed_import(bundle.input_hash)
         if completed is not None:
             return _result(bundle, completed, reused=True)
+        # 파서만 올라간 같은 수집본은 재적재하지 않는다. revision 시간축이 같은
+        # 관측시각의 내용 교체를 금지하므로(0001 CHECK observed_to > observed_from),
+        # 개선된 파싱 반영은 새 수집본 또는 명시적 재구축으로만 들어온다.
+        completed = transaction.find_completed_full_import_for_dataset(
+            bundle.dataset_hash, bundle.rights_scope
+        )
+        if completed is not None:
+            return _result(bundle, completed, reused=True)
 
         run_id = transaction.create_import_run(bundle)
         transaction.record_snapshot(run_id, bundle, bundle.manifest_snapshot)

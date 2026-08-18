@@ -39,6 +39,7 @@ OPENDART=$(require OPENDART_API_KEY)
 KIWOOM_KEY=$(require KIWOOM_APP_KEY)
 KIWOOM_SECRET=$(require KIWOOM_APP_SECRET)
 KIWOOM_CONDITIONS=$(value_of KIWOOM_CONDITION_IDS)
+RESEARCH_VERIFIED=$(value_of RESEARCH_VERIFIED_QUERY_TYPES)
 NAVER_ID=$(require NAVER_API_HUB_CLIENT_ID)
 NAVER_SECRET=$(require NAVER_API_HUB_CLIENT_SECRET)
 OPENAI_KEY=$(require OPENAI_API_KEY)
@@ -98,6 +99,10 @@ say "4b) secret 주입 — .env.local 유래 값 append"
     printf 'DAYJAVIEW_COMMIT=%s\n' "$DEPLOY_COMMIT"
     if [ -n "$KIWOOM_CONDITIONS" ]; then
         printf 'KIWOOM_CONDITION_IDS=%s\n' "$KIWOOM_CONDITIONS"
+    fi
+    # 사람 검수를 통과한 리서치 질의 유형만 연다(계획서 11.1.2). 비면 전부 잠긴다.
+    if [ -n "$RESEARCH_VERIFIED" ]; then
+        printf 'RESEARCH_VERIFIED_QUERY_TYPES=%s\n' "$RESEARCH_VERIFIED"
     fi
 } | ssh "$VM" 'sudo tee -a /etc/dayjaview/api.env >/dev/null && echo "api.env 완성"'
 

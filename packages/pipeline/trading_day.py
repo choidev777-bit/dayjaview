@@ -63,6 +63,12 @@ def next_trading_day(
     raise ValueError(f"{max_lookahead_days}일 안에 거래일이 없습니다: {market_date}")
 
 
+def session_open_at(market_date: date, *, open_time: time) -> datetime:
+    """그 거래일의 장 시작 시각을 UTC aware datetime으로."""
+
+    return datetime.combine(market_date, open_time, tzinfo=KST).astimezone(UTC)
+
+
 def session_close_at(market_date: date, *, close_time: time) -> datetime:
     """그 거래일의 장 마감 시각을 UTC aware datetime으로."""
 

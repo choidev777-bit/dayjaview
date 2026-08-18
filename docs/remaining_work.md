@@ -115,7 +115,7 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 |---|---|---|
 | 주식장 개장 시간 + 키움 live 승인 | A-3 ③ | 장중 실행, CLAUDE.md 승인 항목 2 |
 | 백업 암호문 VM 밖 보관 | F-25 후속 | 사용자가 비밀번호 관리자 등에 직접 보관 확인 |
-| gold set 사람 검수 | E-22 단계 0 이후 승격 | `HUMAN_CONFIRMED` 라벨 확보(11.1.2절) |
+| gold set 겹 C 보강 검수 | E-22 겹 C 승격 | 보강 910건의 `HUMAN_CONFIRMED` 라벨 확보(11.1.2절). 겹 A 1,150건은 검수 완료 |
 | 2인 블라인드 평가 | E-19→E-20 | 사람 평가 통과 |
 | 과거 주가 2005~2009 원천 | E-16 잔여 구간 | KRX Open API 미제공(실측) — 대체 원천 또는 범위 확정, 사용자 판단 |
 
@@ -386,12 +386,12 @@ APP_BASE_URL=http://localhost:5173 uv run python -c "from apps.api.serve import 
 | 6 | 금액·실제 결과 질문 | 미착수 (E-16 gate) |
 | 7 | 유사사례 승격 | 미착수 (E-19 gate) |
 
-- **단계 0 잔여**: ① 질의 ID·슬롯·집계 단위를 기계 enum으로 고정 — `packages/ontology/query_contracts.py`가 아직 없다. **enum은 정확히 17개다**(계획서 4.0절). 4.1.1절 후보 9종은 넣지 않는다. ② 겹 A 1,150건과 겹 C 보강 910건이 사람 검수 전(`AI_DRAFT`·`AI_CROSS_CHECKED`)이라 계획서 11.1.2에 따라 그 표본군으로는 승격 판정을 못 한다. 겹 C 원본 1,000건은 E-17 블라인드 수동 라벨이고 `score_gold_set.py`가 5열 형식을 `HUMAN_CONFIRMED`로 읽어 채점한다.
+- **단계 0 잔여**: ① 질의 ID·슬롯·집계 단위를 기계 enum으로 고정 — `packages/ontology/query_contracts.py`가 아직 없다. **enum은 정확히 17개다**(계획서 4.0절). 4.1.1절 후보 9종은 넣지 않는다. ② 겹 C 보강 910건은 사람 검수 전(`AI_DRAFT`·`AI_CROSS_CHECKED`)이라 계획서 11.1.2에 따라 해당 표본군으로는 승격 판정을 못 한다. 겹 A 1,150건은 2026-08-17 사용자 검수를 거쳐 `HUMAN_CONFIRMED`가 되었고, 겹 C 원본 1,000건은 E-17 블라인드 수동 라벨이며 `score_gold_set.py`가 5열 형식을 `HUMAN_CONFIRMED`로 읽어 채점한다.
   - 겹 A는 계획서 11.1.1 규모를 채웠다 — 22군 × (test 30 + dev 15) + 실패·난이도 160문장, `split` 열로 dev/test를 가른다. 겹 C가 쓰는 짝/홀 행 규칙(`score_gold_set.py --subset`)은 1:1만 표현해 30:15에 못 쓴다. 실패·난이도 160은 회귀 고정용이라 전부 test다.
   - 과거 사명 표본은 `research/ontology/krx_name_windows.json`(단계 2 산출)에서 뽑으므로 `build_query_goldset.py`를 다시 돌리려면 그 파일이 먼저 있어야 한다. 다른 회사가 지금 쓰는 이름은 정답이 갈려 제외한다.
 - **단계 1 잔여**: ① `PARSE_PARTIAL` 1,294건 형식군 감사 ② Daily 관계를 catalyst mention으로 변환 — `source_mention` 계열 테이블이 아직 없다 ③ Daily 전용 coverage·role·span 보고서(`research/ontology/daily_coverage_report.json`). 파싱 자체(상세 문단 보존·등락률 표 분해·섹션별 설명)는 `d7db311`·`0008`로 됐다.
 - **위치**: `packages/ontology/**`, `apps/worker-batch/ontology/**`, `tests/ontology/**`, `research/ontology/**`(gitignore, 로컬 전용), 마이그레이션 `0007`~`0010`.
-- **외부 관문**: **gold set 사람 검수.** 검수된 행이 없으면 계획서 11.2절 승격 기준을 어떤 수치로도 통과하지 못한다.
+- **외부 관문**: **겹 C 보강 gold set 사람 검수.** 겹 A는 검수 완료했으며, 겹 C 보강 표본군은 검수된 행이 없으면 계획서 11.2절 승격 기준을 어떤 수치로도 통과하지 못한다.
 - **선행**: E-17(완료). 단계 6은 E-16, 단계 7은 E-19 gate에 각각 종속.
 
 ---

@@ -25,6 +25,7 @@ from packages.adapters.kiwoom import (
     CanonicalMarketEvent,
     ConnectionPhase,
     DemandPriority,
+    GatewayDataStatus,
     IngestDisposition,
     KiwoomConnectionError,
     KiwoomConnectionLost,
@@ -41,6 +42,14 @@ from packages.events import LineageRef
 from packages.realtime import StockRealtimeUpdate
 
 LOG = logging.getLogger("dayjaview.live_market_runner")
+
+# 게이트웨이 STALE(heartbeat 끊김)은 도메인에 같은 이름이 없다. 이름으로 변환하면
+# ValueError로 떨어져 수신 지연이 전부 DEGRADED("일부 데이터 지연")로 뭉개졌다.
+GATEWAY_DATA_STATUS = {
+    GatewayDataStatus.LIVE: DataStatus.LIVE,
+    GatewayDataStatus.STALE: DataStatus.DELAYED,
+    GatewayDataStatus.DEGRADED: DataStatus.DEGRADED,
+}
 
 
 def _utc_now() -> datetime:
@@ -145,15 +154,12 @@ class LiveMarketRunner:
         return updates
 
     def data_status(self) -> DataStatus:
-        """MarketPublishLoop의 data_status 자리: 게이트웨이 health를 그대로 옮긴다."""
+        """MarketPublishLoop의 data_status 자리: 게이트웨이 health를 옮긴다."""
 
         health = self._gateway.health(
             self._gateway.subscriptions.current, now=self._clock()
         )
-        try:
-            return DataStatus(health.data_status.value)
-        except ValueError:
-            return DataStatus.DEGRADED
+        return GATEWAY_DATA_STATUS[health.data_status]
 
     def _ensure_connection(self, now: datetime) -> list[StockRealtimeUpdate]:
         gateway = self._gateway

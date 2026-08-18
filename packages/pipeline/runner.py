@@ -27,6 +27,11 @@ class MarketPublishLoop:
     on_published)이고, ``run``은 취소될 때까지 tick과 interval 대기를
     반복한다. 장 마감 평가는 clock이 ``market_close_at``을 지난 첫 tick에서
     한 번만 수행한다.
+
+    발행하는 ``data_status``는 장 시간대가 먼저다. 게이트웨이 health는 장이
+    열려 있는 동안에만 의미가 있어서, 개장 전·마감 후에는 PREOPEN·CLOSED로
+    덮는다. 이 구분이 없으면 마감 뒤에도 게이트웨이가 끊긴 상태가 그대로
+    나가 화면에 종일 지연 안내가 뜬다.
     """
 
     def __init__(
@@ -38,6 +43,7 @@ class MarketPublishLoop:
         interval: timedelta,
         poll_updates: Callable[[], Iterable[StockRealtimeUpdate]] | None = None,
         before_publish: Callable[[], None] | None = None,
+        market_open_at: datetime | None = None,
         market_close_at: datetime | None = None,
         clock: Callable[[], datetime] = _utc_now,
     ) -> None:
@@ -49,6 +55,7 @@ class MarketPublishLoop:
         self._interval = interval
         self._poll_updates = poll_updates
         self._before_publish = before_publish
+        self._market_open_at = market_open_at
         self._market_close_at = market_close_at
         self._clock = clock
         self._market_close_applied = False
@@ -71,9 +78,18 @@ class MarketPublishLoop:
             self._market_close_applied = True
         if self._before_publish is not None:
             self._before_publish()
-        view = self._pipeline.publish(now=now, data_status=self._data_status())
+        view = self._pipeline.publish(
+            now=now, data_status=self._session_data_status(now)
+        )
         self._on_published(view)
         return view
+
+    def _session_data_status(self, now: datetime) -> DataStatus:
+        if self._market_open_at is not None and now < self._market_open_at:
+            return DataStatus.PREOPEN
+        if self._market_close_at is not None and now >= self._market_close_at:
+            return DataStatus.CLOSED
+        return self._data_status()
 
     def close(self) -> None:
         """장 마감을 아직 적용하지 않았으면 마감 시각으로 지금 적용한다."""

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="DAY-JA-VIEW">
+  <title>DAY-JA-VIEW</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-01" data-title="DAY-JA-VIEW">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="68" y="75.65" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" letter-spacing="1.6" data-editable="text"><tspan x="68" dy="0">SERVICE INTRO</tspan></text>
+    <text x="68" y="193.24" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="47" font-weight="800" text-anchor="start" data-editable="text"><tspan x="68" dy="0">“이거, 예전에도</tspan><tspan x="68" dy="62">비슷한 일이 있었던 것 같은데?”</tspan></text>
+    <line x1="68" y1="318" x2="642" y2="318" stroke="#FD9F28" stroke-width="4" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="373" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" data-editable="text"><tspan x="68" dy="0">오늘의 테마와 과거의 유사 사건을 연결하는</tspan><tspan x="68" dy="34">테마 이벤트 스터디 툴</tspan></text>
+    <text x="68" y="547.12" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="52" font-weight="800" text-anchor="start" letter-spacing="1.5" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+    <rect x="69" y="578" width="138" height="42" rx="21" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="138" y="603.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="138" dy="0">DAY · 그날</tspan></text>
+    <rect x="219" y="578" width="156" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="297" y="603.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="297" dy="0">VIEW · 반응</tspan></text>
+    <circle cx="986" cy="342" r="212" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="986" cy="342" r="158" fill="#FFFFFF" stroke="#401600" stroke-width="4" data-editable="shape"/>
+    <circle cx="986" cy="342" r="104" fill="#FFFFFF" stroke="#FD9F28" stroke-width="8" data-editable="shape"/>
+    <circle cx="986" cy="342" r="42" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="880" cy="224" r="15" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="1112" cy="250" r="11" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="1134" cy="430" r="18" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="886" cy="466" r="10" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="986" y="348.2" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="986" dy="0">TODAY</tspan></text>
+    <text x="985" y="193.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="1.3" data-editable="text"><tspan x="985" dy="0">PAST EVENTS ↔ TODAY</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="전체 아키텍처">
+  <title>전체 아키텍처</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-07" data-title="전체 아키텍처">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">ARCHITECTURE</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">실시간 탐지와 과거 Event 분석을 한 흐름으로</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">07</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">수집 · 분석 · 저장 · 전달의 세 계층으로 구성했습니다.</tspan></text>
+    <rect x="66" y="246" width="166" height="178" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="149" y="283.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="149" dy="0">DATA SOURCE</tspan></text>
+    <text x="149" y="327" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="149" dy="0">키움 실시간 시세</tspan><tspan x="149" dy="25">뉴스</tspan><tspan x="149" dy="25">인포스탁 과거 데이터</tspan></text>
+    <polygon points="238,327.7 254.12,327.7 254.12,319 264,334 254.12,349 254.12,340.3 238,340.3" fill="#401600" data-editable="shape"/>
+    <rect x="268" y="330" width="166" height="178" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="351" y="367.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="351" dy="0">INGEST</tspan></text>
+    <text x="351" y="411" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="351" dy="0">수집기</tspan><tspan x="351" dy="25">정규화</tspan><tspan x="351" dy="25">실시간 처리</tspan></text>
+    <polygon points="440,411.7 456.12,411.7 456.12,403 466,418 456.12,433 456.12,424.3 440,424.3" fill="#401600" data-editable="shape"/>
+    <rect x="470" y="246" width="166" height="178" rx="22" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="553" y="283.03" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="553" dy="0">ANALYSIS</tspan></text>
+    <text x="553" y="327" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="553" dy="0">Event 구조화</tspan><tspan x="553" dy="25">온톨로지</tspan><tspan x="553" dy="25">유사사례 분석</tspan></text>
+    <polygon points="642,327.7 658.12,327.7 658.12,319 668,334 658.12,349 658.12,340.3 642,340.3" fill="#401600" data-editable="shape"/>
+    <rect x="672" y="330" width="166" height="178" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="755" y="367.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="755" dy="0">STORAGE</tspan></text>
+    <text x="755" y="411" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="755" dy="0">PostgreSQL</tspan><tspan x="755" dy="25">Redis</tspan><tspan x="755" dy="25">가격 데이터</tspan></text>
+    <polygon points="844,411.7 860.12,411.7 860.12,403 870,418 860.12,433 860.12,424.3 844,424.3" fill="#401600" data-editable="shape"/>
+    <rect x="874" y="246" width="166" height="178" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="957" y="283.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="957" dy="0">DELIVERY</tspan></text>
+    <text x="957" y="327" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="957" dy="0">REST</tspan><tspan x="957" dy="25">WebSocket</tspan><tspan x="957" dy="25">Query API</tspan></text>
+    <polygon points="1046,327.7 1062.12,327.7 1062.12,319 1072,334 1062.12,349 1062.12,340.3 1046,340.3" fill="#401600" data-editable="shape"/>
+    <rect x="1076" y="330" width="166" height="178" rx="22" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1159" y="367.03" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="1159" dy="0">WEB</tspan></text>
+    <text x="1159" y="411" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="1159" dy="0">탐지</tspan><tspan x="1159" dy="25">데자뷰</tspan><tspan x="1159" dy="25">자연어 질문</tspan></text>
+    <line x1="150" y1="590" x2="1130" y2="590" stroke="#FD9F28" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="380" cy="590" r="9" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="640" cy="590" r="9" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="900" cy="590" r="9" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="642" y="634.5100000000001" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="642" dy="0">현재 시장의 변화와 20년치 과거 사건을 동일한 Event 구조로 연결</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

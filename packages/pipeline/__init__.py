@@ -31,6 +31,7 @@ from .trading_day import (
     market_date_for,
     next_trading_day,
     session_close_at,
+    session_open_at,
 )
 
 __all__ = [
@@ -57,4 +58,5 @@ __all__ = [
     "reference_directory",
     "resolve_stock_references",
     "session_close_at",
+    "session_open_at",
 ]

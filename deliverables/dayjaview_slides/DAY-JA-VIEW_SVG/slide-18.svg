@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="설명 가능한 AI">
+  <title>설명 가능한 AI</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-18" data-title="설명 가능한 AI">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="0" y="0" width="24" height="720" rx="0" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="72" y="84.64999999999999" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" letter-spacing="1.5" data-editable="text"><tspan x="72" dy="0">EXPLAINABLE AI</tspan></text>
+    <text x="72" y="187.16" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="48" font-weight="800" text-anchor="start" data-editable="text"><tspan x="72" dy="0">무엇을 답했는가보다,</tspan><tspan x="72" dy="62">왜 그 답이 나왔는가까지</tspan></text>
+    <text x="72" y="319" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" data-editable="text"><tspan x="72" dy="0">DAY-JA-VIEW는 질문 해석부터 사건 선택,</tspan><tspan x="72" dy="34">가격 결과와 원문 근거까지 처리 경로를 보여줍니다.</tspan></text>
+    <line x1="128" y1="486" x2="1096" y2="486" stroke="#FD9F28" stroke-width="4" stroke-linecap="round" data-editable="line"/>
+    <circle cx="128" cy="486" r="30" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="128" y="463.72" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="128" dy="0">01</tspan></text>
+    <text x="128" y="549" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="128" dy="0">질문</tspan><tspan x="128" dy="25">조건</tspan></text>
+    <circle cx="370" cy="486" r="30" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="370" y="463.72" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="370" dy="0">02</tspan></text>
+    <text x="370" y="549" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="370" dy="0">Catalyst</tspan><tspan x="370" dy="25">사건</tspan></text>
+    <circle cx="612" cy="486" r="30" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="612" y="463.72" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="612" dy="0">03</tspan></text>
+    <text x="612" y="549" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="612" dy="0">Theme</tspan><tspan x="612" dy="25">반응</tspan></text>
+    <circle cx="854" cy="486" r="30" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="854" y="463.72" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="854" dy="0">04</tspan></text>
+    <text x="854" y="549" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="854" dy="0">Outcome</tspan><tspan x="854" dy="25">가격</tspan></text>
+    <circle cx="1096" cy="486" r="30" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1096" y="463.72" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="12" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1096" dy="0">05</tspan></text>
+    <text x="1096" y="549" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1096" dy="0">Evidence</tspan><tspan x="1096" dy="25">근거</tspan></text>
+    <rect x="194" y="620" width="892" height="58" rx="29" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="640" y="655.82" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">오늘의 움직임을 발견하고, 과거의 근거로 이해하다</tspan></text>
+  </g>
+</svg>

@@ -156,7 +156,14 @@ def main(argv: list[str] | None = None) -> int:
         psycopg = importlib.import_module("psycopg")
         connection = psycopg.connect(database_url)
         try:
-            counts = PostgresCatalystEventStore(cast(Any, connection)).load(
+            _print(
+                {
+                    "status": "LOADING_BULK",
+                    "uniqueCatalystCount": len(result.catalysts),
+                    "messageKo": "COPY staging과 집합 INSERT로 원자 적재합니다.",
+                }
+            )
+            counts = PostgresCatalystEventStore(cast(Any, connection)).load_bulk(
                 result,
                 generated_at=datetime.now(UTC),
             )

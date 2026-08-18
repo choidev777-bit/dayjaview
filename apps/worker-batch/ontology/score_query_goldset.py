@@ -5,9 +5,9 @@
 넣고 질의 유형·슬롯이 정답과 맞는지 센다. dev/test는 파일 안 `split` 열을
 그대로 따른다 — test split을 보며 규칙을 고치면 측정이 무의미해진다.
 
-**승격 판정에는 `HUMAN_CONFIRMED` 행만 쓴다(계획서 11.1.2).** 지금 gold set은
-전부 `AI_DRAFT`이므로 이 스크립트의 수치는 개발용 관측치이며 게이트를 열지
-않는다. 그 사실을 산출 JSON의 `promotionEligible`이 그대로 말한다.
+**승격 판정에는 `HUMAN_CONFIRMED` 행만 쓴다(계획서 11.1.2).** 산출 JSON의
+`promotionEligible`은 선택한 subset의 모든 행이 사람 검수되었는지 그대로
+반영한다.
 
 catalog는 수집본의 실제 테마·종목 이름으로 만든다. gold set이 그 이름에서
 슬롯 값을 뽑았으므로 같은 원천을 써야 이름 해석이 재현된다.
@@ -337,8 +337,12 @@ def main(argv: list[str] | None = None) -> int:
         },
         "topConfusions": dict(confusions.most_common(15)),
         "notesKo": [
-            "gold set이 전부 AI_DRAFT이므로 이 수치는 개발 관측치이고 11.2절 승격 "
-            "판정에 쓰지 않는다.",
+            (
+                "선택한 gold set 전 행이 HUMAN_CONFIRMED이므로 11.2절 승격 판정에 "
+                "사용할 수 있다."
+                if review_counts.get("HUMAN_CONFIRMED", 0) == totals["rows"]
+                else "선택한 gold set에 미검수 행이 있어 11.2절 승격 판정에 쓰지 않는다."
+            ),
             "`6/29`처럼 연도가 없는 문장은 gold의 연도를 원문에서 되찾을 수 없다. "
             "dateAccuracyCeiling이 그 상한이고 dateRecoverableAccuracy가 실제 성능이다.",
             "gold의 AMBIGUOUS 표본은 이름 접두사 충돌이지만, 해석기는 정확히 일치하는 "

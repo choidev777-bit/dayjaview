@@ -450,6 +450,80 @@ describe('live WebSocket full snapshot·sequence·reconnect', () => {
     },
   );
 
+  it('rankings 스냅샷마다 상세 캐시를 비우고, 근거 캐시는 30스냅샷마다 비운다 (C-13)', async () => {
+    const sockets: FakeSocket[] = [];
+    let detailFetches = 0;
+    let evidenceFetches = 0;
+    const detailBody = { data: { themeId: 'thm_nuclear', eventId: 'evt_current' }, meta };
+    const evidenceBody = {
+      data: { evidenceStatus: 'SEARCHING', items: [], page: { hasMore: false, nextCursor: null } },
+      meta,
+    };
+    const repository = createProductionRepository({
+      readCsrfToken: () => 'csrf_test',
+      webSocketFactory: () => {
+        const socket = new FakeSocket();
+        sockets.push(socket);
+        return socket;
+      },
+      fetcher: async (input) => {
+        const path = String(input);
+        if (path === '/api/auth/session') return jsonResponse(authenticatedSession);
+        if (path.startsWith('/api/v1/themes/rankings')) return jsonResponse(rankingLive);
+        if (path === '/api/v1/auth/realtime-ticket') return jsonResponse(realtimeTicket());
+        if (path.startsWith('/api/v1/themes/thm_nuclear/events/evt_current')) {
+          detailFetches += 1;
+          return jsonResponse(detailBody);
+        }
+        if (path.startsWith('/api/v1/events/evt_current/evidence')) {
+          evidenceFetches += 1;
+          return jsonResponse(evidenceBody);
+        }
+        throw new Error(`Unexpected request: ${path}`);
+      },
+    });
+
+    await repository.getSession();
+    await repository.getRankings();
+    await vi.waitFor(() => expect(sockets).toHaveLength(1));
+    sockets[0].serverOpen();
+
+    const detailRefreshes: number[] = [];
+    const evidenceRefreshes: number[] = [];
+    repository.subscribe('detail', () => detailRefreshes.push(detailFetches));
+    repository.subscribe('evidence', () => evidenceRefreshes.push(evidenceFetches));
+
+    await repository.getThemeDetail('thm_nuclear', 'evt_current');
+    await repository.getThemeDetail('thm_nuclear', 'evt_current');
+    await repository.getEvidence('evt_current');
+    expect(detailFetches).toBe(1);
+    expect(evidenceFetches).toBe(1);
+
+    let sequence = rankingLive.data.sequence;
+    sockets[0].serverMessage(
+      rankingSnapshot({ sequence: (sequence += 1), snapshotId: 'snap_c13_1', displayName: 'C13' }),
+    );
+    expect(detailRefreshes).toHaveLength(1);
+    expect(evidenceRefreshes).toHaveLength(0);
+    await repository.getThemeDetail('thm_nuclear', 'evt_current');
+    await repository.getEvidence('evt_current');
+    expect(detailFetches).toBe(2);
+    expect(evidenceFetches).toBe(1);
+
+    for (let i = 0; i < 29; i += 1) {
+      sockets[0].serverMessage(
+        rankingSnapshot({
+          sequence: (sequence += 1),
+          snapshotId: `snap_c13_${i + 2}`,
+          displayName: 'C13',
+        }),
+      );
+    }
+    expect(evidenceRefreshes).toHaveLength(1);
+    await repository.getEvidence('evt_current');
+    expect(evidenceFetches).toBe(2);
+  });
+
   it('topic별 sequence를 추적해 중복·역순을 무시하고 gap과 재연결 첫 full snapshot으로 교체한다', async () => {
     const sockets: FakeSocket[] = [];
     const reconnectCallbacks: Array<() => void> = [];

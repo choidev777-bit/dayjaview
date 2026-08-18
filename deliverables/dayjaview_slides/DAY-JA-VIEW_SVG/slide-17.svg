@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="온톨로지 관계 탐색 영상">
+  <title>온톨로지 관계 탐색 영상</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-17" data-title="온톨로지 관계 탐색 영상">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TRACE VIDEO</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">질문 하나가 답변이 되기까지의 실제 경로</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">17</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">PostgreSQL에 저장된 온톨로지 관계와 질의 처리 경로를 시각화합니다.</tspan></text>
+    <rect x="68" y="188" width="778" height="420" rx="24" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <circle cx="434" cy="390" r="64" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <polygon points="420,354 420,426 472,390" fill="#FFFFFF" data-editable="shape"/>
+    <line x1="434" y1="390" x2="190" y2="280" stroke="#EEEEEE" stroke-width="1" stroke-linecap="round" data-editable="line"/>
+    <circle cx="190" cy="280" r="9" fill="#FD9F28" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="262" y2="450" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="262" cy="450" r="13" fill="#FFFFFF" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="370" y2="250" stroke="#EEEEEE" stroke-width="1" stroke-linecap="round" data-editable="line"/>
+    <circle cx="370" cy="250" r="7" fill="#FFFFFF" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="520" y2="246" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="520" cy="246" r="12" fill="#FD9F28" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="644" y2="338" stroke="#EEEEEE" stroke-width="1" stroke-linecap="round" data-editable="line"/>
+    <circle cx="644" cy="338" r="8" fill="#FFFFFF" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="696" y2="482" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="696" cy="482" r="14" fill="#FFFFFF" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="530" y2="530" stroke="#EEEEEE" stroke-width="1" stroke-linecap="round" data-editable="line"/>
+    <circle cx="530" cy="530" r="7" fill="#FD9F28" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <line x1="434" y1="390" x2="190" y2="520" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="190" cy="520" r="6" fill="#FFFFFF" stroke="#FD9F28" stroke-width="2" data-editable="shape"/>
+    <text x="457" y="569.27" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="457" dy="0">질문 입력에 따라 탐색되는 노드와 경로가 달라집니다.</tspan></text>
+    <rect x="876" y="188" width="336" height="420" rx="24" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="906" y="233.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="start" letter-spacing="1" data-editable="text"><tspan x="906" dy="0">TRACE ORDER</tspan></text>
+    <circle cx="922" cy="286" r="13" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="289.09999999999997" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">1</tspan></text>
+    <text x="950" y="290.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="950" dy="0">질문 조건 해석</tspan></text>
+    <line x1="922" y1="300" x2="922" y2="320" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="922" cy="335" r="13" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="338.09999999999997" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">2</tspan></text>
+    <text x="950" y="339.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="950" dy="0">Catalyst 탐색</tspan></text>
+    <line x1="922" y1="349" x2="922" y2="369" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="922" cy="384" r="13" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="387.09999999999997" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">3</tspan></text>
+    <text x="950" y="388.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="950" dy="0">반응 Theme 연결</tspan></text>
+    <line x1="922" y1="398" x2="922" y2="418" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="922" cy="433" r="13" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="436.09999999999997" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">4</tspan></text>
+    <text x="950" y="437.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="950" dy="0">당시 주도주 확인</tspan></text>
+    <line x1="922" y1="447" x2="922" y2="467" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="922" cy="482" r="13" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="485.09999999999997" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">5</tspan></text>
+    <text x="950" y="486.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="950" dy="0">가격 결과 계산</tspan></text>
+    <line x1="922" y1="496" x2="922" y2="516" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <circle cx="922" cy="531" r="13" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="922" y="534.1" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="10" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="922" dy="0">6</tspan></text>
+    <text x="950" y="535.96" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="start" data-editable="text"><tspan x="950" dy="0">원문 근거 검증</tspan></text>
+    <text x="640" y="644.96" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">영상 재생 전 질문을 읽고 → 재생 중에는 설명 없이 경로 변화에 집중</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

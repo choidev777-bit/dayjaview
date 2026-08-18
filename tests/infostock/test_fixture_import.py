@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -89,6 +90,28 @@ def test_store_failure_rolls_back_run_snapshots_and_normalized_rows() -> None:
     assert store.state == ReferenceInfostockStore().state
     store.fail_on_theme_id = None
     assert import_bundle(bundle, store).themes_imported == 280
+
+
+def test_parser_upgrade_over_same_dataset_reuses_completed_import() -> None:
+    # 운영 배포 결함 재현: 같은 수집본을 파서만 올려 재적재하면 input_hash가
+    # 달라져 전체 import가 다시 돌았고, 기존 관측과 parser 표기가 달라
+    # SnapshotConflictError로 bootstrap이 죽었다. 같은 dataset은 재사용한다.
+    bundle = load_committed_fixture(FIXTURE_PATH, FIXTURE_POLICY)
+    store = ReferenceInfostockStore()
+    first = import_bundle(bundle, store)
+    state_after_first = copy.deepcopy(store.state)
+
+    upgraded = replace(
+        bundle,
+        parser_version="collect-infostock-fixture/9.9.9",
+        input_hash="f" * 64,
+    )
+    second = import_bundle(upgraded, store)
+
+    assert first.reused is False
+    assert second.reused is True
+    assert second.run_id == first.run_id
+    assert store.state == state_after_first
 
 
 def test_same_observation_time_with_changed_raw_snapshot_rolls_back() -> None:

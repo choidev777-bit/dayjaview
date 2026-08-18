@@ -81,7 +81,7 @@ class ParsedCauseSentence:
 
 @dataclass(frozen=True, slots=True)
 class CatalystClassification:
-    """원인문 하나의 분류 결과. type_ids는 원문 등장 순서를 유지한다."""
+    """원인문 하나의 분류 결과. type_ids는 primary를 먼저 두고 나머지는 등장 순서다."""
 
     vocabulary_version: str
     transform_version: str
@@ -97,7 +97,7 @@ class CatalystClassification:
             raise ValueError("type_ids가 중복됩니다.")
         if self.type_ids:
             if self.primary_type_id != self.type_ids[0]:
-                raise ValueError("primary_type_id는 첫 등장 유형이어야 합니다.")
+                raise ValueError("primary_type_id는 type_ids의 첫 유형이어야 합니다.")
         elif self.primary_type_id is not None:
             raise ValueError("유형이 없으면 primary_type_id도 없어야 합니다.")
 

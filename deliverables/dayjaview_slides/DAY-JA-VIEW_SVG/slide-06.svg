@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="자연어 질문">
+  <title>자연어 질문</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-06" data-title="자연어 질문">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">FEATURE 03 · ASK</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">질문 한 문장으로 과거 리서치를 끝냅니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">06</tspan></text>
+    <rect x="84" y="160" width="1112" height="108" rx="20" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="150" y="220.01999999999998" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="42" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="150" dy="0">Q</tspan></text>
+    <text x="194" y="197.76" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="start" data-editable="text"><tspan x="194" dy="0">“이 정책 소재는 보통 하루 만에 끝났어,</tspan><tspan x="194" dy="38">며칠 이어졌어?”</tspan></text>
+    <rect x="90" y="322" width="238" height="166" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="110" y="365.58" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="110" dy="0">01  질문 해석</tspan></text>
+    <text x="110" y="411" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="110" dy="0">테마</tspan><tspan x="110" dy="24">소재</tspan><tspan x="110" dy="24">기간</tspan></text>
+    <polygon points="336,391.28 359.56,391.28 359.56,382 374,398 359.56,414 359.56,404.72 336,404.72" fill="#401600" data-editable="shape"/>
+    <rect x="382" y="322" width="238" height="166" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="402" y="365.58" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="402" dy="0">02  관계 탐색</tspan></text>
+    <text x="402" y="411" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="402" dy="0">과거 Event</tspan><tspan x="402" dy="24">주도주</tspan></text>
+    <polygon points="628,391.28 651.56,391.28 651.56,382 666,398 651.56,414 651.56,404.72 628,404.72" fill="#401600" data-editable="shape"/>
+    <rect x="674" y="322" width="238" height="166" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="694" y="365.58" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="694" dy="0">03  가격 계산</tspan></text>
+    <text x="694" y="411" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="694" dy="0">T+1</tspan><tspan x="694" dy="24">T+5</tspan><tspan x="694" dy="24">T+20</tspan></text>
+    <polygon points="920,391.28 943.56,391.28 943.56,382 958,398 943.56,414 943.56,404.72 920,404.72" fill="#401600" data-editable="shape"/>
+    <rect x="966" y="322" width="238" height="166" rx="20" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="986" y="365.58" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="986" dy="0">04  근거 답변</tspan></text>
+    <text x="986" y="411" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="start" data-editable="text"><tspan x="986" dy="0">수치</tspan><tspan x="986" dy="24">원문</tspan></text>
+    <rect x="146" y="548" width="988" height="80" rx="20" fill="#FFFFFF" stroke="#FD9F28" stroke-width="3" data-editable="shape"/>
+    <text x="640" y="579.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">복잡한 메뉴·검색 조건 없이</tspan></text>
+    <text x="640" y="612.13" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">내 매매 가설을 질문하고, 데이터 근거로 빠르게 확인</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

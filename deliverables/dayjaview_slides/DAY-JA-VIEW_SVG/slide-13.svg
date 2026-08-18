@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="온톨로지 구현">
+  <title>온톨로지 구현</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-13" data-title="온톨로지 구현">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TECH 03 · IMPLEMENTATION</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">3만 9,696개 기록을 약 2만 개 사건으로 통합했습니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">13</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">원문을 분해하고, 역할을 추출하고, 같은 현실 사건을 하나로 합쳤습니다.</tspan></text>
+    <rect x="68" y="210" width="190" height="152" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="163" y="252.96" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="163" dy="0">01  원문</tspan></text>
+    <text x="163" y="304.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="163" dy="0">테마 원인</tspan><tspan x="163" dy="24">기록</tspan></text>
+    <polygon points="264,279.28 287.56,279.28 287.56,270 302,286 287.56,302 287.56,292.72 264,292.72" fill="#FD9F28" data-editable="shape"/>
+    <rect x="312" y="210" width="190" height="152" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="407" y="252.96" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">02  사건 분리</tspan></text>
+    <text x="407" y="304.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">한 문장 속</tspan><tspan x="407" dy="24">복수 사건 분리</tspan></text>
+    <polygon points="508,279.28 531.56,279.28 531.56,270 546,286 531.56,302 531.56,292.72 508,292.72" fill="#FD9F28" data-editable="shape"/>
+    <rect x="556" y="210" width="190" height="152" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="651" y="252.96" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="651" dy="0">03  의미 추출</tspan></text>
+    <text x="651" y="304.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="651" dy="0">유형·단계</tspan><tspan x="651" dy="24">회사 역할</tspan></text>
+    <polygon points="752,279.28 775.56,279.28 775.56,270 790,286 775.56,302 775.56,292.72 752,292.72" fill="#FD9F28" data-editable="shape"/>
+    <rect x="800" y="210" width="190" height="152" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="895" y="252.96" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="895" dy="0">04  동일 사건 통합</tspan></text>
+    <text x="895" y="304.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="895" dy="0">중복 표현</tspan><tspan x="895" dy="24">하나로 병합</tspan></text>
+    <polygon points="996,279.28 1019.56,279.28 1019.56,270 1034,286 1019.56,302 1019.56,292.72 996,292.72" fill="#FD9F28" data-editable="shape"/>
+    <rect x="1044" y="210" width="190" height="152" rx="20" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1139" y="252.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1139" dy="0">05  관계 연결</tspan></text>
+    <text x="1139" y="304.8" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="1139" dy="0">Catalyst</tspan><tspan x="1139" dy="24">Reaction·Evidence</tspan></text>
+    <rect x="68" y="398" width="1144" height="68" rx="18" fill="#FFFFFF" stroke="#401600" stroke-width="2" data-editable="shape"/>
+    <text x="640" y="438.82" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">PostgreSQL의 개체 테이블 + 관계 테이블로 지식 그래프 구현</tspan></text>
+    <rect x="154" y="506" width="294" height="112" rx="20" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="301" y="554.7800000000001" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="301" dy="0">86.8%</tspan></text>
+    <text x="301" y="591.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="301" dy="0">사건 원인 분류</tspan></text>
+    <rect x="494" y="506" width="294" height="112" rx="20" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="641" y="554.7800000000001" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="641" dy="0">99.6%</tspan></text>
+    <text x="641" y="591.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="641" dy="0">상승·하락 방향</tspan></text>
+    <rect x="834" y="506" width="294" height="112" rx="20" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="981" y="554.7800000000001" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="38" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="981" dy="0">90.0%</tspan></text>
+    <text x="981" y="591.96" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="981" dy="0">기대·확정 단계</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

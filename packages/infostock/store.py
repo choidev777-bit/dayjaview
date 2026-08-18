@@ -73,6 +73,10 @@ class ImportTransaction(Protocol):
 
     def find_completed_import(self, input_hash: str) -> StoredImport | None: ...
 
+    def find_completed_full_import_for_dataset(
+        self, dataset_hash: str, rights_scope: str
+    ) -> StoredImport | None: ...
+
     def create_import_run(self, bundle: ImportBundle) -> int: ...
 
     def record_snapshot(

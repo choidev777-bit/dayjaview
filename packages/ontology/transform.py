@@ -2,9 +2,10 @@
 
 입력은 인포스탁 history 원인문 한 줄이며 외부 상태 없이 결정론적으로
 분류한다. 유형은 span 선점 매칭(시작 위치 → 긴 키워드 우선)으로 뽑고,
-primary는 원문에서 가장 먼저 등장한 유형이다(인포스탁 원인문은 주 사유를
-앞에 쓴다 — 표본 1,000건 정독으로 확인). 방향은 꼬리 동사를 우선하고,
-확실성은 가장 오른쪽 표지의 계열을 취한다(한국어 후치 수식).
+primary는 원문에서 가장 먼저 등장한 사건을 따른다. 다만 앞쪽의 정치 주체나
+산업 명사가 뒤의 구체적인 정책 행위보다 먼저 잡히는 경우에는 정책 행위를
+우선한다. 방향은 꼬리 동사를 우선하고, 확실성은 사유 본문에서 가장 오른쪽
+표지의 계열을 취한다(한국어 후치 수식).
 
 LLM을 쓰지 않는다. 점수·순위·반응 크기도 만들지 않는다.
 로직이나 표지 처리 규칙을 고치면 TRANSFORM_VERSION을 올린다.
@@ -33,7 +34,7 @@ from .vocabulary import (
     VOCABULARY_VERSION,
 )
 
-TRANSFORM_VERSION = "catalyst-transform/1.1.0"
+TRANSFORM_VERSION = "catalyst-transform/1.2.0"
 
 # "(주도주 : ...)" 또는 "(관련주 : A, B)" 같은 문장 끝 종목 나열 괄호.
 _TRAILING_REFERENCE_RE = re.compile(r"\([^()]*\)\s*[.…]?\s*$")
@@ -46,9 +47,67 @@ _TAIL_RE = re.compile(
     r"|상한가|하한가|등락|혼조|반등|오름세|내림세)"
     r"(?:세)?\s*[.…]?\s*$"
 )
+_CAUSE_EVENT_SEPARATOR_RE = re.compile(
+    r"\s+(?:및|또는|그리고|반면)\s+"
+    r"|\s+(?:속에|속|가운데)\s+"
+    r"|에\s+따른\s+|로\s+인한\s+"
+)
 
 _UP_SET = frozenset(UP_DIRECTION_TOKENS)
 _DOWN_SET = frozenset(DOWN_DIRECTION_TOKENS)
+
+# 주체·산업 문맥보다 구체적인 정책 행위를 primary로 올릴 때만 쓰는 표지다.
+# 모든 POLICY_MEASURE keyword를 쓰면 단순 정부 언급도 다른 사건을 덮으므로
+# 실제 조치·제도 변경을 뜻하는 좁은 목록만 둔다.
+_STRONG_POLICY_MARKERS = (
+    "대책",
+    "방안",
+    "지원",
+    "예산",
+    "법안",
+    "개정안",
+    "법제화",
+    "규제",
+    "보조금",
+    "세액공제",
+    "세제",
+    "감세",
+    "비과세",
+    "추경",
+    "행정명령",
+    "의무화",
+    "시행령",
+    "특별법",
+    "국정과제",
+    "시범사업",
+    "금지",
+    "불허",
+    "육성",
+    "법사위",
+)
+_POLICY_CONTEXT_TYPES = frozenset(
+    {
+        "POLITICS_ELECTION",
+        "FLOW_TECHNICAL",
+        "CLINICAL_REGULATORY",
+        "INVESTMENT_CAPACITY",
+        "ANALYST_OPINION",
+        "DISASTER_INCIDENT",
+        "LEGAL_RISK",
+        "MNA_STAKE",
+        "EPIDEMIC_DISEASE",
+    }
+)
+_MARKET_INDEX_MARKERS = (
+    "필라델피아",
+    "반도체지수",
+    "반도체 지수",
+    "나스닥",
+    "다우",
+    "증시",
+    "코스피",
+    "코스닥",
+)
 
 
 def _find_all(text: str, needle: str, end: int) -> list[int]:
@@ -58,6 +117,11 @@ def _find_all(text: str, needle: str, end: int) -> list[int]:
         positions.append(cursor)
         cursor = text.find(needle, cursor + 1, end)
     return positions
+
+
+def _same_cause_event(text: str, first: int, second: int) -> bool:
+    start, end = sorted((first, second))
+    return _CAUSE_EVENT_SEPARATOR_RE.search(text, start, end) is None
 
 
 def parse_cause_sentence(raw_text: str) -> ParsedCauseSentence:
@@ -239,6 +303,37 @@ def _classify_types(
                     "catalyst_type", "MARKET_SYNC", token, position, position + len(token)
                 )
             )
+    if type_ids:
+        primary = type_ids[0]
+        core = text[: parsed.core_end]
+        primary_starts = [span.start for span in spans if span.value == primary]
+        policy_starts = [
+            position
+            for marker in _STRONG_POLICY_MARKERS
+            for position in _find_all(core, marker, len(core))
+        ]
+        policy_is_same_event = bool(
+            primary_starts
+            and policy_starts
+            and any(
+                _same_cause_event(core, min(primary_starts), position)
+                for position in policy_starts
+            )
+        )
+        if (
+            primary in _POLICY_CONTEXT_TYPES
+            and "POLICY_MEASURE" in type_ids
+            and policy_is_same_event
+        ):
+            type_ids.remove("POLICY_MEASURE")
+            type_ids.insert(0, "POLICY_MEASURE")
+        elif (
+            primary == "FLOW_TECHNICAL"
+            and "MARKET_SYNC" in type_ids
+            and any(marker in core for marker in _MARKET_INDEX_MARKERS)
+        ):
+            type_ids.remove("MARKET_SYNC")
+            type_ids.insert(0, "MARKET_SYNC")
     return tuple(type_ids), tuple(spans)
 
 

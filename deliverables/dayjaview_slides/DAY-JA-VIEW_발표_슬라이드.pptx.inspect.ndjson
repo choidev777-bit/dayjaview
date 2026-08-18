@@ -1,0 +1,708 @@
+{"kind":"deck","id":"pr/wghrk5","name":"Deck"}
+{"kind":"layout","layoutId":"5b79e214-d1c7-4eeb-bc84-bf7921d52f35","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"b0f3e9d3-d550-4ea4-93e9-82832075d612","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/ttrgg0","slide":1,"title":"SERVICE INTRO","textShapes":9}
+{"kind":"shape","id":"sh/q58bmx07","slide":1,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/dszahczy","slide":1,"text":"SERVICE INTRO","textPreview":"SERVICE INTRO","textChars":13,"textLines":1,"bbox":[68,58,260,26]}
+{"kind":"textbox","id":"sh/crqto7id","slide":1,"text":"“이거, 예전에도\n비슷한 일이 있었던 것 같은데?”","textPreview":"“이거, 예전에도 | 비슷한 일이 있었던 것 같은데?”","textChars":28,"textLines":2,"bbox":[68,144,660,136]}
+{"kind":"shape","id":"sh/32hsb2hw","slide":1,"bbox":[68,318,574,0]}
+{"kind":"textbox","id":"sh/218bix0b","slide":1,"text":"오늘의 테마와 과거의 유사 사건을 연결하는\n테마 이벤트 스터디 툴","textPreview":"오늘의 테마와 과거의 유사 사건을 연결하는 | 테마 이벤트 스터디 툴","textChars":36,"textLines":2,"bbox":[68,350,610,72]}
+{"kind":"textbox","id":"sh/p4zadsz2","slide":1,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,500,650,62]}
+{"kind":"shape","id":"sh/o3qtk7ih","slide":1,"bbox":[69,578,138,42]}
+{"kind":"textbox","id":"sh/fyxs7ihk","slide":1,"text":"DAY · 그날","textPreview":"DAY · 그날","textChars":8,"textLines":1,"bbox":[79,578,118,42]}
+{"kind":"shape","id":"sh/exobed0f","slide":1,"bbox":[219,578,156,42]}
+{"kind":"textbox","id":"sh/07i1kv6x","slide":1,"text":"VIEW · 반응","textPreview":"VIEW · 반응","textChars":9,"textLines":1,"bbox":[229,578,136,42]}
+{"kind":"shape","id":"sh/18rit0ni","slide":1,"bbox":[774,130,424,424]}
+{"kind":"shape","id":"sh/el0jilor","slide":1,"bbox":[828,184,316,316]}
+{"kind":"shape","id":"sh/z690rq5c","slide":1,"bbox":[882,238,208,208]}
+{"kind":"shape","id":"sh/cji1gb61","slide":1,"bbox":[944,300,84,84]}
+{"kind":"shape","id":"sh/dkripgnm","slide":1,"bbox":[865,209,30,30]}
+{"kind":"shape","id":"sh/qhgjelov","slide":1,"bbox":[1101,239,22,22]}
+{"kind":"shape","id":"sh/ri90n65g","slide":1,"bbox":[1116,412,36,36]}
+{"kind":"shape","id":"sh/wf21sf65","slide":1,"bbox":[876,456,20,20]}
+{"kind":"textbox","id":"sh/xgb21knq","slide":1,"text":"TODAY","textPreview":"TODAY","textChars":5,"textLines":1,"bbox":[916,317,140,50]}
+{"kind":"textbox","id":"sh/5wril0fu","slide":1,"text":"PAST EVENTS ↔ TODAY","textPreview":"PAST EVENTS ↔ TODAY","textChars":19,"textLines":1,"bbox":[795,174,380,30]}
+{"kind":"shape","id":"sh/kvy1cfy9","slide":1,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/jup0jaxo","slide":1,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/ttrgg0","slide":1,"text":"여러분도 시장을 보면서, ‘이거 예전에도 비슷한 일이 있었던 것 같은데?’라고 느낀 적 있으실 겁니다. 바로 데자뷰입니다.\n\n저희는 이런 경험을 투자 분석 과정에 적용했습니다. 오늘이자 과거 사건이 발생했던 ‘그날’을 뜻하는 DAY, 그리고 그날의 시장 반응을 보여주는 VIEW를 결합해 DAY-JA-VIEW라는 이름을 만들었습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/qtkb8z","slide":2,"title":"SERVICE","textShapes":16}
+{"kind":"shape","id":"sh/cj6t8re5","slide":2,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/rixszmdk","slide":2,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/qhob6hwz","slide":2,"text":"SERVICE","textPreview":"SERVICE","textChars":7,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/18za5wvm","slide":2,"text":"흩어진 탐색을 하나의 분석 흐름으로","textPreview":"흩어진 탐색을 하나의 분석 흐름으로","textChars":19,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/076tcreh","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/z6xs3mdw","slide":2,"text":"발견 → 원인 확인 → 과거 비교","textPreview":"발견 → 원인 확인 → 과거 비교","textChars":18,"textLines":1,"bbox":[92,133,950,34]}
+{"kind":"shape","id":"sh/eloba1wb","slide":2,"bbox":[116,286,1048,0]}
+{"kind":"shape","id":"sh/hcvatcvi","slide":2,"bbox":[207,273,26,26]}
+{"kind":"textbox","id":"sh/gbmt07ex","slide":2,"text":"01  DISCOVER","textPreview":"01  DISCOVER","textChars":12,"textLines":1,"bbox":[120,202,200,30]}
+{"kind":"textbox","id":"sh/i583u90b","slide":2,"text":"오늘 무엇이\n움직이는가?","textPreview":"오늘 무엇이 | 움직이는가?","textChars":13,"textLines":2,"bbox":[92,317,256,66]}
+{"kind":"shape","id":"sh/36h43ehw","slide":2,"bbox":[82,425,276,104]}
+{"kind":"textbox","id":"sh/47qlwjih","slide":2,"text":"강해지는 테마와\n주도 종목을 발견","textPreview":"강해지는 테마와 | 주도 종목을 발견","textChars":18,"textLines":2,"bbox":[102,425,236,104]}
+{"kind":"shape","id":"sh/58zm5oz2","slide":2,"bbox":[627,273,26,26]}
+{"kind":"textbox","id":"sh/q983yt0n","slide":2,"text":"02  UNDERSTAND","textPreview":"02  UNDERSTAND","textChars":14,"textLines":1,"bbox":[540,202,200,30]}
+{"kind":"textbox","id":"sh/rah47yh8","slide":2,"text":"왜\n움직이는가?","textPreview":"왜 | 움직이는가?","textChars":8,"textLines":2,"bbox":[512,317,256,66]}
+{"kind":"shape","id":"sh/sbql03it","slide":2,"bbox":[502,425,276,104]}
+{"kind":"textbox","id":"sh/dczm9ozy","slide":2,"text":"관련 뉴스와 소재를\n같은 화면에서 확인","textPreview":"관련 뉴스와 소재를 | 같은 화면에서 확인","textChars":21,"textLines":2,"bbox":[522,425,236,104]}
+{"kind":"shape","id":"sh/exs32t0j","slide":2,"bbox":[1047,273,26,26]}
+{"kind":"textbox","id":"sh/fy14byh4","slide":2,"text":"03  STUDY","textPreview":"03  STUDY","textChars":9,"textLines":1,"bbox":[960,202,200,30]}
+{"kind":"textbox","id":"sh/b21kzyxc","slide":2,"text":"과거에는 어떻게\n반응했는가?","textPreview":"과거에는 어떻게 | 반응했는가?","textChars":15,"textLines":2,"bbox":[932,317,256,66]}
+{"kind":"shape","id":"sh/a1s3qdgr","slide":2,"bbox":[922,425,276,104]}
+{"kind":"textbox","id":"sh/x43218fi","slide":2,"text":"유사 Event와\nT+1·5·20 결과 비교","textPreview":"유사 Event와 | T+1·5·20 결과 비교","textChars":24,"textLines":2,"bbox":[942,425,236,104]}
+{"kind":"textbox","id":"sh/c3als3ex","slide":2,"text":"사용자가 직접 연결하던 정보를 하나의 Event 단위로","textPreview":"사용자가 직접 연결하던 정보를 하나의 Event 단위로","textChars":30,"textLines":1,"bbox":[260,585,760,34]}
+{"kind":"textbox","id":"sh/ne1kvyx0","slide":2,"text":"발견부터 비교까지 끊김 없이 연결합니다.","textPreview":"발견부터 비교까지 끊김 없이 연결합니다.","textChars":22,"textLines":1,"bbox":[260,618,760,34]}
+{"kind":"shape","id":"sh/2ds3mtgv","slide":2,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/p0j2x8f6","slide":2,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/qtkb8z","slide":2,"text":"앞서 저희는 테마와 상승 소재, 실제 시장 반응을 하나의 Event로 연결하는 해결책을 제시했습니다. DAY-JA-VIEW에서는 이를 현재 강해지는 테마를 탐지하고, 상승 소재를 확인한 뒤, 비슷한 과거 Event와 당시의 실제 시장 반응까지 이어서 볼 수 있는 서비스로 구현했습니다. 즉, 사용자가 직접 흩어진 정보를 연결하던 과정을 ‘오늘의 움직임 발견, 원인 확인, 과거와 비교’라는 하나의 분석 흐름으로 만들었습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/wxb95m","slide":3,"title":"DEMO","textShapes":12}
+{"kind":"shape","id":"sh/e9kvy18n","slide":3,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/1cbu9gry","slide":3,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/0b2d0bqd","slide":3,"text":"DEMO","textPreview":"DEMO","textChars":4,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/netwbq94","slide":3,"text":"서비스 시연","textPreview":"서비스 시연","textChars":6,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/mdkv2l8j","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"shape","id":"sh/90vedgra","slide":3,"bbox":[68,150,1144,456]}
+{"kind":"shape","id":"sh/oz2d4bqp","slide":3,"bbox":[580,268,120,120]}
+{"kind":"shape","id":"sh/3i9czm90","slide":3,"bbox":[625,294,49,68]}
+{"kind":"textbox","id":"sh/ih0vqh8f","slide":3,"text":"오늘의 테마를 발견하고 · 소재를 이해하고 · 과거 반응을 비교하는 흐름","textPreview":"오늘의 테마를 발견하고 · 소재를 이해하고 · 과거 반응을 비교하는 흐름","textChars":40,"textLines":1,"bbox":[168,427,944,36]}
+{"kind":"shape","id":"sh/4vuxkjux","slide":3,"bbox":[248,512,44,44]}
+{"kind":"textbox","id":"sh/5w3etovi","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[248,512,44,44]}
+{"kind":"textbox","id":"sh/itcvitcr","slide":3,"text":"실시간 테마","textPreview":"실시간 테마","textChars":6,"textLines":1,"bbox":[308,516,180,36]}
+{"kind":"shape","id":"sh/3ulwredc","slide":3,"bbox":[618,512,44,44]}
+{"kind":"textbox","id":"sh/szexo3ut","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[618,512,44,44]}
+{"kind":"textbox","id":"sh/d0nex8ve","slide":3,"text":"상승 소재","textPreview":"상승 소재","textChars":5,"textLines":1,"bbox":[678,516,180,36]}
+{"kind":"shape","id":"sh/qxwfmtc3","slide":3,"bbox":[988,512,44,44]}
+{"kind":"textbox","id":"sh/ry5wvyd8","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[988,512,44,44]}
+{"kind":"textbox","id":"sh/83adczup","slide":3,"text":"데자뷰 분석","textPreview":"데자뷰 분석","textChars":6,"textLines":1,"bbox":[1048,516,180,36]}
+{"kind":"textbox","id":"sh/t4jel4va","slide":3,"text":"영상 재생 전: 세 장면만 안내 · 영상 재생 중: 설명 없이 화면에 집중","textPreview":"영상 재생 전: 세 장면만 안내 · 영상 재생 중: 설명 없이 화면에 집중","textChars":41,"textLines":1,"bbox":[68,626,1144,30]}
+{"kind":"shape","id":"sh/9kbu90ny","slide":3,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/oz2tgv6d","slide":3,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/wxb95m","slide":3,"text":"이제 DAY-JA-VIEW가 실제로 어떻게 동작하는지 영상으로 보시겠습니다. 오늘 움직이는 테마를 발견하고, 상승 소재를 확인한 뒤, 비슷했던 과거 Event와 당시 시장 반응을 비교하는 순서입니다.\n\n[영상 재생 — 재생 중에는 말하지 않음]\n\n방금 보신 것처럼, 테마 탐색과 소재 확인, 과거 비교가 하나의 흐름 안에서 이어집니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/695lc8","slide":4,"title":"FEATURE 01 · DISCOVER","textShapes":20}
+{"kind":"shape","id":"sh/bi5kny5o","slide":4,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/cjylg3m9","slide":4,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/d472p8nu","slide":4,"text":"FEATURE 01 · DISCOVER","textPreview":"FEATURE 01 · DISCOVER","textChars":21,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/2dw3at47","slide":4,"text":"테마를 발견한 화면에서 상승 소재까지","textPreview":"테마를 발견한 화면에서 상승 소재까지","textChars":20,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/3e5kjy5s","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/ofelc3md","slide":4,"text":"MTS 밖으로 나가던 정보 탐색을 서비스 안에서 끝냅니다.","textPreview":"MTS 밖으로 나가던 정보 탐색을 서비스 안에서 끝냅니다.","textChars":32,"textLines":1,"bbox":[92,128,920,34]}
+{"kind":"shape","id":"sh/pgn2l8ni","slide":4,"bbox":[78,205,470,342]}
+{"kind":"textbox","id":"sh/m9g3md4b","slide":4,"text":"기존 탐색","textPreview":"기존 탐색","textChars":5,"textLines":1,"bbox":[110,226,400,38]}
+{"kind":"shape","id":"sh/na94vi5w","slide":4,"bbox":[130,302,124,58]}
+{"kind":"textbox","id":"sh/72xgvu1k","slide":4,"text":"MTS","textPreview":"MTS","textChars":3,"textLines":1,"bbox":[130,302,124,58]}
+{"kind":"shape","id":"sh/6hofmp0z","slide":4,"bbox":[260,317,40,28]}
+{"kind":"shape","id":"sh/t4fyxkjq","slide":4,"bbox":[270,398,124,58]}
+{"kind":"textbox","id":"sh/836xozi5","slide":4,"text":"포털 뉴스","textPreview":"포털 뉴스","textChars":5,"textLines":1,"bbox":[270,398,124,58]}
+{"kind":"shape","id":"sh/v6hgzu1g","slide":4,"bbox":[400,413,40,28]}
+{"kind":"shape","id":"sh/u58fqp0v","slide":4,"bbox":[410,302,124,58]}
+{"kind":"textbox","id":"sh/h8zy14jm","slide":4,"text":"텔레그램","textPreview":"텔레그램","textChars":4,"textLines":1,"bbox":[410,302,124,58]}
+{"kind":"shape","id":"sh/g7qxszi1","slide":4,"bbox":[200,452,220,58]}
+{"kind":"textbox","id":"sh/3ahgne1s","slide":4,"text":"종목 커뮤니티","textPreview":"종목 커뮤니티","textChars":7,"textLines":1,"bbox":[200,452,220,58]}
+{"kind":"textbox","id":"sh/i98fu907","slide":4,"text":"화면 이동 · 맥락 단절 · 시간 소모","textPreview":"화면 이동 · 맥락 단절 · 시간 소모","textChars":21,"textLines":1,"bbox":[110,516,400,24]}
+{"kind":"shape","id":"sh/e5cjmdkf","slide":4,"bbox":[570,342,70,48]}
+{"kind":"shape","id":"sh/f6l0vil0","slide":4,"bbox":[670,205,532,342]}
+{"kind":"textbox","id":"sh/07u1on2l","slide":4,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[704,226,460,38]}
+{"kind":"shape","id":"sh/1s3ix83q","slide":4,"bbox":[716,310,20,20]}
+{"kind":"textbox","id":"sh/q1sjitk3","slide":4,"text":"강해지는 테마","textPreview":"강해지는 테마","textChars":7,"textLines":1,"bbox":[752,296,220,48]}
+{"kind":"shape","id":"sh/r210rylo","slide":4,"bbox":[1012,300,132,42]}
+{"kind":"textbox","id":"sh/s3a1k329","slide":4,"text":"실시간 탐지","textPreview":"실시간 탐지","textChars":6,"textLines":1,"bbox":[1022,300,112,42]}
+{"kind":"shape","id":"sh/d4jit83u","slide":4,"bbox":[716,388,20,20]}
+{"kind":"textbox","id":"sh/axwjuxkn","slide":4,"text":"상승 뉴스·소재","textPreview":"상승 뉴스·소재","textChars":8,"textLines":1,"bbox":[752,374,220,48]}
+{"kind":"shape","id":"sh/by503218","slide":4,"bbox":[1012,378,132,42]}
+{"kind":"textbox","id":"sh/ls7mtwna","slide":4,"text":"원인 연결","textPreview":"원인 연결","textChars":5,"textLines":1,"bbox":[1022,378,112,42]}
+{"kind":"shape","id":"sh/krylkrmp","slide":4,"bbox":[716,466,20,20]}
+{"kind":"textbox","id":"sh/zqp4rm54","slide":4,"text":"주도주·확산","textPreview":"주도주·확산","textChars":6,"textLines":1,"bbox":[752,452,220,48]}
+{"kind":"shape","id":"sh/ypg3ih4j","slide":4,"bbox":[1012,456,132,42]}
+{"kind":"textbox","id":"sh/xo7mpcny","slide":4,"text":"반응 확인","textPreview":"반응 확인","textChars":5,"textLines":1,"bbox":[1022,456,112,42]}
+{"kind":"shape","id":"sh/cnelg7mt","slide":4,"bbox":[704,489,460,0]}
+{"kind":"textbox","id":"sh/bm5knm58","slide":4,"text":"소재 찾는 시간은 줄이고, 판단 시간은 늘립니다.","textPreview":"소재 찾는 시간은 줄이고, 판단 시간은 늘립니다.","textChars":27,"textLines":1,"bbox":[704,497,460,36]}
+{"kind":"shape","id":"sh/a1w3eh4n","slide":4,"bbox":[258,585,764,54]}
+{"kind":"textbox","id":"sh/hkrm1g3i","slide":4,"text":"무엇이 움직이는지부터 왜 움직이는지까지, 한 화면에서","textPreview":"무엇이 움직이는지부터 왜 움직이는지까지, 한 화면에서","textChars":29,"textLines":1,"bbox":[278,585,724,54]}
+{"kind":"shape","id":"sh/gjilsbmx","slide":4,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/o36tsbmd","slide":4,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/695lc8","slide":4,"text":"첫 번째는 실시간 테마 탐지와 소재 확인입니다. MTS에서도 현재 강한 테마와 상승 종목은 확인할 수 있습니다. 하지만 정작 왜 올랐는지를 파악하려면 MTS를 나가 포털 뉴스와 텔레그램, 종목 커뮤니티를 다시 찾아봐야 합니다. DAY-JA-VIEW는 강해지는 테마를 탐지하는 순간 관련 뉴스와 상승 소재, 주도주와 확산 정도를 같은 화면에 연결합니다. 사용자는 다른 정보 채널을 돌아다닐 필요 없이 무엇이 움직이는지부터 왜 움직이는지까지 바로 확인할 수 있습니다. 소재를 찾는 시간을 줄이고 매매 판단에 더 많은 시간을 쓸 수 있습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/yuyyam","slide":5,"title":"FEATURE 02 · STUDY","textShapes":31}
+{"kind":"shape","id":"sh/knqxwn2h","slide":5,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/jmhwnilw","slide":5,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/il8vudkb","slide":5,"text":"FEATURE 02 · STUDY","textPreview":"FEATURE 02 · STUDY","textChars":18,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/xkzels3q","slide":5,"text":"과거 반응이 오늘 소재의 ‘급’을 보여줍니다","textPreview":"과거 반응이 오늘 소재의 ‘급’을 보여줍니다","textChars":24,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/wzqdsn25","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/vyhwjil0","slide":5,"text":"비슷한 말이 아니라, 비슷한 사건 구조와 실제 가격 결과를 비교합니다.","textPreview":"비슷한 말이 아니라, 비슷한 사건 구조와 실제 가격 결과를 비교합니다.","textChars":39,"textLines":1,"bbox":[92,128,1010,34]}
+{"kind":"shape","id":"sh/ax8vqdkf","slide":5,"bbox":[78,210,248,280]}
+{"kind":"textbox","id":"sh/hg3exc3a","slide":5,"text":"TODAY EVENT","textPreview":"TODAY EVENT","textChars":11,"textLines":1,"bbox":[104,232,196,28]}
+{"kind":"textbox","id":"sh/gvax472p","slide":5,"text":"정부\n로봇산업 지원 정책","textPreview":"정부 | 로봇산업 지원 정책","textChars":13,"textLines":2,"bbox":[104,292,196,80]}
+{"kind":"shape","id":"sh/mtwrehwj","slide":5,"bbox":[118,396,168,0]}
+{"kind":"textbox","id":"sh/nups7mx4","slide":5,"text":"정책 · 정부\n기대 단계","textPreview":"정책 · 정부 | 기대 단계","textChars":13,"textLines":2,"bbox":[104,414,196,52]}
+{"kind":"shape","id":"sh/8vy9grep","slide":5,"bbox":[344,318,60,46]}
+{"kind":"textbox","id":"sh/9w7a9wfa","slide":5,"text":"구조 비교","textPreview":"구조 비교","textChars":5,"textLines":1,"bbox":[326,372,96,24]}
+{"kind":"shape","id":"sh/ypwrahwn","slide":5,"bbox":[430,194,430,314]}
+{"kind":"textbox","id":"sh/zq5s3mx8","slide":5,"text":"SIMILAR PAST EVENTS","textPreview":"SIMILAR PAST EVENTS","textChars":19,"textLines":1,"bbox":[462,216,366,32]}
+{"kind":"shape","id":"sh/0re9cret","slide":5,"bbox":[458,266,374,58]}
+{"kind":"textbox","id":"sh/lsna5wfe","slide":5,"text":"정책 지원 기대","textPreview":"정책 지원 기대","textChars":8,"textLines":1,"bbox":[476,266,144,58]}
+{"kind":"textbox","id":"sh/il0bm1wr","slide":5,"text":"유사도 0.91","textPreview":"유사도 0.91","textChars":8,"textLines":1,"bbox":[616,266,96,58]}
+{"kind":"textbox","id":"sh/jm9sf6dc","slide":5,"text":"+7.4%","textPreview":"+7.4%","textChars":5,"textLines":1,"bbox":[700,266,40,58]}
+{"kind":"textbox","id":"sh/f61o7ydo","slide":5,"text":"+12.8%","textPreview":"+12.8%","textChars":6,"textLines":1,"bbox":[744,266,40,58]}
+{"kind":"textbox","id":"sh/u5s7etcj","slide":5,"text":"+8.6%","textPreview":"+8.6%","textChars":5,"textLines":1,"bbox":[788,266,40,58]}
+{"kind":"shape","id":"sh/h8j698vu","slide":5,"bbox":[458,338,374,58]}
+{"kind":"textbox","id":"sh/g7ap03u9","slide":5,"text":"산업 육성 발표","textPreview":"산업 육성 발표","textChars":8,"textLines":1,"bbox":[476,338,144,58]}
+{"kind":"textbox","id":"sh/3u18bid0","slide":5,"text":"유사도 0.87","textPreview":"유사도 0.87","textChars":8,"textLines":1,"bbox":[616,338,96,58]}
+{"kind":"textbox","id":"sh/29s72dcf","slide":5,"text":"+4.1%","textPreview":"+4.1%","textChars":5,"textLines":1,"bbox":[700,338,40,58]}
+{"kind":"textbox","id":"sh/pw3qdsv6","slide":5,"text":"+6.2%","textPreview":"+6.2%","textChars":5,"textLines":1,"bbox":[744,338,40,58]}
+{"kind":"textbox","id":"sh/4vup4nul","slide":5,"text":"+1.9%","textPreview":"+1.9%","textChars":5,"textLines":1,"bbox":[788,338,40,58]}
+{"kind":"shape","id":"sh/ryl8fidw","slide":5,"bbox":[458,410,374,58]}
+{"kind":"textbox","id":"sh/qxc76dcb","slide":5,"text":"예산 확대 확정","textPreview":"예산 확대 확정","textChars":8,"textLines":1,"bbox":[476,410,144,58]}
+{"kind":"textbox","id":"sh/83epwnap","slide":5,"text":"유사도 0.82","textPreview":"유사도 0.82","textChars":8,"textLines":1,"bbox":[616,410,96,58]}
+{"kind":"textbox","id":"sh/94n65sra","slide":5,"text":"+6.8%","textPreview":"+6.8%","textChars":5,"textLines":1,"bbox":[700,410,40,58]}
+{"kind":"textbox","id":"sh/m1cnuxsj","slide":5,"text":"+3.7%","textPreview":"+3.7%","textChars":5,"textLines":1,"bbox":[744,410,40,58]}
+{"kind":"textbox","id":"sh/n25o3294","slide":5,"text":"−2.1%","textPreview":"−2.1%","textChars":5,"textLines":1,"bbox":[788,410,40,58]}
+{"kind":"textbox","id":"sh/0zu5snad","slide":5,"text":"T+1  T+5  T+20","textPreview":"T+1  T+5  T+20","textChars":14,"textLines":1,"bbox":[704,447,120,28]}
+{"kind":"shape","id":"sh/10361sry","slide":5,"bbox":[878,318,60,46]}
+{"kind":"shape","id":"sh/excnqdsn","slide":5,"bbox":[966,210,236,320]}
+{"kind":"textbox","id":"sh/zylozi98","slide":5,"text":"투자자가 얻는 기준","textPreview":"투자자가 얻는 기준","textChars":10,"textLines":1,"bbox":[990,232,188,34]}
+{"kind":"shape","id":"sh/cbu5o3ah","slide":5,"bbox":[991,299,10,10]}
+{"kind":"textbox","id":"sh/dw36x8r2","slide":5,"text":"하루성 소재인가\n며칠 이어졌는가","textPreview":"하루성 소재인가 | 며칠 이어졌는가","textChars":17,"textLines":2,"bbox":[1014,292,174,62]}
+{"kind":"shape","id":"sh/hgzm547u","slide":5,"bbox":[991,377,10,10]}
+{"kind":"textbox","id":"sh/gfqlwzq9","slide":5,"text":"한 종목인가\n테마 전체인가","textPreview":"한 종목인가 | 테마 전체인가","textChars":14,"textLines":2,"bbox":[1014,370,174,62]}
+{"kind":"shape","id":"sh/fehk3epo","slide":5,"bbox":[991,455,10,10]}
+{"kind":"textbox","id":"sh/ud83u983","slide":5,"text":"누가 실제\n주도주였는가","textPreview":"누가 실제 | 주도주였는가","textChars":12,"textLines":2,"bbox":[1014,448,174,62]}
+{"kind":"shape","id":"sh/p4jm9o7q","slide":5,"bbox":[158,560,964,72]}
+{"kind":"textbox","id":"sh/43al0jq5","slide":5,"text":"오늘 소재의 영향력 · 지속성 · 확산 범위를 빠르게 판단","textPreview":"오늘 소재의 영향력 · 지속성 · 확산 범위를 빠르게 판단","textChars":32,"textLines":1,"bbox":[188,560,904,72]}
+{"kind":"shape","id":"sh/32h47ep0","slide":5,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/2h83y98f","slide":5,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/yuyyam","slide":5,"text":"두 번째는 핵심 기능인 데자뷰 분석입니다. 오늘과 비슷했던 과거 Event를 찾되, 같은 단어만 보지 않고 소재 유형과 사건 주체, 기대인지 공식 발표인지까지 비교합니다. 그리고 당시 주도주의 1일, 5일, 20거래일 뒤 움직임을 연결합니다. 테마주 투자자에게는 오늘 오른 이유뿐 아니라 그 소재가 시장에서 어느 정도의 급인지 판단하는 것이 중요합니다. 유사사례를 보면 과거에는 하루 만에 소멸했는지, 여러 거래일 동안 관심이 이어졌는지, 한 종목만 움직였는지 테마 전체가 반응했는지를 확인할 수 있습니다. 오늘 소재의 영향력과 지속성, 실제 주도주를 판단할 기준을 얻는 것이 두 번째 이점입니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/mce44d","slide":6,"title":"FEATURE 03 · ASK","textShapes":16}
+{"kind":"shape","id":"sh/dkz2tg3a","slide":6,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/qh83i1kj","slide":6,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/rihkr6l4","slide":6,"text":"FEATURE 03 · ASK","textPreview":"FEATURE 03 · ASK","textChars":16,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/07alov2l","slide":6,"text":"질문 한 문장으로 과거 리서치를 끝냅니다","textPreview":"질문 한 문장으로 과거 리서치를 끝냅니다","textChars":22,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/18jmxg36","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"shape","id":"sh/e583mlkv","slide":6,"bbox":[84,160,1112,108]}
+{"kind":"textbox","id":"sh/z61kvql0","slide":6,"text":"Q","textPreview":"Q","textChars":1,"textLines":1,"bbox":[118,178,64,58]}
+{"kind":"textbox","id":"sh/obalsv2x","slide":6,"text":"“이 정책 소재는 보통 하루 만에 끝났어,\n며칠 이어졌어?”","textPreview":"“이 정책 소재는 보통 하루 만에 끝났어, | 며칠 이어졌어?”","textChars":33,"textLines":2,"bbox":[194,174,962,72]}
+{"kind":"shape","id":"sh/9cjm103i","slide":6,"bbox":[90,322,238,166]}
+{"kind":"textbox","id":"sh/dg32dszq","slide":6,"text":"01  질문 해석","textPreview":"01  질문 해석","textChars":9,"textLines":1,"bbox":[110,342,198,36]}
+{"kind":"textbox","id":"sh/cfu14ni5","slide":6,"text":"테마\n소재\n기간","textPreview":"테마 | 소재 | 기간","textChars":8,"textLines":3,"bbox":[110,395,198,72]}
+{"kind":"shape","id":"sh/be10bih0","slide":6,"bbox":[336,382,38,32]}
+{"kind":"shape","id":"sh/qdsj2d0f","slide":6,"bbox":[382,322,238,166]}
+{"kind":"textbox","id":"sh/l432hcz2","slide":6,"text":"02  관계 탐색","textPreview":"02  관계 탐색","textChars":9,"textLines":1,"bbox":[402,342,198,36]}
+{"kind":"textbox","id":"sh/0ju187ih","slide":6,"text":"과거 Event\n주도주","textPreview":"과거 Event | 주도주","textChars":12,"textLines":2,"bbox":[402,395,198,72]}
+{"kind":"shape","id":"sh/zilkf2hw","slide":6,"bbox":[628,382,38,32]}
+{"kind":"shape","id":"sh/yhcj6x0b","slide":6,"bbox":[674,322,238,166]}
+{"kind":"textbox","id":"sh/18ji58zi","slide":6,"text":"03  가격 계산","textPreview":"03  가격 계산","textChars":9,"textLines":1,"bbox":[694,342,198,36]}
+{"kind":"textbox","id":"sh/gna1w3id","slide":6,"text":"T+1\nT+5\nT+20","textPreview":"T+1 | T+5 | T+20","textChars":12,"textLines":3,"bbox":[694,395,198,72]}
+{"kind":"shape","id":"sh/s3et87u5","slide":6,"bbox":[920,382,38,32]}
+{"kind":"shape","id":"sh/t4na1cbq","slide":6,"bbox":[966,322,238,166]}
+{"kind":"textbox","id":"sh/61wr6xcz","slide":6,"text":"04  근거 답변","textPreview":"04  근거 답변","textChars":9,"textLines":1,"bbox":[986,342,198,36]}
+{"kind":"textbox","id":"sh/r25sz2tk","slide":6,"text":"수치\n원문","textPreview":"수치 | 원문","textChars":5,"textLines":2,"bbox":[986,395,198,72]}
+{"kind":"shape","id":"sh/g7ytc7uh","slide":6,"bbox":[146,548,988,80]}
+{"kind":"textbox","id":"sh/187a5cb2","slide":6,"text":"복잡한 메뉴·검색 조건 없이","textPreview":"복잡한 메뉴·검색 조건 없이","textChars":15,"textLines":1,"bbox":[182,560,916,28]}
+{"kind":"textbox","id":"sh/e5gbahcb","slide":6,"text":"내 매매 가설을 질문하고, 데이터 근거로 빠르게 확인","textPreview":"내 매매 가설을 질문하고, 데이터 근거로 빠르게 확인","textChars":29,"textLines":1,"bbox":[182,589,916,32]}
+{"kind":"shape","id":"sh/f6ps3mtw","slide":6,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/ovytgrud","slide":6,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/mce44d","slide":6,"text":"세 번째는 자연어 질문입니다. 같은 테마를 보더라도 투자자마다 궁금한 내용은 다릅니다. 어떤 사람은 비슷한 소재가 과거에 며칠 이어졌는지, 또 어떤 사람은 당시 어떤 종목이 가장 강했는지 알고 싶을 수 있습니다. DAY-JA-VIEW에서는 복잡한 메뉴나 검색 조건 없이 ‘이 정책 소재는 보통 하루 만에 끝났어, 며칠 이어졌어?’처럼 평소 말하듯 질문하면 됩니다. 시스템이 관련 과거 사건과 주도주, 가격 움직임을 찾아 근거와 함께 답합니다. 직접 뉴스와 차트를 하나씩 비교하던 과정을 질문 한 문장으로 줄이고, 자신이 가진 매매 가설을 빠르게 확인할 수 있습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/cd01rk","slide":7,"title":"ARCHITECTURE","textShapes":18}
+{"kind":"shape","id":"sh/vi9kva5c","slide":7,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/gjilof6x","slide":7,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/hkr2x0ni","slide":7,"text":"ARCHITECTURE","textPreview":"ARCHITECTURE","textChars":12,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/6tg3ilov","slide":7,"text":"실시간 탐지와 과거 Event 분석을 한 흐름으로","textPreview":"실시간 탐지와 과거 Event 분석을 한 흐름으로","textChars":27,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/7upkrq5g","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/8vylkv6l","slide":7,"text":"수집 · 분석 · 저장 · 전달의 세 계층으로 구성했습니다.","textPreview":"수집 · 분석 · 저장 · 전달의 세 계층으로 구성했습니다.","textChars":33,"textLines":1,"bbox":[92,128,980,34]}
+{"kind":"shape","id":"sh/tg72t0n6","slide":7,"bbox":[66,246,166,178]}
+{"kind":"textbox","id":"sh/qpk3upoz","slide":7,"text":"DATA SOURCE","textPreview":"DATA SOURCE","textChars":11,"textLines":1,"bbox":[84,264,130,30]}
+{"kind":"textbox","id":"sh/rqtk3u5k","slide":7,"text":"키움 실시간 시세\n뉴스\n인포스탁 과거 데이터","textPreview":"키움 실시간 시세 | 뉴스 | 인포스탁 과거 데이터","textChars":24,"textLines":3,"bbox":[84,312,130,88]}
+{"kind":"shape","id":"sh/n6d4b254","slide":7,"bbox":[238,319,26,30]}
+{"kind":"shape","id":"sh/m543ixoz","slide":7,"bbox":[268,330,166,178]}
+{"kind":"textbox","id":"sh/98vmdcna","slide":7,"text":"INGEST","textPreview":"INGEST","textChars":6,"textLines":1,"bbox":[286,348,130,30]}
+{"kind":"textbox","id":"sh/87mlk76p","slide":7,"text":"수집기\n정규화\n실시간 처리","textPreview":"수집기 | 정규화 | 실시간 처리","textChars":14,"textLines":3,"bbox":[286,396,130,88]}
+{"kind":"shape","id":"sh/vad4fm5g","slide":7,"bbox":[440,403,26,30]}
+{"kind":"shape","id":"sh/a943mhov","slide":7,"bbox":[470,246,166,178]}
+{"kind":"textbox","id":"sh/hwfmhcnm","slide":7,"text":"ANALYSIS","textPreview":"ANALYSIS","textChars":8,"textLines":1,"bbox":[488,264,130,30]}
+{"kind":"textbox","id":"sh/wb6lo761","slide":7,"text":"Event 구조화\n온톨로지\n유사사례 분석","textPreview":"Event 구조화 | 온톨로지 | 유사사례 분석","textChars":22,"textLines":3,"bbox":[488,312,130,88]}
+{"kind":"shape","id":"sh/jyx4jm5c","slide":7,"bbox":[642,319,26,30]}
+{"kind":"shape","id":"sh/ixo3qhor","slide":7,"bbox":[672,330,166,178]}
+{"kind":"textbox","id":"sh/et87il8z","slide":7,"text":"STORAGE","textPreview":"STORAGE","textChars":7,"textLines":1,"bbox":[690,348,130,30]}
+{"kind":"textbox","id":"sh/fu1obqpk","slide":7,"text":"PostgreSQL\nRedis\n가격 데이터","textPreview":"PostgreSQL | Redis | 가격 데이터","textChars":23,"textLines":3,"bbox":[690,396,130,88]}
+{"kind":"shape","id":"sh/gvapkvq5","slide":7,"bbox":[844,403,26,30]}
+{"kind":"shape","id":"sh/1wj6d07q","slide":7,"bbox":[874,246,166,178]}
+{"kind":"textbox","id":"sh/658nel83","slide":7,"text":"DELIVERY","textPreview":"DELIVERY","textChars":8,"textLines":1,"bbox":[892,264,130,30]}
+{"kind":"textbox","id":"sh/rqho76po","slide":7,"text":"REST\nWebSocket\nQuery API","textPreview":"REST | WebSocket | Query API","textChars":24,"textLines":3,"bbox":[892,312,130,88]}
+{"kind":"shape","id":"sh/srqpgbq9","slide":7,"bbox":[1046,319,26,30]}
+{"kind":"shape","id":"sh/tsz69g7u","slide":7,"bbox":[1076,330,166,178]}
+{"kind":"textbox","id":"sh/q1c7q587","slide":7,"text":"WEB","textPreview":"WEB","textChars":3,"textLines":1,"bbox":[1094,348,130,30]}
+{"kind":"textbox","id":"sh/bmlojaps","slide":7,"text":"탐지\n데자뷰\n자연어 질문","textPreview":"탐지 | 데자뷰 | 자연어 질문","textChars":13,"textLines":3,"bbox":[1094,396,130,88]}
+{"kind":"shape","id":"sh/lgna94ra","slide":7,"bbox":[150,590,980,0]}
+{"kind":"shape","id":"sh/0ve9gzap","slide":7,"bbox":[371,581,18,18]}
+{"kind":"shape","id":"sh/zu5s7u94","slide":7,"bbox":[631,581,18,18]}
+{"kind":"shape","id":"sh/ytwrepsj","slide":7,"bbox":[891,581,18,18]}
+{"kind":"textbox","id":"sh/ds3q54ry","slide":7,"text":"현재 시장의 변화와 20년치 과거 사건을 동일한 Event 구조로 연결","textPreview":"현재 시장의 변화와 20년치 과거 사건을 동일한 Event 구조로 연결","textChars":39,"textLines":1,"bbox":[222,612,840,32]}
+{"kind":"shape","id":"sh/cru9czad","slide":7,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/bql83u9s","slide":7,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/cd01rk","slide":7,"text":"전체 아키텍처는 크게 데이터 수집, 분석, 서비스 제공의 세 계층으로 구성했습니다. 키움의 실시간 시세와 뉴스, 인포스탁의 과거 테마 데이터를 수집합니다. 실시간 처리 계층에서는 가격과 거래량 변화로 현재 강해지는 테마를 계산하고, 분석 계층에서는 상승 소재를 Event로 구조화해 과거 사례와 연결합니다. 사건과 온톨로지 데이터는 PostgreSQL에, 빠르게 바뀌는 장중 상태는 Redis에 저장했습니다. 과거 데이터와 상세 정보는 REST로, 실시간 테마 순위와 트리맵은 WebSocket으로 갱신합니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/gja8e6","slide":8,"title":"CORE TECHNOLOGY","textShapes":18}
+{"kind":"shape","id":"sh/j2dwbehk","slide":8,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/knmx4ji5","slide":8,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/5ovedozq","slide":8,"text":"CORE TECHNOLOGY","textPreview":"CORE TECHNOLOGY","textChars":15,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/6p4f6t0b","slide":8,"text":"흩어진 기록을 비교 가능한 Event 데이터로","textPreview":"흩어진 기록을 비교 가능한 Event 데이터로","textChars":25,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/7qdwfyhw","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/sr6x83i1","slide":8,"text":"서비스의 핵심은 ‘많은 데이터’가 아니라 ‘비교할 수 있는 데이터’입니다.","textPreview":"서비스의 핵심은 ‘많은 데이터’가 아니라 ‘비교할 수 있는 데이터’입니다.","textChars":41,"textLines":1,"bbox":[92,128,980,34]}
+{"kind":"textbox","id":"sh/tsfehozm","slide":8,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[74,207,66,54]}
+{"kind":"textbox","id":"sh/mtkvup0r","slide":8,"text":"COLLECT","textPreview":"COLLECT","textChars":7,"textLines":1,"bbox":[150,220,170,28]}
+{"kind":"shape","id":"sh/nutw3u1c","slide":8,"bbox":[74,286,250,230]}
+{"kind":"shape","id":"sh/r6xc3i5k","slide":8,"bbox":[174,321,50,50]}
+{"kind":"textbox","id":"sh/q5ovad4z","slide":8,"text":"20년치\n테마 기록 수집","textPreview":"20년치 | 테마 기록 수집","textChars":13,"textLines":2,"bbox":[106,390,186,80]}
+{"kind":"shape","id":"sh/d8zu5s3a","slide":8,"bbox":[332,386,34,32]}
+{"kind":"textbox","id":"sh/c7qdcnmp","slide":8,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[374,207,66,54]}
+{"kind":"textbox","id":"sh/3ixczy58","slide":8,"text":"STRUCTURE","textPreview":"STRUCTURE","textChars":9,"textLines":1,"bbox":[450,220,170,28]}
+{"kind":"shape","id":"sh/2hov6d4n","slide":8,"bbox":[374,286,250,230]}
+{"kind":"shape","id":"sh/p4fu18ne","slide":8,"bbox":[474,321,50,50]}
+{"kind":"textbox","id":"sh/4j6d83mt","slide":8,"text":"문장을\nEvent로 분해","textPreview":"문장을 | Event로 분해","textChars":13,"textLines":2,"bbox":[406,390,186,80]}
+{"kind":"shape","id":"sh/fedcvy5c","slide":8,"bbox":[632,386,34,32]}
+{"kind":"textbox","id":"sh/ud4v2t4r","slide":8,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[674,207,66,54]}
+{"kind":"textbox","id":"sh/i94vetoj","slide":8,"text":"CONNECT","textPreview":"CONNECT","textChars":7,"textLines":1,"bbox":[750,220,170,28]}
+{"kind":"shape","id":"sh/jadwnyp4","slide":8,"bbox":[674,286,250,230]}
+{"kind":"shape","id":"sh/kbmdg36p","slide":8,"bbox":[774,321,50,50]}
+{"kind":"textbox","id":"sh/5cvep87a","slide":8,"text":"개체와 관계를\n온톨로지로 연결","textPreview":"개체와 관계를 | 온톨로지로 연결","textChars":16,"textLines":2,"bbox":[706,390,186,80]}
+{"kind":"shape","id":"sh/6d4vitov","slide":8,"bbox":[932,386,34,32]}
+{"kind":"textbox","id":"sh/7edwryp0","slide":8,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[974,207,66,54]}
+{"kind":"textbox","id":"sh/sfmdk36l","slide":8,"text":"ANSWER","textPreview":"ANSWER","textChars":6,"textLines":1,"bbox":[1050,220,170,28]}
+{"kind":"shape","id":"sh/tgfet876","slide":8,"bbox":[974,286,250,230]}
+{"kind":"shape","id":"sh/uhofmdor","slide":8,"bbox":[1074,321,50,50]}
+{"kind":"textbox","id":"sh/f2xwvipc","slide":8,"text":"과거 비교와\n질문 응답에 활용","textPreview":"과거 비교와 | 질문 응답에 활용","textChars":16,"textLines":2,"bbox":[1006,390,186,80]}
+{"kind":"shape","id":"sh/pwzylcre","slide":8,"bbox":[200,568,880,62]}
+{"kind":"textbox","id":"sh/4bqhc7qt","slide":8,"text":"원문 → 의미 구조 → 관계 → 실제 시장 반응","textPreview":"원문 → 의미 구조 → 관계 → 실제 시장 반응","textChars":26,"textLines":1,"bbox":[230,568,820,62]}
+{"kind":"shape","id":"sh/3ahgj298","slide":8,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/298zax83","slide":8,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/gja8e6","slide":8,"text":"지금부터 DAY-JA-VIEW를 구현하는 데 사용한 핵심 기술을 소개해드리겠습니다. 오늘의 테마와 과거 사건을 비교하려면, 먼저 과거에 어떤 테마가 어떤 소재로 움직였고 당시 어떤 종목이 주도했는지를 기록한 데이터가 필요했습니다. 하지만 서비스의 핵심은 단순히 데이터를 많이 모으는 것이 아니라, 서로 비교할 수 있는 Event 구조로 바꾸는 것이었습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/nxzelq","slide":9,"title":"TECH 01 · DATA","textShapes":37}
+{"kind":"shape","id":"sh/ml8vut0n","slide":9,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/9oze5ojy","slide":9,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/onqdw3id","slide":9,"text":"TECH 01 · DATA","textPreview":"TECH 01 · DATA","textChars":14,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/zixwze1w","slide":9,"text":"화면으로만 보이던 테마 기록을 분석 데이터로","textPreview":"화면으로만 보이던 테마 기록을 분석 데이터로","textChars":24,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/ehovq90b","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/1kze1oj2","slide":9,"text":"인포스탁의 테마 히스토리·주도주·일일 시황을 직접 수집했습니다.","textPreview":"인포스탁의 테마 히스토리·주도주·일일 시황을 직접 수집했습니다.","textChars":35,"textLines":1,"bbox":[92,128,980,34]}
+{"kind":"shape","id":"sh/0j6dsjih","slide":9,"bbox":[76,190,550,382]}
+{"kind":"shape","id":"sh/ruxcve10","slide":9,"bbox":[106,222,490,46]}
+{"kind":"textbox","id":"sh/qtovm9kf","slide":9,"text":"THEME HISTORY / INFOSTOCK","textPreview":"THEME HISTORY / INFOSTOCK","textChars":25,"textLines":1,"bbox":[126,222,450,46]}
+{"kind":"shape","id":"sh/czmd8ru5","slide":9,"bbox":[106,286,490,40]}
+{"kind":"textbox","id":"sh/dkvu1wbq","slide":9,"text":"2026.08.17","textPreview":"2026.08.17","textChars":10,"textLines":1,"bbox":[120,286,108,40]}
+{"kind":"textbox","id":"sh/qx4v6hcz","slide":9,"text":"로봇","textPreview":"로봇","textChars":2,"textLines":1,"bbox":[236,286,86,40]}
+{"kind":"textbox","id":"sh/bydczmtk","slide":9,"text":"정부 정책 기대","textPreview":"정부 정책 기대","textChars":8,"textLines":1,"bbox":[324,286,250,40]}
+{"kind":"shape","id":"sh/ovmd4ru9","slide":9,"bbox":[106,334,490,40]}
+{"kind":"textbox","id":"sh/pwvuxcbe","slide":9,"text":"2026.08.12","textPreview":"2026.08.12","textChars":10,"textLines":1,"bbox":[120,334,108,40]}
+{"kind":"textbox","id":"sh/2tkv2hc3","slide":9,"text":"원전","textPreview":"원전","textChars":2,"textLines":1,"bbox":[236,334,86,40]}
+{"kind":"textbox","id":"sh/3udcvmto","slide":9,"text":"해외 수주","textPreview":"해외 수주","textChars":5,"textLines":1,"bbox":[324,334,250,40]}
+{"kind":"shape","id":"sh/8r6dgbud","slide":9,"bbox":[106,382,490,40]}
+{"kind":"textbox","id":"sh/9sfe9gby","slide":9,"text":"2026.08.08","textPreview":"2026.08.08","textChars":10,"textLines":1,"bbox":[120,382,108,40]}
+{"kind":"textbox","id":"sh/h8vutg32","slide":9,"text":"방산","textPreview":"방산","textChars":2,"textLines":1,"bbox":[236,382,86,40]}
+{"kind":"textbox","id":"sh/w72dkbmh","slide":9,"text":"수출 계약","textPreview":"수출 계약","textChars":5,"textLines":1,"bbox":[324,382,250,40]}
+{"kind":"shape","id":"sh/v6tcr6lw","slide":9,"bbox":[106,430,490,40]}
+{"kind":"textbox","id":"sh/u5kvi14b","slide":9,"text":"2026.08.03","textPreview":"2026.08.03","textChars":10,"textLines":1,"bbox":[120,430,108,40]}
+{"kind":"textbox","id":"sh/9kbupw3q","slide":9,"text":"반도체","textPreview":"반도체","textChars":3,"textLines":1,"bbox":[236,430,86,40]}
+{"kind":"textbox","id":"sh/8j2dgrml","slide":9,"text":"실적 전망","textPreview":"실적 전망","textChars":5,"textLines":1,"bbox":[324,430,250,40]}
+{"kind":"shape","id":"sh/7itcnml0","slide":9,"bbox":[106,478,490,40]}
+{"kind":"textbox","id":"sh/mhkve14f","slide":9,"text":"2026.07.29","textPreview":"2026.07.29","textChars":10,"textLines":1,"bbox":[120,478,108,40]}
+{"kind":"textbox","id":"sh/lgbulw3u","slide":9,"text":"바이오","textPreview":"바이오","textChars":3,"textLines":1,"bbox":[236,478,86,40]}
+{"kind":"textbox","id":"sh/kfitcrm9","slide":9,"text":"임상 결과","textPreview":"임상 결과","textChars":5,"textLines":1,"bbox":[324,478,250,40]}
+{"kind":"textbox","id":"sh/q9wj6tgv","slide":9,"text":"※ 실제 화면 삽입 시 이 프레임을 이미지로 교체","textPreview":"※ 실제 화면 삽입 시 이 프레임을 이미지로 교체","textChars":27,"textLines":1,"bbox":[106,536,490,24]}
+{"kind":"shape","id":"sh/ra50zyxg","slide":9,"bbox":[650,348,74,54]}
+{"kind":"textbox","id":"sh/cby183e1","slide":9,"text":"COLLECT","textPreview":"COLLECT","textChars":7,"textLines":1,"bbox":[650,408,74,28]}
+{"kind":"shape","id":"sh/dc7i18fm","slide":9,"bbox":[748,190,454,382]}
+{"kind":"textbox","id":"sh/25wj2tgz","slide":9,"text":"직접 개발한 수집기","textPreview":"직접 개발한 수집기","textChars":10,"textLines":1,"bbox":[782,220,386,38]}
+{"kind":"shape","id":"sh/3650vyx4","slide":9,"bbox":[778,288,36,36]}
+{"kind":"textbox","id":"sh/47e14jyp","slide":9,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[778,288,36,36]}
+{"kind":"textbox","id":"sh/p8nixofa","slide":9,"text":"원문 수집","textPreview":"원문 수집","textChars":5,"textLines":1,"bbox":[828,286,126,40]}
+{"kind":"textbox","id":"sh/uhcjy9gn","slide":9,"text":"화면의 기록을 데이터로","textPreview":"화면의 기록을 데이터로","textChars":12,"textLines":1,"bbox":[956,286,212,40]}
+{"kind":"shape","id":"sh/fil0rex8","slide":9,"bbox":[778,350,36,36]}
+{"kind":"textbox","id":"sh/7u5w3a14","slide":9,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[778,350,36,36]}
+{"kind":"textbox","id":"sh/6twfap0j","slide":9,"text":"출처 보존","textPreview":"출처 보존","textChars":5,"textLines":1,"bbox":[828,348,126,40]}
+{"kind":"textbox","id":"sh/twny5kju","slide":9,"text":"원문·수집 시각·변경 이력","textPreview":"원문·수집 시각·변경 이력","textChars":14,"textLines":1,"bbox":[956,348,212,40]}
+{"kind":"shape","id":"sh/8vexcfip","slide":9,"bbox":[778,412,36,36]}
+{"kind":"textbox","id":"sh/j65wza1s","slide":9,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[778,412,36,36]}
+{"kind":"textbox","id":"sh/y5wf6507","slide":9,"text":"정규화","textPreview":"정규화","textChars":3,"textLines":1,"bbox":[828,410,126,40]}
+{"kind":"textbox","id":"sh/lsne1kjy","slide":9,"text":"테마·날짜·종목·상승 이유 분리","textPreview":"테마·날짜·종목·상승 이유 분리","textChars":17,"textLines":1,"bbox":[956,410,212,40]}
+{"kind":"shape","id":"sh/krex8fid","slide":9,"bbox":[778,474,36,36]}
+{"kind":"textbox","id":"sh/b2lwvq1w","slide":9,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[778,474,36,36]}
+{"kind":"textbox","id":"sh/a1cf250b","slide":9,"text":"연결","textPreview":"연결","textChars":2,"textLines":1,"bbox":[828,472,126,40]}
+{"kind":"textbox","id":"sh/07atcry9","slide":9,"text":"주도주와 테마 반응 연결","textPreview":"주도주와 테마 반응 연결","textChars":13,"textLines":1,"bbox":[956,472,212,40]}
+{"kind":"textbox","id":"sh/18ju5wze","slide":9,"text":"수집한 문장을 그대로 쓰지 않고, 분석 가능한 구조로 다시 설계했습니다.","textPreview":"수집한 문장을 그대로 쓰지 않고, 분석 가능한 구조로 다시 설계했습니다.","textChars":40,"textLines":1,"bbox":[210,610,860,32]}
+{"kind":"shape","id":"sh/e58ba1g3","slide":9,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/z61c36ho","slide":9,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/nxzelq","slide":9,"text":"여러 데이터 소스를 조사한 결과, 인포스탁에서 국내 테마 정보를 오랜 기간 정리해왔다는 점을 발견했습니다. 테마별 과거 히스토리, 당시 주도 종목, 매일 시장에서 부각된 테마와 상승 이유가 기록돼 있습니다. 하지만 바로 분석할 수 있는 데이터베이스 형태로 제공되는 자료는 아니었습니다. 따라서 수집기를 직접 개발해 필요한 자료를 수집하고, 원문과 수집 시각, 변경 이력을 함께 저장했습니다. 이후 테마, 날짜, 종목, 주도주, 상승 이유를 각각 분리하고 연결해 정규화했습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/8x8rat","slide":10,"title":"TECH 01 · DATA","textShapes":18}
+{"kind":"shape","id":"sh/jmpoze5k","slide":10,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/kny5sjm5","slide":10,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/5o761onq","slide":10,"text":"TECH 01 · DATA","textPreview":"TECH 01 · DATA","textChars":14,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/axwnmp43","slide":10,"text":"약 20년치 테마 시장의 기억을 확보했습니다","textPreview":"약 20년치 테마 시장의 기억을 확보했습니다","textChars":24,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/vy54vu5o","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/wzy5ozm9","slide":10,"text":"오늘의 소재를 과거와 비교할 수 있는 장기 기준선을 만들었습니다.","textPreview":"오늘의 소재를 과거와 비교할 수 있는 장기 기준선을 만들었습니다.","textChars":36,"textLines":1,"bbox":[92,128,980,34]}
+{"kind":"shape","id":"sh/x07mx4nu","slide":10,"bbox":[78,205,704,344]}
+{"kind":"textbox","id":"sh/mtwnip47","slide":10,"text":"THEME HISTORY","textPreview":"THEME HISTORY","textChars":13,"textLines":1,"bbox":[118,228,250,30]}
+{"kind":"textbox","id":"sh/nu54ru5s","slide":10,"text":"39,696","textPreview":"39,696","textChars":6,"textLines":1,"bbox":[112,280,610,116]}
+{"kind":"textbox","id":"sh/ril072h8","slide":10,"text":"건","textPreview":"건","textChars":1,"textLines":1,"bbox":[558,334,142,46]}
+{"kind":"shape","id":"sh/qhczyx0n","slide":10,"bbox":[118,420,622,0]}
+{"kind":"textbox","id":"sh/dk3i9cze","slide":10,"text":"2005 ───────────── 2026","textPreview":"2005 ───────────── 2026","textChars":23,"textLines":1,"bbox":[118,446,622,54]}
+{"kind":"textbox","id":"sh/sjuh07it","slide":10,"text":"테마별 과거 원인과 주도 종목","textPreview":"테마별 과거 원인과 주도 종목","textChars":16,"textLines":1,"bbox":[118,500,622,28]}
+{"kind":"shape","id":"sh/fml0bmhk","slide":10,"bbox":[820,205,382,162]}
+{"kind":"textbox","id":"sh/elcj2h0z","slide":10,"text":"DAILY THEME MARKET","textPreview":"DAILY THEME MARKET","textChars":18,"textLines":1,"bbox":[850,226,322,28]}
+{"kind":"textbox","id":"sh/18nidwza","slide":10,"text":"4,655","textPreview":"4,655","textChars":5,"textLines":1,"bbox":[850,268,220,64]}
+{"kind":"textbox","id":"sh/0nu14ri5","slide":10,"text":"건","textPreview":"건","textChars":1,"textLines":1,"bbox":[1062,283,80,36]}
+{"kind":"textbox","id":"sh/vq10zih0","slide":10,"text":"2007 ─ 2026","textPreview":"2007 ─ 2026","textChars":11,"textLines":1,"bbox":[850,330,322,24]}
+{"kind":"shape","id":"sh/upszqd0f","slide":10,"bbox":[820,387,382,162]}
+{"kind":"textbox","id":"sh/yh0bupof","slide":10,"text":"LONGITUDINAL CONTEXT","textPreview":"LONGITUDINAL CONTEXT","textChars":20,"textLines":1,"bbox":[850,408,322,30]}
+{"kind":"textbox","id":"sh/ji9cnu50","slide":10,"text":"약 20년","textPreview":"약 20년","textChars":5,"textLines":1,"bbox":[850,452,322,54]}
+{"kind":"textbox","id":"sh/kjitwz6l","slide":10,"text":"같은 소재의 반복과 반응을 비교","textPreview":"같은 소재의 반복과 반응을 비교","textChars":17,"textLines":1,"bbox":[850,510,322,24]}
+{"kind":"textbox","id":"sh/lkrup4n6","slide":10,"text":"하지만 데이터를 많이 모았다고 바로 ‘데자뷰 분석’이 되는 것은 아닙니다.","textPreview":"하지만 데이터를 많이 모았다고 바로 ‘데자뷰 분석’이 되는 것은 아닙니다.","textChars":41,"textLines":1,"bbox":[160,597,960,38]}
+{"kind":"shape","id":"sh/at0bq5oj","slide":10,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/be9cja5o","slide":10,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/8x8rat","slide":10,"text":"그 결과, 2005년부터 2026년까지 약 20년치의 테마 히스토리 3만 9,696건을 확보했습니다. 매일 시장에서 부각된 테마와 종목을 정리한 일일 테마 시황도 2007년부터 4,655건을 확보했습니다. 하지만 이렇게 데이터를 많이 모았다고 바로 데자뷰 분석이 가능한 것은 아닙니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/oqku94","slide":11,"title":"TECH 02 · PROBLEM","textShapes":19}
+{"kind":"shape","id":"sh/1one5o7u","slide":11,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/elcfat83","slide":11,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/zmlw3ypo","slide":11,"text":"TECH 02 · PROBLEM","textPreview":"TECH 02 · PROBLEM","textChars":17,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/orexg36l","slide":11,"text":"검색은 가능해도, 사건 비교와 집계는 틀릴 수 있습니다","textPreview":"검색은 가능해도, 사건 비교와 집계는 틀릴 수 있습니다","textChars":30,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/9sny987q","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"shape","id":"sh/mpwfetof","slide":11,"bbox":[78,154,1124,118]}
+{"kind":"textbox","id":"sh/nq5g7yp0","slide":11,"text":"“정부의 로봇 산업 지원 기대감에 로봇 테마 상승,\nA사·B사 강세”","textPreview":"“정부의 로봇 산업 지원 기대감에 로봇 테마 상승, | A사·B사 강세”","textChars":38,"textLines":2,"bbox":[108,170,1064,86]}
+{"kind":"shape","id":"sh/4vux4zq1","slide":11,"bbox":[202,272,0,45]}
+{"kind":"shape","id":"sh/pw3ex47m","slide":11,"bbox":[194,308,16,16]}
+{"kind":"shape","id":"sh/hknmt0va","slide":11,"bbox":[78,340,248,156]}
+{"kind":"textbox","id":"sh/gje50vep","slide":11,"text":"정부","textPreview":"정부","textChars":2,"textLines":1,"bbox":[98,358,208,38]}
+{"kind":"textbox","id":"sh/vi54rqd4","slide":11,"text":"Actor","textPreview":"Actor","textChars":5,"textLines":1,"bbox":[98,402,208,28]}
+{"kind":"textbox","id":"sh/uhw3ylwj","slide":11,"text":"사건 주체","textPreview":"사건 주체","textChars":5,"textLines":1,"bbox":[98,442,208,28]}
+{"kind":"shape","id":"sh/5o7mxkv6","slide":11,"bbox":[488,272,0,45]}
+{"kind":"shape","id":"sh/4ny54fel","slide":11,"bbox":[480,308,16,16]}
+{"kind":"shape","id":"sh/3mp4vad0","slide":11,"bbox":[364,340,248,156]}
+{"kind":"textbox","id":"sh/ilwn25wv","slide":11,"text":"산업 지원","textPreview":"산업 지원","textChars":5,"textLines":1,"bbox":[384,358,208,38]}
+{"kind":"textbox","id":"sh/dc7m1kvi","slide":11,"text":"Catalyst","textPreview":"Catalyst","textChars":8,"textLines":1,"bbox":[384,402,208,28]}
+{"kind":"textbox","id":"sh/cby58fux","slide":11,"text":"상승 소재","textPreview":"상승 소재","textChars":5,"textLines":1,"bbox":[384,442,208,28]}
+{"kind":"shape","id":"sh/cv6p4j2t","slide":11,"bbox":[774,272,0,45]}
+{"kind":"shape","id":"sh/xwf6xo3e","slide":11,"bbox":[766,308,16,16]}
+{"kind":"shape","id":"sh/ato72tk3","slide":11,"bbox":[650,340,248,156]}
+{"kind":"textbox","id":"sh/buxovyl8","slide":11,"text":"기대감","textPreview":"기대감","textChars":3,"textLines":1,"bbox":[670,358,208,38]}
+{"kind":"textbox","id":"sh/kjqp8325","slide":11,"text":"Stage","textPreview":"Stage","textChars":5,"textLines":1,"bbox":[670,402,208,28]}
+{"kind":"textbox","id":"sh/lkz6183q","slide":11,"text":"진행 단계","textPreview":"진행 단계","textChars":5,"textLines":1,"bbox":[670,442,208,28]}
+{"kind":"shape","id":"sh/yh876tkz","slide":11,"bbox":[1060,272,0,45]}
+{"kind":"shape","id":"sh/zihozylk","slide":11,"bbox":[1052,308,16,16]}
+{"kind":"shape","id":"sh/0nm5wz2l","slide":11,"bbox":[936,340,248,156]}
+{"kind":"textbox","id":"sh/1ov6p436","slide":11,"text":"A사 · B사","textPreview":"A사 · B사","textChars":7,"textLines":1,"bbox":[956,358,208,38]}
+{"kind":"textbox","id":"sh/jilsb25o","slide":11,"text":"Leader","textPreview":"Leader","textChars":6,"textLines":1,"bbox":[956,402,208,28]}
+{"kind":"textbox","id":"sh/ihcr2h4j","slide":11,"text":"주도 종목","textPreview":"주도 종목","textChars":5,"textLines":1,"bbox":[956,442,208,28]}
+{"kind":"shape","id":"sh/5k3adcnu","slide":11,"bbox":[156,548,968,82]}
+{"kind":"textbox","id":"sh/4ju947m9","slide":11,"text":"문장 하나에 주체 · 소재 · 단계 · 종목 역할이 섞여 있습니다.","textPreview":"문장 하나에 주체 · 소재 · 단계 · 종목 역할이 섞여 있습니다.","textChars":37,"textLines":1,"bbox":[184,556,912,32]}
+{"kind":"textbox","id":"sh/ve1s725s","slide":11,"text":"RAG가 문장을 찾아도 관계를 구분하지 못하면 정확한 통계를 만들 수 없습니다.","textPreview":"RAG가 문장을 찾아도 관계를 구분하지 못하면 정확한 통계를 만들 수 없습니다.","textChars":44,"textLines":1,"bbox":[184,591,912,28]}
+{"kind":"shape","id":"sh/udsryx47","slide":11,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/hg3a9cny","slide":11,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/oqku94","slide":11,"text":"여기서 이런 의문이 생길 수 있습니다. 이미 정보가 잘 정리돼 있는데, 그대로 데이터베이스에 넣고 검색하면 되는 것 아닌가? 자연어 질문은 RAG를 붙이면 되는 것 아닌가? 저희도 처음엔 그렇게 생각했습니다. 그런데 사건을 정확히 비교하거나 집계할 때 문제가 생깁니다. 사람은 이 문장에서 정부가 행동 주체이고, 정책 지원이 상승 소재이며, 아직 기대 단계라는 것을 이해합니다. A사와 B사는 정책 발표 주체가 아니라 당시 상승을 주도한 종목입니다. 하지만 일반적인 데이터베이스에는 이 모든 정보가 하나의 문장으로 저장됩니다. 그래서 온톨로지를 구축했습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/lafo4q","slide":12,"title":"TECH 03 · ONTOLOGY","textShapes":17}
+{"kind":"shape","id":"sh/vu5svu54","slide":12,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/wvetofmp","slide":12,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/hwnuxkna","slide":12,"text":"TECH 03 · ONTOLOGY","textPreview":"TECH 03 · ONTOLOGY","textChars":18,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/m5cbi54n","slide":12,"text":"온톨로지는 문장을 관계로 바꾸는 설계도입니다","textPreview":"온톨로지는 문장을 관계로 바꾸는 설계도입니다","textChars":24,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/7qlsra5s","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/8rutkfmd","slide":12,"text":"사람이 이해하는 개념과 관계를\n컴퓨터도 같은 기준으로 처리하도록 정의한 지식 체계","textPreview":"사람이 이해하는 개념과 관계를 | 컴퓨터도 같은 기준으로 처리하도록 정의한 지식 체계","textChars":45,"textLines":2,"bbox":[92,126,1040,62]}
+{"kind":"shape","id":"sh/9s3atkny","slide":12,"bbox":[76,220,1128,350]}
+{"kind":"shape","id":"sh/6lwbu94r","slide":12,"bbox":[286,322,58,46]}
+{"kind":"shape","id":"sh/rmpc3elc","slide":12,"bbox":[536,322,58,46]}
+{"kind":"shape","id":"sh/bq1sbehc","slide":12,"bbox":[760,292,100,53]}
+{"kind":"shape","id":"sh/qp8b29gr","slide":12,"bbox":[760,365,100,75]}
+{"kind":"shape","id":"sh/xsjadoz2","slide":12,"bbox":[184,437,0,35]}
+{"kind":"shape","id":"sh/crat4jyh","slide":12,"bbox":[92,253,184,184]}
+{"kind":"textbox","id":"sh/zu1sfyh8","slide":12,"text":"Catalyst","textPreview":"Catalyst","textChars":8,"textLines":1,"bbox":[100,325,168,40]}
+{"kind":"textbox","id":"sh/ytsb6tgn","slide":12,"text":"정책·발표","textPreview":"정책·발표","textChars":5,"textLines":1,"bbox":[68,445,232,52]}
+{"kind":"shape","id":"sh/lwjuhoze","slide":12,"bbox":[338,253,184,184]}
+{"kind":"textbox","id":"sh/kvat8jyt","slide":12,"text":"ThemeReaction","textPreview":"ThemeReaction","textChars":13,"textLines":1,"bbox":[346,325,168,40]}
+{"kind":"textbox","id":"sh/7ylcjyh4","slide":12,"text":"어떤 테마가\n어떻게 반응","textPreview":"어떤 테마가 | 어떻게 반응","textChars":13,"textLines":2,"bbox":[314,445,232,52]}
+{"kind":"shape","id":"sh/mxsbatgz","slide":12,"bbox":[610,269,152,152]}
+{"kind":"textbox","id":"sh/i5gny143","slide":12,"text":"Theme","textPreview":"Theme","textChars":5,"textLines":1,"bbox":[618,325,136,40]}
+{"kind":"textbox","id":"sh/3qp4r65o","slide":12,"text":"로봇·원전\n방산","textPreview":"로봇·원전 | 방산","textChars":8,"textLines":2,"bbox":[586,429,200,52]}
+{"kind":"shape","id":"sh/4ry50rm9","slide":12,"bbox":[868,218,124,124]}
+{"kind":"textbox","id":"sh/5s7mtwnu","slide":12,"text":"Company","textPreview":"Company","textChars":7,"textLines":1,"bbox":[876,260,108,40]}
+{"kind":"textbox","id":"sh/u1wnuh47","slide":12,"text":"사건 주체\n주도 종목","textPreview":"사건 주체 | 주도 종목","textChars":11,"textLines":2,"bbox":[844,350,172,52]}
+{"kind":"shape","id":"sh/v254nm5s","slide":12,"bbox":[868,368,124,124]}
+{"kind":"textbox","id":"sh/g3y5wrmd","slide":12,"text":"Outcome","textPreview":"Outcome","textChars":7,"textLines":1,"bbox":[876,410,108,40]}
+{"kind":"textbox","id":"sh/h47mpwny","slide":12,"text":"T+1·5·20\n가격 결과","textPreview":"T+1·5·20 | 가격 결과","textChars":14,"textLines":2,"bbox":[844,500,172,52]}
+{"kind":"shape","id":"sh/ex0n6l4b","slide":12,"bbox":[136,472,96,96]}
+{"kind":"textbox","id":"sh/fy9ozq5w","slide":12,"text":"Evidence","textPreview":"Evidence","textChars":8,"textLines":1,"bbox":[144,500,80,40]}
+{"kind":"shape","id":"sh/psbqpk7y","slide":12,"bbox":[112,576,144,52]}
+{"kind":"shape","id":"sh/or2pwf6t","slide":12,"bbox":[80,596,1120,54]}
+{"kind":"textbox","id":"sh/nqt8nap8","slide":12,"text":"Event = 특정 날짜의 Catalyst + ThemeReaction + 관련 Company + Outcome + Evidence","textPreview":"Event = 특정 날짜의 Catalyst + ThemeReaction + 관련 Company + Outcome + Evidence","textChars":73,"textLines":1,"bbox":[110,596,1060,54]}
+{"kind":"shape","id":"sh/2pk7u5on","slide":12,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/1obql072","slide":12,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/lafo4q","slide":12,"text":"온톨로지는 사람이 이해하는 개념과 관계를 컴퓨터도 일관된 기준으로 처리할 수 있도록 정의한 지식 체계입니다. 쉽게 말하면 문장 안의 정보에 이름표를 붙이고 서로의 관계를 연결한 지식 지도입니다. DAY-JA-VIEW에서는 사건의 원인인 Catalyst, 그 사건으로 어떤 테마가 반응했는지를 나타내는 ThemeReaction, 테마와 회사, 가격 결과인 Outcome, 원문 근거인 Evidence를 연결합니다. 사용자가 보는 Event는 특정 날짜에 이 정보들이 함께 묶인 분석 단위입니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/a0v17v","slide":13,"title":"TECH 03 · IMPLEMENTATION","textShapes":22}
+{"kind":"shape","id":"sh/1g3mtsbq","slide":13,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/etc3ydcz","slide":13,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/ful4ritk","slide":13,"text":"TECH 03 · IMPLEMENTATION","textPreview":"TECH 03 · IMPLEMENTATION","textChars":24,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/ojel4nu1","slide":13,"text":"3만 9,696개 기록을 약 2만 개 사건으로 통합했습니다","textPreview":"3만 9,696개 기록을 약 2만 개 사건으로 통합했습니다","textChars":32,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/pknmxsbm","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/2hw32xcv","slide":13,"text":"원문을 분해하고, 역할을 추출하고, 같은 현실 사건을 하나로 합쳤습니다.","textPreview":"원문을 분해하고, 역할을 추출하고, 같은 현실 사건을 하나로 합쳤습니다.","textChars":40,"textLines":1,"bbox":[92,128,1010,34]}
+{"kind":"shape","id":"sh/ni54v2tg","slide":13,"bbox":[68,210,190,152]}
+{"kind":"textbox","id":"sh/cne587ud","slide":13,"text":"01  원문","textPreview":"01  원문","textChars":6,"textLines":1,"bbox":[86,230,154,36]}
+{"kind":"textbox","id":"sh/xo7m1cbi","slide":13,"text":"테마 원인\n기록","textPreview":"테마 원인 | 기록","textChars":8,"textLines":2,"bbox":[88,286,150,58]}
+{"kind":"shape","id":"sh/hsbelk7y","slide":13,"bbox":[264,270,38,32]}
+{"kind":"shape","id":"sh/gr2xcfqd","slide":13,"bbox":[312,210,190,152]}
+{"kind":"textbox","id":"sh/vq9wjup8","slide":13,"text":"02  사건 분리","textPreview":"02  사건 분리","textChars":9,"textLines":1,"bbox":[330,230,154,36]}
+{"kind":"textbox","id":"sh/up0vqp8n","slide":13,"text":"한 문장 속\n복수 사건 분리","textPreview":"한 문장 속 | 복수 사건 분리","textChars":15,"textLines":2,"bbox":[332,286,150,58]}
+{"kind":"shape","id":"sh/5wbep47a","slide":13,"bbox":[508,270,38,32]}
+{"kind":"shape","id":"sh/4v2xgzqp","slide":13,"bbox":[556,210,190,152]}
+{"kind":"textbox","id":"sh/3utwnup4","slide":13,"text":"03  의미 추출","textPreview":"03  의미 추출","textChars":9,"textLines":1,"bbox":[574,230,154,36]}
+{"kind":"textbox","id":"sh/itkfep8j","slide":13,"text":"유형·단계\n회사 역할","textPreview":"유형·단계 | 회사 역할","textChars":11,"textLines":2,"bbox":[576,286,150,58]}
+{"kind":"shape","id":"sh/l0red0rq","slide":13,"bbox":[752,270,38,32]}
+{"kind":"shape","id":"sh/kzydkvql","slide":13,"bbox":[800,210,190,152]}
+{"kind":"textbox","id":"sh/c32x0fy1","slide":13,"text":"04  동일 사건 통합","textPreview":"04  동일 사건 통합","textChars":12,"textLines":1,"bbox":[818,230,154,36]}
+{"kind":"textbox","id":"sh/d4bet0zm","slide":13,"text":"중복 표현\n하나로 병합","textPreview":"중복 표현 | 하나로 병합","textChars":12,"textLines":2,"bbox":[820,286,150,58]}
+{"kind":"shape","id":"sh/q1kfy5gb","slide":13,"bbox":[996,270,38,32]}
+{"kind":"shape","id":"sh/b2twrahw","slide":13,"bbox":[1044,210,190,152]}
+{"kind":"textbox","id":"sh/07mx4fyd","slide":13,"text":"05  관계 연결","textPreview":"05  관계 연결","textChars":9,"textLines":1,"bbox":[1062,230,154,36]}
+{"kind":"textbox","id":"sh/l8vexkzy","slide":13,"text":"Catalyst\nReaction·Evidence","textPreview":"Catalyst | Reaction·Evidence","textChars":26,"textLines":2,"bbox":[1064,286,150,58]}
+{"kind":"shape","id":"sh/y54f25g7","slide":13,"bbox":[68,398,1144,68]}
+{"kind":"textbox","id":"sh/z6dwvahs","slide":13,"text":"PostgreSQL의 개체 테이블 + 관계 테이블로 지식 그래프 구현","textPreview":"PostgreSQL의 개체 테이블 + 관계 테이블로 지식 그래프 구현","textChars":38,"textLines":1,"bbox":[94,398,1092,68]}
+{"kind":"shape","id":"sh/8bmx8zy9","slide":13,"bbox":[154,506,294,112]}
+{"kind":"textbox","id":"sh/9cfe1kfu","slide":13,"text":"86.8%","textPreview":"86.8%","textChars":5,"textLines":1,"bbox":[174,516,254,54]}
+{"kind":"textbox","id":"sh/3218ni58","slide":13,"text":"사건 원인 분류","textPreview":"사건 원인 분류","textChars":8,"textLines":1,"bbox":[174,570,254,34]}
+{"kind":"shape","id":"sh/ihsred4n","slide":13,"bbox":[494,506,294,112]}
+{"kind":"textbox","id":"sh/54jqpsne","slide":13,"text":"99.6%","textPreview":"99.6%","textChars":5,"textLines":1,"bbox":[514,516,254,54]}
+{"kind":"textbox","id":"sh/43a9gnmt","slide":13,"text":"상승·하락 방향","textPreview":"상승·하락 방향","textChars":8,"textLines":1,"bbox":[514,570,254,34]}
+{"kind":"shape","id":"sh/veh8ji5c","slide":13,"bbox":[834,506,294,112]}
+{"kind":"textbox","id":"sh/ud87ad4r","slide":13,"text":"90.0%","textPreview":"90.0%","textChars":5,"textLines":1,"bbox":[854,516,254,54]}
+{"kind":"textbox","id":"sh/hgzql8ni","slide":13,"text":"기대·확정 단계","textPreview":"기대·확정 단계","textChars":8,"textLines":1,"bbox":[854,570,254,34]}
+{"kind":"shape","id":"sh/gfqpcnmx","slide":13,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/fal8v2lg","slide":13,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/a0v17v","slide":13,"text":"저희는 2005년부터 2026년까지의 테마 원인 기록 3만 9,696건을 분석하고, 그중 5,000건을 직접 검토했습니다. 정책, 수주, 실적 등 사건 원인을 46가지로 분류하고, 상승인지 하락인지, 기대 단계인지 실제 확정인지 구분했습니다. 회사 이름이 달라도 같은 회사로 인식하고, 사건을 일으킨 회사인지 단순 관련 종목인지도 나눴습니다. 여러 테마에 반복 기록된 같은 사건을 하나로 합쳐 약 2만 개의 사건과 근거를 연결했습니다. 사용하지 않은 5,000개 기록으로 시험한 결과 원인 분류 86.8%, 방향 99.6%, 기대·확정 구분 90%를 기록했습니다. 가격 데이터 결합과 통계 계산이 많은 특성을 고려해 PostgreSQL의 개체 테이블과 관계 테이블로 지식 그래프를 구현했습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/g3s9h3","slide":14,"title":"TECH 04 · VALIDATION","textShapes":39}
+{"kind":"shape","id":"sh/n2dc7at0","slide":14,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/o3mdgfal","slide":14,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/94vu9kb6","slide":14,"text":"TECH 04 · VALIDATION","textPreview":"TECH 04 · VALIDATION","textChars":20,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/edkba5sj","slide":14,"text":"온톨로지 기반 검색이 세 지표에서 가장 높았습니다","textPreview":"온톨로지 기반 검색이 세 지표에서 가장 높았습니다","textChars":27,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/zedc3at4","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/0fmtcfa9","slide":14,"text":"동일한 80개 질문 · 4개 검색 방식 · Ragas 평가","textPreview":"동일한 80개 질문 · 4개 검색 방식 · Ragas 평가","textChars":32,"textLines":1,"bbox":[92,128,1000,34]}
+{"kind":"shape","id":"sh/10vu50bu","slide":14,"bbox":[68,190,278,408]}
+{"kind":"textbox","id":"sh/y9ovmpsn","slide":14,"text":"EVALUATION SETUP","textPreview":"EVALUATION SETUP","textChars":16,"textLines":1,"bbox":[94,214,226,30]}
+{"kind":"textbox","id":"sh/jaxcfu98","slide":14,"text":"80","textPreview":"80","textChars":2,"textLines":1,"bbox":[94,268,226,70]}
+{"kind":"textbox","id":"sh/vylwry9g","slide":14,"text":"동일 평가 질문","textPreview":"동일 평가 질문","textChars":8,"textLines":1,"bbox":[94,328,226,28]}
+{"kind":"shape","id":"sh/uxsvyt8v","slide":14,"bbox":[98,391,12,12]}
+{"kind":"textbox","id":"sh/h03etorm","slide":14,"text":"Keyword RAG","textPreview":"Keyword RAG","textChars":11,"textLines":1,"bbox":[122,382,190,34]}
+{"kind":"shape","id":"sh/gzud0jq1","slide":14,"bbox":[98,433,12,12]}
+{"kind":"textbox","id":"sh/32lwvy9s","slide":14,"text":"Vector RAG","textPreview":"Vector RAG","textChars":10,"textLines":1,"bbox":[122,424,190,34]}
+{"kind":"shape","id":"sh/i1cf2t87","slide":14,"bbox":[98,475,12,12]}
+{"kind":"textbox","id":"sh/543ex8ry","slide":14,"text":"Hybrid RAG","textPreview":"Hybrid RAG","textChars":10,"textLines":1,"bbox":[122,466,190,34]}
+{"kind":"shape","id":"sh/43ux43qd","slide":14,"bbox":[98,517,12,12]}
+{"kind":"textbox","id":"sh/r65wzi9o","slide":14,"text":"Ontology Search","textPreview":"Ontology Search","textChars":15,"textLines":1,"bbox":[122,508,190,34]}
+{"kind":"shape","id":"sh/q5cf6d83","slide":14,"bbox":[374,198,270,62]}
+{"kind":"textbox","id":"sh/md07e1wn","slide":14,"text":"방식","textPreview":"방식","textChars":2,"textLines":1,"bbox":[382,198,254,62]}
+{"kind":"shape","id":"sh/ny98n6x8","slide":14,"bbox":[644,198,138,62]}
+{"kind":"textbox","id":"sh/ozipgbet","slide":14,"text":"Precision","textPreview":"Precision","textChars":9,"textLines":1,"bbox":[652,198,122,62]}
+{"kind":"shape","id":"sh/90rqpgfe","slide":14,"bbox":[782,198,138,62]}
+{"kind":"textbox","id":"sh/e9g7a1wr","slide":14,"text":"Recall","textPreview":"Recall","textChars":6,"textLines":1,"bbox":[790,198,122,62]}
+{"kind":"shape","id":"sh/zap8jmxc","slide":14,"bbox":[920,198,138,62]}
+{"kind":"textbox","id":"sh/0bipcreh","slide":14,"text":"Faithfulness","textPreview":"Faithfulness","textChars":12,"textLines":1,"bbox":[928,198,122,62]}
+{"kind":"shape","id":"sh/1crqlwf2","slide":14,"bbox":[1058,198,160,62]}
+{"kind":"textbox","id":"sh/y5krmlwv","slide":14,"text":"Factual","textPreview":"Factual","textChars":7,"textLines":1,"bbox":[1066,198,144,62]}
+{"kind":"shape","id":"sh/j6t8vqxg","slide":14,"bbox":[374,260,270,70]}
+{"kind":"textbox","id":"sh/t0valkzi","slide":14,"text":"Keyword RAG","textPreview":"Keyword RAG","textChars":11,"textLines":1,"bbox":[384,260,250,70]}
+{"kind":"shape","id":"sh/szmtcfyx","slide":14,"bbox":[644,260,138,70]}
+{"kind":"textbox","id":"sh/7ydsjahc","slide":14,"text":"0.54","textPreview":"0.54","textChars":4,"textLines":1,"bbox":[654,260,118,70]}
+{"kind":"shape","id":"sh/6x4bapg7","slide":14,"bbox":[782,260,138,70]}
+{"kind":"textbox","id":"sh/5wvahkzm","slide":14,"text":"0.63","textPreview":"0.63","textChars":4,"textLines":1,"bbox":[792,260,118,70]}
+{"kind":"shape","id":"sh/kvmt8fy1","slide":14,"bbox":[920,260,138,70]}
+{"kind":"textbox","id":"sh/judsfahg","slide":14,"text":"0.66","textPreview":"0.66","textChars":4,"textLines":1,"bbox":[930,260,118,70]}
+{"kind":"shape","id":"sh/itkb65gv","slide":14,"bbox":[1058,260,160,70]}
+{"kind":"textbox","id":"sh/psfut4zq","slide":14,"text":"0.60","textPreview":"0.60","textChars":4,"textLines":1,"bbox":[1068,260,140,70]}
+{"kind":"shape","id":"sh/4r6tkzy5","slide":14,"bbox":[374,330,270,70]}
+{"kind":"textbox","id":"sh/czat4fup","slide":14,"text":"Vector RAG","textPreview":"Vector RAG","textChars":10,"textLines":1,"bbox":[384,330,250,70]}
+{"kind":"shape","id":"sh/d03axkva","slide":14,"bbox":[644,330,138,70]}
+{"kind":"textbox","id":"sh/qxsb25cj","slide":14,"text":"0.65","textPreview":"0.65","textChars":4,"textLines":1,"bbox":[654,330,118,70]}
+{"kind":"shape","id":"sh/by1svad4","slide":14,"bbox":[782,330,138,70]}
+{"kind":"textbox","id":"sh/knut8ful","slide":14,"text":"0.74","textPreview":"0.74","textChars":4,"textLines":1,"bbox":[792,330,118,70]}
+{"kind":"shape","id":"sh/lo3a1kv6","slide":14,"bbox":[920,330,138,70]}
+{"kind":"textbox","id":"sh/ylcb6pcv","slide":14,"text":"0.71","textPreview":"0.71","textChars":4,"textLines":1,"bbox":[930,330,118,70]}
+{"kind":"shape","id":"sh/zmlszadg","slide":14,"bbox":[1058,330,160,70]}
+{"kind":"textbox","id":"sh/8retczux","slide":14,"text":"0.67","textPreview":"0.67","textChars":4,"textLines":1,"bbox":[1068,330,140,70]}
+{"kind":"shape","id":"sh/9sna54bi","slide":14,"bbox":[374,400,270,70]}
+{"kind":"textbox","id":"sh/3y94ri1w","slide":14,"text":"Hybrid RAG","textPreview":"Hybrid RAG","textChars":10,"textLines":1,"bbox":[384,400,250,70]}
+{"kind":"shape","id":"sh/ix0nix0b","slide":14,"bbox":[644,400,138,70]}
+{"kind":"textbox","id":"sh/50rmtsjm","slide":14,"text":"0.74","textPreview":"0.74","textChars":4,"textLines":1,"bbox":[654,400,118,70]}
+{"kind":"shape","id":"sh/4zi5knih","slide":14,"bbox":[782,400,138,70]}
+{"kind":"textbox","id":"sh/vup4ni1k","slide":14,"text":"0.84","textPreview":"0.84","textChars":4,"textLines":1,"bbox":[792,400,118,70]}
+{"kind":"shape","id":"sh/utg3ed0z","slide":14,"bbox":[920,400,138,70]}
+{"kind":"textbox","id":"sh/hwrmpsjq","slide":14,"text":"0.79","textPreview":"0.79","textChars":4,"textLines":1,"bbox":[930,400,118,70]}
+{"kind":"shape","id":"sh/gvylgni5","slide":14,"bbox":[1058,400,160,70]}
+{"kind":"textbox","id":"sh/fqt4j2h4","slide":14,"text":"0.76","textPreview":"0.76","textChars":4,"textLines":1,"bbox":[1068,400,140,70]}
+{"kind":"shape","id":"sh/epknqh0j","slide":14,"bbox":[374,470,270,70]}
+{"kind":"textbox","id":"sh/al47i1kr","slide":14,"text":"온톨로지 기반 구조화 검색","textPreview":"온톨로지 기반 구조화 검색","textChars":14,"textLines":1,"bbox":[384,470,250,70]}
+{"kind":"shape","id":"sh/bmd8r6lc","slide":14,"bbox":[644,470,138,70]}
+{"kind":"textbox","id":"sh/cn6pkb2x","slide":14,"text":"0.85","textPreview":"0.85","textChars":4,"textLines":1,"bbox":[654,470,118,70]}
+{"kind":"shape","id":"sh/xofqtgj2","slide":14,"bbox":[782,470,138,70]}
+{"kind":"textbox","id":"sh/ypo7mlkn","slide":14,"text":"0.82","textPreview":"0.82","textChars":4,"textLines":1,"bbox":[792,470,118,70]}
+{"kind":"shape","id":"sh/zqx8vq18","slide":14,"bbox":[920,470,138,70]}
+{"kind":"textbox","id":"sh/kb6pov2t","slide":14,"text":"0.88","textPreview":"0.88","textChars":4,"textLines":1,"bbox":[930,470,118,70]}
+{"kind":"shape","id":"sh/lcfqx0je","slide":14,"bbox":[1058,470,160,70]}
+{"kind":"textbox","id":"sh/etk7ahkj","slide":14,"text":"0.84","textPreview":"0.84","textChars":4,"textLines":1,"bbox":[1068,470,140,70]}
+{"kind":"shape","id":"sh/futojml4","slide":14,"bbox":[374,565,838,70]}
+{"kind":"textbox","id":"sh/h8jap43m","slide":14,"text":"Precision · 검색 근거의 정확도    Recall · 필요한 근거의 누락 여부","textPreview":"Precision · 검색 근거의 정확도    Recall · 필요한 근거의 누락 여부","textChars":48,"textLines":1,"bbox":[394,573,798,24]}
+{"kind":"textbox","id":"sh/g7atgzm1","slide":14,"text":"Faithfulness · 근거 충실도    Factual · 사건·수치의 사실 일치도","textPreview":"Faithfulness · 근거 충실도    Factual · 사건·수치의 사실 일치도","textChars":48,"textLines":1,"bbox":[394,603,798,24]}
+{"kind":"shape","id":"sh/v61snulg","slide":14,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/u58rep4v","slide":14,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/g3s9h3","slide":14,"text":"온톨로지 구조가 실제 답변 품질 향상으로 이어졌는지 검증했습니다. 동일한 평가 질문 80개를 대상으로 Keyword RAG, Vector RAG, Hybrid RAG, 온톨로지 기반 구조화 검색을 비교했습니다. 평가는 Ragas를 사용했습니다. Context Precision은 가져온 자료 중 실제 필요한 근거의 비율, Context Recall은 필요한 근거를 빠짐없이 찾았는지, Faithfulness는 답변이 검색 근거에 충실한지, Factual Correctness는 사건과 수치가 정답과 일치하는지를 봅니다. 측정 결과 저희 방식은 Precision 0.85, Faithfulness 0.88, Factual Correctness 0.84로 세 지표에서 가장 높았습니다. Recall은 Hybrid RAG가 0.84로 조금 높았지만, 저희 방식은 불필요한 문서를 줄이고 더 정확한 근거로 답했습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/4gd5bu","slide":15,"title":"TECH 05 · SIMILARITY","textShapes":28}
+{"kind":"shape","id":"sh/32l8fa14","slide":15,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/o3u9ofip","slide":15,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/p43qh0ja","slide":15,"text":"TECH 05 · SIMILARITY","textPreview":"TECH 05 · SIMILARITY","textChars":20,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/eds7il0n","slide":15,"text":"문장 유사도에 사건의 구조를 더했습니다","textPreview":"문장 유사도에 사건의 구조를 더했습니다","textChars":21,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/fy18bq18","slide":15,"text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/gzapkvit","slide":15,"text":"소재 유형 · 주체 · 행동 · 진행 단계가 함께 닮은 과거 Event를 찾습니다.","textPreview":"소재 유형 · 주체 · 행동 · 진행 단계가 함께 닮은 과거 Event를 찾습니다.","textChars":46,"textLines":1,"bbox":[92,128,1020,34]}
+{"kind":"shape","id":"sh/10jqd0jy","slide":15,"bbox":[68,220,190,190]}
+{"kind":"textbox","id":"sh/y9crup0r","slide":15,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[86,240,154,36]}
+{"kind":"textbox","id":"sh/zu58nu1c","slide":15,"text":"오늘 Event","textPreview":"오늘 Event","textChars":8,"textLines":1,"bbox":[86,286,154,38]}
+{"kind":"textbox","id":"sh/fux8ne9o","slide":15,"text":"정책\n정부\n기대","textPreview":"정책 | 정부 | 기대","textChars":8,"textLines":3,"bbox":[88,340,150,54]}
+{"kind":"shape","id":"sh/eto7e9sj","slide":15,"bbox":[264,299,38,32]}
+{"kind":"shape","id":"sh/1wfqp4ru","slide":15,"bbox":[312,220,190,190]}
+{"kind":"textbox","id":"sh/0v6pgza9","slide":15,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[330,240,154,36]}
+{"kind":"textbox","id":"sh/nih8re90","slide":15,"text":"과거 후보","textPreview":"과거 후보","textChars":5,"textLines":1,"bbox":[330,286,154,38]}
+{"kind":"textbox","id":"sh/2ho7i9sf","slide":15,"text":"현재 이전\n사건만","textPreview":"현재 이전 | 사건만","textChars":9,"textLines":2,"bbox":[332,340,150,54]}
+{"kind":"shape","id":"sh/9kzqtor6","slide":15,"bbox":[508,299,38,32]}
+{"kind":"shape","id":"sh/ojqpkjql","slide":15,"bbox":[556,220,190,190]}
+{"kind":"textbox","id":"sh/bmh8vy9w","slide":15,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[574,240,154,36]}
+{"kind":"textbox","id":"sh/al87mt8b","slide":15,"text":"복합 유사도","textPreview":"복합 유사도","textChars":6,"textLines":1,"bbox":[574,286,154,38]}
+{"kind":"textbox","id":"sh/6hcbexsj","slide":15,"text":"텍스트\n+ 관계","textPreview":"텍스트 | + 관계","textChars":8,"textLines":2,"bbox":[576,340,150,54]}
+{"kind":"shape","id":"sh/7ilsnit4","slide":15,"bbox":[752,299,38,32]}
+{"kind":"shape","id":"sh/8jutgnap","slide":15,"bbox":[800,220,190,190]}
+{"kind":"textbox","id":"sh/tk3apsba","slide":15,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[818,240,154,36]}
+{"kind":"textbox","id":"sh/ydsbadcn","slide":15,"text":"중복 제거","textPreview":"중복 제거","textChars":5,"textLines":1,"bbox":[818,286,154,38]}
+{"kind":"textbox","id":"sh/je1sjit8","slide":15,"text":"동일 사건\n1회 집계","textPreview":"동일 사건 | 1회 집계","textChars":11,"textLines":2,"bbox":[820,340,150,54]}
+{"kind":"shape","id":"sh/kfatcnut","slide":15,"bbox":[996,299,38,32]}
+{"kind":"shape","id":"sh/lgjalsbe","slide":15,"bbox":[1044,220,190,190]}
+{"kind":"textbox","id":"sh/i9wbmhsr","slide":15,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1062,240,154,36]}
+{"kind":"textbox","id":"sh/3a5cv2tc","slide":15,"text":"결과 연결","textPreview":"결과 연결","textChars":5,"textLines":1,"bbox":[1062,286,154,38]}
+{"kind":"textbox","id":"sh/d47elgve","slide":15,"text":"T+1\nT+5\nT+20","textPreview":"T+1 | T+5 | T+20","textChars":12,"textLines":3,"bbox":[1064,340,150,54]}
+{"kind":"shape","id":"sh/s3ydcbu9","slide":15,"bbox":[88,462,1104,126]}
+{"kind":"textbox","id":"sh/r2pwj6do","slide":15,"text":"표현은 달라도","textPreview":"표현은 달라도","textChars":7,"textLines":1,"bbox":[116,480,330,34]}
+{"kind":"textbox","id":"sh/q1gva1c3","slide":15,"text":"실제 사건 구조가 같으면 찾습니다.","textPreview":"실제 사건 구조가 같으면 찾습니다.","textChars":19,"textLines":1,"bbox":[116,516,330,42]}
+{"kind":"shape","id":"sh/507ehwvi","slide":15,"bbox":[478,484,0,80]}
+{"kind":"shape","id":"sh/4fed8rux","slide":15,"bbox":[520,490,144,42]}
+{"kind":"textbox","id":"sh/3e5wfmdc","slide":15,"text":"소재 유형","textPreview":"소재 유형","textChars":5,"textLines":1,"bbox":[530,490,124,42]}
+{"kind":"shape","id":"sh/idwv6hwr","slide":15,"bbox":[674,490,126,42]}
+{"kind":"textbox","id":"sh/pwret0vm","slide":15,"text":"사건 주체","textPreview":"사건 주체","textChars":5,"textLines":1,"bbox":[684,490,106,42]}
+{"kind":"shape","id":"sh/obidkvuh","slide":15,"bbox":[810,490,112,42]}
+{"kind":"textbox","id":"sh/wf6lkvux","slide":15,"text":"행동","textPreview":"행동","textChars":2,"textLines":1,"bbox":[820,490,92,42]}
+{"kind":"shape","id":"sh/hgfmd0vi","slide":15,"bbox":[932,490,148,42]}
+{"kind":"textbox","id":"sh/udo3ilcr","slide":15,"text":"진행 단계","textPreview":"진행 단계","textChars":5,"textLines":1,"bbox":[942,490,128,42]}
+{"kind":"textbox","id":"sh/vex4bqdc","slide":15,"text":"문장 임베딩 + 온톨로지 관계 비교","textPreview":"문장 임베딩 + 온톨로지 관계 비교","textChars":19,"textLines":1,"bbox":[520,542,560,28]}
+{"kind":"textbox","id":"sh/4jq5ovut","slide":15,"text":"사례 선택이 끝난 뒤에만 가격 결과를 연결해 비교 기준을 완성합니다.","textPreview":"사례 선택이 끝난 뒤에만 가격 결과를 연결해 비교 기준을 완성합니다.","textChars":38,"textLines":1,"bbox":[196,613,888,34]}
+{"kind":"shape","id":"sh/54zmh0ve","slide":15,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/iho3m5c3","slide":15,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/4gd5bu","slide":15,"text":"구조화한 온톨로지는 데자뷰 유사사례 분석에 사용됩니다. 오늘의 상승 소재가 확인되면 같은 Event 구조로 변환하고, 현재보다 이전에 발생한 사건만 후보로 선택합니다. 문장이 얼마나 비슷한지만 보지 않고 소재 유형, 사건 주체, 행동, 기대인지 공식 발표인지 같은 진행 단계까지 비교합니다. 표현은 달라도 실제 사건 구조가 비슷한 사례를 찾을 수 있습니다. 같은 사건이 반복 기록된 경우를 제거하고 관련성이 높은 사례를 선택한 뒤, 당시 주도주의 1일, 5일, 20거래일 뒤 움직임을 연결합니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/wcyare","slide":16,"title":"TECH 06 · NATURAL LANGUAGE","textShapes":19}
+{"kind":"shape","id":"sh/ps7ehwb2","slide":16,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/2pgf61sb","slide":16,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/nqpwfmtw","slide":16,"text":"TECH 06 · NATURAL LANGUAGE","textPreview":"TECH 06 · NATURAL LANGUAGE","textChars":26,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/0nyx4ral","slide":16,"text":"질문을 구조화된 조회와 계산으로 바꿉니다","textPreview":"질문을 구조화된 조회와 계산으로 바꿉니다","textChars":22,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/1o7edwbq","slide":16,"text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"shape","id":"sh/elwf2hsf","slide":16,"bbox":[74,152,1132,86]}
+{"kind":"textbox","id":"sh/fmpwbmt0","slide":16,"text":"“과거 로봇산업 육성 정책 때 어떤 테마가 반응했고, 주도주는 5거래일 뒤 어떻게 움직였어?”","textPreview":"“과거 로봇산업 육성 정책 때 어떤 테마가 반응했고, 주도주는 5거래일 뒤 어떻게 움직였어?”","textChars":52,"textLines":1,"bbox":[102,166,1076,58]}
+{"kind":"textbox","id":"sh/szex07a9","slide":16,"text":"QUERY PLAN","textPreview":"QUERY PLAN","textChars":10,"textLines":1,"bbox":[82,276,180,28]}
+{"kind":"shape","id":"sh/d0ne9cbu","slide":16,"bbox":[76,322,166,94]}
+{"kind":"textbox","id":"sh/tg3al0f2","slide":16,"text":"Theme","textPreview":"Theme","textChars":5,"textLines":1,"bbox":[90,336,138,24]}
+{"kind":"textbox","id":"sh/8fa9cveh","slide":16,"text":"로봇","textPreview":"로봇","textChars":2,"textLines":1,"bbox":[90,368,138,34]}
+{"kind":"shape","id":"sh/7e18jqxc","slide":16,"bbox":[242,369,26,0]}
+{"kind":"shape","id":"sh/6dsralwr","slide":16,"bbox":[268,322,166,94]}
+{"kind":"textbox","id":"sh/lcjqhgf6","slide":16,"text":"Catalyst","textPreview":"Catalyst","textChars":8,"textLines":1,"bbox":[282,336,138,24]}
+{"kind":"textbox","id":"sh/kba98bel","slide":16,"text":"정책","textPreview":"정책","textChars":2,"textLines":1,"bbox":[282,368,138,34]}
+{"kind":"shape","id":"sh/ja18f6x0","slide":16,"bbox":[434,369,26,0]}
+{"kind":"shape","id":"sh/y9sr61wf","slide":16,"bbox":[460,322,166,94]}
+{"kind":"textbox","id":"sh/x8zqdgfu","slide":16,"text":"Time","textPreview":"Time","textChars":4,"textLines":1,"bbox":[474,336,138,24]}
+{"kind":"textbox","id":"sh/w7q94bep","slide":16,"text":"과거","textPreview":"과거","textChars":2,"textLines":1,"bbox":[474,368,138,34]}
+{"kind":"shape","id":"sh/oru90b65","slide":16,"bbox":[626,369,26,0]}
+{"kind":"shape","id":"sh/ps3atgnq","slide":16,"bbox":[652,322,166,94]}
+{"kind":"textbox","id":"sh/2pcry1of","slide":16,"text":"Outcome","textPreview":"Outcome","textChars":7,"textLines":1,"bbox":[666,336,138,24]}
+{"kind":"textbox","id":"sh/nqlsr650","slide":16,"text":"T+5","textPreview":"T+5","textChars":3,"textLines":1,"bbox":[666,368,138,34]}
+{"kind":"shape","id":"sh/0nu9wr69","slide":16,"bbox":[842,346,58,44]}
+{"kind":"shape","id":"sh/1o3qpwnu","slide":16,"bbox":[926,288,280,166]}
+{"kind":"textbox","id":"sh/elsru1o3","slide":16,"text":"POSTGRESQL","textPreview":"POSTGRESQL","textChars":10,"textLines":1,"bbox":[950,306,232,34]}
+{"kind":"textbox","id":"sh/fml8nm5o","slide":16,"text":"사건 → 테마 → 회사\n관계 조회 + 가격 계산","textPreview":"사건 → 테마 → 회사 | 관계 조회 + 가격 계산","textChars":26,"textLines":2,"bbox":[950,350,232,74]}
+{"kind":"shape","id":"sh/kje98vmd","slide":16,"bbox":[74,488,1132,124]}
+{"kind":"textbox","id":"sh/lkna10ny","slide":16,"text":"A","textPreview":"A","textChars":1,"textLines":1,"bbox":[100,508,118,80]}
+{"kind":"shape","id":"sh/vqt4netc","slide":16,"bbox":[226,510,0,78]}
+{"kind":"textbox","id":"sh/up03etcr","slide":16,"text":"구조화된 결과 + 계산된 수치 + 원문 근거","textPreview":"구조화된 결과 + 계산된 수치 + 원문 근거","textChars":24,"textLines":1,"bbox":[260,506,912,38]}
+{"kind":"textbox","id":"sh/hsbmpobi","slide":16,"text":"AI가 기억에 의존하지 않고, 실제 데이터에서 답을 계산합니다.","textPreview":"AI가 기억에 의존하지 않고, 실제 데이터에서 답을 계산합니다.","textChars":35,"textLines":1,"bbox":[260,548,912,42]}
+{"kind":"shape","id":"sh/gr2lgjax","slide":16,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/3ut4ryto","slide":16,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/wcyare","slide":16,"text":"자연어 질문도 같은 온톨로지 구조를 사용합니다. 사용자가 ‘과거 로봇산업 육성 정책이 나왔을 때 어떤 테마가 반응했고, 당시 주도주는 5거래일 뒤 어떻게 움직였어?’라고 질문했다고 가정하겠습니다. 시스템은 로봇이라는 테마, 정책이라는 소재, 과거라는 기간, 5거래일 뒤라는 결과 조건을 추출해 QueryPlan으로 변환합니다. 그다음 PostgreSQL에 저장된 사건과 테마, 회사의 관계를 따라 조건에 맞는 사례를 찾고 가격 데이터에서 결과를 계산합니다. 마지막으로 계산된 수치와 근거 사건을 사용자가 이해하기 쉬운 문장으로 제공합니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/6dq5bn","slide":17,"title":"TRACE VIDEO","textShapes":20}
+{"kind":"shape","id":"sh/a90zqlo3","slide":17,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/xcril0nu","slide":17,"bbox":[68,46,7,68]}
+{"kind":"textbox","id":"sh/cbihsv69","slide":17,"text":"TRACE VIDEO","textPreview":"TRACE VIDEO","textChars":11,"textLines":1,"bbox":[92,43,650,28]}
+{"kind":"textbox","id":"sh/3m90fq5c","slide":17,"text":"질문 하나가 답변이 되기까지의 실제 경로","textPreview":"질문 하나가 답변이 되기까지의 실제 경로","textChars":22,"textLines":1,"bbox":[92,70,1030,48]}
+{"kind":"textbox","id":"sh/2l0zmlo7","slide":17,"text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[1170,47,42,28]}
+{"kind":"textbox","id":"sh/porihgni","slide":17,"text":"PostgreSQL에 저장된 온톨로지 관계와 질의 처리 경로를 시각화합니다.","textPreview":"PostgreSQL에 저장된 온톨로지 관계와 질의 처리 경로를 시각화합니다.","textChars":42,"textLines":1,"bbox":[92,128,1030,34]}
+{"kind":"shape","id":"sh/onihov6x","slide":17,"bbox":[68,188,778,420]}
+{"kind":"shape","id":"sh/7it0ra5w","slide":17,"bbox":[370,326,128,128]}
+{"kind":"shape","id":"sh/mhkzy5ob","slide":17,"bbox":[420,354,52,72]}
+{"kind":"shape","id":"sh/kryl47q1","slide":17,"bbox":[190,280,244,110]}
+{"kind":"shape","id":"sh/ls72dc7m","slide":17,"bbox":[181,271,18,18]}
+{"kind":"shape","id":"sh/ypg32x8v","slide":17,"bbox":[262,390,172,60]}
+{"kind":"shape","id":"sh/jqpkb2pg","slide":17,"bbox":[249,437,26,26]}
+{"kind":"shape","id":"sh/wny107q5","slide":17,"bbox":[370,250,64,140]}
+{"kind":"shape","id":"sh/xo729c7a","slide":17,"bbox":[363,243,14,14]}
+{"kind":"shape","id":"sh/a1wjyx8z","slide":17,"bbox":[434,246,86,144]}
+{"kind":"shape","id":"sh/bm5k72pk","slide":17,"bbox":[508,234,24,24]}
+{"kind":"shape","id":"sh/oze1wnqt","slide":17,"bbox":[434,338,210,52]}
+{"kind":"shape","id":"sh/90n25s7e","slide":17,"bbox":[636,330,16,16]}
+{"kind":"shape","id":"sh/pgfi9oj2","slide":17,"bbox":[434,390,262,92]}
+{"kind":"shape","id":"sh/ov6h0jih","slide":17,"bbox":[682,468,28,28]}
+{"kind":"shape","id":"sh/3ux07e1c","slide":17,"bbox":[434,390,96,140]}
+{"kind":"shape","id":"sh/2tozy90r","slide":17,"bbox":[523,523,14,14]}
+{"kind":"shape","id":"sh/1sfi54j6","slide":17,"bbox":[190,390,244,130]}
+{"kind":"shape","id":"sh/gr6hwzil","slide":17,"bbox":[184,514,12,12]}
+{"kind":"textbox","id":"sh/fqd03u10","slide":17,"text":"질문 입력에 따라 탐색되는 노드와 경로가 달라집니다.","textPreview":"질문 입력에 따라 탐색되는 노드와 경로가 달라집니다.","textChars":29,"textLines":1,"bbox":[112,548,690,32]}
+{"kind":"shape","id":"sh/ep4zu90f","slide":17,"bbox":[876,188,336,420]}
+{"kind":"textbox","id":"sh/lozih8za","slide":17,"text":"TRACE ORDER","textPreview":"TRACE ORDER","textChars":11,"textLines":1,"bbox":[906,212,276,34]}
+{"kind":"shape","id":"sh/0nq183ip","slide":17,"bbox":[909,273,26,26]}
+{"kind":"textbox","id":"sh/yh0nm1cv","slide":17,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[909,273,26,26]}
+{"kind":"textbox","id":"sh/ji9of6dg","slide":17,"text":"질문 조건 해석","textPreview":"질문 조건 해석","textChars":8,"textLines":1,"bbox":[950,272,218,28]}
+{"kind":"shape","id":"sh/kjipobu1","slide":17,"bbox":[922,300,0,20]}
+{"kind":"shape","id":"sh/5kr6hgvm","slide":17,"bbox":[909,322,26,26]}
+{"kind":"textbox","id":"sh/atgni1cz","slide":17,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[909,322,26,26]}
+{"kind":"textbox","id":"sh/bupob6dk","slide":17,"text":"Catalyst 탐색","textPreview":"Catalyst 탐색","textChars":11,"textLines":1,"bbox":[950,321,218,28]}
+{"kind":"shape","id":"sh/wfi5kru5","slide":17,"bbox":[922,349,0,20]}
+{"kind":"shape","id":"sh/xgr6dwvq","slide":17,"bbox":[909,371,26,26]}
+{"kind":"textbox","id":"sh/upk7ulc3","slide":17,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[909,371,26,26]}
+{"kind":"textbox","id":"sh/fatonqto","slide":17,"text":"반응 Theme 연결","textPreview":"반응 Theme 연결","textChars":11,"textLines":1,"bbox":[950,370,218,28]}
+{"kind":"shape","id":"sh/f29kjix4","slide":17,"bbox":[922,398,0,20]}
+{"kind":"shape","id":"sh/eh03qxgj","slide":17,"bbox":[909,420,26,26]}
+{"kind":"textbox","id":"sh/14r2lsfa","slide":17,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[909,420,26,26]}
+{"kind":"textbox","id":"sh/03ilsnyp","slide":17,"text":"당시 주도주 확인","textPreview":"당시 주도주 확인","textChars":9,"textLines":1,"bbox":[950,419,218,28]}
+{"kind":"shape","id":"sh/repkfix8","slide":17,"bbox":[922,447,0,20]}
+{"kind":"shape","id":"sh/qdgjmdgn","slide":17,"bbox":[909,469,26,26]}
+{"kind":"textbox","id":"sh/dgr2hsfy","slide":17,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[909,469,26,26]}
+{"kind":"textbox","id":"sh/sfylonyd","slide":17,"text":"가격 결과 계산","textPreview":"가격 결과 계산","textChars":8,"textLines":1,"bbox":[950,468,218,28]}
+{"kind":"shape","id":"sh/batkrmxc","slide":17,"bbox":[922,496,0,20]}
+{"kind":"shape","id":"sh/a9k3ihgr","slide":17,"bbox":[909,518,26,26]}
+{"kind":"textbox","id":"sh/8fuhcze9","slide":17,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[909,518,26,26]}
+{"kind":"textbox","id":"sh/tg3il4vu","slide":17,"text":"원문 근거 검증","textPreview":"원문 근거 검증","textChars":8,"textLines":1,"bbox":[950,517,218,28]}
+{"kind":"textbox","id":"sh/6dcza9w3","slide":17,"text":"영상 재생 전 질문을 읽고 → 재생 중에는 설명 없이 경로 변화에 집중","textPreview":"영상 재생 전 질문을 읽고 → 재생 중에는 설명 없이 경로 변화에 집중","textChars":39,"textLines":1,"bbox":[112,625,1056,30]}
+{"kind":"shape","id":"sh/7el0jedo","slide":17,"bbox":[68,684,1144,0]}
+{"kind":"textbox","id":"sh/gjehgje5","slide":17,"text":"DAY-JA-VIEW","textPreview":"DAY-JA-VIEW","textChars":11,"textLines":1,"bbox":[68,688,240,20]}
+{"kind":"notes","id":"nt/6dq5bn","slide":17,"text":"[영상 시작 전] 그렇다면 지금까지 설명한 기술들이 실제 질문 하나를 처리할 때 어떻게 연결되는지 보겠습니다. 사용자가 ‘과거 로봇산업 육성 정책이 나왔을 때 어떤 테마가 반응했고, 당시 주도주는 5거래일 뒤 어떻게 움직였어?’라고 질문한 상황입니다. 화면의 관계망은 특정 그래프 데이터베이스 화면이 아니라, 저희가 PostgreSQL에 저장한 온톨로지 관계와 실제 질문 처리 경로를 시각화한 것입니다.\n\n[영상 재생 — 재생 중에는 말하지 않음]\n\n[영상 종료 후] 질문이 입력되면 로봇, 정책, 과거 사건, 5거래일 뒤라는 조건을 해석합니다. 이후 관련 Catalyst와 반응 테마, 당시 주도주, 가격 결과와 원문 근거를 순서대로 탐색한 뒤 답변을 생성합니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}
+{"kind":"slide","id":"sl/4v59az","slide":18,"title":"EXPLAINABLE AI","textShapes":14}
+{"kind":"shape","id":"sh/jqpwzmh4","slide":18,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/kridsryp","slide":18,"bbox":[0,0,24,720]}
+{"kind":"textbox","id":"sh/lsre1wza","slide":18,"text":"EXPLAINABLE AI","textPreview":"EXPLAINABLE AI","textChars":14,"textLines":1,"bbox":[72,66,220,28]}
+{"kind":"textbox","id":"sh/a1gvmhgn","slide":18,"text":"무엇을 답했는가보다,\n왜 그 답이 나왔는가까지","textPreview":"무엇을 답했는가보다, | 왜 그 답이 나왔는가까지","textChars":25,"textLines":2,"bbox":[72,144,790,122]}
+{"kind":"textbox","id":"sh/b2pwv2h8","slide":18,"text":"DAY-JA-VIEW는 질문 해석부터 사건 선택,\n가격 결과와 원문 근거까지 처리 경로를 보여줍니다.","textPreview":"DAY-JA-VIEW는 질문 해석부터 사건 선택, | 가격 결과와 원문 근거까지 처리 경로를 보여줍니다.","textChars":56,"textLines":2,"bbox":[72,296,730,70]}
+{"kind":"shape","id":"sh/wnydo7yd","slide":18,"bbox":[128,486,968,0]}
+{"kind":"shape","id":"sh/xo7exczy","slide":18,"bbox":[98,456,60,60]}
+{"kind":"textbox","id":"sh/ux0fy1gr","slide":18,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[82,446,92,28]}
+{"kind":"textbox","id":"sh/vy9w76hc","slide":18,"text":"질문\n조건","textPreview":"질문 | 조건","textChars":5,"textLines":2,"bbox":[36,532,184,58]}
+{"kind":"shape","id":"sh/r6187a5s","slide":18,"bbox":[340,456,60,60]}
+{"kind":"textbox","id":"sh/ql8ryp4n","slide":18,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[324,446,92,28]}
+{"kind":"textbox","id":"sh/d8ja9kny","slide":18,"text":"Catalyst\n사건","textPreview":"Catalyst | 사건","textChars":11,"textLines":2,"bbox":[278,532,184,58]}
+{"kind":"shape","id":"sh/c7a90fmd","slide":18,"bbox":[582,456,60,60]}
+{"kind":"textbox","id":"sh/za1sbu54","slide":18,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[566,446,92,28]}
+{"kind":"textbox","id":"sh/e9sr2p4j","slide":18,"text":"Theme\n반응","textPreview":"Theme | 반응","textChars":8,"textLines":2,"bbox":[520,532,184,58]}
+{"kind":"shape","id":"sh/1cjad4na","slide":18,"bbox":[824,456,60,60]}
+{"kind":"textbox","id":"sh/0ba94zmp","slide":18,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[808,446,92,28]}
+{"kind":"textbox","id":"sh/nelsfe50","slide":18,"text":"Outcome\n가격","textPreview":"Outcome | 가격","textChars":10,"textLines":2,"bbox":[762,532,184,58]}
+{"kind":"shape","id":"sh/mdsr694f","slide":18,"bbox":[1066,456,60,60]}
+{"kind":"textbox","id":"sh/y9wbydon","slide":18,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1050,446,92,28]}
+{"kind":"textbox","id":"sh/ja5c7yp8","slide":18,"text":"Evidence\n근거","textPreview":"Evidence | 근거","textChars":11,"textLines":2,"bbox":[1004,532,184,58]}
+{"kind":"shape","id":"sh/kbed036t","slide":18,"bbox":[194,620,892,58]}
+{"kind":"textbox","id":"sh/lwnu987e","slide":18,"text":"오늘의 움직임을 발견하고, 과거의 근거로 이해하다","textPreview":"오늘의 움직임을 발견하고, 과거의 근거로 이해하다","textChars":27,"textLines":1,"bbox":[224,620,832,58]}
+{"kind":"notes","id":"nt/4v59az","slide":18,"text":"이 화면은 AI의 머릿속이나 숨겨진 사고 과정을 표현한 것이 아니라, 실제 답변에 사용된 데이터 관계와 처리 경로를 보여준 것입니다. 최근 AI 분야에서는 답변의 정확성뿐 아니라 왜 그런 답변이 나왔는지를 설명할 수 있는지가 중요합니다. DAY-JA-VIEW도 같은 원칙을 적용했습니다. 사용자의 질문을 어떻게 해석했는지, 어떤 과거 사건을 선택했는지, 어떤 회사와 가격 결과를 사용했는지를 단계별로 확인할 수 있습니다.\n\n[Sources]\n- C:/Users/KDA 6/Downloads/kda 2차 대본.md\n- https://github.com/moonspam/NanumSquare\n[/Sources]"}

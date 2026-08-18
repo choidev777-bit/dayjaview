@@ -121,6 +121,7 @@ def _loop(
     published: list[PublishedView],
     *,
     pending: list[StockRealtimeUpdate] | None = None,
+    market_open_at: datetime | None = None,
     market_close_at: datetime | None = None,
     before_publish=None,
 ) -> MarketPublishLoop:
@@ -137,6 +138,7 @@ def _loop(
         interval=timedelta(seconds=2),
         poll_updates=poll_updates,
         before_publish=before_publish,
+        market_open_at=market_open_at,
         market_close_at=market_close_at,
         clock=clock,
     )
@@ -206,6 +208,29 @@ def test_run_repeats_ticks_with_interval_until_cancelled() -> None:
     asyncio.run(scenario())
     assert delays == [2.0, 2.0, 2.0]
     assert [view.rankings.sequence for view in published] == [1, 2, 3]
+
+
+def test_data_status_follows_the_session_window() -> None:
+    """개장 전은 PREOPEN, 마감 후는 CLOSED. 게이트웨이 health는 장중에만 쓴다."""
+
+    pipeline = _pipeline()
+    clock = FakeClock(BASE)
+    published: list[PublishedView] = []
+    loop = _loop(
+        pipeline,
+        clock,
+        published,
+        market_open_at=BASE + timedelta(minutes=1),
+        market_close_at=BASE + timedelta(minutes=5),
+    )
+
+    assert loop.tick().rankings.data_status is DataStatus.PREOPEN
+
+    clock.advance(timedelta(minutes=2))
+    assert loop.tick().rankings.data_status is DataStatus.LIVE
+
+    clock.advance(timedelta(minutes=4))
+    assert loop.tick().rankings.data_status is DataStatus.CLOSED
 
 
 def test_market_close_is_evaluated_once_after_close_time() -> None:

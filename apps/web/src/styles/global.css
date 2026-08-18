@@ -2501,6 +2501,39 @@ a:focus-visible,
   overflow-wrap: anywhere;
 }
 
+/* 섹션 > 테마 > 종목 3단. 한 칸에 이어붙이면 500자짜리 문장이 되어 읽히지 않는다. */
+.research-themes {
+  display: grid;
+  gap: var(--djv-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.research-theme__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--djv-space-2);
+  margin: 0;
+  font-size: var(--djv-font-size-label);
+}
+
+.research-theme__stocks {
+  display: grid;
+  gap: 2px;
+  margin: var(--djv-space-1) 0 0;
+  padding: 0 0 0 var(--djv-space-3);
+  list-style: none;
+  font-size: var(--djv-font-size-caption);
+}
+
+.research-theme__stocks li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--djv-space-2);
+  color: var(--djv-color-text-muted);
+}
+
 .research-evidence {
   margin: var(--djv-space-2) 0 0;
   padding: 0;

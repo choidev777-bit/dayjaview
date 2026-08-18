@@ -2,7 +2,7 @@
 
 - **용도**: 작업 항목별 완료 여부만 기록한다. 작업 내용 정의는 [remaining_work.md](./remaining_work.md)가 원본이고, 이 문서는 상태판이다.
 - **갱신 규칙**: 작업을 끝내면 그 줄의 `[ ]`를 `[x]`로 바꾸고 뒤에 `— 완료일 commit해시`를 적는다. 못 끝냈으면 `[ ]`로 두고 남은 것을 한 줄로 적는다.
-- **마지막 갱신**: 2026-08-18 · 기준 commit `7688f24` 이후 worktree (**E-22 단계 0~6 구현, 로컬 서비스 DB 단계 1·4 적재와 bulk idempotency 검증 완료 — 겹 C 910건 사람 검수 완료, 유형별 최소 표본과 나머지 품질 관문 대기**) · `uv run pytest -q` 734 passed·10 skipped (2026-08-18 측정)
+- **마지막 갱신**: 2026-08-18 저녁 · 기준 commit `4bf2523` (**배포 bootstrap 멱등 수리 `35db617` 실배포 검증·C-13 임시 해법 `22c3f0b`·E-22 단계 0~6 커밋·검수 통과 질의 8종 운영 개방·운영 DB 단계 1·2 적재·D-13 장후 정합 실확인**) · `uv run pytest -q` 739 passed·10 skipped (2026-08-18 측정)
 
 ## 요약
 
@@ -10,12 +10,12 @@
 |---|---|---|
 | A. 실데이터 연결 | 8 / 8 | — |
 | B. 뉴스 근거 | 4 / 4 | — |
-| C. 화면 | 2 / 3 | C-13 |
+| C. 화면 | 3 / 3 | — |
 | D. 매일 자동 운영 | 3 / 3 | — |
 | E. 과거 연구 | 1 / 7 | E-16, E-18 ~ E-22 |
 | F. 출시 | 5 / 5 | — |
 
-**1차 출시선(A+B+C+D+F) 기준으로 C-13 장중 상세 갱신, 백업 암호문 외부 보관 확인이 남았다.** A-3은 2026-08-18 장중 검증으로 닫혔다. E는 출시 후 진행 중 — **E-17(온톨로지)은 완료**됐고, 그 확장인 **E-22가 2026-08-17에 착수돼 9단계 중 선행·2·5가 끝났고 0·1·3·4·6은 구현 후 검수 대기, 7은 미착수다.** E-21은 독립 항목으로 진행하지 않고 E-22 단계 5가 맡았다(완료).
+**1차 출시선(A+B+C+D+F)은 백업 암호문 외부 보관 확인(사람 항목) 하나만 남기고 전부 닫혔다.** A-3은 2026-08-18 장중 검증으로, C-13은 같은 날 임시 해법으로 닫혔고, 장후 D-13 정합도 2026-08-18 실이벤트로 확인됐다(matched 10·missedIntraday 0·unmatched 269). E는 출시 후 진행 중 — **E-17(온톨로지)은 완료**, **E-22는 단계 0~6 구현이 커밋됐고 검수 통과분(질의 8종)이 운영에 열렸다. 나머지 9종은 사람 검수팩 기입 대기, 7은 미착수.** E-21은 독립 항목으로 진행하지 않고 E-22 단계 5가 맡았다(완료).
 
 ## A. 연습용 데이터를 진짜 데이터로 바꾸기
 
@@ -26,7 +26,7 @@
   - 유동주식비율은 공시(OpenDART) 기준으로 자기완결 계산하고, 유동시총에 곱할 상장주식수만 KRX 최신을 쓴다. 두 값이 일치할 때만 확정하던 규칙은 기준일 차이로 정상 데이터를 버려 폐기했다.
   - 잔여 157종목: MISSING 118(공시 표 형식 상이) · CONFLICT 24(스팩·대량소각 등) · STALE 15(2025년 자료만 존재). 기업행위(권리락·액면분할) 원천이 없어 장중 시점 전일 종가가 비는 경우가 있다.
   - PD-001 잔여: 가중치 상한 20·25·30·35% 백테스트 미실시. 초기값 30%로 운영 중.
-- [x] **A-3** 키움 실시간 시세 장중 검증 — ①·②는 2026-08-15 `6bda408`. ③ 장중 검증 2026-08-18 완료 `cd55c3c` · `7688f24`. 10:54 KST 실장중에서 키움 접속 → 조건검색 후보 → 테마 집계 → 이벤트 생성(CANDIDATE 274·ACTIVE 4) → rankings 스냅샷 6테마 갱신까지 통과. 막고 있던 결함 2건을 고쳤다: (1) 거래일 `as_of`를 UTC 자정으로 붙여 KST 00:00 세션 생성이 매일 실패(`cd55c3c`), (2) 어댑터가 6자리 숫자만 받아 영문 섞인 KRX 단축코드 53종목이 구독 요구를 만드는 첫 tick에서 루프를 죽임(`7688f24`). 외부 관문이던 키움 지정단말기 인증은 운영 VM IP(158.180.89.244) 등록으로 해소. `data_status`는 DEGRADED가 정상 — 동시 구독 상한 180 대 명단 6,629종목이라 coverage가 COMPLETE가 될 수 없다. 11:20 KST에 ACTIVE 9·CANDIDATE 263·WEAKENING 5·CLOSED 1로 소멸 전이까지 실관측했다(fixture로는 못 보던 구간). 종가 기준 지표와 D-13 장후 정합은 15:30 이후에 확인한다.
+- [x] **A-3** 키움 실시간 시세 장중 검증 — ①·②는 2026-08-15 `6bda408`. ③ 장중 검증 2026-08-18 완료 `cd55c3c` · `7688f24`. 10:54 KST 실장중에서 키움 접속 → 조건검색 후보 → 테마 집계 → 이벤트 생성(CANDIDATE 274·ACTIVE 4) → rankings 스냅샷 6테마 갱신까지 통과. 막고 있던 결함 2건을 고쳤다: (1) 거래일 `as_of`를 UTC 자정으로 붙여 KST 00:00 세션 생성이 매일 실패(`cd55c3c`), (2) 어댑터가 6자리 숫자만 받아 영문 섞인 KRX 단축코드 53종목이 구독 요구를 만드는 첫 tick에서 루프를 죽임(`7688f24`). 외부 관문이던 키움 지정단말기 인증은 운영 VM IP(158.180.89.244) 등록으로 해소. `data_status`는 DEGRADED가 정상 — 동시 구독 상한 180 대 명단 6,629종목이라 coverage가 COMPLETE가 될 수 없다. 11:20 KST에 ACTIVE 9·CANDIDATE 263·WEAKENING 5·CLOSED 1로 소멸 전이까지 실관측했다(fixture로는 못 보던 구간). 종가 기준 지표와 D-13 장후 정합은 15:30 이후에 확인한다. → 같은 날 17:30 장후 cron에서 D-13이 그날 장중 Event 10건을 MATCHED로 연결(missedIntraday 0·unmatched 269, run 7 SUCCEEDED)해 확인 완료.
 - [x] **A-4** 파이프라인 상시 실행 + DB 저장 — 2026-08-15 `4dbee13`
   - 상시 publish 루프, DSN 있으면 Postgres 저장소, 장 마감 `close_market`. DSN 통합 테스트는 일회용 PostgreSQL 16으로 실행해 통과 확인.
 - [x] **A-5** 테마 상세 화면 데이터 연결 — 2026-08-15 `4a9b538`
@@ -60,7 +60,7 @@
 
 - [x] **C-0** 시안 디자인 전면 이식 — 2026-08-15 `dd62033` (토큰 `tokens.css`, 브랜드색 `#ff6600`, 하단 탭 4개)
 - [x] **C-12** 인사이트 트리맵 — 2026-08-15 `4eb51c6`
-- [ ] **C-13** 장중 테마 상세·근거 갱신 — 미착수, 2026-08-17 발견. 실 API에서 상세 화면 수치가 진입 시점에 멈춘다. 원인은 `event_state_changed` 토픽을 **발행하는 코드가 없어** 프런트 캐시가 비워지지 않는 것. 정본 해법은 백엔드 발행(params가 구독자별 `eventIds`라 hub fan-out 또는 계약 변경 필요), 임시 해법은 프런트 캐시 TTL. 상세는 [remaining_work.md](./remaining_work.md) C-13.
+- [x] **C-13** 장중 테마 상세·근거 갱신 — 2026-08-18 `22c3f0b` 임시 해법(문서가 지정한 경로). rankings 스냅샷이 도착할 때마다 상세 캐시를 비워 REST 재조회로 최신값을 받고, 근거는 30스냅샷(발행 2초 주기 기준 약 60초)마다 비운다 — 매번 비우면 "더 보기" 페이지네이션이 리셋되기 때문. WS 구독 목록이 상위 10개뿐이라 11위 이하 테마 상세가 갱신 대상에서 빠지던 부수 문제도 함께 사라진다. 정본 해법(백엔드 `event_state_changed` 발행 — hub fan-out 또는 계약 변경 필요)은 선택 후속으로 남고, 발행이 붙으면 프런트 임시 해법을 걷어낸다.
 
 ## D. 매일 자동 운영
 
@@ -99,7 +99,7 @@
 - [ ] **E-20** 유사사례 화면 — 미착수. E-19 통과 전 노출 금지(현재 `HistoricalGatePage`가 gate-off 표시).
 - [ ] **E-21** 리서치 탭 자연어 질의 — **E-22 단계 5로 이관.** 답할 질문의 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md) 4.0절 **질의 17종**이고, 요청 방식은 자연어 입력 하나다(날짜·종목을 클릭해 고르는 조회 화면은 만들지 않는다). 기존 "3단계" 구분은 데이터 확보 순서로만 남는다. 요구사항 문서는 2026-08-15 작성 완료(PRD FR-11·6.2, screen_spec 11.7).
   - **`DAY_MOVERS` 조회 화면·공개 엔드포인트는 제거했다** — `packages/infostock/daily_read.py`의 읽기 로직은 `PostgresResearchRepository`의 `DAY_MOVERS` 경로로 흡수했고, `GET /v1/daily/movers`·`DayMoversPage.tsx`·`/movers` route·홈 진입 링크·`getDayMovers` repository 메서드·`DayMovers*` 계약 스키마·fixture를 모두 없앴다. 공개 표면은 `POST /v1/research/answers` 하나다. 답변에 dataset·parser·어휘·query 버전이 붙어 13절 조건을 채웠다. `daily_read.py` 자체는 단계 0 겹 B 대조 스크립트(`verify_answers.py`)가 쓰는 두 번째 경로라 남겼다.
-- [ ] **E-22** 회사 중심 사건 온톨로지·자연어 질의 확장 — **2026-08-17 착수, 단계 0~6 구현 및 로컬 서비스 DB 적재 완료·품질 관문 대기.** 정본은 [company_event_ontology_implementation_plan.md](./company_event_ontology_implementation_plan.md)이고 [remaining_work.md](./remaining_work.md) E-22는 목차·상태만 둔다. 선행·단계 2·5는 완료됐고 단계 0·1·3·4·6 구현도 같은 commit에 담겼다. **남은 것: 겹 C test 최소 30건 미달 13유형 보강, 회사 역할·사건 단계·금액·중복 쌍 사람 검수, 11.2절 품질 기준 통과, 승인 artifact 버전 고정, 단계 7(E-19 gate).**
+- [ ] **E-22** 회사 중심 사건 온톨로지·자연어 질의 확장 — **2026-08-17 착수, 단계 0~6 구현 완료. 2026-08-18 검수 통과분 운영 개방**: 겹 A 1,150·겹 C 1,910(원본 1,000+보강 910) 전량 `HUMAN_CONFIRMED`, 해석기 promotionEligible(test 820, 유형 98.41%) — goldset·계약·계산 fixture만으로 게이트가 닫히는 **8종**(`DAY_MOVERS`·`PERIOD_SUMMARY`·`STOCK_DAY_REASON`·`STOCK_TOP_MOVES`·`STOCK_THEME_MEMBERSHIP`·`THEME_MEMBERS`·`THEME_HISTORY`·`THEME_COMPARISON`)을 `RESEARCH_VERIFIED_QUERY_TYPES`로 열고 운영 DB에 단계 1(daily mention)·단계 2(회사 master)를 적재했다. **남은 것: 사람 검수팩 기입**(`research/ontology/human_quality_review/` — goldset 13유형 top-up 62·회사 역할 240·사건 단계 314·금액 111·중복 쌍 130·daily span 90·프로젝트 30, 전부 `AI_DRAFT`) **후 나머지 9종 개방, 승인 artifact 버전 고정, 단계 7(E-19 gate).** 단계 3·4 데이터는 해당 유형이 닫혀 있는 동안 운영 적재를 보류한다(2.0.0 파서로 적재된 운영 테마 원문과의 대조 문제 포함).
   - [x] **선행** E-17 라벨 DB 적재 — 2026-08-17 `9f5e2de`. `0007`이 `ontology` 스키마와 `catalyst_vocabularies`·`catalyst_types`·`theme_history_labels`·`theme_history_label_spans` 생성. 적재 job `load_theme_catalyst_labels.py`(버전 append·idempotent). "이 소재 유형에 과거 어떤 테마가 반응했나"를 SQL 한 번으로 계산 가능해졌다.
   - [ ] **단계 0** 질문 계약·gold set — 17종 exact enum·필수 슬롯·집계 단위·선행 단계와 재현 hash를 `query_contracts.py`로 고정했다. 겹 A `split` 포함 1,150문장은 사용자 검수를 거쳐 전부 `HUMAN_CONFIRMED`이며 test 820건의 `promotionEligible=true`를 확인했다. 겹 C 보강 910건도 전부 `HUMAN_CONFIRMED`다. 기존분과 합친 test 955건은 strict 88.17%, lenient 92.25%, type recall 94.14%, direction 99.79%, certainty 94.76%, 누락 0건이다. **남은 것: test 30건 미만인 13유형(현재 25~29건) 추가 보강.** `AI_DRAFT`·`AI_CROSS_CHECKED`는 승격 판정에 쓰지 않는다.
   - [ ] **단계 1** DailyFeaturedTheme 파싱 확장 — `0011` typed source mention, Daily 변환·idempotent 적재·worker·coverage 보고서를 구현하고 로컬 서비스 DB에 적재했다. 활성 4,655 posts·213,446 relations에 mention 213,446건이 연결됐고 `PARSE_PARTIAL` 249건, 미지원 post 0건, `missingRelations=0`, `mismatchedRelations=0`이다. **남은 것: 사람 span/role 표본 검수.** `STOCK_DAY_REASON` 실제 응답은 단계 5 범위다.
@@ -166,8 +166,8 @@
 |---|---|---|
 | 주식장 개장 시간 | A-3 | 개장일 장중 실가동 관찰 |
 | 백업 암호문 VM 밖 보관 | F-25 후속 안전조치 | 사용자가 비밀번호 관리자 등에 직접 보관 확인 |
-| gold set 겹 C 최소 표본 보강 | E-22 겹 C 승격 판정 | 보강 910건의 `HUMAN_CONFIRMED` 라벨 확보 완료. 겹 A 1,150건도 검수 완료. test 30건 미만 13유형은 추가 표집·검수 필요 (계획서 11.1.2·11.2) |
-| 회사 역할·사건 단계·금액·중복 쌍 검수 | 마스터 플랜 1단계 품질 gate | 사람 표본으로 역할 precision·macro F1, 단계 정확도, 금액 exact match, 중복 pair precision·recall 확정 |
+| gold set 겹 C 최소 표본 보강 | E-22 13유형 의존 질의 개방 | 검수팩 `research/ontology/human_quality_review/goldset_topup_candidate.tsv` 62건의 `human_*` 열 기입 (계획서 11.1.2·11.2) |
+| 회사 역할·사건 단계·금액·중복 쌍 검수 | E-22 나머지 질의 9종 개방 | 검수팩 `research/ontology/human_quality_review/` — 역할 240·단계 314·금액 111·중복 130·daily 90·프로젝트 30행의 `human_*` 열 기입 후 11.2절 판정 |
 | E-16 가격 corpus 배포 주입 | E-22 단계 6 결과 질문 | `research/data/daily_prices.sqlite`(1.66GB, 로컬 전용)를 운영에 두고 `PRICE_CORPUS_PATH`로 가리켜야 outcome gate가 열린다 |
 | 2인 블라인드 평가 | E-19 → E-20 | 사람 평가 통과 |
 | 과거 주가 2005~2009 원천 | E-16 잔여 구간 (E-18·E-19의 2010년 이전 사건 outcome) | KRX Open API가 미제공(실측) — 대체 원천 확보 또는 2010년 이후로 범위 확정, 사용자 판단 |

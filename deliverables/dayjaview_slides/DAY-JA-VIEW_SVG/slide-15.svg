@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="유사사례 분석">
+  <title>유사사례 분석</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-15" data-title="유사사례 분석">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TECH 05 · SIMILARITY</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">문장 유사도에 사건의 구조를 더했습니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">15</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">소재 유형 · 주체 · 행동 · 진행 단계가 함께 닮은 과거 Event를 찾습니다.</tspan></text>
+    <rect x="68" y="220" width="190" height="190" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="163" y="262.96000000000004" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="163" dy="0">01</tspan></text>
+    <text x="163" y="311.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="163" dy="0">오늘 Event</tspan></text>
+    <text x="163" y="346.3" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="163" dy="0">정책</tspan><tspan x="163" dy="23">정부</tspan><tspan x="163" dy="23">기대</tspan></text>
+    <polygon points="264,308.28 287.56,308.28 287.56,299 302,315 287.56,331 287.56,321.72 264,321.72" fill="#401600" data-editable="shape"/>
+    <rect x="312" y="220" width="190" height="190" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="407" y="262.96000000000004" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">02</tspan></text>
+    <text x="407" y="311.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">과거 후보</tspan></text>
+    <text x="407" y="357.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="407" dy="0">현재 이전</tspan><tspan x="407" dy="23">사건만</tspan></text>
+    <polygon points="508,308.28 531.56,308.28 531.56,299 546,315 531.56,331 531.56,321.72 508,321.72" fill="#401600" data-editable="shape"/>
+    <rect x="556" y="220" width="190" height="190" rx="22" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="651" y="262.96000000000004" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="651" dy="0">03</tspan></text>
+    <text x="651" y="311.2" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="651" dy="0">복합 유사도</tspan></text>
+    <text x="651" y="357.8" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="651" dy="0">텍스트</tspan><tspan x="651" dy="23">+ 관계</tspan></text>
+    <polygon points="752,308.28 775.56,308.28 775.56,299 790,315 775.56,331 775.56,321.72 752,321.72" fill="#401600" data-editable="shape"/>
+    <rect x="800" y="220" width="190" height="190" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="895" y="262.96000000000004" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="895" dy="0">04</tspan></text>
+    <text x="895" y="311.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="895" dy="0">중복 제거</tspan></text>
+    <text x="895" y="357.8" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="895" dy="0">동일 사건</tspan><tspan x="895" dy="23">1회 집계</tspan></text>
+    <polygon points="996,308.28 1019.56,308.28 1019.56,299 1034,315 1019.56,331 1019.56,321.72 996,321.72" fill="#401600" data-editable="shape"/>
+    <rect x="1044" y="220" width="190" height="190" rx="22" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1139" y="262.96000000000004" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1139" dy="0">05</tspan></text>
+    <text x="1139" y="311.2" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1139" dy="0">결과 연결</tspan></text>
+    <text x="1139" y="346.3" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="1139" dy="0">T+1</tspan><tspan x="1139" dy="23">T+5</tspan><tspan x="1139" dy="23">T+20</tspan></text>
+    <rect x="88" y="462" width="1104" height="126" rx="22" fill="#FFFFFF" stroke="#FD9F28" stroke-width="3" data-editable="shape"/>
+    <text x="116" y="502.58" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="700" text-anchor="start" data-editable="text"><tspan x="116" dy="0">표현은 달라도</tspan></text>
+    <text x="116" y="544.13" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="800" text-anchor="start" data-editable="text"><tspan x="116" dy="0">실제 사건 구조가 같으면 찾습니다.</tspan></text>
+    <line x1="478" y1="484" x2="478" y2="564" stroke="#EEEEEE" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <rect x="520" y="490" width="144" height="42" rx="21" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="592" y="515.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="592" dy="0">소재 유형</tspan></text>
+    <rect x="674" y="490" width="126" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="737" y="515.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="737" dy="0">사건 주체</tspan></text>
+    <rect x="810" y="490" width="112" height="42" rx="21" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="866" y="515.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="866" dy="0">행동</tspan></text>
+    <rect x="932" y="490" width="148" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1006" y="515.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1006" dy="0">진행 단계</tspan></text>
+    <text x="800" y="561.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="800" dy="0">문장 임베딩 + 온톨로지 관계 비교</tspan></text>
+    <text x="640" y="636.1999999999999" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">사례 선택이 끝난 뒤에만 가격 결과를 연결해 비교 기준을 완성합니다.</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

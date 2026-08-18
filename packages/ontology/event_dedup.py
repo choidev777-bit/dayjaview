@@ -16,7 +16,7 @@ from packages.infostock.hashing import sha256_json
 from .event_structure import CatalystDraft, SourceMentionDraft, ThemeReactionDraft
 from .projects import EventStage, event_stage_rank
 
-DEDUP_POLICY_VERSION = "event-dedup/1.0.1"
+DEDUP_POLICY_VERSION = "event-dedup/1.0.2"
 
 
 class CatalystRelationType(StrEnum):
