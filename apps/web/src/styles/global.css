@@ -1580,12 +1580,19 @@ a:focus-visible,
   list-style: none;
 }
 
+/* 기사 한 건을 연한 회색 판에 올린다. 선 하나로 가르면 어디까지가 한 건인지
+   읽히지 않고, 아래 원문 링크도 본문에 딸린 글처럼 보인다. */
 .evidence-list li {
   display: grid;
   gap: 2px var(--djv-space-2);
   grid-template-columns: 42px minmax(0, 1fr);
-  padding: var(--djv-space-3) 0;
-  border-top: 1px solid var(--djv-color-border);
+  padding: var(--djv-space-3);
+  border-radius: var(--djv-radius-md);
+  background: var(--djv-color-surface-muted);
+}
+
+.evidence-list li + li {
+  margin-top: var(--djv-space-2);
 }
 
 /* 앞 시각을 빼면 왼쪽 칸이 빈 채로 남는다. 한 칸으로 접고 본문을 왼쪽 끝에 맞춘다. */
@@ -1602,22 +1609,14 @@ a:focus-visible,
   font-size: 10px;
 }
 
+/* 배치만 여기서 잡는다. 생김새는 `.evidence-list__source`가 정한다.
+   여기에 `display`를 두면 특이도가 높아 그쪽 flex를 눌러 버린다. */
 .evidence-list a {
-  display: block;
   grid-column: 2;
-  font-size: var(--djv-font-size-label);
 }
 
-.evidence-list a strong {
-  display: block;
-}
-
-.evidence-list a span {
-  display: block;
-  margin-top: 3px;
-  color: var(--djv-color-text-muted);
-  font-size: 10px;
-}
+/* `a` 안에 제목이 들어가던 시절의 규칙이었다. 지금은 매체 줄과 원문 링크만 들어가고
+   둘 다 제 클래스를 갖는다. 여기 남겨 두면 색과 크기를 덮어써서 링크가 다시 회색이 된다. */
 
 .evidence-list p {
   margin: var(--djv-space-1) 0 0;
@@ -2928,12 +2927,36 @@ a:focus-visible,
 }
 
 /* 근거 출처 한 줄. 제목 아래 옅게 둔다. */
+/* 매체·시각은 메타 정보로 두고 `원문`만 눌리는 것으로 보이게 한다.
+   screen_spec §4.2가 SINGLE_SOURCE에 매체·시각·원문 링크를 요구하므로 셋 다 남긴다. */
 .evidence-list__source {
-  display: block;
-  margin-top: 3px;
-  color: var(--djv-color-text-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px var(--djv-space-2);
+  margin-top: var(--djv-space-2);
   font-size: 11px;
   text-decoration: none;
+}
+
+.evidence-list__meta {
+  color: var(--djv-color-text-muted);
+}
+
+.evidence-list__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--djv-color-brand);
+  font-size: var(--djv-font-size-caption);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.evidence-list__open svg {
+  width: 10px;
+  height: 10px;
 }
 
 /* 전체보기 화면의 아코디언도 목록 아랫변으로 쓴다. */

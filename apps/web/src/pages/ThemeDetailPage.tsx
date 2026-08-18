@@ -180,11 +180,26 @@ function EvidenceList({
                 지울 수 없다 (screen_spec §4.2 SINGLE_SOURCE `매체·시각·원문 제공`). */}
             {showSource ? (
               <a className="evidence-list__source" href={item.originalUrl} target="_blank" rel="noreferrer">
-                {item.sourceName} ·{' '}
-                {item.publishedAt
-                  ? formatTime(item.publishedAt)
-                  : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}{' '}
-                · 원문
+                <span className="evidence-list__meta">
+                  {item.sourceName} ·{' '}
+                  {item.publishedAt
+                    ? formatTime(item.publishedAt)
+                    : `발행 시각 미확인 · 수집 ${formatTime(item.receivedAt)}`}
+                </span>
+                {/* 회색 한 줄에 묻혀 누를 수 있는 줄 모른다는 지적을 받았다. 여기만 색을 준다. */}
+                <span className="evidence-list__open">
+                  원문
+                  <svg viewBox="0 0 12 12" aria-hidden="true">
+                    <path
+                      d="M4.5 1.5h6v6M10.5 1.5 5 7M9 7.5v2.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .5-.5H4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.3"
+                    />
+                  </svg>
+                </span>
               </a>
             ) : null}
             {/* 인포스탁 기록은 제목과 요약이 같은 문장인 경우가 많다. 그러면 같은 글이 두 번
