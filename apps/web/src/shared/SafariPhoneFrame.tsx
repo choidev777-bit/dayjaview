@@ -80,12 +80,15 @@ function TabsIcon() {
 }
 
 /**
- * Fixture 전용 모바일 Safari 목업.
- * 실제 제품 진입점(main.tsx)에는 적용하지 않고, 비교용 로컬 화면에서만 사용한다.
+ * Fixture 전용 모바일 목업.
+ *
+ * `bare`를 켜면 주소창과 하단 메뉴를 뺀다. 홈 화면에 추가해 전체화면으로 연
+ * 상태(PWA)와 같은 모습이고, 시연 영상 촬영용이다. 이때 웹 영역은 852에서
+ * 상태 표시줄과 홈 인디케이터만 뺀 772px이 된다.
  */
-export function SafariPhoneFrame() {
+export function SafariPhoneFrame({ bare = false }: { bare?: boolean } = {}) {
   return (
-    <div className="safari-preview">
+    <div className={`safari-preview${bare ? ' safari-preview--bare' : ''}`}>
       <div className="safari-preview__device">
         <div className="safari-preview__status" aria-hidden="true">
           <span>9:41</span>
@@ -95,21 +98,25 @@ export function SafariPhoneFrame() {
             <BatteryIcon />
           </span>
         </div>
-        <div className="safari-preview__address" aria-label="Safari 주소창">
-          <span className="safari-preview__address-lock" aria-hidden="true">⌁</span>
-          <span className="safari-preview__address-label">dayjaview.local</span>
-          <span className="safari-preview__address-refresh" aria-hidden="true">↻</span>
-        </div>
+        {bare ? null : (
+          <div className="safari-preview__address" aria-label="Safari 주소창">
+            <span className="safari-preview__address-lock" aria-hidden="true">⌁</span>
+            <span className="safari-preview__address-label">dayjaview.local</span>
+            <span className="safari-preview__address-refresh" aria-hidden="true">↻</span>
+          </div>
+        )}
 
         <iframe className="safari-preview__viewport" src={innerSrc()} title="DAY-JA-VIEW 미리보기" />
 
-        <div className="safari-preview__toolbar" aria-label="Safari 하단 메뉴">
-          <button type="button" aria-label="뒤로" tabIndex={-1}><BackIcon /></button>
-          <button type="button" aria-label="앞으로" tabIndex={-1}><BackIcon direction="right" /></button>
-          <button type="button" aria-label="공유" tabIndex={-1}><ShareIcon /></button>
-          <button type="button" aria-label="책갈피" tabIndex={-1}><BookmarksIcon /></button>
-          <button type="button" aria-label="탭" tabIndex={-1}><TabsIcon /></button>
-        </div>
+        {bare ? null : (
+          <div className="safari-preview__toolbar" aria-label="Safari 하단 메뉴">
+            <button type="button" aria-label="뒤로" tabIndex={-1}><BackIcon /></button>
+            <button type="button" aria-label="앞으로" tabIndex={-1}><BackIcon direction="right" /></button>
+            <button type="button" aria-label="공유" tabIndex={-1}><ShareIcon /></button>
+            <button type="button" aria-label="책갈피" tabIndex={-1}><BookmarksIcon /></button>
+            <button type="button" aria-label="탭" tabIndex={-1}><TabsIcon /></button>
+          </div>
+        )}
         <div className="safari-preview__home-indicator" aria-hidden="true" />
       </div>
     </div>

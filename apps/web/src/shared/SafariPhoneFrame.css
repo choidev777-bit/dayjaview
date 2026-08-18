@@ -137,3 +137,18 @@
   background: #1c1c1e;
   transform: translateX(-50%);
 }
+
+/*
+ * 주소창·하단 메뉴 없는 판. `?frame=device`.
+ * 홈 화면에 추가해 전체화면으로 연 상태와 같다. 시연 영상은 이쪽으로 찍는다.
+ * 852 - 54(상태) - 26(홈 인디케이터) = 772px가 웹 영역이 된다.
+ */
+.safari-preview--bare .safari-preview__device {
+  /* 브라우저 크롬이 없으므로 상태 표시줄도 앱 배경을 따라간다. 실제 PWA가 그렇다. */
+  background: #ffffff;
+}
+
+/* 영상에서는 뒤가 검은 편이 화면에 눈이 간다. */
+.safari-preview--bare {
+  background: #101012;
+}

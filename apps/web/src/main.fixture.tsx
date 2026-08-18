@@ -61,9 +61,16 @@ const root = document.getElementById('root');
 if (!root) throw new Error('애플리케이션 root를 찾을 수 없습니다.');
 
 // 실기기에서는 브라우저가 이미 주소창과 하단 메뉴를 갖고 있다. 목업 프레임은 데스크톱에서
-// 그 높이를 재보려고 만든 것이라 `?frame=phone`으로 명시할 때만 켠다.
+// 그 높이를 재보려고 만든 것이라 값을 명시할 때만 켠다.
+//   phone  주소창·하단 메뉴가 있는 Safari. 실제로 깎이는 높이(672px)를 확인할 때
+//   device 주소창·하단 메뉴가 없는 기기만. 전체화면(PWA)과 같고, 시연 영상 촬영용
+const frame = params.get('frame');
 createRoot(root).render(
   <StrictMode>
-    {params.get('frame') === 'phone' ? <SafariPhoneFrame /> : <App repository={repository} />}
+    {frame === 'phone' || frame === 'device' ? (
+      <SafariPhoneFrame bare={frame === 'device'} />
+    ) : (
+      <App repository={repository} />
+    )}
   </StrictMode>,
 );
