@@ -30,7 +30,7 @@ from .transform import parse_cause_sentence
 if TYPE_CHECKING:
     from packages.infostock.models import ImportBundle, StockReference, ThemeHistory
 
-COMPANY_ROLE_TRANSFORM_VERSION = "company-role-transform/1.0.4"
+COMPANY_ROLE_TRANSFORM_VERSION = "company-role-transform/1.0.5"
 
 CompanyRole = Literal[
     "ACTOR",
@@ -482,6 +482,18 @@ def _misleading_marker(text: str, marker: str, position: int) -> bool:
             for word in ("이용자", "고객", "소비자", "가입자", "소액결제")
         ):
             return True
+    # 실적 '전망·기대'는 아직 발표·공시된 사건이 아니다
+    # (2026-08-19 확증 검수 R2-005·R2-011·R2-017·R2-029).
+    if marker in ("호실적", "실적 발표", "잠정 실적", "영업이익", "매출액"):
+        after = text[position + len(marker) : position + len(marker) + 10]
+        if any(
+            word in after
+            for word in ("전망", "기대", "컨센서스", "우려", "영향", "하회")
+        ):
+            return True
+    # '상장 흥행'의 사건은 흥행이지 발행 행위가 아니다(확증 검수 R2-017).
+    if marker == "상장" and text[end : end + 4].lstrip().startswith("흥행"):
+        return True
     return False
 
 
@@ -827,6 +839,14 @@ def _role_evidence(
         and _is_subject(text, occurrence, action[0], occurrences)
     ):
         found["ACTOR"] = action
+
+    # '실적 발표'의 발표는 공시 행위의 일부다 — 같은 구간을 근거로
+    # 발행·공시 주체와 행동 주체를 겹쳐 붙이지 않는다(확증 검수 R2-019).
+    if "ISSUER" in found and "ACTOR" in found:
+        issuer_span = found["ISSUER"]
+        actor_span = found["ACTOR"]
+        if actor_span[0] < issuer_span[1] and issuer_span[0] < actor_span[1]:
+            del found["ACTOR"]
 
     # 행동 표지가 수혜 표지보다 가까우면 회사는 주체다 — 투자·계약의
     # 주체를 수혜자로 뒤집어 읽는 오류가 검수 30건 중 27건이었다.

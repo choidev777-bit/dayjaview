@@ -414,3 +414,40 @@ def test_stage_detection_follows_2026_08_19_human_review_rulings() -> None:
     }
     for raw_text, expected in cases.items():
         assert detect_event_stage(raw_text).stage is expected, raw_text
+
+
+def test_2026_08_19_v2_confirmation_review_rulings() -> None:
+    """확증 검수(v2)가 잡은 서수·부정어 오류를 고정한다."""
+
+    # 서수·순위·연령의 대/기는 수량이 아니다(M2-003·M2-009·M2-012·M2-015)
+    for raw_text in (
+        "제21대 대통령선거 사전투표 개시 소식",
+        "文 대통령, 세계 7대 우주강국 도약 발언",
+        "코로나19 백신 접종 완료자 및 50대 미만 재택치료 검토 소식",
+        "3기 신도시 발표 수혜 기대감",
+        "대통령직 인수위원회의 국내 5대 건설사 CEO 면담 소식",
+    ):
+        assert extract_catalyst_values(raw_text) == (), raw_text
+
+    # 정당한 수량은 유지된다(M2-006·M2-018·M2-021)
+    for raw_text, expected in (
+        ("정부, 원전 6기 추가 재가동 추진 소식", Decimal("6")),
+        ("국내 9개 게임사, NFT 도입 선언", Decimal("9")),
+        ("반도체 소부장 특화단지 2개 추가 지정", Decimal("2")),
+    ):
+        quantities = [
+            value
+            for value in extract_catalyst_values(raw_text)
+            if value.fact_type is ValueFactType.QUANTITY
+        ]
+        assert [item.normalized_value for item in quantities] == [expected], raw_text
+
+    # '타결 불발'은 완료가 아니다(S2-015)
+    assert (
+        detect_event_stage("美-이란 핵협상 타결 불발 소식").stage
+        is not EventStage.COMPLETED
+    )
+    # 사업자 선정은 수주 확정이다(S2-007·S2-019, P-012)
+    assert (
+        detect_event_stage("최종 사업자 선정 소식").stage is EventStage.SIGNED
+    )
