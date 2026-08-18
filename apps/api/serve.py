@@ -51,7 +51,9 @@ from packages.pipeline import (
     load_theme_universe,
     prepare_reference_data,
     session_close_at,
+    session_open_at,
 )
+from packages.pipeline.live import GATEWAY_DATA_STATUS
 from packages.pipeline.market import RANKINGS_PARAMS, TREEMAP_PARAMS
 from packages.realtime import (
     InMemorySnapshotRepository,
@@ -85,6 +87,7 @@ INTRADAY_HISTORY_ROOT_ENV = "INTRADAY_HISTORY_ROOT"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 DEFAULT_INTRADAY_HISTORY_ROOT = "./data/intraday-history"
 PUBLISH_INTERVAL = timedelta(seconds=2)
+MARKET_OPEN_KST = time(9, 0)
 MARKET_CLOSE_KST = time(15, 30)
 
 LOG = logging.getLogger("dayjaview.serve")
@@ -162,10 +165,7 @@ def _to_update(
 
 
 def _to_data_status(status: GatewayDataStatus) -> DataStatus:
-    try:
-        return DataStatus(status.value)
-    except ValueError:
-        return DataStatus.DEGRADED
+    return GATEWAY_DATA_STATUS[status]
 
 
 def theme_universe_from_environment(
@@ -607,6 +607,9 @@ class LiveSessionController:
             interval=PUBLISH_INTERVAL,
             poll_updates=runner.poll_updates,
             before_publish=sync_evidence,
+            market_open_at=session_open_at(
+                market_date, open_time=MARKET_OPEN_KST
+            ),
             market_close_at=session_close_at(
                 market_date, close_time=MARKET_CLOSE_KST
             ),

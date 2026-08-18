@@ -18,6 +18,7 @@ from packages.adapters.kiwoom import (
     SubscriptionManager,
 )
 from packages.domain import (
+    DataStatus,
     MembershipRole,
     StockReference,
     ThemeMember,
@@ -175,6 +176,26 @@ def test_candidates_expand_to_theme_subscriptions_and_updates() -> None:
     assert set(replace_calls[0].stock_ids) == set(THEME_MEMBERS["thm_full"])
     assert gateway.connection is not None
     assert runner.data_status().value in {"LIVE", "DEGRADED", "DELAYED", "PREOPEN", "CLOSED"}
+
+
+def test_stale_heartbeat_reads_as_delayed_not_degraded() -> None:
+    """게이트웨이 STALE은 수신 지연이다. DEGRADED로 뭉개면 화면 문구가 틀린다."""
+
+    messages = (
+        ws_envelope(SESSION_1, 1, condition_enter("000001"), at=BASE),
+        ws_envelope(SESSION_1, 2, trade("000001", "+10300"), at=BASE + timedelta(seconds=1)),
+    )
+    adapter = FixtureKiwoomAdapter(
+        (session_fixture(SESSION_1, messages, connected_at=BASE),)
+    )
+    clock = FakeClock(BASE + timedelta(seconds=5))
+    runner, gateway = make_runner(adapter, clock)
+    runner.poll_updates()
+
+    clock.advance(gateway.heartbeat_timeout + timedelta(seconds=10))
+
+    assert gateway.phase is ConnectionPhase.CONNECTED
+    assert runner.data_status() is DataStatus.DELAYED
 
 
 def test_supplement_covers_unsubscribed_demand_with_throttle() -> None:
