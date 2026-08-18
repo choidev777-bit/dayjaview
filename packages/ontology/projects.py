@@ -49,7 +49,8 @@ _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
     (EventStage.DELAYED, ("납기 연기", "일정 연기", "지연", "연기", "차질")),
     (
         EventStage.COMPLETED,
-        ("납품 완료", "사업 완료", "최종 통과", "완공", "준공", "완료"),
+        # 핵협상 타결은 외교 사건의 종결이다 — 사업 계약 SIGNED가 아니다(검수 S-134).
+        ("납품 완료", "사업 완료", "최종 통과", "완공", "준공", "완료", "핵협상 타결"),
     ),
     (
         EventStage.EXECUTING,
@@ -83,18 +84,23 @@ _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
         ),
     ),
     (
+        EventStage.SIGNED,
+        # 낙찰은 수주가 확정된 결과다(검수 S-008).
+        ("낙찰",),
+    ),
+    (
         EventStage.PREFERRED_BIDDER,
         (
             "우선협상대상자",
             "우선협상자로",
             "우선협상자 선정",
             "사업자 선정",
-            "낙찰",
         ),
     ),
     (
         EventStage.SHORTLIST,
-        ("숏리스트", "적격예비후보", "예비후보", "2파전"),
+        # "2파전"은 입찰 경쟁 서술에 흔해 SHORTLIST 근거로 약하다(검수 S-026).
+        ("숏리스트", "적격예비후보", "예비후보"),
     ),
     (EventStage.BID, ("입찰 참여", "제안서 제출", "입찰", "응찰", "발주")),
     (EventStage.DISCUSSION, ("협상", "논의", "협의", "회담")),
@@ -313,7 +319,39 @@ def detect_event_stage(text: str, *, offset: int = 0) -> EventStageEvidence:
                 stage is EventStage.DELAYED
                 and re.search(r"(?:지연|연기)(?:\s+소식|\s+및|에\s+따른)", text)
             )
+            # 지연·연기 우려·가능성·기대는 지연 사건으로 답한다
+            # (검수 S-080·S-094·S-096·S-104).
+            and not (
+                stage is EventStage.DELAYED
+                and item[3] in ("우려", "가능성", "가능", "기대")
+            )
+            # 검토는 그 자체가 선행 단계라 기대·우려가 붙어도 검토다
+            # (검수 S-182·S-200).
+            and not (
+                stage is EventStage.REVIEW and item[3] in ("기대", "우려")
+            )
+            # 협상 '진전' 기대는 진행 중인 협상이다(검수 S-127).
+            and not re.search(
+                r"진전|순항", text[position + len(marker) : item[0]]
+            )
         ]
+        # 논의 '예정'은 아직 열리지 않은 논의다. 앞뒤 어느 쪽에 붙어도
+        # 같다 — "논의 예정"도 "출장 예정 속 … 논의"도 미래다
+        # (검수 S-120·S-126).
+        if stage is EventStage.DISCUSSION:
+            future.extend(
+                (position, len("예정"), EventStage.RUMOR, "예정")
+                for match in re.finditer("예정", text)
+                if (
+                    position + len(marker)
+                    <= match.start()
+                    <= position + len(marker) + 14
+                    and not _is_reaction_tail(
+                        text[position + len(marker) : match.start()]
+                    )
+                )
+                or position - 18 <= match.start() < position
+            )
         if stage not in {
             EventStage.BID,
             EventStage.SHORTLIST,
@@ -412,7 +450,18 @@ def _invalid_stage_marker(text: str, marker: str, position: int) -> bool:
         return True
     if marker == "준공" and "책임 준공" in around:
         return True
-    if marker == "이행" and after.startswith("법"):
+    if marker == "이행" and (
+        after.startswith("법")
+        # 이행 '가속'·'원년'·'방안'은 발언이지 실행 개시 확인이 아니다
+        # (검수 S-142·S-154·S-167·S-169).
+        or any(word in after for word in ("가속", "원년", "방안"))
+    ):
+        return True
+    # 계획 차질은 계획 단계 사건이다 — 실제 지연이 아니다(검수 S-307).
+    if marker == "차질" and before.endswith(("계획", "계획 ")):
+        return True
+    # 협상 결렬은 협상 국면의 사건으로 남긴다(검수 S-137).
+    if marker == "결렬" and "협상" in before:
         return True
     if marker == "예비후보" and _is_political_candidate_context(text):
         return True
@@ -424,6 +473,14 @@ def _invalid_stage_marker(text: str, marker: str, position: int) -> bool:
             "입찰 제한",
             "입찰제한",
             "경쟁입찰제",
+            # 국채·채권 경매와 불참·자격 문맥은 사업 입찰 단계가 아니다
+            # (검수 S-014·S-016·S-023).
+            "년물",
+            "국채",
+            "경매",
+            "채권",
+            "불참",
+            "자격",
         )
     ):
         return True
