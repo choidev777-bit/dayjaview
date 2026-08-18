@@ -1360,48 +1360,6 @@ a:focus-visible,
   letter-spacing: -.02em;
 }
 
-/* 시안 `.themeStats`. 주황 카드 안의 가로 3열 칩이다. */
-.theme-stats {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: var(--djv-space-5);
-}
-
-/* 시안 실측값. 테두리가 없거나 라벨이 가늘면 주황 배경에 묻혀 가시성이 떨어진다. */
-.theme-stats article {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 6px;
-  border: 1px solid rgba(255, 255, 255, .2);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, .18);
-  text-align: center;
-}
-
-.theme-stats span {
-  color: rgba(255, 255, 255, .85);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: -.02em;
-}
-
-.theme-stats strong {
-  color: var(--djv-color-on-brand);
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums;
-}
-
-.theme-stats small {
-  color: rgba(255, 255, 255, .78);
-  font-size: 9px;
-}
-
 /* 시안 `.detailTabs`. 밑줄 탭이 아니라 회색 트랙 위에서 선택된 쪽만 흰 종이로 올라오는
    폴더형이다. 사선은 `clip-path`로 내고, 겹치는 만큼 음수 margin으로 붙인다. */
 .detail-tabs {

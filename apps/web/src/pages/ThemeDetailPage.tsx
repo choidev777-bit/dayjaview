@@ -17,7 +17,6 @@ import type {
   ThemeDetailResponse,
 } from '../domain/contracts';
 import {
-  coverageStatusLabel,
   evidenceFlagLabel,
   evidenceStatusLabel,
   evidenceStatusNote,
@@ -846,10 +845,6 @@ export function ThemeDetailPage() {
 
   const detail = resource.data.data;
   const reaction = detail.currentReaction;
-  const advancingRatio =
-    reaction.advancingCount !== null && reaction.validCount
-      ? Math.round((reaction.advancingCount / reaction.validCount) * 100)
-      : null;
   const historicalAvailable = detail.historicalAccess.status === 'AVAILABLE';
   // 상세 응답에 rank가 없다. 목록에서 넘어왔다면 그때 받은 순위를 그대로 쓴다.
   const rank = repository.getCachedRank(detail.eventId);
@@ -927,7 +922,6 @@ export function ThemeDetailPage() {
           )}
         </div>
         </div>
-        {/* 시안의 가로 3열 칩. 세 번째 칸은 시안이 `거래대금`인데 계약에 그 값이 없어 Coverage를 쓴다. */}
         <button
           ref={calculationTriggerRef}
           className="theme-summary__basis"
@@ -939,38 +933,6 @@ export function ThemeDetailPage() {
             ?
           </span>
         </button>
-        <div className="theme-stats">
-          <article>
-            <span>상승 종목</span>
-            <strong>
-              {reaction.advancingCount === null || reaction.validCount === null
-                ? '—'
-                : `${reaction.advancingCount.toLocaleString('ko-KR')}/${reaction.validCount.toLocaleString('ko-KR')}`}
-            </strong>
-            <small>{advancingRatio === null ? '계산 불가' : `${advancingRatio}%`}</small>
-          </article>
-          <article>
-            <span>거래 관심</span>
-            <strong>
-              {reaction.turnoverMultiple === null
-                ? '—'
-                : `${reaction.turnoverMultiple.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}배`}
-            </strong>
-            <small>{reaction.turnoverMultiple === null ? '기준선 부족' : '같은 시각 과거 기준'}</small>
-          </article>
-          {/* `17/21`로 적으면 바로 왼쪽 상승 종목과 분자·분모가 같아 보여 구분이 안 된다.
-              여기서는 믿을 만한 값인지만 말하고, 분모·분자는 CoverageIndicator가 따로 보여준다. */}
-          <article>
-            <span>데이터 반영</span>
-            <strong>{coverageStatusLabel(detail.coverage.status)}</strong>
-            {/* 세 칸이 같은 너비라 이 설명이 길면 혼자 세 줄로 접혀 칸이 어그러진다.
-                핵심 종목 관측 비율만 한 줄로 적는다. */}
-            <small>
-              핵심 {detail.coverage.core.observedCount.toLocaleString('ko-KR')}/
-              {detail.coverage.core.totalCount.toLocaleString('ko-KR')}종목
-            </small>
-          </article>
-        </div>
         {saveFailed ? (
           <p className="section-note" role="alert">
             저장 상태를 동기화하지 못했습니다. 다시 시도해 주세요.
