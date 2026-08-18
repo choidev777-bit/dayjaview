@@ -276,7 +276,7 @@ export function ResearchPage() {
     <div className="page page--research">
       {/* 다른 탭과 같은 머리말 형식: 화면 이름이 제목이고 안내는 그 아래 한 단계 작게. */}
       <header className="page-intro">
-        <h1>데이터 리서치</h1>
+        <h1>테마 서치</h1>
         <p className="page-intro__lead">무엇이 궁금하세요?</p>
       </header>
 

@@ -117,16 +117,16 @@ describe('하단 탭과 즐겨찾기 route shell', () => {
       '홈',
       '실시간',
       '즐겨찾기',
-      '리서치',
+      '테마 서치',
     ]);
     expect(screen.getAllByRole('navigation')).toHaveLength(1);
   });
 
-  it('리서치 탭은 자연어 입력 하나만 두고 근거와 함께 답한다', async () => {
+  it('테마 서치 탭은 자연어 입력 하나만 두고 근거와 함께 답한다', async () => {
     const user = userEvent.setup();
     render(<App repository={createFixtureRepository()} initialEntries={['/research']} />);
 
-    expect(await screen.findByRole('heading', { name: '데이터 리서치' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '테마 서치' })).toBeInTheDocument();
     // 공개 표면은 자연어 입력 하나다. 날짜를 고르는 조회 화면을 두지 않는다.
     expect(screen.queryByLabelText('날짜')).not.toBeInTheDocument();
 

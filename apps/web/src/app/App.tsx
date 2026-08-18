@@ -36,7 +36,7 @@ const navigation = [
   { to: '/today', label: '홈', Icon: IconHouseLine },
   { to: '/insights', label: '실시간', Icon: IconGridLine },
   { to: '/saved', label: '즐겨찾기', Icon: IconStarLine },
-  { to: '/research', label: '리서치', Icon: IconMagnifyingglassLine },
+  { to: '/research', label: '테마 서치', Icon: IconMagnifyingglassLine },
 ] as const;
 
 function AppShell() {
