@@ -64,7 +64,7 @@ def test_ingestion_rejects_script_url_instead_of_storing_it() -> None:
             source_type=NewsSourceType.RSS,
             source_item_id=source_item_id,
             publisher="오염된 공급원",
-            title="특징주, 삼성전자 강세",
+            title="[특징주] 삼성전자 강세",
             description="삼성전자가 상승했다.",
             original_url=url,
             published_at=NOW,

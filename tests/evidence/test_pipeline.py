@@ -155,7 +155,7 @@ def test_supplemental_search_runs_only_after_a_local_miss_and_reuses_the_store()
                 source_id="naver_supplemental",
                 source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
                 source_item_id="supp-1",
-                title="한국원전, 신규 원전 수주 기대",
+                title="[특징주] 한국원전, 신규 원전 수주 기대",
                 original_url="https://example.net/s/1",
             )
         ]

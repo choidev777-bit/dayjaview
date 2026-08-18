@@ -22,7 +22,10 @@ from .normalize import (
 )
 from .store import NewsStore
 
-FEATURED_SOURCE_TYPES = frozenset({NewsSourceType.RSS, NewsSourceType.NAVER_NEWS_SEARCH})
+# 보완 검색도 예외로 두지 않는다. 테마명·종목명으로 긁어온 일반 기사가 특징주
+# 기사와 같은 자격으로 근거에 올라, 오르지도 않은 종목의 칼럼이 상승 소재로
+# 표시됐다(2026-08-18 광통신 테마에 붙은 서울바이오시스 특허 칼럼).
+FEATURED_SOURCE_TYPES = frozenset(NewsSourceType)
 
 
 @dataclass(frozen=True, slots=True)

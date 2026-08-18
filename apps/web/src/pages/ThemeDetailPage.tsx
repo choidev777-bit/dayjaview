@@ -62,11 +62,10 @@ const NEWS_DELAY_FLAGS = ['SOURCE_DEGRADED', 'STALE_NEWS_DATA'];
 function newsCollectionDelayed(meta: ResponseMeta): boolean {
   const context = meta.marketContext;
   if (!context) return false;
-  return (
-    context.dataStatus === 'DELAYED' ||
-    context.dataStatus === 'DEGRADED' ||
-    context.qualityFlags.some((flag) => NEWS_DELAY_FLAGS.includes(flag))
-  );
+  // dataStatus는 시세 게이트웨이 상태(구독 coverage)라 뉴스 수집과 무관하다. 실서빙은
+  // 동시 구독 상한 180 대 명단 6,629종목이라 coverage가 COMPLETE가 될 수 없어 늘
+  // DEGRADED다. 그것으로 판단하면 뉴스가 멀쩡해도 지연 안내가 상시 뜬다.
+  return context.qualityFlags.some((flag) => NEWS_DELAY_FLAGS.includes(flag));
 }
 
 function SaveThemeButton({

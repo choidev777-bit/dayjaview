@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -12,6 +13,10 @@ from typing import Protocol
 CANONICAL_EVENT_SCHEMA_VERSION = "market-event.v1"
 FIXTURE_SCHEMA_VERSION = "kiwoom-market-gateway.fixture.v1"
 ADAPTER_VERSION = "kiwoom-read-only.v1"
+# KRX 단축코드는 6자리 영숫자다. 신주인수권·제3자배정 등은 0001A0처럼
+# 영문이 섞여 나온다. 숫자만 받으면 인포스탁 명단의 53종목이 구독 요구를
+# 만드는 순간 터진다.
+STOCK_CODE_RE = re.compile(r"^[0-9A-Z]{6}$")
 
 
 def require_aware(value: datetime, field_name: str) -> None:
@@ -21,7 +26,7 @@ def require_aware(value: datetime, field_name: str) -> None:
 
 def require_stock_id(value: str) -> None:
     prefix, separator, code = value.partition(":")
-    if prefix != "KRX" or separator != ":" or len(code) != 6 or not code.isdigit():
+    if prefix != "KRX" or separator != ":" or not STOCK_CODE_RE.fullmatch(code):
         raise ValueError("stock_id는 KRX: 뒤에 6자리 종목코드가 와야 합니다")
 
 
@@ -129,8 +134,8 @@ class CandidateData:
     def __post_init__(self) -> None:
         if not self.condition_id:
             raise ValueError("condition_id는 비어 있을 수 없습니다")
-        if len(self.source_stock_code) != 6 or not self.source_stock_code.isdigit():
-            raise ValueError("source_stock_code는 6자리 숫자여야 합니다")
+        if not STOCK_CODE_RE.fullmatch(self.source_stock_code):
+            raise ValueError("source_stock_code는 6자리 종목코드여야 합니다")
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,8 +159,8 @@ class MarketObservation:
     missing_fields: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        if len(self.source_stock_code) != 6 or not self.source_stock_code.isdigit():
-            raise ValueError("source_stock_code는 6자리 숫자여야 합니다")
+        if not STOCK_CODE_RE.fullmatch(self.source_stock_code):
+            raise ValueError("source_stock_code는 6자리 종목코드여야 합니다")
         for name in (
             "current_price",
             "base_price",
