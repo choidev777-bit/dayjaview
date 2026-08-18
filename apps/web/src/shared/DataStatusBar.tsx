@@ -14,7 +14,6 @@ export function DataStatusBar({ context }: { context: MarketContext }) {
         {formatDate(`${context.marketDate}T00:00:00+09:00`)} · 기준 {formatTime(context.asOf)}
         {delayed && context.lastHealthyAt ? ` · 마지막 정상 ${formatTime(context.lastHealthyAt)}` : ''}
       </p>
-      {context.dataStatus === 'DEGRADED' ? <p>영향 범위와 Coverage를 함께 확인해 주세요.</p> : null}
     </section>
   );
 }

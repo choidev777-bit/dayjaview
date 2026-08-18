@@ -38,6 +38,16 @@ import { useRepositoryResource } from '../shared/useRepositoryResource';
 import { readViewState, writeViewState } from '../shared/viewState';
 
 type ThemeDetail = ThemeDetailResponse['data'];
+/**
+ * `CXL(컴퓨트익스프레스링크)`처럼 괄호 부연이 붙은 이름은 폭이 모자라면 닫는 괄호만
+ * 다음 줄로 떨어진다. 부연을 떼어 한 단계 작게 따로 놓는다.
+ */
+function splitThemeName(name: string): { main: string; sub: string | null } {
+  const matched = /^(.+?)\((.+)\)$/.exec(name.trim());
+  if (!matched) return { main: name, sub: null };
+  return { main: matched[1].trim(), sub: `(${matched[2]})` };
+}
+
 type EvidenceSummary = ThemeDetail['evidenceSummary'];
 type EvidencePage = EvidenceResponse['data']['page'];
 type EvidencePhase = 'LIVE' | 'AFTER_CLOSE';
@@ -889,7 +899,12 @@ export function ThemeDetailPage() {
           <div className="theme-badges">
             {rank !== null ? <span className="theme-rank-pill">오늘 상승 {rank}위</span> : null}
           </div>
-          <h1>{detail.classification.displayName}</h1>
+          <h1>
+            {splitThemeName(detail.classification.displayName).main}
+            {splitThemeName(detail.classification.displayName).sub ? (
+              <span>{splitThemeName(detail.classification.displayName).sub}</span>
+            ) : null}
+          </h1>
         </div>
         <div className="theme-summary__return">
           <div className="theme-badges">

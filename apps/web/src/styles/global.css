@@ -1256,6 +1256,17 @@ a:focus-visible,
   overflow-wrap: anywhere;
 }
 
+/* 괄호 부연은 본 이름과 같은 크기로 두면 폭을 다 먹고 닫는 괄호만 다음 줄로 떨어진다.
+   한 단계 낮춰 아래 줄에 따로 놓는다. */
+.theme-summary h1 span {
+  display: block;
+  margin-top: 3px;
+  font-size: var(--djv-font-size-body);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  opacity: 0.92;
+}
+
 .theme-summary .status-chip,
 .theme-summary__pill {
   width: max-content;
