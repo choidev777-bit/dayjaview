@@ -213,3 +213,81 @@ def test_new_article_refreshes_only_the_events_it_matches() -> None:
     assert [outcome.event_id for outcome in outcomes] == ["evt_nuclear"]
     assert outcomes[0].revision.evidence_status is EvidenceStatus.SINGLE_SOURCE
     assert [item.news_id for item in outcomes[0].evidence] == [stored[0].news_id]
+
+
+def test_bundle_summary_is_not_attached_to_articles_that_do_not_support_it() -> None:
+    """묶음 요약을 무관한 기사에 붙이지 않는다.
+
+    LLM 호출 하나가 기사 여러 건을 묶어 요약 하나를 만들지만, 그 요약이 어느
+    기사에서 나왔는지는 응답에 없다. 2026-08-18 광통신 테마에서는 "대한광통신,
+    연속 오름세"와 서울바이오시스 특허 칼럼이 한 묶음으로 처리돼, 칼럼에도
+    광통신 요약이 그대로 붙었다.
+    """
+
+    supporting = raw(
+        source_id="naver_supplemental",
+        source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
+        source_item_id="supp-support",
+        title="[특징주] 한국원전, 체코 수주 기대에 강세",
+        description="한국원전이 체코 신규 수주 기대에 오르고 있다.",
+        original_url="https://example.net/s/support",
+    )
+    unrelated = raw(
+        source_id="naver_supplemental",
+        source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
+        source_item_id="supp-unrelated",
+        title="[특징주] 한국원전, 특허 소송 승소",
+        description="한국원전이 해외 특허 침해 소송에서 최종 승소했다.",
+        original_url="https://example.net/s/unrelated",
+    )
+    pipeline, _ = build(
+        responses=[grounded_response(entities=("체코",))],
+        gate=SupplementalSearchGate(),
+        supplemental_source=StubSupplementalSource([supporting, unrelated]),
+    )
+
+    outcome = pipeline.refresh_event(
+        nuclear_context(), now=at(10, 11), window_start=WINDOW_START
+    )
+
+    kept = [item["newsId"] for item in outcome.list_projection()["items"]]
+    assert len(kept) == 1
+    assert all(evidence.entities == ("체코",) for evidence in outcome.evidence)
+    assert all(
+        "특허 침해" not in evidence.title for evidence in outcome.evidence
+    )
+
+
+def test_stored_non_featured_articles_never_become_evidence() -> None:
+    """수집 필터가 생기기 전에 저장된 기사도 근거가 되지 않는다.
+
+    수집 단계 필터는 새로 들어오는 기사만 막는다. 보완 검색이 면제로 들여온
+    기사가 저장소에 남아 있으면 계속 매칭·근거 후보가 된다. 근거 경로에서 한 번
+    더 걸러 저장소 상태와 무관하게 규칙이 지켜지게 한다.
+    """
+
+    from packages.news import NewsItem  # noqa: PLC0415
+
+    pipeline, store = build(responses=[grounded_response()])
+    ingestor = NewsIngestor(
+        store, stock_directory=STOCK_DIRECTORY, entity_vocabulary=ENTITY_VOCABULARY
+    )
+    legacy = ingestor._normalize(  # noqa: SLF001
+        raw(
+            source_id="naver_supplemental",
+            source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
+            source_item_id="legacy-1",
+            title="한국원전, 연속 오름세",
+            description="한국원전이 원전 수주 기대에 오르고 있다.",
+            original_url="https://example.net/legacy/1",
+        )
+    )
+    assert isinstance(legacy, NewsItem)
+    assert store.upsert(legacy)
+
+    outcome = pipeline.refresh_event(
+        nuclear_context(), now=at(10, 11), window_start=WINDOW_START
+    )
+
+    assert outcome.evidence == ()
+    assert outcome.list_projection()["items"] == []
