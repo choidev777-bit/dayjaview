@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Awaitable, Callable, Iterable
 from datetime import UTC, date, datetime, timedelta
 
@@ -11,6 +12,8 @@ from packages.realtime import StockRealtimeUpdate
 
 from .market import MarketDataPipeline, PublishedView
 from .trading_day import is_trading_day, market_date_for
+
+LOG = logging.getLogger(__name__)
 
 
 def _utc_now() -> datetime:
@@ -154,5 +157,17 @@ class TradingDayLoop:
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
     ) -> None:
         while True:
-            self.tick()
+            try:
+                self.tick()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                # 이 루프는 lifespan에서 create_task로 떠 있고 아무도 await하지
+                # 않는다. tick 하나가 올린 예외를 그대로 두면 task가 조용히 끝나
+                # 장중 내내 순위가 멎는다(2026-08-18 두 차례, 로그에도 안 남았다).
+                # 한 주기 실패는 기록만 하고 다음 주기에 다시 시도한다.
+                LOG.exception(
+                    "%s 장중 tick이 실패했습니다. 다음 주기에 다시 시도합니다",
+                    self._market_date,
+                )
             await sleep(self._interval.total_seconds())

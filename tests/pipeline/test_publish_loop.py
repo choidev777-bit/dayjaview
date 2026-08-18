@@ -480,3 +480,47 @@ def test_intraday_base_price_does_not_override_a_known_previous_close() -> None:
     assert isinstance(items, list) and len(items) == 1
     # 기준가 20,000을 썼다면 -47.5%가 됐을 것이다.
     assert items[0]["weightedReturn"] == pytest.approx(0.05)
+
+
+def test_trading_day_loop_survives_a_failing_tick() -> None:
+    """tick 하나가 실패해도 루프를 멈추지 않는다.
+
+    이 루프는 lifespan에서 create_task로 떠 있고 아무도 await하지 않는다.
+    예외를 그대로 올리면 task가 조용히 끝나 장중 내내 순위가 멎는다
+    (2026-08-18 두 차례, 로그에도 남지 않았다).
+    """
+
+    clock = FakeClock(datetime(2026, 8, 14, 1, 0, tzinfo=UTC))
+    calls: list[int] = []
+
+    class _Exploding:
+        def tick(self) -> PublishedView | None:
+            calls.append(len(calls))
+            if len(calls) == 1:
+                raise RuntimeError("장중 한 주기 실패")
+            return None
+
+        def close(self) -> None:
+            return None
+
+    loop = TradingDayLoop(
+        build_session=lambda _market_date: _Exploding(),
+        interval=timedelta(seconds=2),
+        clock=clock,
+    )
+
+    async def drive() -> None:
+        slept = 0
+
+        async def sleep(_seconds: float) -> None:
+            nonlocal slept
+            slept += 1
+            if slept >= 3:
+                raise asyncio.CancelledError
+
+        with pytest.raises(asyncio.CancelledError):
+            await loop.run(sleep=sleep)
+
+    asyncio.run(drive())
+
+    assert len(calls) == 3
