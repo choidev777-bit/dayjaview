@@ -491,6 +491,54 @@ def test_close_market_discards_candidates_and_closes_active_events() -> None:
     } == statuses
 
 
+def test_publishing_after_close_keeps_ticking_without_reopening_events() -> None:
+    """마감 뒤 계속 publish해도 CLOSED가 ACTIVE로 되돌지 않는다.
+
+    되돌리려 하면 도메인 상태기계가 InvalidStateTransition을 올려 장 마감 후
+    tick이 통째로 죽는다(운영 2026-08-18 실측).
+    """
+
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    pipeline.close_market(now=BASE + timedelta(hours=7))
+
+    for offset in range(1, 40):
+        view = pipeline.publish(
+            now=BASE + timedelta(hours=7, seconds=offset * 2),
+            data_status=DataStatus.CLOSED,
+        )
+
+    assert {event.lifecycle_status.value for event in view.events} == {"CLOSED"}
+    assert view.rankings.payload["items"]
+
+
+def test_publishing_after_close_keeps_ticking_without_reopening_events() -> None:
+    """마감 뒤 계속 publish해도 CLOSED가 ACTIVE로 되돌지 않는다.
+
+    되돌리려 하면 도메인 상태기계가 InvalidStateTransition을 올려 장 마감 후
+    tick이 통째로 죽는다(운영 2026-08-18 실측).
+    """
+
+    pipeline = _pipeline()
+    for index, stock_id in enumerate(("KRX:000001", "KRX:000002", "KRX:000003")):
+        pipeline.apply_update(_update(stock_id, seconds=index + 1))
+    pipeline.publish(now=BASE + timedelta(seconds=7), data_status=DataStatus.LIVE)
+    pipeline.publish(now=BASE + timedelta(seconds=20), data_status=DataStatus.LIVE)
+    pipeline.close_market(now=BASE + timedelta(hours=7))
+
+    for offset in range(1, 40):
+        view = pipeline.publish(
+            now=BASE + timedelta(hours=7, seconds=offset * 2),
+            data_status=DataStatus.CLOSED,
+        )
+
+    assert {event.lifecycle_status.value for event in view.events} == {"CLOSED"}
+    assert view.rankings.payload["items"]
+
+
 def test_duplicate_updates_do_not_change_published_values() -> None:
     pipeline = _pipeline()
     update = _update("KRX:000001", seconds=1)

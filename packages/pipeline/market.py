@@ -611,8 +611,12 @@ class MarketDataPipeline:
 
         for update in self._aggregator.drain(self._hot):
             self._latest_metrics[update.theme_id] = update
-        for theme_id in sorted(self._latest_metrics):
-            self._evaluate_theme(self._latest_metrics[theme_id], now=now)
+        # 마감 뒤에는 lifecycle을 다시 평가하지 않는다. 계속 평가하면 hysteresis가
+        # 아직 조건을 만족하는 테마를 CLOSED에서 ACTIVE로 되돌리려 하고, 도메인
+        # 상태기계가 이를 거부해 tick이 통째로 죽는다(운영 2026-08-18 실측).
+        if not self._market_closed:
+            for theme_id in sorted(self._latest_metrics):
+                self._evaluate_theme(self._latest_metrics[theme_id], now=now)
 
         self._last_data_status = data_status
         as_of = self._last_as_of or now
