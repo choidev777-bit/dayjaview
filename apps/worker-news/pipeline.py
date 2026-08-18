@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         RawNewsItem,
         RightsScope,
         SourcePoller,
+        is_featured_stock_title,
     )
 else:
     _catalyst = import_module("packages." + "catalyst")
@@ -57,6 +58,7 @@ else:
     GroundingArticle = _llm.GroundingArticle
     GroundingRequest = _llm.GroundingRequest
     RightsScope = _news.RightsScope
+    is_featured_stock_title = _news.is_featured_stock_title
 
 
 class SupplementalSearchSource(Protocol):
@@ -201,12 +203,19 @@ class EvidencePipeline:
         now: datetime,
         window_start: datetime,
     ) -> tuple[NewsThemeMatch, ...]:
-        candidates = self._store.search(
-            stock_ids=context.stock_ids,
-            keywords=context.theme_keywords,
-            since=window_start,
-            until=now,
-        )
+        # 수집 필터는 새로 들어오는 기사만 막는다. 이미 저장된 기사 중에는 규칙이
+        # 생기기 전에 들어온 것과 보완 검색이 면제로 들여온 것이 남아 있어, 근거
+        # 경로에서 한 번 더 건다. 제목이 `[특징주`로 여는 기사만 근거가 된다.
+        candidates = [
+            item
+            for item in self._store.search(
+                stock_ids=context.stock_ids,
+                keywords=context.theme_keywords,
+                since=window_start,
+                until=now,
+            )
+            if is_featured_stock_title(item.title)
+        ]
         return match_theme_to_news(
             context, candidates, decision_at=now, config=self._match_config
         )

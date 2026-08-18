@@ -256,3 +256,38 @@ def test_bundle_summary_is_not_attached_to_articles_that_do_not_support_it() -> 
     assert all(
         "특허 침해" not in evidence.title for evidence in outcome.evidence
     )
+
+
+def test_stored_non_featured_articles_never_become_evidence() -> None:
+    """수집 필터가 생기기 전에 저장된 기사도 근거가 되지 않는다.
+
+    수집 단계 필터는 새로 들어오는 기사만 막는다. 보완 검색이 면제로 들여온
+    기사가 저장소에 남아 있으면 계속 매칭·근거 후보가 된다. 근거 경로에서 한 번
+    더 걸러 저장소 상태와 무관하게 규칙이 지켜지게 한다.
+    """
+
+    from packages.news import NewsItem  # noqa: PLC0415
+
+    pipeline, store = build(responses=[grounded_response()])
+    ingestor = NewsIngestor(
+        store, stock_directory=STOCK_DIRECTORY, entity_vocabulary=ENTITY_VOCABULARY
+    )
+    legacy = ingestor._normalize(  # noqa: SLF001
+        raw(
+            source_id="naver_supplemental",
+            source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
+            source_item_id="legacy-1",
+            title="한국원전, 연속 오름세",
+            description="한국원전이 원전 수주 기대에 오르고 있다.",
+            original_url="https://example.net/legacy/1",
+        )
+    )
+    assert isinstance(legacy, NewsItem)
+    assert store.upsert(legacy)
+
+    outcome = pipeline.refresh_event(
+        nuclear_context(), now=at(10, 11), window_start=WINDOW_START
+    )
+
+    assert outcome.evidence == ()
+    assert outcome.list_projection()["items"] == []
