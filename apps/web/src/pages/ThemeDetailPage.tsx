@@ -450,7 +450,7 @@ function CatalystTop3Section({
   // 게이트·미제공은 오류가 아니다. 섹션을 그리지 않는다.
   if (resource.status !== 'success') return null;
 
-  const { items, qualityNote } = resource.data.data;
+  const { items } = resource.data.data;
   if (!items.length) return null;
   // 유효 유형이 1~2개면 `TOP3`라고 부르지 않는다 (screen_spec 8.7).
   const tail = items.length >= 3 ? '반응 TOP3' : '반응 기록';
@@ -466,14 +466,6 @@ function CatalystTop3Section({
           </span>
           <span className="catalyst-heading__tail">{tail}</span>
         </h2>
-        {/* 품질 주의는 화면에서 빼고 발표 때 말로 설명한다
-            (바탕화면 `발표자-구두설명-체크리스트.md`). 물음표 안에는 남긴다. */}
-        {qualityNote ? (
-          <InfoTip label="소재 유형 기준">
-            <strong>소재 유형 기준</strong>
-            {qualityNote}
-          </InfoTip>
-        ) : null}
       </div>
       <ol className="catalyst-list">
         {items.slice(0, 3).map((item, index) => (
