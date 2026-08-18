@@ -37,16 +37,22 @@ export function TodayPage() {
       {data.items.length ? (
         <ThemeRankingWheel items={data.items} />
       ) : (
+        /* 수신이 온전하지 않은데 `조건을 충족한 테마가 없다`고 적으면, 데이터가 덜 온 것을
+           시장에 오른 테마가 없는 것으로 읽게 된다. 둘은 다른 상황이라 나눠 말한다. */
         <EmptyState
           title={
             context.dataStatus === 'DELAYED'
               ? '마지막 정상 화면을 불러오는 중입니다'
-              : '현재 조건을 충족한 테마가 없습니다'
+              : context.dataStatus === 'DEGRADED'
+                ? '아직 순위를 만들지 못했습니다'
+                : '현재 조건을 충족한 테마가 없습니다'
           }
           description={
             context.dataStatus === 'DELAYED'
               ? '수신이 정상화되면 마지막 정상값부터 이어서 보여드립니다.'
-              : '조건을 충족한 활성 테마가 생기면 이곳에 표시됩니다.'
+              : context.dataStatus === 'DEGRADED'
+                ? '일부 데이터가 아직 들어오지 않았습니다. 오른 테마가 없다는 뜻은 아닙니다.'
+                : '조건을 충족한 활성 테마가 생기면 이곳에 표시됩니다.'
           }
         />
       )}
