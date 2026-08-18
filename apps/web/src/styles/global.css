@@ -3150,12 +3150,12 @@ p.page-intro__origin {
 }
 
 /* 물어본 질문을 답변 위에 되짚어 준다. 입력창은 비워 두므로 여기가 유일한 기록이다. */
-.research-asked {
-  margin: 0 var(--djv-space-4) var(--djv-space-3);
-  padding: 11px var(--djv-space-4);
-  border-radius: var(--djv-radius-lg) var(--djv-radius-lg) var(--djv-radius-lg) 4px;
-  color: var(--djv-color-text);
-  background: var(--djv-color-brand-soft);
+/* 물어본 문장은 답변 카드 머리에 붙는다. 밖에 따로 띄우면 박스가 둘로 늘어난다. */
+.research-answer__asked {
+  margin: 0 0 var(--djv-space-3);
+  padding: 0 0 var(--djv-space-3);
+  border-bottom: 1px solid var(--djv-color-border);
+  color: var(--djv-color-text-muted);
   font-size: var(--djv-font-size-label);
   font-weight: 600;
 }

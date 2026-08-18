@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRepository } from '../app/RepositoryContext';
 import type {
   ResearchAnswer,
@@ -113,9 +113,11 @@ function RowBlock({ row }: { row: ResearchRow }) {
   );
 }
 
-function AnswerBlock({ answer }: { answer: ResearchAnswer }) {
+function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string | null }) {
   return (
     <section className="research-answer" aria-label="답변">
+      {/* 물어본 문장을 따로 띄우면 박스가 둘로 늘어난다. 답변 머리에 붙인다. */}
+      {asked ? <p className="research-answer__asked">{asked}</p> : null}
       <p className="research-answer__summary">{answer.summaryKo}</p>
 
       <ul className="research-metrics">
@@ -165,9 +167,10 @@ function AnswerBlock({ answer }: { answer: ResearchAnswer }) {
   );
 }
 
-function FailureBlock({ failure }: { failure: ResearchFailure }) {
+function FailureBlock({ failure, asked }: { failure: ResearchFailure; asked: string | null }) {
   return (
     <section className="research-failure" aria-label="답하지 못한 이유">
+      {asked ? <p className="research-answer__asked">{asked}</p> : null}
       <strong>{failure.publicLabelKo}</strong>
       <p>{failure.messageKo}</p>
       {failure.candidates.length ? (
@@ -199,6 +202,25 @@ export function ResearchPage() {
   /** 빈 채로 눌렀을 때 버튼을 한 번 흔든다. */
   const [nudge, setNudge] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** 예시를 눌렀을 때 한 글자씩 치는 중인지. 치는 동안은 다른 예시를 막는다. */
+  const [typing, setTyping] = useState(false);
+  const typeTimer = useRef<number | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // 값을 코드로 넣으면 onInput이 걸리지 않아 높이가 그대로다. 값이 바뀔 때마다 다시 잰다.
+  useEffect(() => {
+    const field = inputRef.current;
+    if (!field) return;
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight}px`;
+  }, [question]);
+
+  useEffect(
+    () => () => {
+      if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
+    },
+    [],
+  );
 
   const ask = useCallback(
     async (text: string) => {
@@ -224,6 +246,30 @@ export function ResearchPage() {
     [repository],
   );
 
+  /** 예시를 누르면 사람이 친 것처럼 입력창을 채운 뒤 스스로 보낸다.
+   *  발표 시연에서 버튼 한 번에 질문이 어디로 들어가는지 보이게 하려는 것이다. */
+  const typeAndAsk = useCallback(
+    (text: string) => {
+      if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
+      setTyping(true);
+      setQuestion('');
+      let index = 0;
+      typeTimer.current = window.setInterval(() => {
+        index += 1;
+        setQuestion(text.slice(0, index));
+        if (index < text.length) return;
+        if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
+        typeTimer.current = null;
+        // 다 친 뒤 잠깐 둔다. 바로 보내면 무엇을 물었는지 읽을 틈이 없다.
+        window.setTimeout(() => {
+          setTyping(false);
+          void ask(text);
+        }, 360);
+      }, 45);
+    },
+    [ask],
+  );
+
   return (
     <div className="page page--research">
       {/* 다른 탭과 같은 머리말 형식: 화면 이름이 제목이고 안내는 그 아래 한 단계 작게. */}
@@ -247,16 +293,12 @@ export function ResearchPage() {
           <textarea
             id="research-question"
             className="research-form__input"
+            ref={inputRef}
             value={question}
             maxLength={MAX_LENGTH}
             rows={1}
             placeholder="예: 어제 뭐가 올랐어?"
             onChange={(event) => setQuestion(event.target.value)}
-            onInput={(event) => {
-              const field = event.currentTarget;
-              field.style.height = 'auto';
-              field.style.height = `${field.scrollHeight}px`;
-            }}
           />
           {/* 비활성으로 두면 왜 못 누르는지 모른다. 늘 누를 수 있게 두고, 빈 채로 누르면
               한 번 흔들어 알려 준다. */}
@@ -264,7 +306,7 @@ export function ResearchPage() {
             type="submit"
             className="research-form__submit"
             data-nudge={nudge ? 'true' : 'false'}
-            disabled={pending}
+            disabled={pending || typing}
           >
             {pending ? '찾는 중' : '질문하기'}
           </button>
@@ -274,10 +316,7 @@ export function ResearchPage() {
         <ul className="research-examples">
           {EXAMPLES.map((example) => (
             <li key={example}>
-              <button
-                type="button"
-                onClick={() => void ask(example)}
-              >
+              <button type="button" onClick={() => typeAndAsk(example)} disabled={typing || pending}>
                 {example}
               </button>
             </li>
@@ -289,10 +328,13 @@ export function ResearchPage() {
         </p>
       </div>
 
-      {asked ? <p className="research-asked">{asked}</p> : null}
       {error ? <p className="research-failure">{error}</p> : null}
-      {result?.data.status === 'ANSWERED' ? <AnswerBlock answer={result.data.answer} /> : null}
-      {result?.data.status === 'FAILED' ? <FailureBlock failure={result.data.failure} /> : null}
+      {result?.data.status === 'ANSWERED' ? (
+        <AnswerBlock answer={result.data.answer} asked={asked} />
+      ) : null}
+      {result?.data.status === 'FAILED' ? (
+        <FailureBlock failure={result.data.failure} asked={asked} />
+      ) : null}
     </div>
   );
 }
