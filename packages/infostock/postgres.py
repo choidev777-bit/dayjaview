@@ -153,6 +153,25 @@ class _PostgresImportTransaction:
         row = self._cursor.fetchone()
         return None if row is None else _stored(row)
 
+    def find_completed_full_import_for_dataset(
+        self, dataset_hash: str, rights_scope: str
+    ) -> StoredImport | None:
+        self._cursor.execute(
+            f"""
+            SELECT {_RUN_RESULT_COLUMNS}
+              FROM ingest.infostock_import_runs
+             WHERE dataset_hash = %s
+               AND rights_scope = %s
+               AND run_type = 'FULL'
+               AND status IN ('SUCCEEDED', 'PARTIAL')
+             ORDER BY import_run_id DESC
+             LIMIT 1
+            """,
+            (dataset_hash, rights_scope),
+        )
+        row = self._cursor.fetchone()
+        return None if row is None else _stored(row)
+
     def create_import_run(self, bundle: ImportBundle) -> int:
         self._cursor.execute(
             """
@@ -277,16 +296,17 @@ class _PostgresImportTransaction:
                 ),
             )
             existing = _required_row(self._cursor, "find source observation")
+            # 관측의 정체성은 원본 바이트(blob)·주소·유효시각까지다. parser·품질
+            # 표기는 처리 계보라 재적재에서 달라질 수 있고, run 행이 따로 남긴다.
             if (
                 int(existing[1]) != blob_id
                 or str(existing[2]) != snapshot.source_url
                 or cast(datetime, existing[3]) != snapshot.as_of
-                or str(existing[4]) != parser_version
-                or bool(existing[5]) is not snapshot.is_complete
-                or str(existing[6]) != snapshot.quality_status
             ):
                 raise SnapshotConflictError(
-                    "같은 source/page/entity/collected_at 관측에 다른 원본 또는 parser가 지정되었습니다."
+                    "같은 source/page/entity/collected_at 관측에 다른 원본이 지정되었습니다: "
+                    f"{snapshot.page_type}/{snapshot.source_entity_id}"
+                    f"@{snapshot.collected_at.isoformat()}"
                 )
             snapshot_id = int(existing[0])
         else:

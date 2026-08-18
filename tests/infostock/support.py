@@ -27,6 +27,7 @@ class ReferenceState:
     next_snapshot_id: int = 1
     next_theme_id: int = 1
     runs: dict[str, StoredImport] = field(default_factory=dict)
+    dataset_runs: dict[tuple[str, str], StoredImport] = field(default_factory=dict)
     blobs: dict[tuple[str, str], str] = field(default_factory=dict)
     snapshots: dict[tuple[str, str, str | None, datetime], dict[str, object]] = field(
         default_factory=dict
@@ -64,6 +65,11 @@ class _ReferenceTransaction:
     def find_completed_import(self, input_hash: str) -> StoredImport | None:
         return self.state.runs.get(input_hash)
 
+    def find_completed_full_import_for_dataset(
+        self, dataset_hash: str, rights_scope: str
+    ) -> StoredImport | None:
+        return self.state.dataset_runs.get((dataset_hash, rights_scope))
+
     def create_import_run(self, bundle: ImportBundle) -> int:
         run_id = self.state.next_run_id
         self.state.next_run_id += 1
@@ -88,10 +94,11 @@ class _ReferenceTransaction:
         )
         existing = self.state.snapshots.get(key)
         if existing is not None:
+            # postgres 구현과 같은 규칙: 관측 정체성(원본 해시·주소)만 비교하고
+            # parser 표기 차이는 재사용한다.
             if (
                 existing["raw_hash"] != snapshot.raw_hash
                 or existing["source_url"] != snapshot.source_url
-                or existing["parser_version"] != parser_version
             ):
                 raise SnapshotConflictError("reference snapshot conflict")
             snapshot_id = int(existing["snapshot_id"])
@@ -199,6 +206,7 @@ class _ReferenceTransaction:
             daily_post_revisions_created=counts.daily_post_revisions,
         )
         self.state.runs[bundle.input_hash] = stored
+        self.state.dataset_runs[(bundle.dataset_hash, bundle.rights_scope)] = stored
         return stored
 
     def create_daily_increment_run(self, bundle: ImportBundle) -> int:
