@@ -18,7 +18,10 @@ function fixtureDevShell() {
         const isNavigation =
           request.method === 'GET' && (request.headers.accept ?? '').includes('text/html');
         const isOwnEntry =
-          url.startsWith('/api') || url.startsWith('/operator') || url.startsWith('/fixture.html');
+          url.startsWith('/api') ||
+          url.startsWith('/operator') ||
+          url.startsWith('/fixture.html') ||
+          url.startsWith('/graph.html');
         if (isNavigation && !isOwnEntry) request.url = '/fixture.html';
         next();
       });
@@ -62,6 +65,7 @@ export default defineConfig(({ command, mode }) => ({
       input: [
         fileURLToPath(new URL('./index.html', import.meta.url)),
         fileURLToPath(new URL('./operator.html', import.meta.url)),
+        fileURLToPath(new URL('./graph.html', import.meta.url)),
       ],
     },
   },

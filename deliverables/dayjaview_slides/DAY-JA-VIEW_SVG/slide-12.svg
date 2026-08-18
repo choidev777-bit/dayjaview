@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="온톨로지">
+  <title>온톨로지</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-12" data-title="온톨로지">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TECH 03 · ONTOLOGY</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">온톨로지는 문장을 관계로 바꾸는 설계도입니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">12</tspan></text>
+    <text x="92" y="149" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="23" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">사람이 이해하는 개념과 관계를</tspan><tspan x="92" dy="34">컴퓨터도 같은 기준으로 처리하도록 정의한 지식 체계</tspan></text>
+    <rect x="76" y="220" width="1128" height="350" rx="28" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <polygon points="286,335.34 321.96,335.34 321.96,322 344,345 321.96,368 321.96,354.65999999999997 286,354.65999999999997" fill="#FD9F28" data-editable="shape"/>
+    <polygon points="536,335.34 571.96,335.34 571.96,322 594,345 571.96,368 571.96,354.65999999999997 536,354.65999999999997" fill="#FD9F28" data-editable="shape"/>
+    <line x1="760" y1="345" x2="860" y2="292" stroke="#401600" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <line x1="760" y1="365" x2="860" y2="440" stroke="#401600" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <line x1="184" y1="437" x2="184" y2="472" stroke="#401600" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="184" cy="345" r="92" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="184" y="350.27" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="184" dy="0">Catalyst</tspan></text>
+    <text x="184" y="458" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="184" dy="0">정책·발표</tspan></text>
+    <circle cx="430" cy="345" r="92" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="430" y="349.65000000000003" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="430" dy="0">ThemeReaction</tspan></text>
+    <text x="430" y="458" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="430" dy="0">어떤 테마가</tspan><tspan x="430" dy="20">어떻게 반응</tspan></text>
+    <circle cx="686" cy="345" r="76" fill="#FFFFFF" stroke="#401600" stroke-width="3" data-editable="shape"/>
+    <text x="686" y="350.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="686" dy="0">Theme</tspan></text>
+    <text x="686" y="442" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="686" dy="0">로봇·원전</tspan><tspan x="686" dy="20">방산</tspan></text>
+    <circle cx="930" cy="280" r="62" fill="#FFFFFF" stroke="#401600" stroke-width="3" data-editable="shape"/>
+    <text x="930" y="285.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="930" dy="0">Company</tspan></text>
+    <text x="930" y="363" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="930" dy="0">사건 주체</tspan><tspan x="930" dy="20">주도 종목</tspan></text>
+    <circle cx="930" cy="430" r="62" fill="#FFFFFF" stroke="#401600" stroke-width="3" data-editable="shape"/>
+    <text x="930" y="435.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="930" dy="0">Outcome</tspan></text>
+    <text x="930" y="513" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="930" dy="0">T+1·5·20</tspan><tspan x="930" dy="20">가격 결과</tspan></text>
+    <circle cx="184" cy="520" r="48" fill="#FFFFFF" stroke="#401600" stroke-width="3" data-editable="shape"/>
+    <text x="184" y="525.27" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="17" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="184" dy="0">Evidence</tspan></text>
+    <text x="184" y="589" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="400" text-anchor="middle" data-editable="text"></text>
+    <rect x="80" y="596" width="1120" height="54" rx="27" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="640" y="628.5799999999999" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">Event = 특정 날짜의 Catalyst + ThemeReaction + 관련 Company + Outcome + Evidence</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

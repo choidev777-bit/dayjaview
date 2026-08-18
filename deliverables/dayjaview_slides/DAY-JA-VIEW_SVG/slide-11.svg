@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="원문 데이터의 문제">
+  <title>원문 데이터의 문제</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-11" data-title="원문 데이터의 문제">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TECH 02 · PROBLEM</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">검색은 가능해도, 사건 비교와 집계는 틀릴 수 있습니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">11</tspan></text>
+    <rect x="78" y="154" width="1124" height="118" rx="22" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="640" y="200.68" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="29" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">“정부의 로봇 산업 지원 기대감에 로봇 테마 상승,</tspan><tspan x="640" dy="39">A사·B사 강세”</tspan></text>
+    <line x1="202" y1="272" x2="202" y2="317" stroke="#FD9F28" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="202" cy="316" r="8" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="78" y="340" width="248" height="156" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="202" y="383.51" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="202" dy="0">정부</tspan></text>
+    <text x="202" y="420.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="202" dy="0">Actor</tspan></text>
+    <text x="202" y="460.96000000000004" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="202" dy="0">사건 주체</tspan></text>
+    <line x1="488" y1="272" x2="488" y2="317" stroke="#FD9F28" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="488" cy="316" r="8" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="364" y="340" width="248" height="156" rx="20" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="488" y="383.51" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="488" dy="0">산업 지원</tspan></text>
+    <text x="488" y="420.34" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="488" dy="0">Catalyst</tspan></text>
+    <text x="488" y="460.96000000000004" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="488" dy="0">상승 소재</tspan></text>
+    <line x1="774" y1="272" x2="774" y2="317" stroke="#FD9F28" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="774" cy="316" r="8" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="650" y="340" width="248" height="156" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="774" y="383.51" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="774" dy="0">기대감</tspan></text>
+    <text x="774" y="420.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="774" dy="0">Stage</tspan></text>
+    <text x="774" y="460.96000000000004" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="774" dy="0">진행 단계</tspan></text>
+    <line x1="1060" y1="272" x2="1060" y2="317" stroke="#FD9F28" stroke-width="3" stroke-linecap="round" data-editable="line"/>
+    <circle cx="1060" cy="316" r="8" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="936" y="340" width="248" height="156" rx="20" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1060" y="383.51" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1060" dy="0">A사 · B사</tspan></text>
+    <text x="1060" y="420.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" letter-spacing="0.8" data-editable="text"><tspan x="1060" dy="0">Leader</tspan></text>
+    <text x="1060" y="460.96000000000004" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="1060" dy="0">주도 종목</tspan></text>
+    <rect x="156" y="548" width="968" height="82" rx="20" fill="#FFFFFF" stroke="#FD9F28" stroke-width="3" data-editable="shape"/>
+    <text x="640" y="578.5100000000001" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">문장 하나에 주체 · 소재 · 단계 · 종목 역할이 섞여 있습니다.</tspan></text>
+    <text x="640" y="610.5799999999999" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">RAG가 문장을 찾아도 관계를 구분하지 못하면 정확한 통계를 만들 수 없습니다.</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

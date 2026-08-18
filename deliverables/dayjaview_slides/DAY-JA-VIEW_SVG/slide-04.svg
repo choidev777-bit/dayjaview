@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="실시간 테마 탐지와 소재 확인">
+  <title>실시간 테마 탐지와 소재 확인</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-04" data-title="실시간 테마 탐지와 소재 확인">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">FEATURE 01 · DISCOVER</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">테마를 발견한 화면에서 상승 소재까지</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">04</tspan></text>
+    <text x="92" y="151.82000000000002" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="22" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">MTS 밖으로 나가던 정보 탐색을 서비스 안에서 끝냅니다.</tspan></text>
+    <rect x="78" y="205" width="470" height="342" rx="22" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="110" y="251.51" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="start" data-editable="text"><tspan x="110" dy="0">기존 탐색</tspan></text>
+    <rect x="130" y="302" width="124" height="58" rx="16" fill="#FFFFFF" stroke="#401600" stroke-width="2" data-editable="shape"/>
+    <text x="192" y="335.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="192" dy="0">MTS</tspan></text>
+    <polygon points="260,325.12 284.8,325.12 284.8,317 300,331 284.8,345 284.8,336.88 260,336.88" fill="#FD9F28" data-editable="shape"/>
+    <rect x="270" y="398" width="124" height="58" rx="16" fill="#FFFFFF" stroke="#401600" stroke-width="2" data-editable="shape"/>
+    <text x="332" y="431.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="332" dy="0">포털 뉴스</tspan></text>
+    <polygon points="400,421.12 424.8,421.12 424.8,413 440,427 424.8,441 424.8,432.88 400,432.88" fill="#FD9F28" data-editable="shape"/>
+    <rect x="410" y="302" width="124" height="58" rx="16" fill="#FFFFFF" stroke="#401600" stroke-width="2" data-editable="shape"/>
+    <text x="472" y="335.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="472" dy="0">텔레그램</tspan></text>
+    <rect x="200" y="452" width="220" height="58" rx="16" fill="#FFFFFF" stroke="#401600" stroke-width="2" data-editable="shape"/>
+    <text x="310" y="485.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="310" dy="0">종목 커뮤니티</tspan></text>
+    <text x="310" y="532.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="310" dy="0">화면 이동 · 맥락 단절 · 시간 소모</tspan></text>
+    <polygon points="570,355.92 613.4,355.92 613.4,342 640,366 613.4,390 613.4,376.08 570,376.08" fill="#FD9F28" data-editable="shape"/>
+    <rect x="670" y="205" width="532" height="342" rx="22" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="704" y="251.51" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="800" text-anchor="start" data-editable="text"><tspan x="704" dy="0">DAY-JA-VIEW</tspan></text>
+    <circle cx="726" cy="320" r="10" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="752" y="325.58" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="752" dy="0">강해지는 테마</tspan></text>
+    <rect x="1012" y="300" width="132" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1078" y="325.34" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1078" dy="0">실시간 탐지</tspan></text>
+    <circle cx="726" cy="398" r="10" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="752" y="403.58" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="752" dy="0">상승 뉴스·소재</tspan></text>
+    <rect x="1012" y="378" width="132" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1078" y="403.34" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1078" dy="0">원인 연결</tspan></text>
+    <circle cx="726" cy="476" r="10" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="752" y="481.58" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="800" text-anchor="start" data-editable="text"><tspan x="752" dy="0">주도주·확산</tspan></text>
+    <rect x="1012" y="456" width="132" height="42" rx="21" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1078" y="481.34" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1078" dy="0">반응 확인</tspan></text>
+    <line x1="704" y1="489" x2="1164" y2="489" stroke="#FD9F28" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="934" y="520.5799999999999" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="934" dy="0">소재 찾는 시간은 줄이고, 판단 시간은 늘립니다.</tspan></text>
+    <rect x="258" y="585" width="764" height="54" rx="27" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="640" y="618.1999999999999" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="640" dy="0">무엇이 움직이는지부터 왜 움직이는지까지, 한 화면에서</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>

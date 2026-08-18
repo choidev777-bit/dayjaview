@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Ragas 성능 검증">
+  <title>Ragas 성능 검증</title>
+  <style>
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareR.woff2') format('woff2');font-weight:400;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareB.woff2') format('woff2');font-weight:700;font-style:normal}
+    @font-face{font-family:'NanumSquare';src:url('assets/NanumSquareEB.woff2') format('woff2');font-weight:800;font-style:normal}
+    text{font-kerning:normal}
+  </style>
+  <g id="slide-14" data-title="Ragas 성능 검증">
+    <rect x="0" y="0" width="1280" height="720" rx="0" fill="#FFFFFF" stroke="none" stroke-width="0" data-editable="shape"/>
+    <rect x="68" y="46" width="7" height="68" rx="0" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="92" y="61.650000000000006" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">TECH 04 · VALIDATION</tspan></text>
+    <text x="92" y="103.92" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="32" font-weight="800" text-anchor="start" data-editable="text"><tspan x="92" dy="0">온톨로지 기반 검색이 세 지표에서 가장 높았습니다</tspan></text>
+    <text x="1212" y="65.34" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="800" text-anchor="end" data-editable="text"><tspan x="1212" dy="0">14</tspan></text>
+    <text x="92" y="151.51" fill="#000000" font-family="NanumSquare, Arial, sans-serif" font-size="21" font-weight="400" text-anchor="start" data-editable="text"><tspan x="92" dy="0">동일한 80개 질문 · 4개 검색 방식 · Ragas 평가</tspan></text>
+    <rect x="68" y="190" width="278" height="408" rx="22" fill="#401600" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="207" y="233.03" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="1" data-editable="text"><tspan x="207" dy="0">EVALUATION SETUP</tspan></text>
+    <text x="207" y="320.98" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="58" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="207" dy="0">80</tspan></text>
+    <text x="207" y="346.96000000000004" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="207" dy="0">동일 평가 질문</tspan></text>
+    <circle cx="104" cy="397" r="6" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="122" y="403.65000000000003" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="start" data-editable="text"><tspan x="122" dy="0">Keyword RAG</tspan></text>
+    <circle cx="104" cy="439" r="6" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="122" y="445.65000000000003" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="start" data-editable="text"><tspan x="122" dy="0">Vector RAG</tspan></text>
+    <circle cx="104" cy="481" r="6" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="122" y="487.65000000000003" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="400" text-anchor="start" data-editable="text"><tspan x="122" dy="0">Hybrid RAG</tspan></text>
+    <circle cx="104" cy="523" r="6" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="122" y="529.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="122" dy="0">Ontology Search</tspan></text>
+    <rect x="374" y="198" width="270" height="62" rx="0" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="382" y="233.65" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="382" dy="0">방식</tspan></text>
+    <rect x="644" y="198" width="138" height="62" rx="0" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="713" y="233.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="713" dy="0">Precision</tspan></text>
+    <rect x="782" y="198" width="138" height="62" rx="0" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="851" y="233.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="851" dy="0">Recall</tspan></text>
+    <rect x="920" y="198" width="138" height="62" rx="0" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="989" y="233.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="989" dy="0">Faithfulness</tspan></text>
+    <rect x="1058" y="198" width="160" height="62" rx="0" fill="#FD9F28" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="1138" y="233.65" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1138" dy="0">Factual</tspan></text>
+    <rect x="374" y="260" width="270" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="384" y="299.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="start" data-editable="text"><tspan x="384" dy="0">Keyword RAG</tspan></text>
+    <rect x="644" y="260" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="713" y="301.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="713" dy="0">0.54</tspan></text>
+    <rect x="782" y="260" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="851" y="301.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="851" dy="0">0.63</tspan></text>
+    <rect x="920" y="260" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="989" y="301.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="989" dy="0">0.66</tspan></text>
+    <rect x="1058" y="260" width="160" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="1138" y="301.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="1138" dy="0">0.60</tspan></text>
+    <rect x="374" y="330" width="270" height="70" rx="0" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="384" y="369.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="start" data-editable="text"><tspan x="384" dy="0">Vector RAG</tspan></text>
+    <rect x="644" y="330" width="138" height="70" rx="0" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="713" y="371.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="713" dy="0">0.65</tspan></text>
+    <rect x="782" y="330" width="138" height="70" rx="0" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="851" y="371.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="851" dy="0">0.74</tspan></text>
+    <rect x="920" y="330" width="138" height="70" rx="0" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="989" y="371.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="989" dy="0">0.71</tspan></text>
+    <rect x="1058" y="330" width="160" height="70" rx="0" fill="#EEEEEE" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="1138" y="371.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="1138" dy="0">0.67</tspan></text>
+    <rect x="374" y="400" width="270" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="384" y="439.96000000000004" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="16" font-weight="700" text-anchor="start" data-editable="text"><tspan x="384" dy="0">Hybrid RAG</tspan></text>
+    <rect x="644" y="400" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="713" y="441.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="713" dy="0">0.74</tspan></text>
+    <rect x="782" y="400" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="851" y="441.2" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="851" dy="0">0.84</tspan></text>
+    <rect x="920" y="400" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="989" y="441.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="989" dy="0">0.79</tspan></text>
+    <rect x="1058" y="400" width="160" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="1138" y="441.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="1138" dy="0">0.76</tspan></text>
+    <rect x="374" y="470" width="270" height="70" rx="0" fill="#401600" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="384" y="509.65000000000003" fill="#FFFFFF" font-family="NanumSquare, Arial, sans-serif" font-size="15" font-weight="800" text-anchor="start" data-editable="text"><tspan x="384" dy="0">온톨로지 기반 구조화 검색</tspan></text>
+    <rect x="644" y="470" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="713" y="511.2" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="713" dy="0">0.85</tspan></text>
+    <rect x="782" y="470" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="851" y="511.2" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="400" text-anchor="middle" data-editable="text"><tspan x="851" dy="0">0.82</tspan></text>
+    <rect x="920" y="470" width="138" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="989" y="511.2" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="989" dy="0">0.88</tspan></text>
+    <rect x="1058" y="470" width="160" height="70" rx="0" fill="#FFFFFF" stroke="#EEEEEE" stroke-width="1" data-editable="shape"/>
+    <text x="1138" y="511.2" fill="#FD9F28" font-family="NanumSquare, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle" data-editable="text"><tspan x="1138" dy="0">0.84</tspan></text>
+    <rect x="374" y="565" width="838" height="70" rx="16" fill="#EEEEEE" stroke="none" stroke-width="0" data-editable="shape"/>
+    <text x="793" y="589.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="793" dy="0">Precision · 검색 근거의 정확도    Recall · 필요한 근거의 누락 여부</tspan></text>
+    <text x="793" y="619.34" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="14" font-weight="700" text-anchor="middle" data-editable="text"><tspan x="793" dy="0">Faithfulness · 근거 충실도    Factual · 사건·수치의 사실 일치도</tspan></text>
+    <line x1="68" y1="684" x2="1212" y2="684" stroke="#EEEEEE" stroke-width="2" stroke-linecap="round" data-editable="line"/>
+    <text x="68" y="701.41" fill="#401600" font-family="NanumSquare, Arial, sans-serif" font-size="11" font-weight="700" text-anchor="start" letter-spacing="1.2" data-editable="text"><tspan x="68" dy="0">DAY-JA-VIEW</tspan></text>
+  </g>
+</svg>
