@@ -144,7 +144,11 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!introPlayedRef.current && !reducedMotion && items.length > 1) {
-      // 한 바퀴를 돌면 같은 1위 카드에 돌아오므로 끝나고 위치를 되돌려도 튀지 않는다.
+      // 한 바퀴를 그대로 이어서 굴린다. 복제본이 세 벌이라 마지막 칸을 지나도 화면은
+      // 이어지고, 끝난 자리는 다음 벌의 1위라 보이는 그림이 처음과 같다.
+      //
+      // 예전에는 마지막 칸에서 `behavior: 'auto'`로 baseTop에 되돌렸는데, 앞 칸의
+      // smooth 이동이 끝나기 전에 한 바퀴를 거슬러 점프해서 목록이 끊겨 보였다.
       for (let stepIndex = 1; stepIndex <= items.length; stepIndex += 1) {
         timers.push(
           window.setTimeout(() => {
@@ -152,10 +156,7 @@ export function ThemeRankingWheel({ items }: { items: RankingItem[] }) {
             // 첫 번째 pass가 flag를 태우고 그 cleanup이 타이머를 지워, 두 번째 pass는
             // 건너뛰어 결국 한 번도 안 돈다. 실제로 시작할 때 찍는다.
             introPlayedRef.current = true;
-            wheel.scrollTo({
-              top: stepIndex === items.length ? baseTop : baseTop + step * stepIndex,
-              behavior: stepIndex === items.length ? 'auto' : 'smooth',
-            });
+            wheel.scrollTo({ top: baseTop + step * stepIndex, behavior: 'smooth' });
           }, INTRO_STEP_MS * stepIndex),
         );
       }
