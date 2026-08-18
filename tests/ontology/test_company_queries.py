@@ -619,3 +619,24 @@ def test_answer_rows_never_leak_the_question_text() -> None:
 def test_answer_row_requires_evidence_to_be_constructed_meaningfully() -> None:
     row = AnswerRow(label="x", values={}, evidence=())
     assert row.evidence == ()
+
+
+def test_display_limit_exclusion_reports_hidden_row_count() -> None:
+    from packages.ontology.query_answers import _display_limit_exclusions
+
+    assert _display_limit_exclusions(20, 20) == ()
+    cut = _display_limit_exclusions(25, 20)
+    assert cut[0].code == "DISPLAY_LIMIT"
+    assert cut[0].count == 5
+
+
+def test_day_movers_values_say_how_long_the_full_lists_are() -> None:
+    repository = FakeRepository(days=(_day(date(2026, 6, 29)),))
+    result = _ask("2026-06-29에 뭐가 올랐어?", repository)
+
+    assert result.answer is not None
+    values = result.answer.rows[0].values
+    themes = values["themes"]
+    assert values["themeTotal"] == len(themes)
+    for theme in themes:
+        assert theme["stockTotal"] == len(theme["stocks"])

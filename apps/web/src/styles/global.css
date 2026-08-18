@@ -2534,6 +2534,21 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
 }
 
+/* "외 N개 종목"처럼 서버가 잘라낸 개수를 알리는 줄 */
+.research-more {
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-caption);
+}
+
+/* 상세 문단을 쉼표로 잇지 않고 문단마다 줄을 준다 */
+.research-row__values dd p {
+  margin: 0 0 var(--djv-space-1);
+}
+
+.research-row__values dd p:last-child {
+  margin-bottom: 0;
+}
+
 .research-evidence {
   margin: var(--djv-space-2) 0 0;
   padding: 0;
