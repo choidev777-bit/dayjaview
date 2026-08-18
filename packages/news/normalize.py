@@ -11,7 +11,10 @@ _TRACKING_PREFIXES = ("utm_",)
 _TRACKING_KEYS = frozenset({"fbclid", "gclid", "igshid", "spm", "cmpid", "ref"})
 _BRACKET = re.compile(r"[\[\(【][^\]\)】]*[\]\)】]")
 _NON_WORD = re.compile(r"[^0-9a-z가-힣]+")
-_FEATURED_MARKERS = ("특징주",)
+# 제목이 `[특징주`로 여는 것만 받는다. `[특징주]`·`[특징주 강세]`·`[특징주 급등]`은
+# 통과하고, `[ET특징주]`·`[투데이's 특징주]`처럼 매체 접두어가 앞에 붙은 것과
+# 본문 중간에 "특징주"가 스치는 칼럼·시황은 걸러진다.
+_FEATURED_OPENING = re.compile(r"^\s*[\[\(【]\s*특징주")
 
 
 def canonical_url(url: str) -> str:
@@ -40,7 +43,7 @@ def normalized_title(title: str) -> str:
 
 
 def is_featured_stock_title(title: str) -> bool:
-    return any(marker in title for marker in _FEATURED_MARKERS)
+    return _FEATURED_OPENING.match(title) is not None
 
 
 def _digest(value: str) -> str:

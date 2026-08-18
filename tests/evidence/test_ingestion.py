@@ -136,7 +136,14 @@ def test_deduplicates_same_publisher_title_and_published_at_across_urls() -> Non
     assert len(store.search()) == 1
 
 
-def test_supplemental_search_results_do_not_require_featured_marker() -> None:
+def test_supplemental_search_results_also_require_the_featured_opening() -> None:
+    """보완 검색도 제목이 `[특징주`로 열려야 저장한다.
+
+    테마명·종목명으로 긁어온 일반 기사를 그대로 받으면 오르지도 않은 종목의
+    칼럼이 상승 소재로 올라간다(2026-08-18 광통신 테마에 붙은 서울바이오시스
+    특허 칼럼).
+    """
+
     _, ingestor = make_ingestor()
 
     report = ingestor.ingest(
@@ -146,13 +153,51 @@ def test_supplemental_search_results_do_not_require_featured_marker() -> None:
                 source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
                 title="한국원전 수주 협상 진전",
                 original_url="https://example.org/s/1",
-            )
+            ),
+            raw(
+                source_id="naver_supplemental",
+                source_item_id="s2",
+                source_type=NewsSourceType.SUPPLEMENTAL_SEARCH,
+                title="[특징주] 한국원전, 수주 기대에 급등",
+                original_url="https://example.org/s/2",
+            ),
         ],
         now=at(10, 10),
         window_start=WINDOW_START,
     )
 
-    assert len(report.stored) == 1
+    assert [rejected.reason for rejected in report.rejected] == [
+        RejectionReason.NOT_FEATURED_STOCK
+    ]
+    assert [item.title for item in report.stored] == [
+        "[특징주] 한국원전, 수주 기대에 급등"
+    ]
+
+
+def test_media_prefixed_featured_titles_are_rejected() -> None:
+    """`[ET특징주]`처럼 매체 접두어가 앞에 붙으면 받지 않는다.
+
+    제목이 `[특징주`로 여는 것만 쓴다는 규칙이다. 본문 중간에 "특징주"가
+    스치는 칼럼도 같은 이유로 걸러진다.
+    """
+
+    _, ingestor = make_ingestor()
+
+    report = ingestor.ingest(
+        [
+            raw(source_item_id="p1", title="[ET특징주] 한국원전, 강세", original_url="https://example.com/p1"),
+            raw(source_item_id="p2", title="[투데이's 특징주] 한국원전 상승", original_url="https://example.com/p2"),
+            raw(source_item_id="p3", title="[특징주 강세] 한국원전, 신규 수주", original_url="https://example.com/p3"),
+        ],
+        now=at(10, 10),
+        window_start=WINDOW_START,
+    )
+
+    assert [rejected.reason for rejected in report.rejected] == [
+        RejectionReason.NOT_FEATURED_STOCK,
+        RejectionReason.NOT_FEATURED_STOCK,
+    ]
+    assert [item.title for item in report.stored] == ["[특징주 강세] 한국원전, 신규 수주"]
 
 
 def test_one_failing_source_does_not_stop_the_others_and_records_retry() -> None:
