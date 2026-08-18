@@ -286,28 +286,45 @@ class EvidencePipeline:
         now: datetime,
     ) -> tuple[CatalystEvidence, ...]:
         by_news_id = {item.news_id: item for item in news_items}
-        return tuple(
-            CatalystEvidence(
-                news_id=match.news_id,
-                event_id=context.event_id,
-                publisher=item.publisher,
-                title=item.title,
-                summary=catalyst.catalyst_summary,
-                match_basis=match.match_basis,
-                entities=catalyst.event_entities,
-                published_at=item.published_at,
-                received_at=item.retrieved_at,
-                original_url=item.original_url,
-                quality_flags=_quality_flags(item),
-                extraction_method=ExtractionMethod.LLM_GROUNDED,
-                model_name=record.model_name,
-                prompt_version=record.prompt_version,
-                confidence=catalyst.confidence,
-                generated_at=now,
+        rows: list[CatalystEvidence] = []
+        for match in matches:
+            item = by_news_id.get(match.news_id)
+            if item is None:
+                continue
+            # 한 번의 LLM 호출이 기사 여러 건을 묶어 요약 하나를 만든다. 그 요약이
+            # 어느 기사에서 나왔는지는 응답에 없으므로, 묶음 요약을 매칭된 기사마다
+            # 복제하면 무관한 기사에 남의 요약이 붙는다(2026-08-18 광통신 테마의
+            # 서울바이오시스 특허 칼럼). `catalyst_evidence`는 "한 기사에서 확인된
+            # 근거 한 건"이므로, 그 기사가 실제로 뒷받침하는 엔티티가 하나도 없으면
+            # 근거로 남기지 않는다.
+            supported = tuple(
+                entity
+                for entity in catalyst.event_entities
+                if entity.strip() and entity in item.groundable_text
             )
-            for match in matches
-            if (item := by_news_id.get(match.news_id)) is not None
-        )
+            if not supported:
+                continue
+            rows.append(
+                CatalystEvidence(
+                    news_id=match.news_id,
+                    event_id=context.event_id,
+                    publisher=item.publisher,
+                    title=item.title,
+                    summary=catalyst.catalyst_summary,
+                    match_basis=match.match_basis,
+                    entities=supported,
+                    published_at=item.published_at,
+                    received_at=item.retrieved_at,
+                    original_url=item.original_url,
+                    quality_flags=_quality_flags(item),
+                    extraction_method=ExtractionMethod.LLM_GROUNDED,
+                    model_name=record.model_name,
+                    prompt_version=record.prompt_version,
+                    confidence=catalyst.confidence,
+                    generated_at=now,
+                )
+            )
+        return tuple(rows)
 
 
 def _quality_flags(item: NewsItem) -> tuple[str, ...]:
