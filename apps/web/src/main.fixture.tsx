@@ -65,6 +65,8 @@ if (!root) throw new Error('애플리케이션 root를 찾을 수 없습니다.'
 //   phone  주소창·하단 메뉴가 있는 Safari. 실제로 깎이는 높이(672px)를 확인할 때
 //   device 주소창·하단 메뉴가 없는 기기만. 전체화면(PWA)과 같고, 시연 영상 촬영용
 const frame = params.get('frame');
+// 목업 iframe 안쪽이면 스크롤 막대를 숨긴다. 실기기에는 없는 것이라 영상에 남으면 티가 난다.
+if (frame === 'inner') document.documentElement.dataset.chromeless = 'true';
 createRoot(root).render(
   <StrictMode>
     {frame === 'phone' || frame === 'device' ? (

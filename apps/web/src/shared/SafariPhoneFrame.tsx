@@ -9,32 +9,64 @@ import './SafariPhoneFrame.css';
  */
 function innerSrc() {
   const url = new URL(window.location.href);
-  url.searchParams.set('frame', 'off');
+  // `inner`는 프레임을 켜지 말라는 뜻이자, 목업 안이니 스크롤 막대를 숨기라는 표시다.
+  url.searchParams.set('frame', 'inner');
   return url.toString();
 }
 
+/* iOS 상태 표시줄 아이콘.
+ * 애플 에셋을 받아다 넣으면 배포물에 애플 UI 리소스가 들어가므로 비율만 맞춰 그린다.
+ * 셀룰러는 막대 4개가 3px 간격, 높이가 4·6·8·11로 올라간다. */
 function SignalIcon() {
   return (
-    <svg viewBox="0 0 18 12" aria-hidden="true">
-      <path d="M1 11h2V8H1v3Zm4 0h2V6H5v5Zm4 0h2V3H9v8Zm4 0h2V0h-2v11Z" fill="currentColor" />
+    <svg viewBox="0 0 17 11" aria-hidden="true">
+      <rect x="0" y="7.5" width="3" height="3.5" rx="1" fill="currentColor" />
+      <rect x="4.7" y="5.4" width="3" height="5.6" rx="1" fill="currentColor" />
+      <rect x="9.4" y="3" width="3" height="8" rx="1" fill="currentColor" />
+      <rect x="14" y="0" width="3" height="11" rx="1" fill="currentColor" />
     </svg>
   );
 }
 
 function WifiIcon() {
   return (
-    <svg viewBox="0 0 18 14" aria-hidden="true">
-      <path d="M1.3 4.7a10.2 10.2 0 0 1 15.4 0M4.2 7.8a6.3 6.3 0 0 1 9.6 0M7.2 10.7a2.4 2.4 0 0 1 3.6 0M9 13.1h.01" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.6" />
+    <svg viewBox="0 0 16 11.5" aria-hidden="true">
+      <path
+        d="M8 11.2 5.9 8.85a3.2 3.2 0 0 1 4.2 0L8 11.2Z"
+        fill="currentColor"
+      />
+      <path
+        d="M3.35 6.05a6.9 6.9 0 0 1 9.3 0M0.75 3.2a10.6 10.6 0 0 1 14.5 0"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.75"
+      />
     </svg>
   );
 }
 
+/* 배터리는 테두리 25x12, 안쪽 채움, 오른쪽에 양극 돌기. */
 function BatteryIcon() {
   return (
-    <svg viewBox="0 0 24 12" aria-hidden="true">
-      <rect x="1" y="1.5" width="19" height="9" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M22 4.2v3.6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.3" />
-      <rect x="3.2" y="3.5" width="13" height="5" rx="1.2" fill="currentColor" />
+    <svg viewBox="0 0 27.5 13" aria-hidden="true">
+      <rect
+        x="0.6"
+        y="0.6"
+        width="24.3"
+        height="11.8"
+        rx="4"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.36"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M26.6 4.6a2.2 2.2 0 0 1 0 3.8Z"
+        fill="currentColor"
+        fillOpacity="0.4"
+      />
+      <rect x="2.3" y="2.3" width="17.5" height="8.4" rx="2.5" fill="currentColor" />
     </svg>
   );
 }
@@ -91,7 +123,9 @@ export function SafariPhoneFrame({ bare = false }: { bare?: boolean } = {}) {
     <div className={`safari-preview${bare ? ' safari-preview--bare' : ''}`}>
       <div className="safari-preview__device">
         <div className="safari-preview__status" aria-hidden="true">
-          <span>9:41</span>
+          <span className="safari-preview__clock">9:41</span>
+          {/* iPhone 15/16의 다이나믹 아일랜드. 이게 없으면 구형 기기처럼 보인다. */}
+          <span className="safari-preview__island" />
           <span className="safari-preview__status-icons">
             <SignalIcon />
             <WifiIcon />
