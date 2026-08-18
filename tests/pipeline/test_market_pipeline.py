@@ -477,7 +477,11 @@ def test_close_market_discards_candidates_and_closes_active_events() -> None:
         for event in view.events
     }
     assert statuses == {"thm_full": "CLOSED", "thm_thin": "DISCARDED"}
-    assert view.rankings.payload == {"items": []}
+    # 마감 뒤에도 그날 최종 순위는 남는다 (screen_spec 4.1·5.7 최종값 고정).
+    # DISCARDED로 끝난 후보는 공개된 적이 없으므로 그대로 빠진다.
+    items = view.rankings.payload["items"]
+    assert [item["classification"]["themeId"] for item in items] == ["thm_full"]
+    assert items[0]["lifecycleStatus"] == "CLOSED"
 
     # 이미 종결된 테마는 다시 닫아도 상태가 변하지 않는다.
     pipeline.close_market(now=BASE + timedelta(hours=8))

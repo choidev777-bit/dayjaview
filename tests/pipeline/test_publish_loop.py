@@ -258,7 +258,9 @@ def test_market_close_is_evaluated_once_after_close_time() -> None:
     clock.advance(timedelta(minutes=1))
     closed = loop.tick()
     assert loop.market_close_applied
-    assert closed.rankings.payload == {"items": []}
+    # 마감 뒤에도 그날 최종 순위는 세워 둔다 (screen_spec 4.1·5.7).
+    assert closed.rankings.payload["items"]
+    assert closed.treemap.payload["items"]
     assert {event.lifecycle_status.value for event in closed.events} == {"CLOSED"}
 
     # 마감 평가는 한 번만 수행되고 이후 tick에서도 발행은 계속된다.

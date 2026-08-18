@@ -165,6 +165,7 @@ class MarketDataPipeline:
         self._latest_treemap: ReadSnapshot | None = None
         self._last_as_of: datetime | None = None
         self._last_data_status: DataStatus = DataStatus.PREOPEN
+        self._market_closed = False
 
     @property
     def market_date(self) -> date:
@@ -649,6 +650,7 @@ class MarketDataPipeline:
         전이가 Event 저장소에도 기록된다. 이미 종결된 테마는 건너뛴다.
         """
 
+        self._market_closed = True
         for theme_id in sorted(self._latest_metrics):
             state = self._hysteresis.get(theme_id)
             if state is None or state.lifecycle_status in (
@@ -807,6 +809,11 @@ class MarketDataPipeline:
         )
 
     def _ranking_items(self, *, now: datetime) -> list[dict[str, object]]:
+        rankable = (
+            (LifecycleStatus.ACTIVE, LifecycleStatus.WEAKENING, LifecycleStatus.CLOSED)
+            if self._market_closed
+            else (LifecycleStatus.ACTIVE, LifecycleStatus.WEAKENING)
+        )
         candidates: list[tuple[Decimal, str, CanonicalEvent, ThemeMetrics]] = []
         for theme_id, update in self._latest_metrics.items():
             event_id = self._event_ids.get(theme_id)
@@ -815,10 +822,10 @@ class MarketDataPipeline:
             )
             if event is None:
                 continue
-            if event.lifecycle_status not in (
-                LifecycleStatus.ACTIVE,
-                LifecycleStatus.WEAKENING,
-            ):
+            # 장중 CLOSED는 그 테마의 상승이 끝났다는 뜻이라 목록에서 빠진다.
+            # 장 마감 뒤에는 전 테마가 CLOSED이고, 그때는 그날 최종값을 그대로
+            # 세워 둔다 (screen_spec 4.1·5.7 — 장후 최종값 고정).
+            if event.lifecycle_status not in rankable:
                 continue
             metrics = update.metrics
             if not metrics.rank_eligible:
