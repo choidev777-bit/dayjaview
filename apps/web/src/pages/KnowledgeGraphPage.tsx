@@ -353,7 +353,7 @@ export function KnowledgeGraphPage() {
         <div className="kg-brand">
           <span className="kg-brand__mark" aria-hidden="true" />
           <div>
-            <strong>DAY-JA-VIEW</strong>
+            <strong>DAY JA VIEW</strong>
             <small>ONTOLOGY KNOWLEDGE GRAPH</small>
           </div>
         </div>

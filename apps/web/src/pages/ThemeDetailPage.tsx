@@ -325,7 +325,7 @@ const EMPTY_PAGINATION: EvidencePagination = {
   failed: false,
 };
 
-/** 시안의 `과거엔 어땠을까요` + `DAY-JA-VIEW 케이스`. 둘 다 유사사례 응답 하나에서 나온다. */
+/** 시안의 `과거엔 어땠을까요` + `DAY JA VIEW 케이스`. 둘 다 유사사례 응답 하나에서 나온다. */
 function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: string }) {
   const repository = useRepository();
   const resource = useRepositoryResource(
@@ -376,7 +376,7 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
                 배지처럼 읽힌다. */}
             <h2 id="cases-title">
               <span className="brand-icon" aria-hidden="true" />
-              <em className="brand-mark">DAY-JA-VIEW</em> 케이스
+              <em className="brand-mark">DAY JA VIEW</em> 케이스
               <InfoTip label="비슷한 사례를 고르는 기준">
                 오늘과 비슷했던 과거입니다. 수익률이 아니라 <b>왜 올랐는지</b>가 닮은 사건을 같은 테마
                 안에서 찾습니다.
@@ -853,7 +853,7 @@ export function ThemeDetailPage() {
   const historicalAvailable = detail.historicalAccess.status === 'AVAILABLE';
   // 상세 응답에 rank가 없다. 목록에서 넘어왔다면 그때 받은 순위를 그대로 쓴다.
   const rank = repository.getCachedRank(detail.eventId);
-  // 시안 기본 탭은 DAY-JA-VIEW다. 다만 게이트가 닫혀 있으면 그 탭에 보여줄 게 없으므로
+  // 시안 기본 탭은 DAY JA VIEW다. 다만 게이트가 닫혀 있으면 그 탭에 보여줄 게 없으므로
   // 사용자가 직접 고르기 전까지는 오늘 현황을 먼저 편다.
   const detailTab = requestedTab ?? (historicalAvailable ? 'dejavu' : 'today');
   const calculationContext = resource.data.meta.marketContext ?? null;
@@ -996,7 +996,7 @@ export function ThemeDetailPage() {
             aria-controls="detail-panel-dejavu"
             onClick={() => selectDetailTab('dejavu')}
           >
-            DAY-JA-VIEW
+            DAY JA VIEW
           </button>
           <button
             type="button"

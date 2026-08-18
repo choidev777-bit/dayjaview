@@ -14,7 +14,7 @@ export function SplashScreen({ durationMs = 3000 }: { durationMs?: number } = {}
     <div
       className="splash"
       role="status"
-      aria-label="DAY-JA-VIEW 불러오는 중"
+      aria-label="DAY JA VIEW 불러오는 중"
       style={{ '--splash-duration': `${durationMs}ms` } as CSSProperties}
     >
       <div className="splash__halo" aria-hidden="true" />
@@ -28,7 +28,7 @@ export function SplashScreen({ durationMs = 3000 }: { durationMs?: number } = {}
         </span>
       </div>
       <div className="splash__footer">
-        <span>오늘의 시장을, 과거의 기록으로</span>
+        <span>오늘의 테마를, 과거의 기록으로</span>
         <b aria-hidden="true">
           <i />
         </b>
@@ -91,7 +91,7 @@ export function ErrorPage({ error, retry }: { error?: Error; retry: () => void }
   return (
     <div className="page page--error">
       <div className="error-page" role="alert">
-        <span className="error-page__mark" role="img" aria-label="DAY-JA-VIEW" />
+        <span className="error-page__mark" role="img" aria-label="DAY JA VIEW" />
         <h1>{title}</h1>
         <p>{description}</p>
         <button className="button button--primary" type="button" onClick={retry}>

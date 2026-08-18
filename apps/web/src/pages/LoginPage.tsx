@@ -24,7 +24,7 @@ export function LoginPage({
       <section className="login-card" aria-labelledby="login-title">
         <span className="login-mark" role="img" aria-label="DAYJAVIEW" />
         <div className="login-card__copy">
-          <small>DAY-JA-VIEW</small>
+          <small>DAY JA VIEW</small>
           <h1 id="login-title">{savedIntent ? '저장한 분석을 확인하세요' : '오늘 강한 테마를 확인하세요'}</h1>
           <p>
             {savedIntent

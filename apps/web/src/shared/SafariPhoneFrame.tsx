@@ -140,7 +140,7 @@ export function SafariPhoneFrame({ bare = false }: { bare?: boolean } = {}) {
           </div>
         )}
 
-        <iframe className="safari-preview__viewport" src={innerSrc()} title="DAY-JA-VIEW 미리보기" />
+        <iframe className="safari-preview__viewport" src={innerSrc()} title="DAY JA VIEW 미리보기" />
 
         {bare ? null : (
           <div className="safari-preview__toolbar" aria-label="Safari 하단 메뉴">
