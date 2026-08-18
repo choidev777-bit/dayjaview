@@ -85,8 +85,9 @@ _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
     ),
     (
         EventStage.SIGNED,
-        # 낙찰은 수주가 확정된 결과다(검수 S-008).
-        ("낙찰",),
+        # 낙찰·사업자 선정은 수주가 확정된 결과다
+        # (검수 S-008, P-012, 확증 S2-007·S2-019).
+        ("낙찰", "사업자 선정"),
     ),
     (
         EventStage.PREFERRED_BIDDER,
@@ -94,7 +95,6 @@ _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
             "우선협상대상자",
             "우선협상자로",
             "우선협상자 선정",
-            "사업자 선정",
         ),
     ),
     (
@@ -462,6 +462,9 @@ def _invalid_stage_marker(text: str, marker: str, position: int) -> bool:
         return True
     # 협상 결렬은 협상 국면의 사건으로 남긴다(검수 S-137).
     if marker == "결렬" and "협상" in before:
+        return True
+    # '타결 불발'은 타결이 일어나지 않은 것이다(확증 검수 S2-015).
+    if "타결" in marker and text[end : end + 4].lstrip().startswith(("불발", "무산")):
         return True
     if marker == "예비후보" and _is_political_candidate_context(text):
         return True

@@ -28,7 +28,7 @@ from .projects import (
 )
 from .transform import classify_catalyst, parse_cause_sentence
 
-EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.10"
+EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.11"
 _CLAUSE_BREAK_RE = re.compile(
     r"[;；]\s*|\n+|(?<=[.!?。])\s+|(?<=소식)[,·]\s*(?=[가-힣A-Za-z0-9])"
 )
@@ -802,6 +802,20 @@ def extract_catalyst_values(
         start, end = match.span()
         tail = text[end : min(len(text), end + 12)].lstrip()
         if any(tail.startswith(marker) for marker in _ABSTRACT_QUANTITY_TAILS):
+            continue
+        # 서수·순위·연령의 대/기는 수량이 아니다 — "제21대 총선", "세계 7대",
+        # "국내 5대", "50대 미만", "3기 신도시"
+        # (2026-08-19 확증 검수 M2-003·M2-009·M2-012·M2-015·M2-030).
+        if text[max(0, start - 1) : start] == "제":
+            continue
+        # 순위 관용구("세계 7대", "국내 5대")는 단위 '대'에서만 나타난다 —
+        # "국내 9개 게임사"의 9개는 정당한 수량이다(확증 M2-018).
+        before_word = text[max(0, start - 4) : start]
+        if match.group("unit") == "대" and any(
+            word in before_word for word in ("세계", "국내", "글로벌", "아시아")
+        ):
+            continue
+        if tail.startswith(("미만", "이상", "이하", "초반", "중반", "후반", "신도시")):
             continue
         values.append(
             CatalystValueDraft(
