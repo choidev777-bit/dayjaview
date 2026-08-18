@@ -1040,8 +1040,10 @@ a:focus-visible,
   display: flex;
   inset: 0;
   flex-direction: column;
+  /* 이름과 등락률은 타일 왼쪽 위에 둔다. 아래에 두면 타일이 커지고 작아질 때마다
+     글자가 같이 오르내려서, 면적 변화보다 글자 움직임이 먼저 눈에 든다. */
   align-items: flex-start;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--djv-space-1);
   padding: var(--djv-space-3);
   overflow: hidden;
@@ -1050,8 +1052,9 @@ a:focus-visible,
   border-radius: var(--djv-radius-lg);
   color: var(--djv-color-text);
   /*
-   * 타일을 진하게 칠하되(옅으면 강한 날에 순위 차이가 안 보인다), 글자가 앉는 아래쪽에는
-   * 흰 기운을 겹쳐 깐다. 그래야 등락색 숫자를 테두리 없이도 읽을 수 있다.
+   * 타일을 진하게 칠한다. 옅게 칠하면 강한 날에 순위 차이가 안 보인다.
+   * 그 대가로 1위 타일에서는 등락색 숫자의 대비가 약해진다. 색을 흰색으로 바꾸면
+   * 상승·하락 구분이 사라지므로(screen_spec §13.3) 색을 살리는 쪽을 택했다.
    */
   --tile-fill: color-mix(
     in srgb,
@@ -1087,8 +1090,7 @@ a:focus-visible,
 
 /* 타일이 진해져서 상승 빨강이 배경에 묻힌다. 색은 등락색 그대로 두고 흰 테두리를 둘러
    읽히게 한다. 색을 흰색으로 바꾸면 상승·하락 구분이 사라진다 (screen_spec §13.3). */
-/* 테두리를 두르면 글자가 뭉갠다. 대신 타일 아래쪽에 흰 기운을 깔아
-   (`.treemap__tile` 배경 참고) 등락색 그대로 읽히게 한다. */
+/* 읽히게 하려고 흰 테두리를 둘러 봤지만 글자가 뭉갠다. 등락색을 그대로 둔다. */
 .treemap__tile b {
   font-size: 16px;
 }
