@@ -132,6 +132,7 @@ class LiveProductRepository implements ProductRepository {
   private reconnectAttempt = 0;
   private reconnectTimer: TimerHandle | null = null;
   private eventSubscriptionKey = 'event_state_changed:eventIds=';
+  private rankSnapshotsSinceEvidenceRefresh = 0;
 
   constructor(options: ProductionRepositoryOptions = {}) {
     this.fetcher = options.fetcher ?? fetch.bind(globalThis);
@@ -684,7 +685,10 @@ class LiveProductRepository implements ProductRepository {
     if (!isRealtimeSnapshot(message) || !this.acceptSnapshot(message)) return;
 
     this.reconnectAttempt = 0;
-    if (message.topic === 'theme_rank_snapshot') this.applyRankingSnapshot(message);
+    if (message.topic === 'theme_rank_snapshot') {
+      this.applyRankingSnapshot(message);
+      this.refreshEventScopedCaches();
+    }
     if (message.topic === 'theme_treemap_snapshot') this.applyTreemapSnapshot(message);
     if (message.topic === 'event_state_changed') {
       for (const key of this.detailCache.keys()) {
@@ -695,6 +699,29 @@ class LiveProductRepository implements ProductRepository {
       }
       this.emit('detail');
       this.emit('evidence');
+    }
+  }
+
+  /**
+   * C-13 임시 해법: event_state_changed를 발행하는 백엔드 코드가 아직 없어
+   * 상세·근거가 진입 시점 값에 멈춘다. 시장이 갱신됐다는 실신호(rankings
+   * 스냅샷)마다 상세를 비워 REST 재조회로 최신값을 받는다. 근거는 뉴스 워커
+   * 주기(분 단위)로만 바뀌고, 매번 비우면 "더 보기" 페이지네이션이 리셋되므로
+   * 30스냅샷(발행 2초 주기 기준 약 60초)마다 비운다. 백엔드 발행이 붙으면
+   * 걷어낸다.
+   */
+  private refreshEventScopedCaches() {
+    if (this.detailCache.size) {
+      this.detailCache.clear();
+      this.emit('detail');
+    }
+    this.rankSnapshotsSinceEvidenceRefresh += 1;
+    if (this.rankSnapshotsSinceEvidenceRefresh >= 30) {
+      this.rankSnapshotsSinceEvidenceRefresh = 0;
+      if (this.evidenceCache.size) {
+        this.evidenceCache.clear();
+        this.emit('evidence');
+      }
     }
   }
 
