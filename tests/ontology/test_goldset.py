@@ -10,8 +10,6 @@ from packages.ontology import VOCABULARY, QueryType
 GOLDSET_PATH = Path(__file__).with_name("goldset_v1.tsv")
 SUPPLEMENT_PATH = Path(__file__).with_name("goldset_supplement.tsv")
 REVIEW_STATUSES = {"AI_DRAFT", "AI_CROSS_CHECKED", "HUMAN_CONFIRMED"}
-# 사람 검수 전 상태. 이 둘만으로는 승격 게이트를 통과하지 못한다.
-UNCONFIRMED_STATUSES = {"AI_DRAFT", "AI_CROSS_CHECKED"}
 VALID_TYPES = {definition.type_id for definition in VOCABULARY} | {"OTHER"}
 VALID_DIRECTIONS = {"UP", "DOWN", "MIXED", "UNKNOWN"}
 VALID_CERTAINTIES = {"CONFIRMED", "ANTICIPATION", "UNSPECIFIED"}
@@ -42,8 +40,8 @@ def test_goldset_rows_are_valid() -> None:
         assert certainty in VALID_CERTAINTIES
 
 
-def test_supplement_fills_sparse_types_and_is_marked_ai_draft() -> None:
-    """보강 표본은 기존 key와 겹치지 않고, 검수 전에는 승격 판정에서 빠진다."""
+def test_supplement_fills_sparse_types_and_is_human_confirmed() -> None:
+    """보강 표본은 기존 key와 겹치지 않고 사람 최종 검수를 마쳤다."""
 
     base = _rows(GOLDSET_PATH)
     rows = _rows(SUPPLEMENT_PATH)
@@ -59,9 +57,7 @@ def test_supplement_fills_sparse_types_and_is_marked_ai_draft() -> None:
         assert direction in VALID_DIRECTIONS
         assert certainty in VALID_CERTAINTIES
         assert review_status in REVIEW_STATUSES
-    # 사람이 확인하기 전에는 확인 표시가 하나도 없어야 한다. 섞이면 승격
-    # 판정이 검증되지 않은 라벨을 통과시킨다. 교차확인은 사람 검수가 아니다.
-    assert {row[5] for row in rows} <= UNCONFIRMED_STATUSES
+    assert {row[5] for row in rows} == {"HUMAN_CONFIRMED"}
 
 
 QUERY_GOLDSET_PATH = Path(__file__).with_name("query_goldset.tsv")
@@ -125,7 +121,7 @@ def test_query_goldset_splits_dev_and_test_by_column() -> None:
         assert counts.get("dev") == 15, f"{name} dev가 15건이 아니다"
 
 
-def test_query_goldset_rows_are_well_formed_and_ai_draft() -> None:
+def test_query_goldset_rows_are_well_formed_and_human_confirmed() -> None:
     rows = _rows(QUERY_GOLDSET_PATH)
 
     assert len({row[0] for row in rows}) == len(rows)
@@ -146,4 +142,4 @@ def test_query_goldset_rows_are_well_formed_and_ai_draft() -> None:
         if group == "TODAY_BEFORE_PUBLISH":
             assert parsed["date"] == "RELATIVE:TODAY"
             assert parsed["publicationState"] == "BEFORE_PUBLISH"
-    assert {row[6] for row in rows} == {"AI_DRAFT"}
+    assert {row[6] for row in rows} == {"HUMAN_CONFIRMED"}

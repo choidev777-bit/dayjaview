@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from enum import IntEnum, StrEnum
 
 from packages.infostock.hashing import sha256_json
+from packages.ontology.participants import extract_actor_mentions
 
 
 class EventStage(StrEnum):
@@ -41,10 +42,29 @@ class EventStageRank(IntEnum):
 
 
 _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
-    (EventStage.CANCELLED, ("계약 해지", "수주 취소", "취소", "철회", "중단")),
-    (EventStage.DELAYED, ("납기 연기", "일정 연기", "지연", "연기")),
-    (EventStage.COMPLETED, ("납품 완료", "사업 완료", "완공", "준공", "완료")),
-    (EventStage.EXECUTING, ("납품 개시", "공급 개시", "착공", "이행", "생산 개시")),
+    (
+        EventStage.CANCELLED,
+        ("계약 해지", "수주 취소", "취소", "철회", "중단", "결렬"),
+    ),
+    (EventStage.DELAYED, ("납기 연기", "일정 연기", "지연", "연기", "차질")),
+    (
+        EventStage.COMPLETED,
+        ("납품 완료", "사업 완료", "최종 통과", "완공", "준공", "완료"),
+    ),
+    (
+        EventStage.EXECUTING,
+        (
+            "납품 개시",
+            "공급 개시",
+            "생산 개시",
+            "진행 중",
+            "본격화",
+            "실증",
+            "착공",
+            "착수",
+            "이행",
+        ),
+    ),
     (
         EventStage.SIGNED,
         (
@@ -53,24 +73,63 @@ _STAGE_MARKERS: tuple[tuple[EventStage, tuple[str, ...]], ...] = (
             "수주계약 체결",
             "계약을 체결",
             "계약 체결",
+            "합의서 체결",
             "MOU 체결",
             "양해각서 체결",
+            "협상 타결",
+            "협의 타결",
+            "타결",
             "수주",
         ),
     ),
     (
         EventStage.PREFERRED_BIDDER,
-        ("우선협상대상자", "우선협상자로", "우선협상자 선정"),
+        (
+            "우선협상대상자",
+            "우선협상자로",
+            "우선협상자 선정",
+            "사업자 선정",
+            "낙찰",
+        ),
     ),
-    (EventStage.SHORTLIST, ("숏리스트", "적격예비후보", "예비후보")),
-    (EventStage.BID, ("입찰 참여", "입찰", "응찰", "제안서 제출")),
-    (EventStage.DISCUSSION, ("협상", "논의", "협의")),
-    (EventStage.REVIEW, ("검토", "타당성 조사")),
-    (EventStage.RUMOR, ("기대감", "전망", "가능성", "추진설", "관측", "루머")),
+    (
+        EventStage.SHORTLIST,
+        ("숏리스트", "적격예비후보", "예비후보", "2파전"),
+    ),
+    (EventStage.BID, ("입찰 참여", "제안서 제출", "입찰", "응찰", "발주")),
+    (EventStage.DISCUSSION, ("협상", "논의", "협의", "회담")),
+    (EventStage.REVIEW, ("검토", "타당성 조사", "모색")),
+    (
+        EventStage.RUMOR,
+        (
+            "무산 위기",
+            "가능성",
+            "가능",
+            "추진설",
+            "연기설",
+            "기대",
+            "전망",
+            "관측",
+            "루머",
+            "우려",
+        ),
+    ),
 )
-_ANTICIPATION_MARKERS = ("기대", "전망", "가능성", "추진설", "관측", "루머")
+_FUTURE_STAGE_MODIFIERS = (
+    "발표 전",
+    "하기로",
+    "발표",
+    "예정",
+    "계획",
+    "목표",
+    "추진",
+    "언급",
+)
+_FUTURE_STAGE_PREFIX_RE = re.compile(r"(?:오는|향후|\d{4}년까지).{0,16}$")
+_RESOLUTION_MARKERS = ("부인", "해소", "완화")
 _PROJECT_QUOTED_RE = re.compile(r"[‘'\"“]([^’'\"”]{2,60})[’'\"”]")
 _PROJECT_CODE_RE = re.compile(r"(?<![A-Za-z0-9])([A-Z]{1,6}-?\d{1,4})(?![A-Za-z0-9])")
+_PROJECT_ONLY_COUNTRIES = ("루마니아", "핀란드", "체코")
 _PROJECT_PREFIX_RE = re.compile(
     r"프로젝트\s+[‘'\"“]?([가-힣A-Za-z0-9·\-]{2,40})"
 )
@@ -212,40 +271,196 @@ def event_stage_rank(stage: EventStage) -> int:
 def detect_event_stage(text: str, *, offset: int = 0) -> EventStageEvidence:
     """가장 구체적인 명시 단계 하나를 반환한다.
 
-    ``계약 체결 기대감``처럼 아직 발생하지 않은 표현은 SIGNED보다 RUMOR가
-    우선한다. 그 밖에는 취소·완료처럼 뒤 단계의 명시 표지가 앞선다.
+    ``계약 체결 기대감``처럼 아직 발생하지 않은 표현은 RUMOR로 남긴다.
+    한 절에 여러 단계가 있으면 텍스트상 마지막 유효 표지를 현재 단계로 본다.
+    이는 ``협의 완료 후 공사 착수``를 COMPLETED가 아니라 EXECUTING으로 읽고,
+    ``협상 타결``을 DISCUSSION보다 SIGNED로 읽기 위한 규칙이다.
     """
 
-    anticipation = [
-        (text.find(marker), marker)
-        for marker in _ANTICIPATION_MARKERS
-        if text.find(marker) >= 0
-    ]
+    candidates: list[tuple[int, int, EventStage, str]] = []
     for stage, markers in _STAGE_MARKERS:
-        found = [
-            (text.find(marker), marker)
-            for marker in markers
-            if text.find(marker) >= 0
+        for marker in markers:
+            for match in re.finditer(re.escape(marker), text):
+                position = match.start()
+                if _invalid_stage_marker(text, marker, position):
+                    continue
+                candidates.append((position, len(marker), stage, marker))
+    if not candidates:
+        return EventStageEvidence(EventStage.UNSPECIFIED, None, None, None)
+
+    concrete = [item for item in candidates if item[2] is not EventStage.RUMOR]
+    if not concrete and "예비후보" in text and _is_political_candidate_context(text):
+        return EventStageEvidence(EventStage.UNSPECIFIED, None, None, None)
+    position, _, stage, marker = max(
+        concrete or candidates,
+        key=lambda item: (
+            item[0] + item[1],
+            item[1],
+            event_stage_rank(item[2]),
+        ),
+    )
+    if concrete:
+        future = [
+            item
+            for item in candidates
+            if item[2] is EventStage.RUMOR
+            and position + len(marker) <= item[0] <= position + len(marker) + 14
+            and not _is_reaction_tail(
+                text[position + len(marker) : item[0]]
+            )
+            and marker != "차질"
+            and not (
+                stage is EventStage.DELAYED
+                and re.search(r"(?:지연|연기)(?:\s+소식|\s+및|에\s+따른)", text)
+            )
         ]
-        if not found:
-            continue
-        position, marker = min(found, key=lambda item: (item[0], -len(item[1])))
-        if stage is EventStage.SIGNED and anticipation:
-            anticipation_position, anticipation_marker = min(anticipation)
-            if anticipation_position >= position:
-                return EventStageEvidence(
-                    EventStage.RUMOR,
-                    anticipation_marker,
-                    offset + anticipation_position,
-                    offset + anticipation_position + len(anticipation_marker),
+        if stage not in {
+            EventStage.BID,
+            EventStage.SHORTLIST,
+            EventStage.DISCUSSION,
+            EventStage.REVIEW,
+        } or marker == "발주":
+            future.extend(
+                (match.start(), len(future_marker), EventStage.RUMOR, future_marker)
+                for future_marker in _FUTURE_STAGE_MODIFIERS
+                for match in re.finditer(re.escape(future_marker), text)
+                if position + len(marker)
+                <= match.start()
+                <= position + len(marker) + 14
+                and not _is_reaction_tail(
+                    text[position + len(marker) : match.start()]
                 )
-        return EventStageEvidence(
-            stage,
-            marker,
-            offset + position,
-            offset + position + len(marker),
+                and not (
+                    future_marker == "추진"
+                    and marker not in {"착공", "수주", "계약 체결"}
+                )
+                and not (
+                    future_marker == "발표"
+                    and marker not in {"착공", "발주"}
+                )
+                and not (
+                    future_marker == "언급" and marker != "착공"
+                )
+            )
+        if (
+            stage
+            in {
+                EventStage.COMPLETED,
+                EventStage.EXECUTING,
+                EventStage.SIGNED,
+                EventStage.PREFERRED_BIDDER,
+            }
+            and _FUTURE_STAGE_PREFIX_RE.search(text[:position])
+        ):
+            future.append((position, len(marker), EventStage.RUMOR, marker))
+        if future:
+            position, _, stage, marker = min(
+                future,
+                key=lambda item: (item[0], -item[1]),
+            )
+    completed_agreement = re.search(r"(?:협상|타결)\s*완료", text)
+    if stage is EventStage.RUMOR and completed_agreement is not None:
+        position = completed_agreement.end() - len("완료")
+        stage = EventStage.COMPLETED
+        marker = "완료"
+    if any(
+        position < resolution_position <= position + len(marker) + 24
+        for resolution_marker in _RESOLUTION_MARKERS
+        for resolution_position in (text.find(resolution_marker, position),)
+        if resolution_position >= 0
+    ):
+        return EventStageEvidence(EventStage.UNSPECIFIED, None, None, None)
+    return EventStageEvidence(
+        stage,
+        marker,
+        offset + position,
+        offset + position + len(marker),
+    )
+
+
+def _is_reaction_tail(between: str) -> bool:
+    return any(
+        separator in between
+        for separator in (
+            "에 따른",
+            "에 따라",
+            "소식 속",
+            "소식이",
+            "여파 속",
+            "등에 따른",
+            "로 ",
         )
-    return EventStageEvidence(EventStage.UNSPECIFIED, None, None, None)
+    )
+
+
+def _invalid_stage_marker(text: str, marker: str, position: int) -> bool:
+    """단계 표지와 철자가 겹칠 뿐인 합성어·주변 문맥을 제외한다."""
+
+    end = position + len(marker)
+    before = text[max(0, position - 12) : position]
+    after = text[end : min(len(text), end + 14)]
+    around = text[max(0, position - 12) : min(len(text), end + 14)]
+    if marker == "중단" and after.startswith("체"):
+        return True
+    if marker == "지연" and before.endswith("에너"):
+        return True
+    if marker == "완료" and after.startswith("자"):
+        return True
+    if marker in {"우려", "전망", "가능성", "가능", "기대"} and after.startswith(
+        "에 대한"
+    ):
+        return True
+    if marker == "준공" and "책임 준공" in around:
+        return True
+    if marker == "이행" and after.startswith("법"):
+        return True
+    if marker == "예비후보" and _is_political_candidate_context(text):
+        return True
+    if marker == "입찰" and any(
+        phrase in around
+        for phrase in (
+            "입찰 담합",
+            "입찰담합",
+            "입찰 제한",
+            "입찰제한",
+            "경쟁입찰제",
+        )
+    ):
+        return True
+    if marker == "수주" and any(
+        phrase in around for phrase in ("수주 지원", "수주 경쟁")
+    ):
+        return True
+    if marker == "협의" and "담합" in around:
+        return True
+    if marker == "착공" and after.startswith("식") and "제재 면제" in around:
+        return True
+    if marker == "착수" and before.endswith("검토 "):
+        return True
+    if marker == "이행" and after.startswith("계약"):
+        return True
+    if marker in {"계약 체결", "본계약 체결", "수주계약 체결"} and after.lstrip(
+    ).startswith("가속화"):
+        return True
+    return False
+
+
+def _is_political_candidate_context(text: str) -> bool:
+    return any(
+        word in text
+        for word in (
+            "대선",
+            "경선",
+            "정치",
+            "대통령",
+            "민주당",
+            "민주통합당",
+            "국민의힘",
+            "보수통합",
+            "공약",
+            "예비후보자",
+        )
+    )
 
 
 def extract_project_reference(text: str) -> str | None:
@@ -283,7 +498,25 @@ def extract_project_reference(text: str) -> str | None:
         window = text[max(0, match.start() - 24) : min(len(text), match.end() + 24)]
         if not any(marker in window for marker in _PROJECT_CONTEXT_MARKERS):
             continue
-        return " ".join(match.group(1).strip().split()).upper()
+        countries: list[tuple[int, str]] = [
+            (mention.end, mention.canonical_name)
+            for mention in extract_actor_mentions(text)
+            if mention.geography_code is not None
+            and mention.end <= match.start()
+            and match.start() - mention.end <= 28
+        ]
+        countries.extend(
+            (country_match.end(), country)
+            for country in _PROJECT_ONLY_COUNTRIES
+            for country_match in re.finditer(re.escape(country), text)
+            if country_match.end() <= match.start()
+            and match.start() - country_match.end() <= 28
+        )
+        if not countries:
+            continue
+        _, country = max(countries, key=lambda item: item[0])
+        code = " ".join(match.group(1).strip().split()).upper()
+        return f"{country} {code}"
     return None
 
 
@@ -295,25 +528,19 @@ def project_fingerprint(
 ) -> str | None:
     """명시 프로젝트의 여러 진행 단계를 같은 장기 대상으로 묶는다.
 
-    단계·소재 유형은 프로젝트가 아니라 개별 catalyst 속성이므로 fingerprint에
-    넣지 않는다. 회사가 명시된 경우 회사가 가장 강한 anchor다. 회사가 없는
-    기록에서만 통제된 비회사 참여자를 보조 anchor로 쓴다.
+    단계·소재 유형과 사건마다 달라질 수 있는 참여자는 프로젝트 식별자가
+    아니다. 명시 프로젝트명을 정규화한 값만 안정 키로 쓴다. 단순 제품 코드는
+    ``extract_project_reference``에서 국가 문맥이 있을 때만 허용한다.
     """
 
     if reference is None:
         return None
+    del company_codes, participant_keys
     normalized_reference = unicodedata.normalize("NFKC", reference).casefold()
+    normalized_reference = re.sub(r"^(?:대한민국|한국)\s+", "", normalized_reference)
+    normalized_reference = re.sub(r"\s+프로젝트$", "", normalized_reference)
     normalized_reference = re.sub(r"[\s\-_]+", "", normalized_reference)
-    companies = sorted(set(company_codes))
-    return sha256_json(
-        {
-            "reference": normalized_reference,
-            "companyCodes": companies,
-            "participantKeys": (
-                [] if companies else sorted(set(participant_keys))
-            ),
-        }
-    )
+    return sha256_json({"reference": normalized_reference})
 
 
 def project_id_from_fingerprint(fingerprint: str | None) -> str | None:

@@ -145,7 +145,7 @@ class PostgresResearchRepository:
             db.execute(
                 "SELECT max(dedup_policy_version), max(dataset_hash),"
                 " max(event_structure_transform_version)"
-                " FROM ontology.catalyst_revisions"
+                " FROM ontology.current_catalyst_revisions"
             )
             row = db.fetchone()
             if row is not None:
@@ -605,7 +605,7 @@ class PostgresResearchRepository:
                 " cr.object_text, cr.project_id, cr.vocabulary_version,"
                 " sm.start_offset, sm.end_offset, sm.review_status,"
                 " smh.history_id"
-                " FROM ontology.catalyst_revisions cr"
+                " FROM ontology.current_catalyst_revisions cr"
                 " JOIN ontology.source_mentions sm"
                 "   ON sm.source_mention_id = cr.primary_source_mention_id"
                 " LEFT JOIN ontology.source_mention_history smh"
@@ -753,7 +753,7 @@ class PostgresResearchRepository:
                 "WITH latest AS ("
                 " SELECT DISTINCT ON (cr.catalyst_id) cr.catalyst_revision_id,"
                 " cr.catalyst_id, cr.occurred_on"
-                " FROM ontology.catalyst_revisions cr"
+                " FROM ontology.current_catalyst_revisions cr"
                 f"{where}"
                 " ORDER BY cr.catalyst_id, cr.revision_no DESC"
                 ")"

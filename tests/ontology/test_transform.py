@@ -64,6 +64,20 @@ def test_certainty_uses_rightmost_marker() -> None:
     assert classify_catalyst("신제품 출시 예정 속 일부 관련주 상승").certainty == "ANTICIPATION"
 
 
+def test_certainty_uses_rightmost_marker_across_compound_causes() -> None:
+    confirmed_first = classify_catalyst(
+        "LG엔솔 공급계약 체결 및 추가 협력 기대감 등에 상승"
+    )
+    assert confirmed_first.primary_type_id == "ORDER_CONTRACT"
+    assert confirmed_first.certainty == "ANTICIPATION"
+
+    anticipation_first = classify_catalyst(
+        "신공장 착공 예정 및 장기 공급계약 체결 소식 등에 상승"
+    )
+    assert anticipation_first.primary_type_id == "INVESTMENT_CAPACITY"
+    assert anticipation_first.certainty == "CONFIRMED"
+
+
 def test_certainty_unspecified_without_markers() -> None:
     assert classify_catalyst("저가 매수세 유입 등으로 상승").certainty == "UNSPECIFIED"
 
@@ -91,7 +105,7 @@ def test_evidence_spans_point_into_raw_text() -> None:
 def test_versions_are_stamped() -> None:
     result = classify_catalyst("정부 지원 소식에 상승")
     assert result.vocabulary_version == "1.2.0"
-    assert result.transform_version == "catalyst-transform/1.1.0"
+    assert result.transform_version == "catalyst-transform/1.2.0"
 
 
 def test_substring_collisions_do_not_fire() -> None:
@@ -168,3 +182,59 @@ def test_market_sync_fallback_for_bare_price_move_cause() -> None:
     assert "MARKET_SYNC" in result.type_ids
     bare = classify_catalyst("해외 동종업체 급락 속 하락")
     assert bare.primary_type_id == "MARKET_SYNC"
+
+
+def test_concrete_policy_action_beats_actor_or_industry_context() -> None:
+    politics = classify_catalyst(
+        "더불어민주당, 드라마·영화·웹툰·게임 지원정책 추진 소식 등에 상승"
+    )
+    assert politics.primary_type_id == "POLICY_MEASURE"
+    assert "POLITICS_ELECTION" in politics.type_ids
+
+    clinical = classify_catalyst("식약처, K-화장품 미국 수출 지원 소식 등에 상승")
+    assert clinical.primary_type_id == "POLICY_MEASURE"
+    assert "CLINICAL_REGULATORY" in clinical.type_ids
+
+    short_sale = classify_catalyst("내년 6월까지 공매도 전면 금지 속 상승")
+    assert short_sale.primary_type_id == "POLICY_MEASURE"
+    assert "FLOW_TECHNICAL" in short_sale.type_ids
+
+    election = classify_catalyst(
+        "美 대통령 선거 바이든 당선 소식에 따른 정책 기대감 등에 상승"
+    )
+    assert election.primary_type_id == "POLITICS_ELECTION"
+    assert "POLICY_MEASURE" in election.type_ids
+
+    legislation = classify_catalyst(
+        "딥페이크 성범죄 처벌 강화 법사위 통과 소식 등에 상승"
+    )
+    assert legislation.primary_type_id == "POLICY_MEASURE"
+    assert "LEGAL_RISK" in legislation.type_ids
+
+
+def test_policy_action_does_not_override_a_separate_first_event() -> None:
+    legal = classify_catalyst(
+        "공정위, 카카오 제재절차 착수 소식 및 전기통신사업법 개정안 발의 소식에 하락"
+    )
+    assert legal.primary_type_id == "LEGAL_RISK"
+    assert "POLICY_MEASURE" in legal.type_ids
+
+    statement = classify_catalyst(
+        "트럼프 대통령 반도체법 폐지 관련 발언, 보조금 지급 무산 우려에 하락"
+    )
+    assert statement.primary_type_id == "STATEMENT_REMARK"
+    assert "POLICY_MEASURE" in statement.type_ids
+
+    politics = classify_catalyst(
+        "글로벌 우파 정치 세력 약진 속 전기차 지원 정책 후퇴 우려 등에 하락"
+    )
+    assert politics.primary_type_id == "POLITICS_ELECTION"
+    assert "POLICY_MEASURE" in politics.type_ids
+
+
+def test_market_index_event_beats_flow_context() -> None:
+    result = classify_catalyst(
+        "반도체 과열론 속 美 필라델피아 반도체지수 약세 영향 등에 하락"
+    )
+    assert result.primary_type_id == "MARKET_SYNC"
+    assert "FLOW_TECHNICAL" in result.type_ids

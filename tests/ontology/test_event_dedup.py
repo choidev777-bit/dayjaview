@@ -141,7 +141,7 @@ def test_same_project_same_stage_with_conflicting_amount_is_review_candidate() -
     ]
 
 
-def test_paraphrased_project_report_is_not_automatically_merged() -> None:
+def test_paraphrased_same_project_stage_date_is_automatically_merged() -> None:
     first = _draft(
         "한화에어로스페이스, 폴란드 K9 계약 체결 등에 상승",
         key="wording-a",
@@ -157,10 +157,9 @@ def test_paraphrased_project_report_is_not_automatically_merged() -> None:
 
     result = deduplicate_catalysts((first, second))
 
-    assert result.counts.unique_catalyst_count == 2
-    assert [item.relation_type for item in result.relations] == [
-        CatalystRelationType.POSSIBLE_DUPLICATE
-    ]
+    assert result.counts.unique_catalyst_count == 1
+    assert result.relations == ()
+    assert len(result.catalysts[0].source_mentions) == 2
 
 
 def test_dedup_artifact_is_input_order_independent() -> None:

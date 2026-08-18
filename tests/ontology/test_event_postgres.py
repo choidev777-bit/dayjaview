@@ -290,3 +290,13 @@ def test_changed_history_source_skips_whole_catalyst() -> None:
     assert counts.skipped_catalysts == 1
     assert counts.mismatched_histories == 1
     assert counts.inserted_revisions == 0
+
+
+def test_bulk_load_requires_copy_capable_cursor() -> None:
+    database = _Database()
+
+    with pytest.raises(RuntimeError, match="psycopg COPY"):
+        _store(database).load_bulk(_result(), generated_at=_GENERATED_AT)
+
+    assert database.revisions == {}
+    assert database.rollbacks == 1

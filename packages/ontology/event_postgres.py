@@ -790,3 +790,22 @@ class PostgresCatalystEventStore:
             raise
         finally:
             db.close()
+
+    def load_bulk(
+        self,
+        result: DeduplicationResult,
+        *,
+        generated_at: datetime,
+    ) -> CatalystLoadCounts:
+        """COPY staging과 set-based INSERT로 사건 revision을 원자 적재한다."""
+
+        # 별도 모듈에 큰 staging SQL을 두되 public store API는 하나로 유지한다.
+        # 지연 import는 bulk 모듈이 이 모듈의 오류·결과 타입을 재사용할 때 생기는
+        # import cycle을 피한다.
+        from .event_postgres_bulk import load_catalyst_events_bulk
+
+        return load_catalyst_events_bulk(
+            self,
+            result,
+            generated_at=generated_at,
+        )

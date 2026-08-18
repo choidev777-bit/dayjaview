@@ -28,6 +28,7 @@ EXPECTED_ORDER = (
     "0010_history_company_roles.sql",
     "0011_ontology_source_mentions.sql",
     "0012_catalyst_events.sql",
+    "0013_current_catalyst_artifact.sql",
 )
 
 

@@ -23,6 +23,7 @@ from packages.ontology.projects import (
     EventStage,
     detect_event_stage,
     extract_project_reference,
+    project_fingerprint,
 )
 
 _COMPANY = "한화에어로스페이스"
@@ -98,6 +99,48 @@ def test_unspecified_stage_has_no_invented_evidence() -> None:
     assert evidence.end is None
 
 
+def test_stage_detection_uses_current_semantic_state_not_bare_substrings() -> None:
+    cases = {
+        "中 VBP 입찰 결과 오스템임플란트 최다 수량 낙찰 소식": EventStage.PREFERRED_BIDDER,
+        "NCC 연쇄 가동 중단 우려": EventStage.RUMOR,
+        "환경영향평가 협의 완료 및 본 공사 착수 소식": EventStage.EXECUTING,
+        "오는 3월 데이터센터 착공 계획": EventStage.RUMOR,
+        "이란 핵협상 타결 소식": EventStage.SIGNED,
+        "가격 협상이 결렬됐다는 소식": EventStage.CANCELLED,
+        "정부, 희토류 비축 계획 차질 소식": EventStage.DELAYED,
+        "규제 개선 정책 연구 착수 소식": EventStage.EXECUTING,
+        "미래 교통수단 지원 방안 모색 소식": EventStage.REVIEW,
+    }
+
+    for raw_text, expected in cases.items():
+        assert detect_event_stage(raw_text).stage is expected
+
+
+def test_stage_detection_rejects_non_event_compounds_and_denied_reports() -> None:
+    samples = (
+        "검찰, 'LH공사 보험 입찰 담합' 관련 손보사 7곳 압수수색",
+        "브리지론 부도 등 건설사 책임 준공 리스크 부각",
+        "한미 FTA 이행법안 美 의회 최종 통과 소식",
+        "이재명 대선 예비후보, 퓨리오사AI 방문",
+        "정부의 브라질 고속철도사업 수주 지원 소식",
+        "청와대, 시진핑 방한 연기설 부인",
+        "친중단체 관련 소식",
+        "퀀텀에너지연구소 공동특허 출원 소식",
+    )
+
+    expected = (
+        EventStage.UNSPECIFIED,
+        EventStage.UNSPECIFIED,
+        EventStage.COMPLETED,
+        EventStage.UNSPECIFIED,
+        EventStage.UNSPECIFIED,
+        EventStage.UNSPECIFIED,
+        EventStage.UNSPECIFIED,
+        EventStage.UNSPECIFIED,
+    )
+    assert tuple(detect_event_stage(text).stage for text in samples) == expected
+
+
 def test_generic_business_topic_is_not_misread_as_a_project() -> None:
     assert extract_project_reference("로봇 사업 본격화 기대감") is None
     assert extract_project_reference("원전 사업 진출 기대감") is None
@@ -108,7 +151,38 @@ def test_generic_business_topic_is_not_misread_as_a_project() -> None:
     assert extract_project_reference("신한울 3·4호기 건설사업 수주") == "신한울 3·4호기"
     assert extract_project_reference("CES 2026 개최 소식") is None
     assert extract_project_reference("UAE 350억달러 발주 기대") is None
-    assert extract_project_reference("폴란드 K9 수주 기대감") == "K9"
+    assert extract_project_reference("폴란드 K9 수주 기대감") == "폴란드 K9"
+    assert (
+        extract_project_reference("루마니아 4조원대 K9 입찰")
+        == "루마니아 K9"
+    )
+    assert extract_project_reference("K9 수주 기대감") is None
+
+
+def test_project_identity_normalizes_aliases_without_event_participants() -> None:
+    first = project_fingerprint(
+        reference="스타게이트",
+        company_codes=(),
+        participant_keys=(),
+    )
+    alias = project_fingerprint(
+        reference="스타게이트 프로젝트",
+        company_codes=("034730",),
+        participant_keys=("actor_a",),
+    )
+    domestic = project_fingerprint(
+        reference="대한민국 3대 메가프로젝트",
+        company_codes=(),
+        participant_keys=("actor_kr",),
+    )
+    short = project_fingerprint(
+        reference="3대 메가프로젝트",
+        company_codes=(),
+        participant_keys=(),
+    )
+
+    assert first == alias
+    assert domestic == short
 
 
 def test_company_names_and_delivery_use_do_not_create_false_geography() -> None:
@@ -132,6 +206,62 @@ def test_percent_requires_stake_context_and_estimated_share_is_not_summed() -> N
     assert estimated.eligible_for_sum is False
 
 
+def test_value_extraction_rejects_number_substrings_and_price_returns() -> None:
+    for raw_text in (
+        "CES 2026 기대감 지속",
+        "판매량 15개월 만에 최저치",
+        "주가 3개월 새 20% 상승",
+        "10대 공약 발표",
+        "코로나19 대응체계 개편",
+        "4680 원통형 배터리 공급 무산설",
+        "40톤급 대형트럭 공개",
+        "총 107GWh 규모 배터리 공급계약 체결",
+        "캐시 우드, 서클(-15.49%) 주식 처분",
+        "리튬아메리카스 지분 투자 추진 속 주가(+95.77%) 급등",
+    ):
+        assert extract_catalyst_values(raw_text) == ()
+
+
+def test_value_extraction_handles_compound_units_and_local_money_context() -> None:
+    quantity = extract_catalyst_values("대형 원전 8기 신규 건설 추진")[0]
+    assert quantity.fact_type is ValueFactType.QUANTITY
+    assert quantity.normalized_value == Decimal("8")
+
+    capacity = extract_catalyst_values("요소 1만8,700톤 국내 반입 전망")[0]
+    assert capacity.fact_type is ValueFactType.CAPACITY
+    assert capacity.reported_value == "1만8,700톤"
+    assert capacity.normalized_value == Decimal("18700")
+
+    foreign = extract_catalyst_values(
+        "GE와 약 3억2,000만 달러 규모 항공기 엔진 부품 계약 체결"
+    )[0]
+    assert foreign.fact_type is ValueFactType.CONTRACT_VALUE
+    assert foreign.reported_value == "3억2,000만 달러"
+    assert foreign.normalized_value == Decimal("320000000")
+    assert foreign.currency == "USD"
+    assert foreign.eligible_for_sum is False
+
+    mixed = extract_catalyst_values(
+        "엔비디아 시총 2조달러 재돌파 및 삼성전자 4조원대 HBM 공급계약"
+    )
+    assert len(mixed) == 1
+    assert mixed[0].reported_value == "4조원대"
+    assert mixed[0].fact_type is ValueFactType.CONTRACT_VALUE
+    assert mixed[0].eligible_for_sum is False
+
+    investment = extract_catalyst_values("이차전지 공급망 강화에 13조원 이상 투자")
+    assert len(investment) == 1
+    assert investment[0].fact_type is ValueFactType.INVESTMENT_VALUE
+    assert investment[0].eligible_for_sum is False
+
+    budget_and_contract = extract_catalyst_values(
+        "AI 예산 10조원 편성 및 AWS와 380억달러 규모 계약 체결"
+    )
+    assert len(budget_and_contract) == 1
+    assert budget_and_contract[0].reported_value == "380억달러"
+    assert budget_and_contract[0].fact_type is ValueFactType.CONTRACT_VALUE
+
+
 def test_contract_clause_extracts_stage_project_counterparty_and_value() -> None:
     raw_text = (
         "한화에어로스페이스, 폴란드와 K9 3조 2,000억원 "
@@ -148,7 +278,7 @@ def test_contract_clause_extracts_stage_project_counterparty_and_value() -> None
     assert raw_text[
         draft.stage_evidence.start : draft.stage_evidence.end
     ] == "공급계약 체결"
-    assert draft.project_reference == "K9"
+    assert draft.project_reference == "폴란드 K9"
     assert draft.project_id is not None
     assert draft.geography_codes == ("PL",)
     assert draft.participants[0].participant_role == "COUNTERPARTY"

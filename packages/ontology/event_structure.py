@@ -28,7 +28,7 @@ from .projects import (
 )
 from .transform import classify_catalyst, parse_cause_sentence
 
-EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.8"
+EVENT_STRUCTURE_TRANSFORM_VERSION = "event-structure-transform/1.0.9"
 _CLAUSE_BREAK_RE = re.compile(
     r"[;；]\s*|\n+|(?<=[.!?。])\s+|(?<=소식)[,·]\s*(?=[가-힣A-Za-z0-9])"
 )
@@ -83,18 +83,43 @@ _OFFICIAL_MARKERS = (
     "허가",
 )
 _COMPOUND_KRW_RE = re.compile(
-    r"(?P<jo>\d+(?:\.\d+)?)\s*조\s*(?P<eok>\d[\d,]*)\s*억\s*원"
+    r"(?P<jo>\d+(?:\.\d+)?)\s*조\s*(?P<eok>\d[\d,]*)\s*억\s*"
+    r"(?P<currency>원)(?P<band>대)?(?![가-힣A-Za-z0-9])"
+)
+_COMPOUND_FOREIGN_MONEY_RE = re.compile(
+    r"(?P<high>\d[\d,]*(?:\.\d+)?)\s*억\s*"
+    r"(?P<low>\d[\d,]*(?:\.\d+)?)\s*만\s*"
+    r"(?P<currency>달러|유로|엔)(?P<band>대)?(?![가-힣A-Za-z0-9])"
 )
 _MONEY_RE = re.compile(
     r"(?P<number>\d[\d,]*(?:\.\d+)?)\s*"
     r"(?P<scale>조|억|만)?\s*(?P<currency>원|달러|유로|엔)"
+    r"(?P<band>대)?(?![가-힣A-Za-z0-9])"
 )
 _PERCENT_RE = re.compile(r"(?P<number>\d+(?:\.\d+)?)\s*%")
 _STAKE_CONTEXT_MARKERS = ("지분", "지분율", "보유", "인수", "매각", "취득", "처분")
 _CAPACITY_RE = re.compile(
-    r"(?P<number>\d[\d,]*(?:\.\d+)?)\s*(?P<unit>GW|MW|톤)"
+    r"(?<![\d,])(?P<number>\d[\d,]*(?:\.\d+)?)\s*"
+    r"(?P<unit>GW|MW|톤)(?![가-힣A-Za-z0-9])"
 )
-_QUANTITY_RE = re.compile(r"(?P<number>\d[\d,]*)\s*(?P<unit>대|기|개)")
+_COMPOUND_TON_RE = re.compile(
+    r"(?<![\d,])(?P<man>\d[\d,]*(?:\.\d+)?)\s*만\s*"
+    r"(?P<rest>\d[\d,]*(?:\.\d+)?)\s*톤(?![가-힣A-Za-z0-9])"
+)
+_QUANTITY_RE = re.compile(
+    r"(?<![\d,])(?P<number>\d[\d,]*)\s*(?P<unit>대|기|개)"
+    r"(?![가-힣A-Za-z0-9])"
+)
+_ABSTRACT_QUANTITY_TAILS = (
+    "공약",
+    "과제",
+    "그룹",
+    "메가",
+    "분야",
+    "시도",
+    "연속",
+    "최고",
+)
 _APPROX_RE = re.compile(r"(?<![가-힣A-Za-z0-9])약\s*(?=[0-9가-힣])")
 
 
@@ -496,9 +521,13 @@ def _basis(text: str, start: int, end: int) -> ValueBasis:
         return ValueBasis.COMPANY_SHARE
     if "최대" in window:
         return ValueBasis.UP_TO
-    if "이상" in window or "초과" in window:
+    if "이상" in window or "초과" in window or "상회" in window:
         return ValueBasis.LOWER_BOUND
-    if _APPROX_RE.search(window) is not None or "추정" in window:
+    if (
+        _APPROX_RE.search(window) is not None
+        or "추정" in window
+        or re.search(r"(?:원|달러|유로|엔)\s*대", window) is not None
+    ):
         return ValueBasis.ESTIMATE
     if "~" in window or "에서" in window and "까지" in window:
         return ValueBasis.RANGE
@@ -513,12 +542,36 @@ def _currency(code: str) -> str:
     return {"원": "KRW", "달러": "USD", "유로": "EUR", "엔": "JPY"}[code]
 
 
-def _money_fact_type(text: str) -> ValueFactType | None:
-    if any(marker in text for marker in ("계약", "수주", "공급", "납품")):
-        return ValueFactType.CONTRACT_VALUE
-    if "투자" in text:
-        return ValueFactType.INVESTMENT_VALUE
-    return None
+def _money_fact_type(text: str, start: int, end: int) -> ValueFactType | None:
+    prefix = text[max(0, start - 16) : start]
+    if any(
+        marker in prefix
+        for marker in ("시총", "시가총액", "기업가치", "매출액", "영업이익", "주가")
+    ):
+        return None
+    window_start = max(0, start - 28)
+    window_end = min(len(text), end + 36)
+    window = text[window_start:window_end].replace("공급망", "")
+
+    candidates: list[tuple[int, ValueFactType]] = []
+    for fact_type, markers in (
+        (ValueFactType.CONTRACT_VALUE, ("계약", "수주", "공급", "납품")),
+        (ValueFactType.INVESTMENT_VALUE, ("투자",)),
+    ):
+        for marker in markers:
+            cursor = 0
+            while True:
+                position = window.find(marker, cursor)
+                if position < 0:
+                    break
+                absolute = window_start + position
+                distance = min(abs(absolute - start), abs(absolute - end))
+                if distance <= 18:
+                    candidates.append((distance, fact_type))
+                cursor = position + len(marker)
+    if not candidates:
+        return None
+    return min(candidates, key=lambda item: (item[0], item[1].value))[1]
 
 
 def _eligible_for_sum(
@@ -541,12 +594,12 @@ def extract_catalyst_values(
 ) -> tuple[CatalystValueDraft, ...]:
     values: list[CatalystValueDraft] = []
     occupied: list[tuple[int, int]] = []
-    fact_type = _money_fact_type(text)
 
     for match in _COMPOUND_KRW_RE.finditer(text):
+        start, end = match.span()
+        fact_type = _money_fact_type(text, start, end)
         if fact_type is None:
             continue
-        start, end = match.span()
         normalized = _decimal(match.group("jo")) * Decimal(10**12) + _decimal(
             match.group("eok")
         ) * Decimal(10**8)
@@ -566,11 +619,37 @@ def extract_catalyst_values(
         )
         occupied.append((start, end))
 
+    for match in _COMPOUND_FOREIGN_MONEY_RE.finditer(text):
+        start, end = match.span()
+        fact_type = _money_fact_type(text, start, end)
+        if fact_type is None:
+            continue
+        currency = _currency(match.group("currency"))
+        normalized = _decimal(match.group("high")) * Decimal(10**8) + _decimal(
+            match.group("low")
+        ) * Decimal(10**4)
+        basis = _basis(text, start, end)
+        values.append(
+            CatalystValueDraft(
+                fact_type=fact_type,
+                reported_value=match.group(0),
+                normalized_value=normalized,
+                unit=currency,
+                currency=currency,
+                value_basis=basis,
+                eligible_for_sum=_eligible_for_sum(text, start, end, basis),
+                evidence_start=offset + start,
+                evidence_end=offset + end,
+            )
+        )
+        occupied.append((start, end))
+
     scale = {None: Decimal(1), "만": Decimal(10**4), "억": Decimal(10**8), "조": Decimal(10**12)}
     for match in _MONEY_RE.finditer(text):
         start, end = match.span()
         if any(start < old_end and old_start < end for old_start, old_end in occupied):
             continue
+        fact_type = _money_fact_type(text, start, end)
         if fact_type is None:
             continue
         normalized = _decimal(match.group("number")) * scale[match.group("scale")]
@@ -592,6 +671,8 @@ def extract_catalyst_values(
 
     for match in _PERCENT_RE.finditer(text):
         start, end = match.span()
+        if text[max(0, start - 2) : start] in {"(+", "(-"}:
+            continue
         context = text[max(0, start - 16) : min(len(text), end + 12)]
         if not any(marker in context for marker in _STAKE_CONTEXT_MARKERS):
             continue
@@ -608,8 +689,33 @@ def extract_catalyst_values(
                 evidence_end=offset + end,
             )
         )
+    capacity_occupied: list[tuple[int, int]] = []
+    for match in _COMPOUND_TON_RE.finditer(text):
+        start, end = match.span()
+        normalized = _decimal(match.group("man")) * Decimal(10**4) + _decimal(
+            match.group("rest")
+        )
+        values.append(
+            CatalystValueDraft(
+                fact_type=ValueFactType.CAPACITY,
+                reported_value=match.group(0),
+                normalized_value=normalized,
+                unit="TON",
+                currency=None,
+                value_basis=_basis(text, start, end),
+                eligible_for_sum=False,
+                evidence_start=offset + start,
+                evidence_end=offset + end,
+            )
+        )
+        capacity_occupied.append((start, end))
     for match in _CAPACITY_RE.finditer(text):
         start, end = match.span()
+        if any(
+            start < old_end and old_start < end
+            for old_start, old_end in capacity_occupied
+        ):
+            continue
         unit = match.group("unit")
         normalized = _decimal(match.group("number"))
         normalized_unit = "TON" if unit == "톤" else "MW"
@@ -630,6 +736,9 @@ def extract_catalyst_values(
         )
     for match in _QUANTITY_RE.finditer(text):
         start, end = match.span()
+        tail = text[end : min(len(text), end + 12)].lstrip()
+        if any(tail.startswith(marker) for marker in _ABSTRACT_QUANTITY_TAILS):
+            continue
         values.append(
             CatalystValueDraft(
                 fact_type=ValueFactType.QUANTITY,
@@ -783,8 +892,8 @@ def structure_history_catalysts(
                 label.source_history_key if label.event_date is None else None
             ),
         }
-        identity["normalizedClause"] = _normalized_clause(clause.text)
         if project_id is None:
+            identity["normalizedClause"] = _normalized_clause(clause.text)
             identity["participants"] = sorted(actor.actor_key for actor in actors)
         else:
             identity["projectId"] = project_id
