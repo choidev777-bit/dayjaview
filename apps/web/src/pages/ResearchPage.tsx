@@ -9,8 +9,13 @@ import type {
 } from '../domain/contracts';
 import { asRepositoryError } from '../domain/repositoryErrors';
 
-/** 계약서 4.0절 17종 중 지금 물어볼 수 있는 형태의 예시. */
-const EXAMPLES = ['이번 주 시장 어땠어?', '2차전지 테마에 어떤 종목이 있어?'] as const;
+/** 계약서 4.0절 17종 중 지금 물어볼 수 있는 형태의 예시.
+ *  첫 번째는 기술 발표 대본 9장의 질문과 같다. 발표자가 눌러 그 답을 띄운다. */
+const EXAMPLES = [
+  '과거에 핵융합 소재로 올랐을 때 5거래일 뒤 어땠어?',
+  '이번 주 시장 어땠어?',
+  '2차전지 테마에 어떤 종목이 있어?',
+] as const;
 
 const MAX_LENGTH = 300;
 
