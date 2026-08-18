@@ -34,73 +34,216 @@ function EvidenceList({ evidence }: { evidence: ResearchEvidence[] }) {
   );
 }
 
-/** 서버가 주는 키 이름을 그대로 띄우면 `sectionName`·`direction`이 화면에 나온다. */
+/** 화면에 띄울 항목만 등록한다. 등록하지 않은 키는 아예 그리지 않는다.
+ *  서버는 44종을 보내는데 그중 sourceThemeId·catalystId·projectId·countUnit 같은
+ *  내부 식별자는 사용자가 볼 값이 아니다. 목록에 없으면 자동으로 빠진다. */
 const VALUE_LABELS: Record<string, string> = {
   sectionName: '섹션',
   direction: '방향',
   themes: '테마',
   themeName: '테마',
+  themeNames: '테마',
   changeRate: '등락률',
-  stocks: '종목',
-  stockName: '종목',
-  stockCode: '종목코드',
+  themeChangeRate: '테마 등락률',
   closePrice: '종가',
-  companyName: '회사',
-  eventCount: '사건 수',
-  catalystType: '소재 유형',
-  marketDate: '날짜',
-  tradingDate: '날짜',
+  stockCode: '종목코드',
+  sectionHeadline: '특징테마 문구',
+  details: '상세',
+  reason: '편입 이유',
+  appearanceCount: '나온 횟수',
+  recordCount: '기록 수',
+  catalystCount: '소재 수',
+  reactionCount: '반응 수',
+  sharedCatalystCount: '함께 나온 횟수',
+  share: '비중',
+  observedDays: '관측일',
+  sumChangeRate: '등락률 합',
+  medianChangeRate: '중앙 등락률',
+  bestDate: '가장 오른 날',
+  bestChangeRate: '그날 등락률',
+  worstDate: '가장 내린 날',
+  worstChangeRate: '그날 등락률',
+  certainty: '확실성',
+  eventStage: '진행 단계',
+  roles: '역할',
+  geographyCodes: '지역',
+  factType: '수치 유형',
+  reportedValue: '발표 값',
+  unit: '단위',
+  currency: '통화',
+  valueBasis: '금액 기준',
+  baseTradingDate: '기준일',
+  baseClose: '기준일 종가',
+  returns: '이후 수익률',
+  missingReason: '값이 없는 이유',
 };
 
-const DIRECTION_LABELS: Record<string, string> = { UP: '상승', DOWN: '하락', FLAT: '보합' };
+/** 값 자리에도 영어 코드가 온다. 항목 이름만 한글로 바꾸면 `ANTICIPATION`이 남는다. */
+const CODE_LABELS: Record<string, Record<string, string>> = {
+  direction: { UP: '상승', DOWN: '하락', FLAT: '보합' },
+  certainty: { CONFIRMED: '확정', ANTICIPATION: '기대·전망', UNSPECIFIED: '표지 없음' },
+  eventStage: {
+    RUMOR: '소문',
+    REVIEW: '검토',
+    DISCUSSION: '협의',
+    BID: '입찰',
+    SHORTLIST: '후보 선정',
+    PREFERRED_BIDDER: '우선협상대상',
+    SIGNED: '계약 체결',
+    EXECUTING: '수행 중',
+    COMPLETED: '완료',
+    DELAYED: '지연',
+    CANCELLED: '취소',
+    UNSPECIFIED: '표지 없음',
+  },
+  roles: {
+    ACTOR: '주체',
+    ISSUER: '발행',
+    CONTRACTOR: '수주',
+    COUNTERPARTY: '상대방',
+    TARGET: '대상',
+    BENEFICIARY: '수혜',
+    ADVERSELY_AFFECTED: '피해',
+    LEADER: '주도주',
+    RELATED: '관련',
+  },
+  factType: {
+    CONTRACT_VALUE: '계약 금액',
+    INVESTMENT_VALUE: '투자 금액',
+    CAPACITY: '생산능력',
+    QUANTITY: '수량',
+    STAKE_PERCENT: '지분율',
+  },
+  valueBasis: {
+    EXACT: '확정치',
+    ESTIMATE: '추정치',
+    UP_TO: '최대',
+    LOWER_BOUND: '최소',
+    RANGE: '구간',
+    TOTAL_PROJECT: '사업 전체',
+    COMPANY_SHARE: '자사 몫',
+  },
+};
+
+/** 등락률로 읽는 항목. 다른 화면이 쓰는 `.market-up`·`.market-down`을 그대로 쓴다. */
+const RATE_KEYS = new Set([
+  'changeRate',
+  'themeChangeRate',
+  'bestChangeRate',
+  'worstChangeRate',
+  'sumChangeRate',
+  'medianChangeRate',
+]);
+
+const DIRECTION_CLASS: Record<string, string> = { UP: 'market-up', DOWN: 'market-down' };
+
+/** 서버는 `+10.86%`로도 `12.34`로도 준다. 값이 없을 때의 `—`에는 색을 주지 않는다. */
+function rateClass(text: string): string | undefined {
+  if (text.startsWith('-')) return 'market-down';
+  if (text.startsWith('+')) return 'market-up';
+  const numeric = Number.parseFloat(text);
+  return Number.isFinite(numeric) && numeric > 0 ? 'market-up' : undefined;
+}
 
 function labelOf(key: string): string {
   return VALUE_LABELS[key] ?? key;
 }
 
-/** 테마 하나를 `테마명 +10.86% · 종목 2개`처럼 한 줄로 읽히게 만든다. */
-function themeLine(theme: Record<string, unknown>): string {
-  const name = String(theme.themeName ?? theme.themeId ?? '');
-  const rate = theme.changeRate ? ` ${theme.changeRate}` : '';
-  const stocks = Array.isArray(theme.stocks) ? theme.stocks : [];
-  const names = stocks
-    .map((stock) => {
-      const row = stock as Record<string, unknown>;
-      return `${row.stockName ?? ''}${row.changeRate ? ` ${row.changeRate}` : ''}`;
-    })
-    .filter(Boolean);
-  return names.length ? `${name}${rate} — ${names.join(', ')}` : `${name}${rate}`;
-}
-
 function renderValue(key: string, value: unknown): string {
-  if (key === 'direction') return DIRECTION_LABELS[String(value)] ?? String(value);
-  if (key === 'themes' && Array.isArray(value)) {
-    return value.map((theme) => themeLine(theme as Record<string, unknown>)).join(' / ');
+  const codes = CODE_LABELS[key];
+  if (codes) {
+    if (Array.isArray(value)) {
+      return value.map((entry) => codes[String(entry)] ?? String(entry)).join(', ');
+    }
+    return codes[String(value)] ?? String(value);
   }
-  if (key === 'closePrice' && typeof value === 'number') return `${value.toLocaleString('ko-KR')}원`;
+  if (key === 'closePrice' || key === 'baseClose') {
+    const numeric = typeof value === 'number' ? value : Number.parseFloat(String(value));
+    if (Number.isFinite(numeric)) return `${numeric.toLocaleString('ko-KR')}원`;
+  }
   if (Array.isArray(value)) return value.map((entry) => String(entry)).join(', ');
   if (value && typeof value === 'object') {
     return Object.entries(value as Record<string, unknown>)
+      .filter(([, inner]) => inner !== null && inner !== undefined && inner !== '')
       .map(([innerKey, innerValue]) => `${labelOf(innerKey)} ${String(innerValue)}`)
       .join(' · ');
   }
   return String(value);
 }
 
+/** 섹션 > 테마 > 종목 3단 중첩. 한 칸에 이어붙이면 500자짜리 문장 하나가 된다. */
+function ThemeList({ themes }: { themes: Record<string, unknown>[] }) {
+  return (
+    <ul className="research-themes">
+      {themes.map((theme, index) => {
+        const name = String(theme.themeName ?? theme.themeId ?? '');
+        const rate = theme.changeRate ? String(theme.changeRate) : '';
+        const stocks = Array.isArray(theme.stocks)
+          ? (theme.stocks as Record<string, unknown>[])
+          : [];
+        return (
+          <li key={`${name}:${index}`}>
+            <p className="research-theme__head">
+              <strong>{name}</strong>
+              {rate ? <span className={rateClass(rate)}>{rate}</span> : null}
+            </p>
+            {stocks.length ? (
+              <ul className="research-theme__stocks">
+                {stocks.map((stock, stockIndex) => {
+                  const stockRate = stock.changeRate ? String(stock.changeRate) : '';
+                  return (
+                    <li key={`${String(stock.stockCode ?? stock.stockName ?? '')}:${stockIndex}`}>
+                      <span>{String(stock.stockName ?? '')}</span>
+                      {stockRate ? <span className={rateClass(stockRate)}>{stockRate}</span> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function RowValues({ values }: { values: Record<string, unknown> }) {
   const entries = Object.entries(values).filter(
-    ([, value]) =>
-      value !== null && value !== undefined && value !== '' && !(Array.isArray(value) && !value.length),
+    ([key, value]) =>
+      key in VALUE_LABELS &&
+      value !== null &&
+      value !== undefined &&
+      value !== '' &&
+      !(Array.isArray(value) && !value.length),
   );
   if (!entries.length) return null;
   return (
     <dl className="research-row__values">
-      {entries.map(([key, value]) => (
-        <div key={key}>
-          <dt>{labelOf(key)}</dt>
-          <dd>{renderValue(key, value)}</dd>
-        </div>
-      ))}
+      {entries.map(([key, value]) => {
+        if (key === 'themes' && Array.isArray(value)) {
+          return (
+            <div key={key}>
+              <dt>{labelOf(key)}</dt>
+              <dd>
+                <ThemeList themes={value as Record<string, unknown>[]} />
+              </dd>
+            </div>
+          );
+        }
+        const text = renderValue(key, value);
+        const tone =
+          key === 'direction'
+            ? DIRECTION_CLASS[String(value)]
+            : RATE_KEYS.has(key)
+              ? rateClass(text)
+              : undefined;
+        return (
+          <div key={key}>
+            <dt>{labelOf(key)}</dt>
+            <dd className={tone}>{text}</dd>
+          </div>
+        );
+      })}
     </dl>
   );
 }
