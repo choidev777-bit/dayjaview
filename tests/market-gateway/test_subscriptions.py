@@ -158,3 +158,30 @@ def test_input_order_does_not_change_admission_or_eviction() -> None:
 
     assert forward.subscriptions == reverse.subscriptions
     assert forward.snapshot_supplement == reverse.snapshot_supplement
+
+
+def test_alphanumeric_krx_short_code_is_accepted() -> None:
+    """KRX 단축코드에는 영문이 섞인다(신주인수권·제3자배정 등).
+
+    인포스탁 명단 6,629건 중 53종목이 `0001A0` 형태다. 숫자만 받으면
+    LiveMarketRunner가 구독 요구를 만드는 첫 tick에서 ValueError로 죽는다.
+    """
+
+    demand = SubscriptionDemand(
+        stock_id="KRX:0001A0",
+        priority=DemandPriority.ACTIVE_RELATED,
+        observed_at=NOW,
+    )
+
+    assert demand.stock_id == "KRX:0001A0"
+
+    for rejected in ("KRX:00001", "KRX:0001a0", "KRX:0001A00", "KOSPI:000100"):
+        try:
+            SubscriptionDemand(
+                stock_id=rejected,
+                priority=DemandPriority.ACTIVE_RELATED,
+                observed_at=NOW,
+            )
+        except ValueError:
+            continue
+        raise AssertionError(f"{rejected}는 거부돼야 한다")
