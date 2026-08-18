@@ -40,6 +40,7 @@ KIWOOM_KEY=$(require KIWOOM_APP_KEY)
 KIWOOM_SECRET=$(require KIWOOM_APP_SECRET)
 KIWOOM_CONDITIONS=$(value_of KIWOOM_CONDITION_IDS)
 RESEARCH_VERIFIED=$(value_of RESEARCH_VERIFIED_QUERY_TYPES)
+RESEARCH_UNVERIFIED=$(value_of RESEARCH_SERVE_UNVERIFIED)
 NAVER_ID=$(require NAVER_API_HUB_CLIENT_ID)
 NAVER_SECRET=$(require NAVER_API_HUB_CLIENT_SECRET)
 OPENAI_KEY=$(require OPENAI_API_KEY)
@@ -104,6 +105,10 @@ say "4b) secret 주입 — .env.local 유래 값 append"
     if [ -n "$RESEARCH_VERIFIED" ]; then
         printf 'RESEARCH_VERIFIED_QUERY_TYPES=%s\n' "$RESEARCH_VERIFIED"
     fi
+    # "1"이면 검수 전 유형도 답하되 화면에는 검수 전 경고가 남는다.
+    if [ -n "$RESEARCH_UNVERIFIED" ]; then
+        printf 'RESEARCH_SERVE_UNVERIFIED=%s\n' "$RESEARCH_UNVERIFIED"
+    fi
 } | ssh "$VM" 'sudo tee -a /etc/dayjaview/api.env >/dev/null && echo "api.env 완성"'
 
 {
@@ -139,6 +144,37 @@ if [ -n "$DAILY_DIR" ]; then
             && echo "본문 반입 완료: $(ls /opt/dayjaview/data/infostock-daily/details 2>/dev/null | wc -l)건"'
 else
     echo "경고: data/infostock/daily-full-*이 없어 건너뜀 — Daily 사건 질의를 못 만든다" >&2
+fi
+
+say "5-2) E-16 가격 corpus 전송 (1.6GB — 크기 같으면 건너뜀)"
+CORPUS=research/data/daily_prices.sqlite
+if [ -f "$CORPUS" ]; then
+    local_size=$(wc -c < "$CORPUS" | tr -d ' ')
+    remote_size=$(ssh "$VM" 'stat -c %s /opt/dayjaview/data/price-corpus/daily_prices.sqlite 2>/dev/null || echo 0')
+    if [ "$local_size" = "$remote_size" ]; then
+        echo "corpus 크기 동일($local_size bytes) — 전송 생략"
+    else
+        gzip -c "$CORPUS" \
+            | ssh "$VM" 'sudo sh -c "gunzip -c > /opt/dayjaview/data/price-corpus/daily_prices.sqlite \
+                && chown 10001:10001 /opt/dayjaview/data/price-corpus/daily_prices.sqlite" \
+                && echo "corpus 반입 완료: $(stat -c %s /opt/dayjaview/data/price-corpus/daily_prices.sqlite) bytes"'
+    fi
+    # 파일이 실제로 놓인 뒤에만 경로를 알린다 — 경로만 있고 파일이 없으면 api가 못 뜬다.
+    printf 'PRICE_CORPUS_PATH=/workspace/data/price-corpus/daily_prices.sqlite\n' \
+        | ssh "$VM" 'sudo tee -a /etc/dayjaview/api.env >/dev/null && echo "PRICE_CORPUS_PATH 주입"'
+else
+    echo "경고: $CORPUS가 없어 건너뜀 — 사건 이후 주가 질문(gate)이 닫힌 채다" >&2
+fi
+
+say "5-3) 회사 온톨로지 입력 전송 (KRX 사명 이력 색인)"
+KRX_NAMES=research/ontology/krx_name_windows.json
+if [ -f "$KRX_NAMES" ]; then
+    gzip -c "$KRX_NAMES" \
+        | ssh "$VM" 'sudo sh -c "gunzip -c > /opt/dayjaview/data/ontology/krx_name_windows.json \
+            && chown 10001:10001 /opt/dayjaview/data/ontology/krx_name_windows.json" \
+            && echo "사명 색인 반입 완료"'
+else
+    echo "경고: $KRX_NAMES가 없어 건너뜀 — 단계 3·4 적재 시 과거 사명 해석이 빠진다" >&2
 fi
 
 say "6) 이미지 빌드 (ARM64 네이티브 — 첫 회는 수 분 걸린다)"

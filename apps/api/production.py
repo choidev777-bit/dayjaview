@@ -60,6 +60,9 @@ INFOSTOCK_DATABASE_DSN_ENV = "INFOSTOCK_DATABASE_URL"
 CURSOR_SIGNING_SECRET_ENV = "SESSION_SIGNING_SECRET"
 # 사람 검수를 통과해 공개할 질의 유형(쉼표 구분). 비면 전부 품질 미검증이다.
 RESEARCH_VERIFIED_QUERY_TYPES_ENV = "RESEARCH_VERIFIED_QUERY_TYPES"
+# "1"이면 검수 전 유형도 계산해 답한다. 답의 humanVerified는 False로 남아
+# 화면이 "검수 전" 경고를 붙인다 — 검수 완료로 위장하는 스위치가 아니다.
+RESEARCH_SERVE_UNVERIFIED_ENV = "RESEARCH_SERVE_UNVERIFIED"
 # E-16 일봉 corpus 경로. 없으면 결과 질문 gate가 닫힌다.
 PRICE_CORPUS_PATH_ENV = "PRICE_CORPUS_PATH"
 DEPLOYMENT_VERSION_ENV = "DAYJAVIEW_DEPLOYMENT_VERSION"
@@ -261,6 +264,8 @@ def _research_service(
 
     사람 검수를 통과한 질의 유형만 연다(계획서 11.1.2). 검수된 행이 없으면
     `RESEARCH_VERIFIED_QUERY_TYPES`가 비고 모든 유형이 `품질 미검증`으로 답한다.
+    `RESEARCH_SERVE_UNVERIFIED=1`이면 검수 전 유형도 답하되 humanVerified=False로
+    표시해 화면 경고를 유지한다.
     """
 
     dsn = environment.get(INFOSTOCK_DATABASE_DSN_ENV, "").strip() or environment.get(
@@ -288,6 +293,9 @@ def _research_service(
         ),
         availability=QueryAvailability(
             human_verified=_verified_query_types(environment),
+            serve_unverified=(
+                environment.get(RESEARCH_SERVE_UNVERIFIED_ENV, "").strip() == "1"
+            ),
             outcome_gate_open=price_reader is not None,
             outcome_range_from=(
                 OUTCOME_RANGE_FROM
