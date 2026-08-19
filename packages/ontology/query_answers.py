@@ -213,6 +213,8 @@ class CatalystFilter:
     roles: tuple[str, ...] = ()
     source_theme_id: str | None = None
     limit: int | None = None
+    # 사건 원문에 이 낱말이 있는 것만("로봇 정책"의 로봇). 대소문자 무시.
+    topic_text: str | None = None
 
 
 class ResearchRepository(Protocol):
@@ -253,6 +255,10 @@ class ResearchRepository(Protocol):
     def value_facts(self, catalyst_filter: CatalystFilter) -> tuple[ValueFact, ...]: ...
 
     def outcomes(
+        self, catalyst_filter: CatalystFilter, *, horizons: Sequence[int]
+    ) -> tuple[OutcomeObservation, ...]: ...
+
+    def leader_outcomes(
         self, catalyst_filter: CatalystFilter, *, horizons: Sequence[int]
     ) -> tuple[OutcomeObservation, ...]: ...
 
@@ -524,6 +530,7 @@ def _interpretation(plan: QueryPlan, *, extra: Mapping[str, Any] | None = None) 
         "amountCondition": (
             None if plan.amount_condition is None else plan.amount_condition.as_dict()
         ),
+        "topic": plan.topic,
     }
     if extra:
         resolved.update(extra)
@@ -1324,11 +1331,17 @@ def _answer_catalyst_theme_reaction(
             catalyst_type=plan.catalyst_type.type_id,
             date_from=None if plan.period is None else plan.period.start,
             date_to=None if plan.period is None else plan.period.end,
+            source_theme_id=(
+                plan.themes[0].source_theme_id if plan.themes else None
+            ),
+            topic_text=plan.topic,
         )
     )
     if not items:
+        scope = f"{plan.topic} " if plan.topic else ""
         return _no_record(
-            plan, f"{plan.catalyst_type.name_ko} 소재로 분류된 사건이 없습니다."
+            plan,
+            f"{scope}{plan.catalyst_type.name_ko} 소재로 분류된 사건이 없습니다.",
         )
     counter: Counter[str] = Counter()
     evidence_by_theme: dict[str, list[AnswerEvidence]] = {}
@@ -1397,6 +1410,7 @@ def _answer_catalyst_frequency(
             source_theme_id=(
                 plan.themes[0].source_theme_id if plan.themes else None
             ),
+            topic_text=plan.topic,
         )
     )
     if not items:
@@ -1468,11 +1482,17 @@ def _answer_catalyst_certainty(
             catalyst_type=plan.catalyst_type.type_id,
             date_from=None if plan.period is None else plan.period.start,
             date_to=None if plan.period is None else plan.period.end,
+            source_theme_id=(
+                plan.themes[0].source_theme_id if plan.themes else None
+            ),
+            topic_text=plan.topic,
         )
     )
     if not items:
+        scope = f"{plan.topic} " if plan.topic else ""
         return _no_record(
-            plan, f"{plan.catalyst_type.name_ko} 소재로 분류된 사건이 없습니다."
+            plan,
+            f"{scope}{plan.catalyst_type.name_ko} 소재로 분류된 사건이 없습니다.",
         )
     counter = Counter(item.certainty for item in items)
     evidence_by_certainty: dict[str, list[AnswerEvidence]] = {}
@@ -1543,6 +1563,7 @@ def _answer_catalyst_continuation(
             source_theme_id=plan.themes[0].source_theme_id if plan.themes else None,
             date_from=None if plan.period is None else plan.period.start,
             date_to=None if plan.period is None else plan.period.end,
+            topic_text=plan.topic,
         )
     )
     if not items:
@@ -1924,19 +1945,29 @@ def _answer_company_historical_outcome(
             f"{availability.outcome_range_from.isoformat()} 이전 사건의 실제 결과는 "
             "가격 자료가 없어 답할 수 없습니다.",
         )
-    observations = repository.outcomes(
-        CatalystFilter(
-            seed_stock_code=(
-                None if plan.company is None else plan.company.seed_stock_code
-            ),
-            catalyst_type=(
-                None if plan.catalyst_type is None else plan.catalyst_type.type_id
-            ),
-            date_from=effective_start,
-            date_to=plan.period.end,
+    outcome_filter = CatalystFilter(
+        seed_stock_code=(
+            None if plan.company is None else plan.company.seed_stock_code
         ),
-        horizons=DEFAULT_OUTCOME_HORIZONS,
+        catalyst_type=(
+            None if plan.catalyst_type is None else plan.catalyst_type.type_id
+        ),
+        source_theme_id=plan.themes[0].source_theme_id if plan.themes else None,
+        topic_text=plan.topic,
+        date_from=effective_start,
+        date_to=plan.period.end,
     )
+    # 회사를 물으면 그 회사의 직접 사건 축, 소재·테마로 물으면 사건 당시
+    # 주도주 축이다(계획서 4.1 "회사 또는 당시 주도주 outcome").
+    leader_axis = plan.company is None
+    if leader_axis:
+        observations = repository.leader_outcomes(
+            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
+        )
+    else:
+        observations = repository.outcomes(
+            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
+        )
     if not observations:
         return _no_record(plan, "그 구간에 실제 결과를 붙일 사건이 없습니다.")
     observed = [item for item in observations if item.base_close is not None]
@@ -2032,8 +2063,8 @@ def _answer_company_historical_outcome(
             },
         ),
         summary_ko=(
-            f"대상 사건 {len(observations)}건 중 {len(observed)}건에 실제 주가를 "
-            "연결했습니다."
+            f"대상 {'사건 당시 주도주' if leader_axis else '사건'} "
+            f"{len(observations)}건 중 {len(observed)}건에 실제 주가를 연결했습니다."
         ),
         metrics=tuple(metrics),
         rows=rows,
@@ -2042,7 +2073,12 @@ def _answer_company_historical_outcome(
         sample_size=len(observations),
         human_verified=plan.query_type in availability.human_verified,
         notes_ko=(
-            "과거 실제 결과이며 앞으로의 수익률이 아닙니다.",
+            ("과거 실제 결과이며 앞으로의 수익률이 아닙니다.",)
+            + (
+                ("사건 당시 주도주 목록 기준입니다 — 현재 테마 구성과 다를 수 있습니다.",)
+                if leader_axis
+                else ()
+            )
         ),
     )
 

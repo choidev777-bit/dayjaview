@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any, Literal, Mapping, Sequence
+from typing import AbstractSet, Any, Literal, Mapping, Sequence
 
 from packages.infostock.hashing import sha256_json
 
@@ -36,7 +36,7 @@ from .query_contracts import (
 )
 from .vocabulary import VOCABULARY
 
-QUERY_PLANNER_VERSION = "query-planner/1.0.0"
+QUERY_PLANNER_VERSION = "query-planner/1.1.0"
 
 QueryDirection = Literal["UP", "DOWN"]
 
@@ -267,6 +267,8 @@ class QueryPlan:
     themes: tuple[ThemeRef, ...] = ()
     catalyst_type: CatalystTypeRef | None = None
     amount_condition: AmountCondition | None = None
+    # 소재를 좁히는 주제어("로봇 정책"의 로봇). 원문에 있던 낱말 하나만 담는다.
+    topic: str | None = None
     planner_version: str = QUERY_PLANNER_VERSION
     contract_version: str = QUERY_CONTRACT_VERSION
 
@@ -310,6 +312,8 @@ class QueryPlan:
             slots[QuerySlot.AMOUNT_CONDITION.value] = (
                 self.amount_condition.as_dict()["literal"]
             )
+        if self.topic is not None:
+            slots[QuerySlot.TOPIC.value] = self.topic
         return slots
 
     def as_dict(self) -> dict[str, Any]:
@@ -416,6 +420,13 @@ def _has_boundary(text: str, start: int, end: int) -> bool:
     return following in _PARTICLE_SUFFIXES
 
 
+# 질문 문형의 상용어. 테마명 조각이 이것과 겹치면 별칭으로 삼지 않는다 —
+# "정책 소재에"의 소재가 "2차전지(소재/부품)"로 붙는 오인을 막는다.
+_THEME_ALIAS_STOPWORDS = frozenset(
+    "소재 테마 종목 관련주 대표주 산업 그룹 기타 장비 재료 생산".split()
+)
+
+
 def _theme_alias_parts(theme_name: str) -> tuple[str, ...]:
     """테마명에서 사용자가 칠 법한 조각을 뽑는다.
 
@@ -431,7 +442,11 @@ def _theme_alias_parts(theme_name: str) -> tuple[str, ...]:
     for source in (base, *inner):
         for piece in re.split(r"[/·,]", source):
             piece = re.sub(r"\s*등\s*$", "", piece).strip()
-            if len(piece) >= 2 and piece != theme_name:
+            if (
+                len(piece) >= 2
+                and piece != theme_name
+                and piece not in _THEME_ALIAS_STOPWORDS
+            ):
                 parts.add(piece)
     return tuple(sorted(parts))
 
@@ -879,7 +894,7 @@ _OUT_OF_SCOPE_RE = re.compile(
 
 _OUTCOME_MARKERS = (
     "이후 흐름", "이후 반응", "이후 주가", "이후에 주가", "뒤 흐름", "뒤에 주가",
-    "발표 뒤", "발표 후", "수익률", "그 뒤 어떻게", "어떻게 됐",
+    "발표 뒤", "발표 후", "수익률", "그 뒤 어떻게", "어떻게 됐", "뒤 어떻게",
 )
 _VALUE_MARKERS = ("수주액", "계약 금액", "금액 합계", "합계", "총액")
 _DIRECT_EVENT_MARKERS = ("직접", "본인 사건", "주체인 사건", "자체 사건", "스스로")
@@ -931,6 +946,32 @@ def _any(text: str, markers: Sequence[str]) -> bool:
     return any(marker in text for marker in markers)
 
 
+# 주제어가 아니라 소재 표현의 일부인 낱말들. 주제어로 지어내지 않는다.
+_TOPIC_STOPWORDS = frozenset(
+    (
+        "과거 관련 산업 육성 지원 분야 국내 정부 올해 작년 최근 이번 무슨 어떤"
+        " 그때 당시 테마 테마에 소재 소재에 종목 발표 소식 이후"
+    ).split()
+)
+_TOPIC_TOKEN_RE = re.compile(r"[가-힣A-Za-z0-9]+")
+
+
+def _topic_before(text: str, start: int, taken: AbstractSet[str]) -> str | None:
+    """소재 낱말 바로 앞의 주제어 하나를 뽑는다("로봇 산업 육성 정책"의 로봇).
+
+    이미 회사·테마·소재로 해석된 낱말과 상투어는 빼고, 남는 낱말 중 소재에
+    가장 가까운 것 하나만 쓴다. 없으면 좁히지 않는다 — 지어내지 않는다.
+    """
+
+    segment = text[max(0, start - 20) : start]
+    candidates = [
+        token
+        for token in _TOPIC_TOKEN_RE.findall(segment)
+        if len(token) >= 2 and token not in _TOPIC_STOPWORDS and token not in taken
+    ]
+    return candidates[-1] if candidates else None
+
+
 def _classify(
     text: str,
     *,
@@ -945,7 +986,8 @@ def _classify(
     """17종 중 하나로 분류한다. 어디에도 걸리지 않으면 None이다."""
 
     has_theme = theme_count >= 1
-    if has_company and _any(text, _OUTCOME_MARKERS):
+    # 회사 없이 소재·테마로 물으면 사건 당시 주도주의 실제 결과 축이다.
+    if (has_company or has_catalyst or has_theme) and _any(text, _OUTCOME_MARKERS):
         return QueryType.COMPANY_HISTORICAL_OUTCOME
     if has_company and (has_amount or _any(text, _VALUE_MARKERS)):
         return QueryType.COMPANY_VALUE_SUMMARY
@@ -1112,6 +1154,15 @@ def plan_question(
         else None
     )
 
+    topic: str | None = None
+    if catalyst_matches:
+        matched_texts = frozenset(
+            item.text
+            for group in (company_matches, theme_matches, catalyst_matches)
+            for item in group
+        )
+        topic = _topic_before(text, catalyst_matches[0].start, matched_texts)
+
     plan_kwargs: dict[str, Any] = {
         "query_type": query_type,
         "count_unit": QUERY_CONTRACT_BY_TYPE[query_type].count_unit,
@@ -1120,6 +1171,7 @@ def plan_question(
         "themes": themes,
         "catalyst_type": catalyst,
         "amount_condition": amount,
+        "topic": topic,
     }
     if query_type is QueryType.STOCK_DAY_REASON or query_type is QueryType.DAY_MOVERS:
         plan_kwargs["date"] = date_slot

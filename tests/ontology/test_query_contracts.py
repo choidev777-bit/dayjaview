@@ -39,9 +39,12 @@ def test_query_contract_keeps_required_alternatives_and_count_units() -> None:
     assert company_value.prerequisites == (QueryPrerequisite.E22_STAGE_4,)
 
     outcome = QUERY_CONTRACT_BY_TYPE[QueryType.COMPANY_HISTORICAL_OUTCOME]
+    # 소재·테마 축은 사건 당시 주도주 outcome이다(2026-08-19 개방).
     assert outcome.required_alternatives == (
         (QuerySlot.COMPANY, QuerySlot.PERIOD),
         (QuerySlot.EVENT, QuerySlot.PERIOD),
+        (QuerySlot.CATALYST_TYPE, QuerySlot.PERIOD),
+        (QuerySlot.THEME, QuerySlot.PERIOD),
     )
     assert outcome.bundle is QueryBundle.THIRD
 

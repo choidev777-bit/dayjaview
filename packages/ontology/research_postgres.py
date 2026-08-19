@@ -589,6 +589,18 @@ class PostgresResearchRepository:
                 "   AND tt.source_theme_id = %s)"
             )
             params.append(catalyst_filter.source_theme_id)
+        if catalyst_filter.topic_text:
+            # 사건 원문에 주제어가 있는 것만("로봇 정책"의 로봇).
+            clauses.append(
+                "EXISTS (SELECT 1 FROM ontology.source_mentions psm"
+                " JOIN ontology.source_mention_history psmh"
+                "   ON psmh.source_mention_id = psm.source_mention_id"
+                " JOIN core.infostock_theme_history pth"
+                "   ON pth.history_id = psmh.history_id"
+                " WHERE psm.source_mention_id = cr.primary_source_mention_id"
+                "   AND pth.raw_text ILIKE %s)"
+            )
+            params.append(f"%{catalyst_filter.topic_text}%")
         return clauses, params
 
     def catalysts(self, catalyst_filter: CatalystFilter) -> tuple[CatalystSummary, ...]:
@@ -840,6 +852,93 @@ class PostgresResearchRepository:
                         evidence_text=summary.evidence_text,
                     )
                 )
+        return tuple(observations)
+
+    def leader_outcomes(
+        self, catalyst_filter: CatalystFilter, *, horizons: Sequence[int]
+    ) -> tuple[OutcomeObservation, ...]:
+        """조건에 맞는 사건들의 **당시 주도주** 실제 수익률.
+
+        회사 축(outcomes)과 달리 사건에 붙은 테마 반응의 주도주 목록을 쓴다
+        (계획서 4.1 "회사 또는 당시 주도주 outcome"). 최근 사건부터 최대
+        12건, 사건당 주도주 5종목까지만 가격을 조회해 폭주를 막는다.
+        """
+
+        if self._price_reader is None:
+            return ()
+        clauses, params = self._catalyst_where(catalyst_filter)
+        where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+        event_limit = catalyst_filter.limit or 12
+        theme_clause = ""
+        theme_params: list[object] = []
+        if catalyst_filter.source_theme_id is not None:
+            # 테마로 물었으면 그 테마 반응의 주도주만 센다.
+            theme_clause = " AND tt.source_theme_id = %s"
+            theme_params.append(catalyst_filter.source_theme_id)
+        db = self._connection.cursor()
+        try:
+            db.execute(
+                "WITH latest AS ("
+                " SELECT DISTINCT ON (cr.catalyst_id) cr.catalyst_revision_id,"
+                " cr.catalyst_id, cr.occurred_on"
+                " FROM ontology.current_catalyst_revisions cr"
+                f"{where}"
+                " ORDER BY cr.catalyst_id, cr.revision_no DESC"
+                "), picked AS ("
+                " SELECT * FROM latest WHERE occurred_on IS NOT NULL"
+                " ORDER BY occurred_on DESC, catalyst_id LIMIT %s"
+                ")"
+                " SELECT p.catalyst_id, p.occurred_on, ce.seed_stock_code,"
+                " ce.canonical_name, th.raw_text"
+                " FROM picked p"
+                " JOIN ontology.catalyst_theme_reactions ctr"
+                "   ON ctr.catalyst_revision_id = p.catalyst_revision_id"
+                " JOIN ontology.theme_reaction_revisions trr"
+                "   ON trr.reaction_revision_id = ctr.reaction_revision_id"
+                " JOIN ontology.theme_reaction_company_roles trcr"
+                "   ON trcr.reaction_revision_id = trr.reaction_revision_id"
+                "  AND trcr.role = 'LEADER'"
+                " JOIN core.company_entities ce ON ce.company_id = trcr.company_id"
+                " JOIN core.infostock_theme_history th"
+                "   ON th.history_id = trr.history_id"
+                " JOIN core.infostock_themes tt ON tt.theme_id = th.theme_id"
+                f"{theme_clause}"
+                " ORDER BY p.occurred_on DESC, p.catalyst_id, ce.seed_stock_code",
+                (*params, event_limit, *theme_params),
+            )
+            rows = db.fetchall()
+        finally:
+            db.close()
+        observations: list[OutcomeObservation] = []
+        seen: set[tuple[str, str]] = set()
+        per_event: dict[str, int] = {}
+        for row in rows:
+            catalyst_id = str(row[0])
+            occurred_on = row[1]
+            stock_code = str(row[2]).strip()
+            key = (catalyst_id, stock_code)
+            if key in seen:
+                continue
+            if per_event.get(catalyst_id, 0) >= 5:
+                continue
+            seen.add(key)
+            per_event[catalyst_id] = per_event.get(catalyst_id, 0) + 1
+            base_date, base_close, returns, missing = self._price_reader.returns(
+                stock_code, occurred_on, horizons
+            )
+            observations.append(
+                OutcomeObservation(
+                    catalyst_id=catalyst_id,
+                    occurred_on=occurred_on,
+                    seed_stock_code=stock_code,
+                    company_name=_text(row[3]),
+                    base_trading_date=base_date,
+                    base_close=base_close,
+                    returns=returns,
+                    missing_reason=missing,
+                    evidence_text=_text(row[4])[:300],
+                )
+            )
         return tuple(observations)
 
 

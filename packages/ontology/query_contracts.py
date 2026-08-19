@@ -13,7 +13,7 @@ from typing import Any, Mapping
 
 from packages.infostock.hashing import sha256_json
 
-QUERY_CONTRACT_VERSION = "query-contract/1.0.0"
+QUERY_CONTRACT_VERSION = "query-contract/1.1.0"
 
 
 class QueryType(StrEnum):
@@ -47,6 +47,8 @@ class QuerySlot(StrEnum):
     EVENT = "event"
     COMPANY = "company"
     AMOUNT_CONDITION = "amountCondition"
+    # 소재 안을 좁히는 주제어("로봇 정책"의 로봇). 필수 조합에는 안 들어간다.
+    TOPIC = "topic"
 
 
 class CountUnit(StrEnum):
@@ -256,6 +258,10 @@ QUERY_CONTRACTS: tuple[QueryContract, ...] = (
         (
             (QuerySlot.COMPANY, QuerySlot.PERIOD),
             (QuerySlot.EVENT, QuerySlot.PERIOD),
+            # 회사 없이 소재·테마로 물으면 사건 당시 주도주의 실제 결과를
+            # 계산한다(계획서 4.1 "회사 또는 당시 주도주 outcome").
+            (QuerySlot.CATALYST_TYPE, QuerySlot.PERIOD),
+            (QuerySlot.THEME, QuerySlot.PERIOD),
         ),
         CountUnit.OUTCOME_OBSERVATION,
         (QueryPrerequisite.E22_STAGE_6,),

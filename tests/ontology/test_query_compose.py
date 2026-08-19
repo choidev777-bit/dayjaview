@@ -76,3 +76,54 @@ def test_single_questions_never_touch_the_llm() -> None:
     assert payload["status"] == "ANSWERED"
     assert "steps" not in payload
     assert llm.payloads == []
+
+
+def test_topic_narrows_catalyst_questions_and_leader_axis_answers_outcome() -> None:
+    """"로봇 정책"의 로봇이 살아남고, 회사 없이도 당시 주도주 축이 답한다."""
+
+    from packages.ontology import plan_question
+
+    result = plan_question(
+        "과거 로봇 산업 육성 정책 발표 뒤 당시 주도주 주가 어떻게 됐어?",
+        catalog=_catalog(),
+        today=TODAY,
+    )
+    assert result.failure is None
+    assert result.plan is not None
+    assert result.plan.query_type.value == "COMPANY_HISTORICAL_OUTCOME"
+    assert result.plan.company is None
+    assert result.plan.topic == "로봇"
+
+    from datetime import date as date_type
+    from decimal import Decimal
+
+    from packages.ontology import OutcomeObservation, QueryAvailability, QueryType
+    from packages.ontology.query_answers import answer_plan
+
+    repository = FakeRepository(
+        outcomes=(
+            OutcomeObservation(
+                catalyst_id="catalyst_" + "1" * 24,
+                occurred_on=date_type(2026, 7, 1),
+                seed_stock_code="065350",
+                company_name="신성델타테크",
+                base_trading_date=date_type(2026, 7, 1),
+                base_close=Decimal("34000"),
+                returns={1: Decimal("2.0"), 5: Decimal("5.5"), 20: None},
+                missing_reason=None,
+                evidence_text="정부, 로봇 산업 육성 정책 발표",
+            ),
+        ),
+    )
+    availability = QueryAvailability(
+        human_verified=frozenset(QueryType),
+        outcome_gate_open=True,
+        outcome_range_from=date_type(2010, 1, 1),
+    )
+    answered = answer_plan(
+        result.plan, repository, availability=availability, today=TODAY
+    )
+    assert answered.answer is not None
+    assert "주도주" in answered.answer.summary_ko
+    row = answered.answer.rows[0]
+    assert row.values["returns"]["T+5"] == "+5.5%"

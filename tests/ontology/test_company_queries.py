@@ -225,6 +225,11 @@ class FakeRepository:
                 and catalyst_filter.catalyst_type not in item.catalyst_types
             ):
                 continue
+            if (
+                catalyst_filter.topic_text
+                and catalyst_filter.topic_text not in item.evidence_text
+            ):
+                continue
             if catalyst_filter.seed_stock_code is not None:
                 matched = [
                     role
@@ -258,6 +263,14 @@ class FakeRepository:
                 catalyst_filter.date_to is None
                 or item.occurred_on <= catalyst_filter.date_to
             )
+        )
+
+    def leader_outcomes(self, catalyst_filter: CatalystFilter, *, horizons):
+        return tuple(
+            item
+            for item in self.outcomes(catalyst_filter, horizons=horizons)
+            if not catalyst_filter.topic_text
+            or catalyst_filter.topic_text in item.evidence_text
         )
 
 
