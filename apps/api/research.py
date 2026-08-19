@@ -18,6 +18,12 @@ from packages.ontology.query_answers import (
     ResearchRepository,
     answer_plan,
 )
+from packages.ontology.query_compose import (
+    ComposedStep,
+    ComposeLlm,
+    compose_answer,
+    looks_compound,
+)
 from packages.ontology.query_contracts import QUERY_CONTRACTS, QueryType
 from packages.ontology.query_planning import (
     PUBLIC_FAILURE_LABEL_KO,
@@ -46,6 +52,7 @@ class ResearchBoundary:
         repository: ResearchRepository,
         availability: QueryAvailability,
         limit: int = 20,
+        llm: ComposeLlm | None = None,
     ) -> None:
         # 이름 목록은 전 회사·alias를 읽으므로 조립 시점이 아니라 첫 질문에서
         # 만든다. 기동만 하고 질문이 없으면 읽지 않는다.
@@ -56,6 +63,7 @@ class ResearchBoundary:
         self._repository = repository
         self._availability = availability
         self._limit = limit
+        self._llm = llm
         # 유형 확대 판단에 쓰는 집계다. 질의 원문은 세지 않는다.
         self._failure_counts: Counter[str] = Counter()
         self._lock = Lock()
@@ -68,20 +76,68 @@ class ResearchBoundary:
 
     def answer(self, question: str, *, today: date) -> JsonObject:
         result = plan_question(question, catalog=self._resolved_catalog(), today=today)
-        if result.failure is not None:
-            return self._failed(result.failure)
-        assert result.plan is not None
-        answered = answer_plan(
-            result.plan,
-            self._repository,
-            availability=self._availability,
-            today=today,
-            limit=self._limit,
-        )
-        if answered.failure is not None:
-            return self._failed(answered.failure)
-        assert answered.answer is not None
-        return {"status": "ANSWERED", "answer": answered.answer.as_dict()}
+        single_failure: object | None = result.failure
+        single_block = None
+        if result.failure is None:
+            assert result.plan is not None
+            answered = answer_plan(
+                result.plan,
+                self._repository,
+                availability=self._availability,
+                today=today,
+                limit=self._limit,
+            )
+            single_failure = answered.failure
+            single_block = answered.answer
+
+        # 복합 질문이거나 단일 해석이 실패하면 LLM 분해를 시도한다. LLM은
+        # 다음 질문 문장만 만들고 수치는 전부 기존 엔진이 낸다. 실패하면
+        # 아래 단일 경로 결과가 그대로 나간다.
+        if self._llm is not None and (single_block is None or looks_compound(question)):
+            steps = self._composed_steps(question, today)
+            successes = [step for step in steps if step.result.answer is not None]
+            # 단일 답이 이미 있으면 두 단계 이상 성공했을 때만 분해가 낫다.
+            if len(successes) >= (1 if single_block is None else 2):
+                return {
+                    "status": "ANSWERED",
+                    "answer": successes[0].result.answer.as_dict(),  # type: ignore[union-attr]
+                    "steps": [self._step_dict(step) for step in steps],
+                }
+
+        if single_block is not None:
+            return {"status": "ANSWERED", "answer": single_block.as_dict()}
+        assert single_failure is not None
+        return self._failed(single_failure)
+
+    def _composed_steps(self, question: str, today: date) -> tuple[ComposedStep, ...]:
+        assert self._llm is not None
+        try:
+            return compose_answer(
+                question,
+                llm=self._llm,
+                catalog=self._resolved_catalog(),
+                repository=self._repository,
+                availability=self._availability,
+                today=today,
+                limit=self._limit,
+            )
+        except Exception:  # noqa: BLE001 - LLM 장애는 단일 경로로 조용히 물러난다
+            return ()
+
+    @staticmethod
+    def _step_dict(step: ComposedStep) -> JsonObject:
+        if step.result.answer is not None:
+            return {
+                "question": step.question,
+                "status": "ANSWERED",
+                "answer": step.result.answer.as_dict(),
+            }
+        assert step.result.failure is not None
+        return {
+            "question": step.question,
+            "status": "FAILED",
+            "failure": step.result.failure.as_dict(),  # type: ignore[attr-defined]
+        }
 
     def failure_reason_counts(self) -> dict[str, int]:
         with self._lock:

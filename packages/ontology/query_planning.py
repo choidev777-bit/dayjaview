@@ -416,6 +416,26 @@ def _has_boundary(text: str, start: int, end: int) -> bool:
     return following in _PARTICLE_SUFFIXES
 
 
+def _theme_alias_parts(theme_name: str) -> tuple[str, ...]:
+    """테마명에서 사용자가 칠 법한 조각을 뽑는다.
+
+    "지능형로봇/인공지능(AI)" → 지능형로봇, 인공지능, AI.
+    괄호 밖 본체, 본체의 /·, 조각, 괄호 안 조각(" 등" 제거)이다.
+    """
+
+    base = re.sub(r"\([^)]*\)", "", theme_name).strip()
+    inner = re.findall(r"\(([^)]*)\)", theme_name)
+    parts: set[str] = set()
+    if base and base != theme_name:
+        parts.add(base)
+    for source in (base, *inner):
+        for piece in re.split(r"[/·,]", source):
+            piece = re.sub(r"\s*등\s*$", "", piece).strip()
+            if len(piece) >= 2 and piece != theme_name:
+                parts.add(piece)
+    return tuple(sorted(parts))
+
+
 class QuestionCatalog:
     """질문에서 알아볼 수 있는 이름 목록. 여기에 없는 이름은 지어내지 않는다."""
 
@@ -443,8 +463,23 @@ class QuestionCatalog:
             for alias in company.aliases
             if alias.alias
         } | {company.canonical_name for company in company_master.companies}
+        # 테마 별칭 — "지능형로봇/인공지능(AI)"을 "지능형로봇"으로도 알아듣는다.
+        # 조각이 정확히 한 테마만 가리킬 때만 별칭이 된다. 여러 테마에 걸치는
+        # 조각("부품")이나 회사·소재 이름과 겹치는 조각은 지어내지 않고 버린다.
+        reserved = set(self._theme_by_name) | set(self._catalyst_by_name) | company_names
+        candidates: dict[str, set[str]] = {}
+        for theme in self.themes:
+            for part in _theme_alias_parts(theme.theme_name):
+                candidates.setdefault(part, set()).add(theme.theme_name)
+        self._theme_alias = {
+            alias: names.pop()
+            for alias, names in candidates.items()
+            if len(names) == 1 and alias not in reserved
+        }
         self._pattern = self._build_pattern(
-            company_names, set(self._theme_by_name), set(self._catalyst_by_name)
+            company_names,
+            set(self._theme_by_name) | set(self._theme_alias),
+            set(self._catalyst_by_name),
         )
         self._company_names = company_names
 
@@ -494,7 +529,7 @@ class QuestionCatalog:
     def _kind(self, value: str) -> Literal["COMPANY", "THEME", "CATALYST"] | None:
         # 테마·소재 어휘가 회사명보다 앞선다. 회사명은 질문 안에서 더 자주
         # 부분 문자열로 걸리는데, 테마·소재는 통제된 목록이라 오탐이 적다.
-        if value in self._theme_by_name:
+        if value in self._theme_by_name or value in self._theme_alias:
             return "THEME"
         if value in self._catalyst_by_name:
             return "CATALYST"
@@ -504,7 +539,10 @@ class QuestionCatalog:
 
     def _payload(self, kind: str, value: str) -> Any:
         if kind == "THEME":
-            return self._theme_by_name[value]
+            found = self._theme_by_name.get(value)
+            if found is not None:
+                return found
+            return self._theme_by_name[self._theme_alias[value]]
         if kind == "CATALYST":
             return self._catalyst_by_name[value]
         return value
