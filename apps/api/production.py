@@ -63,6 +63,9 @@ RESEARCH_VERIFIED_QUERY_TYPES_ENV = "RESEARCH_VERIFIED_QUERY_TYPES"
 # "1"이면 검수 전 유형도 계산해 답한다. 답의 humanVerified는 False로 남아
 # 화면이 "검수 전" 경고를 붙인다 — 검수 완료로 위장하는 스위치가 아니다.
 RESEARCH_SERVE_UNVERIFIED_ENV = "RESEARCH_SERVE_UNVERIFIED"
+# "1"이면 복합 질문을 LLM이 단일 질의로 분해한다(OPENAI_API_KEY 필요).
+# 수치는 여전히 결정론 엔진이 낸다.
+RESEARCH_OPEN_COMPOSE_ENV = "RESEARCH_OPEN_COMPOSE"
 # E-16 일봉 corpus 경로. 없으면 결과 질문 gate가 닫힌다.
 PRICE_CORPUS_PATH_ENV = "PRICE_CORPUS_PATH"
 DEPLOYMENT_VERSION_ENV = "DAYJAVIEW_DEPLOYMENT_VERSION"
@@ -286,7 +289,13 @@ def _research_service(
     if callable(close):
         closers.append(close)
     price_reader = _price_reader(environment, closers=closers)
+    llm = None
+    if environment.get(RESEARCH_OPEN_COMPOSE_ENV, "").strip() == "1":
+        from packages.llm import create_live_llm_client
+
+        llm = create_live_llm_client(environment)
     return ResearchBoundary(
+        llm=llm,
         catalog=lambda: load_question_catalog(cast(Any, connection)),
         repository=PostgresResearchRepository(
             cast(Any, connection), price_reader=price_reader

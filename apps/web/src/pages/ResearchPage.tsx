@@ -531,7 +531,20 @@ export function ResearchPage() {
       </div>
 
       {error ? <p className="research-failure">{error}</p> : null}
-      {result?.data.status === 'ANSWERED' ? (
+      {result?.data.status === 'ANSWERED' && result.data.steps?.length ? (
+        /* 복합 질문 — 단일 질의로 풀어 답한 단계를 순서대로 보인다.
+           각 단계 머리에는 다시 쓴 질문이 붙는다. */
+        <>
+          {asked ? <p className="research-answer__asked">{asked}</p> : null}
+          {result.data.steps.map((step, index) =>
+            step.status === 'ANSWERED' ? (
+              <AnswerBlock key={index} answer={step.answer} asked={step.question} />
+            ) : (
+              <FailureBlock key={index} failure={step.failure} asked={step.question} />
+            ),
+          )}
+        </>
+      ) : result?.data.status === 'ANSWERED' ? (
         <AnswerBlock answer={result.data.answer} asked={asked} />
       ) : null}
       {result?.data.status === 'FAILED' ? (

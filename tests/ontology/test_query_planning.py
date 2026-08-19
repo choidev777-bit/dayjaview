@@ -271,3 +271,29 @@ def test_plan_failure_never_carries_the_question_text() -> None:
     payload = failure.as_dict()
     assert "삼성전자" not in str(payload)
     assert "publicReason" in payload and "reason" not in payload
+
+
+def test_theme_alias_resolves_fragments_but_never_guesses_ambiguous_ones() -> None:
+    """"지능형로봇"처럼 테마명 일부만 쳐도 유일하면 알아듣는다."""
+
+    catalog = QuestionCatalog(
+        company_master=_catalog().company_master,
+        themes=(
+            ThemeEntry("101", "2차전지"),
+            ThemeEntry("103", "지능형로봇/인공지능(AI)"),
+            ThemeEntry("104", "반도체 재료/부품"),
+            ThemeEntry("105", "자동차(부품)"),
+        ),
+    )
+    result = plan_question(
+        "지능형로봇 테마에 어떤 종목이 있어?", catalog=catalog, today=TODAY
+    )
+    assert result.failure is None
+    assert result.plan is not None
+    assert result.plan.themes[0].theme_name == "지능형로봇/인공지능(AI)"
+
+    # "부품"은 두 테마에 걸린다 — 지어내지 않고 실패한다.
+    ambiguous = plan_question(
+        "부품 테마에 어떤 종목이 있어?", catalog=catalog, today=TODAY
+    )
+    assert ambiguous.failure is not None

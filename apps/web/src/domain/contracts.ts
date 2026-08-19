@@ -488,9 +488,15 @@ export interface ResearchFailure {
   missingSlots: string[];
 }
 
+/** 복합 질문을 단일 질의로 풀어 답한 한 단계. */
+export type ResearchStep = { question: string } & (
+  | { status: 'ANSWERED'; answer: ResearchAnswer }
+  | { status: 'FAILED'; failure: ResearchFailure }
+);
+
 export interface ResearchAnswerResponse {
   data:
-    | { status: 'ANSWERED'; answer: ResearchAnswer }
+    | { status: 'ANSWERED'; answer: ResearchAnswer; steps?: ResearchStep[] }
     | { status: 'FAILED'; failure: ResearchFailure };
   meta: ResponseMeta;
 }

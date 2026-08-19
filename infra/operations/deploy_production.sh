@@ -41,6 +41,7 @@ KIWOOM_SECRET=$(require KIWOOM_APP_SECRET)
 KIWOOM_CONDITIONS=$(value_of KIWOOM_CONDITION_IDS)
 RESEARCH_VERIFIED=$(value_of RESEARCH_VERIFIED_QUERY_TYPES)
 RESEARCH_UNVERIFIED=$(value_of RESEARCH_SERVE_UNVERIFIED)
+RESEARCH_COMPOSE=$(value_of RESEARCH_OPEN_COMPOSE)
 NAVER_ID=$(require NAVER_API_HUB_CLIENT_ID)
 NAVER_SECRET=$(require NAVER_API_HUB_CLIENT_SECRET)
 OPENAI_KEY=$(require OPENAI_API_KEY)
@@ -108,6 +109,15 @@ say "4b) secret 주입 — .env.local 유래 값 append"
     # "1"이면 검수 전 유형도 답하되 화면에는 검수 전 경고가 남는다.
     if [ -n "$RESEARCH_UNVERIFIED" ]; then
         printf 'RESEARCH_SERVE_UNVERIFIED=%s\n' "$RESEARCH_UNVERIFIED"
+    fi
+    # "1"이면 복합 질문 LLM 분해를 켠다. 분해기가 쓸 OpenAI 키도 api에 준다.
+    if [ -n "$RESEARCH_COMPOSE" ]; then
+        printf 'RESEARCH_OPEN_COMPOSE=%s\n' "$RESEARCH_COMPOSE"
+        printf 'OPENAI_API_KEY=%s\n' "$OPENAI_KEY"
+        printf 'OPENAI_MODEL=%s\n' "$OPENAI_MODEL"
+        if [ -n "$OPENAI_REASONING" ]; then
+            printf 'OPENAI_REASONING_EFFORT=%s\n' "$OPENAI_REASONING"
+        fi
     fi
 } | ssh "$VM" 'sudo tee -a /etc/dayjaview/api.env >/dev/null && echo "api.env 완성"'
 
