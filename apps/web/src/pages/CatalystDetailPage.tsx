@@ -167,10 +167,9 @@ export function CatalystDetailPage() {
         </section>
       </div>
 
-      <p className="notice">
-        {detail.qualityNote ? `${detail.qualityNote} ` : ''}
-        과거 관측 요약이며 미래 수익률 예측이 아닙니다.
-      </p>
+      {/* 온톨로지 검증 안내(qualityNote)는 화면에서 뺐다. 미래 예측이 아니라는
+          면책만 남긴다 (2026-08-19 결정, 반응 TOP3 물음표와 같은 이유). */}
+      <p className="notice">과거 관측 요약이며 미래 수익률 예측이 아닙니다.</p>
     </div>
   );
 }
