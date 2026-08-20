@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
-from typing import Any, Protocol
+from typing import Any, Protocol, Sequence
 
 from .query_answers import (
     AnswerResult,
@@ -18,6 +18,7 @@ from .query_answers import (
     ResearchRepository,
     answer_question,
 )
+from .query_contracts import QueryType
 from .query_planning import PUBLIC_FAILURE_LABEL_KO, QuestionCatalog
 
 COMPOSE_PROMPT_VERSION = "research-compose/1.0.0"
@@ -102,8 +103,13 @@ def compose_answer(
     availability: QueryAvailability,
     today: date,
     limit: int = 20,
+    goal_type: QueryType | None = None,
 ) -> tuple[ComposedStep, ...]:
     """복합 질문을 최대 3개 단일 질의로 풀어 순서대로 답한다.
+
+    ``goal_type``은 원 질문이 끝내 묻는 것이다(해석기가 정한다). LLM에게
+    알려 주기만 한다 — 어느 단계가 결론인지는 :func:`pick_conclusion`이
+    코드로 고른다. 다른 요구가 남았을 수 있으므로 여기서 일찍 멈추지 않는다.
 
     LLM 호출이 예외를 내면 그대로 올린다 — 호출자가 기존 경로로 돌아간다.
     """
@@ -112,6 +118,7 @@ def compose_answer(
     for _ in range(MAX_COMPOSE_STEPS):
         payload: dict[str, object] = {
             "question": question,
+            "finalQueryType": None if goal_type is None else goal_type.value,
             "steps": [
                 {"question": step.question, "result": answer_digest(step.result)}
                 for step in steps
@@ -138,6 +145,31 @@ def compose_answer(
     return tuple(steps)
 
 
+def pick_conclusion(
+    steps: Sequence[ComposedStep], *, goal_type: QueryType | None
+) -> ComposedStep | None:
+    """어느 단계가 손님이 물은 답인지 코드가 고른다.
+
+    '마지막으로 성공한 단계'로 두면 LLM이 끝에 딴 질문을 던졌을 때 그게
+    결론이 된다(2026-08-20 실측: 주가를 물었는데 구성 종목 목록이 결론으로
+    올라왔다). 해석기가 정한 목표 유형의 답을 결론으로 삼는다.
+    """
+
+    answered = [step for step in steps if step.result.answer is not None]
+    if not answered:
+        return None
+    if goal_type is not None:
+        matched = [
+            step
+            for step in answered
+            if step.result.answer is not None
+            and step.result.answer.query_type is goal_type
+        ]
+        if matched:
+            return matched[-1]
+    return answered[-1]
+
+
 __all__ = [
     "COMPOSE_PROMPT_VERSION",
     "MAX_COMPOSE_STEPS",
@@ -145,4 +177,5 @@ __all__ = [
     "answer_digest",
     "compose_answer",
     "looks_compound",
+    "pick_conclusion",
 ]

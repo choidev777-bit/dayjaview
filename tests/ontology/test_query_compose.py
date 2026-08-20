@@ -128,3 +128,40 @@ def test_topic_narrows_catalyst_questions_and_leader_axis_answers_outcome() -> N
     row = answered.answer.rows[0]
     assert row.values["leaders"][0]["returns"]["T+5"] == "+5.50%"
     assert row.values["medianReturn"] == "+5.50%"
+
+
+def test_conclusion_is_the_goal_type_not_whatever_ended_last() -> None:
+    """LLM이 끝에 딴 질문을 던져도 결론은 손님이 물은 유형이다."""
+
+    from packages.ontology import ThemeMembership
+    from packages.ontology.query_compose import pick_conclusion
+    from packages.ontology.query_contracts import QueryType
+
+    repository = FakeRepository(
+        days=(_day(date(2026, 6, 29)),),
+        memberships=(
+            ThemeMembership("101", "2차전지", "065350", "신성델타테크", "2차전지 부품"),
+        ),
+    )
+    llm = ScriptedLlm(
+        [
+            "2026-06-29에 뭐가 올랐어?",
+            "신성델타테크 어떤 테마에 속해?",  # 마지막에 샌 질문
+            None,
+        ]
+    )
+    steps = compose_answer(
+        "2026-06-29에 뭐가 올랐고, 그 주도주는 어떤 테마야?",
+        llm=llm,
+        catalog=_catalog(),
+        repository=repository,
+        availability=OPEN,
+        today=TODAY,
+    )
+    assert len(steps) == 2
+    picked = pick_conclusion(steps, goal_type=QueryType.DAY_MOVERS)
+    assert picked is not None and picked.result.answer is not None
+    assert picked.result.answer.query_type is QueryType.DAY_MOVERS
+    # 목표 유형을 모르면 마지막 성공 단계로 물러난다.
+    fallback = pick_conclusion(steps, goal_type=None)
+    assert fallback is not None and fallback.question == "신성델타테크 어떤 테마에 속해?"

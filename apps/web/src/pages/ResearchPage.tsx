@@ -417,8 +417,13 @@ function RowBlock({ row }: { row: ResearchRow }) {
  *  그것만 펴 두고, 거기까지 간 과정은 접어 둔다. */
 function ComposedAnswer({ asked, steps }: { asked: string | null; steps: ResearchStep[] }) {
   const [openSteps, setOpenSteps] = useState(false);
+  /* 어느 단계가 손님이 물은 답인지는 서버가 정한다(conclusion). 화면이
+     '마지막 성공 단계'로 고르면 LLM이 끝에 딴 질문을 던졌을 때 그게 결론이
+     된다 — 2026-08-20에 실제로 그랬다. */
   const answered = steps.filter((step) => step.status === 'ANSWERED');
-  const conclusion = answered.length ? answered[answered.length - 1] : null;
+  const conclusion =
+    answered.find((step) => step.conclusion) ??
+    (answered.length ? answered[answered.length - 1] : null);
   const rest = steps.filter((step) => step !== conclusion);
   return (
     <>
