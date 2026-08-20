@@ -97,7 +97,7 @@ def test_reconnect_controller_resets_only_after_connection() -> None:
     assert controller.schedule is None
 
 
-def test_disconnect_preserves_last_values_but_marks_them_degraded_and_stale() -> None:
+def test_disconnect_preserves_last_values_but_marks_receipt_stale() -> None:
     gateway, _ = _gateway_through_disconnect()
 
     health = gateway.health(
@@ -106,7 +106,7 @@ def test_disconnect_preserves_last_values_but_marks_them_degraded_and_stale() ->
     )
 
     assert gateway.phase is ConnectionPhase.RECONNECTING
-    assert health.data_status is GatewayDataStatus.DEGRADED
+    assert health.data_status is GatewayDataStatus.STALE
     assert health.coverage.fresh_count == 0
     assert health.coverage.stale_stock_ids == ("KRX:000660", "KRX:005930")
     assert health.coverage.missing_stock_ids == ("KRX:035420",)
@@ -157,8 +157,10 @@ def test_reconnect_waits_for_backoff_resubscribes_and_supplements_partial_covera
         ("KRX:005930", "KRX:000660", "KRX:035420"),
         now=BASE + timedelta(seconds=6, milliseconds=200),
     )
+    # 관측이 덜 찬 종목이 섞여도 수신이 살아 있으면 LIVE다. 표본 부족은
+    # coverage report로만 나가고 화면 상태를 지연으로 바꾸지 않는다.
     assert complete_slice.data_status is GatewayDataStatus.LIVE
-    assert partial_slice.data_status is GatewayDataStatus.DEGRADED
+    assert partial_slice.data_status is GatewayDataStatus.LIVE
     assert partial_slice.coverage.status is CoverageStatus.PARTIAL
 
 
@@ -211,7 +213,7 @@ def test_explicit_gap_snapshot_supplement_restores_missing_stock_without_zero_fi
     assert event.data.current_price == Decimal(207000)  # type: ignore[union-attr]
 
 
-def test_heartbeat_stale_and_coverage_degraded_are_separate_states() -> None:
+def test_only_heartbeat_decides_data_status_while_coverage_stays_reported() -> None:
     gateway, demands = _gateway_through_disconnect()
     gateway.recover(
         demands,
@@ -231,7 +233,7 @@ def test_heartbeat_stale_and_coverage_degraded_are_separate_states() -> None:
         ("KRX:005930", "KRX:000660"),
         now=BASE + timedelta(seconds=50),
     )
-    assert low_confidence.data_status is GatewayDataStatus.DEGRADED
+    assert low_confidence.data_status is GatewayDataStatus.LIVE
     assert low_confidence.coverage.status is CoverageStatus.INSUFFICIENT
     assert low_confidence.coverage.low_confidence_count == 2
     assert low_confidence.coverage.missing_count == 0

@@ -566,13 +566,15 @@ class MarketGateway:
         now: datetime,
     ) -> GatewayHealth:
         coverage = self.coverage(stock_ids, now=now)
-        heartbeat_fresh = self._heartbeat_fresh(now)
-        if self.phase is not ConnectionPhase.CONNECTED:
-            data_status = GatewayDataStatus.DEGRADED
-        elif not heartbeat_fresh:
+        # Coverage는 data_status를 정하지 않는다. 거래가 뜸해 아직 체결이 없는
+        # 종목 하나 때문에 화면 전체가 종일 지연으로 덮였다. 종목 표본 부족은
+        # 테마 카드가 종목 단위로 알린다(screen_spec 5.6). 여기서는 수신 자체가
+        # 살아 있는지만 본다. coverage는 report에 그대로 남는다.
+        if (
+            self.phase is not ConnectionPhase.CONNECTED
+            or not self._heartbeat_fresh(now)
+        ):
             data_status = GatewayDataStatus.STALE
-        elif coverage.status is not CoverageStatus.COMPLETE:
-            data_status = GatewayDataStatus.DEGRADED
         else:
             data_status = GatewayDataStatus.LIVE
         return GatewayHealth(
