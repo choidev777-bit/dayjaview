@@ -238,3 +238,38 @@ def test_market_index_event_beats_flow_context() -> None:
     )
     assert result.primary_type_id == "MARKET_SYNC"
     assert "FLOW_TECHNICAL" in result.type_ids
+
+
+def test_topic_clause_match_keeps_korean_robot_policy_and_drops_lookalikes() -> None:
+    """"로봇+정책" 질문에서 진짜 국내 로봇 정책만 남는다(2026-08-20 실측 문장)."""
+
+    from packages.ontology.transform import topic_clause_match
+
+    kept = (
+        "정부 로봇산업 육성 계획 발표 등에 일부 관련주 상승(주도주 : 져스텍, 클로봇)",
+        "정부, 로봇 규제 정비 논의 소식에 상승",
+        "산업부, 로봇테스트필드에 2,000억 투입 소식 및 엔젤로보틱스 상장 기대감 지속 등에 상승",
+    )
+    dropped = (
+        # 정책은 노란봉투법, 로봇은 ETF 편입 — 서로 다른 소식 조각이다.
+        "노란봉투법 시행 및 레인보우로보틱스 등 로봇주 코스닥 액티브 ETF 구성종목으로 편입 소식 등에 상승",
+        # 금감원 '승인'은 개별 기업 심사지 정책 발표가 아니다.
+        "두산로보틱스, 밥캣 편입안 금감원 승인 소식 및 트럼프 당선에 따른 로봇 시장 확대 기대감 지속 등에 상승",
+        # 해외 정부·인사(미국·한미 포함)는 뺀다 — 사용자 결정.
+        "머스크 美 정부효율부 수장 발탁에 따른 휴머노이드 로봇 산업 기대감 부각 등에 일부 관련주 상승",
+        "한미 정부 로봇 산업 육성 정책 기대감 지속 등에 상승",
+        # 정책 대상이 AI고 로봇은 여파면 뺀다 — 사용자 결정.
+        "이재명 정부, AI 100조 펀드 조성에 따른 로보틱스 산업 수혜 전망 등에 상승",
+        # 주체가 기업이면 정책이 아니다.
+        "오픈AI, 자체 휴머노이드 로봇 개발 방안 논의 소식 및 조선업계, 로봇 도입 확대 기대감 지속 등에 상승",
+    )
+    for text in kept:
+        assert topic_clause_match(text, "로봇", "POLICY_MEASURE"), text
+    for text in dropped:
+        assert not topic_clause_match(text, "로봇", "POLICY_MEASURE"), text
+    # 정책이 아닌 유형은 주제어와 유형 낱말이 같은 조각에 있으면 된다.
+    assert topic_clause_match(
+        "한화에어로스페이스, 폴란드 로봇 무기체계 수주 소식 및 삼성전자 실적 발표 등에 상승",
+        "로봇",
+        "ORDER_CONTRACT",
+    )

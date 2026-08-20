@@ -360,3 +360,73 @@ def classify_catalyst(raw_text: str) -> CatalystClassification:
             *continuation_spans,
         ),
     )
+
+
+# ---------------------------------------------------------------- 주제어 절 검사
+#
+# "로봇 정책" 질문이 '정책 낱말 + 로봇 낱말이 같은 글에 있다'로 풀리면
+# "노란봉투법 시행 및 로봇주 ETF 편입"처럼 반쪽만 맞는 사건이 통과한다
+# (2026-08-20 실측: 정책+로봇 질문 20건 중 12건이 무관 사건). 원인문을
+# ' 및 '으로 갈라 소식 단위로 보고, 주제어가 있는 조각 안에서 따진다.
+
+_CLAUSE_SPLIT_RE = re.compile(r"\s및\s")
+# "X에 따른 Y 기대감"은 정책이 X고 Y는 여파다. 주제어는 X 쪽에 있어야 한다
+# ("AI 펀드 조성에 따른 로보틱스 수혜"는 로봇 정책이 아니다 — 사용자 결정).
+_CONSEQUENCE_RE = re.compile(r"에\s*따른|에\s*따라")
+# 주도주·관련주 나열에 걸린 회사명("클로봇")이 주제어로 오인되면 안 된다.
+_LEADER_TAIL_RE = re.compile(r"\((?:주도주|관련주)")
+
+# 해외 정부·인사 표지. 국내 정책 질문에서 뺀다(한미 공동 발표 포함 — 사용자 결정).
+_FOREIGN_MARKERS = (
+    "美", "미국", "트럼프", "바이든", "백악관", "머스크", "中", "중국",
+    "日", "일본", "EU", "유럽", "해외", "한미", "한·미",
+)
+# 국내 정책 주체. 이 낱말이 조각 안에 있어야 정부 행위로 본다.
+_KOREAN_GOV_AGENTS = (
+    "정부", "국회", "국무회의", "국무총리", "대통령", "당국", "지자체", "서울시",
+    "산업부", "산업통상자원부", "국토부", "국토교통부", "과기정통부",
+    "과학기술정보통신부", "기재부", "기획재정부", "중기부", "중소벤처기업부",
+    "금융위", "금감원", "고용노동부", "복지부", "교육부", "행안부",
+)
+# 정책 행위. 발탁(인사)·승인(개별 기업 심사)·합류설 따위는 정책 발표가 아니다.
+_POLICY_ACTIONS = (
+    "발표", "추진", "시행", "수립", "마련", "확정", "투입", "조성", "지정",
+    "육성", "지원", "검토", "논의", "정비", "통과", "제정", "개정",
+    "정책", "대책", "예산",
+)
+
+_KEYWORDS_BY_TYPE = {
+    definition.type_id: definition.keywords for definition in VOCABULARY
+}
+
+
+def topic_clause_match(
+    evidence_text: str, topic: str, catalyst_type_id: str | None
+) -> bool:
+    """주제어가 사건 원인문의 맞는 자리에 있는지 소식 조각 단위로 검사한다.
+
+    정책 질문은 조각 안에 국내 정부 주체·정책 행위가 함께 있고 해외 표지가
+    없어야 통과한다. 그 외 유형은 주제어와 그 유형 낱말이 같은 조각에 있으면
+    된다.
+    """
+
+    if not topic:
+        return True
+    body = _LEADER_TAIL_RE.split(evidence_text)[0]
+    needle = topic.casefold()
+    for clause in _CLAUSE_SPLIT_RE.split(body):
+        cause_part = _CONSEQUENCE_RE.split(clause)[0]
+        if needle not in cause_part.casefold():
+            continue
+        if catalyst_type_id == "POLICY_MEASURE":
+            if any(marker in clause for marker in _FOREIGN_MARKERS):
+                continue
+            if not any(agent in clause for agent in _KOREAN_GOV_AGENTS):
+                continue
+            if not any(action in clause for action in _POLICY_ACTIONS):
+                continue
+            return True
+        keywords = _KEYWORDS_BY_TYPE.get(catalyst_type_id or "", ())
+        if not keywords or any(keyword in clause for keyword in keywords):
+            return True
+    return False
