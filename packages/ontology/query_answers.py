@@ -34,6 +34,13 @@ ANSWER_CONTRACT_VERSION = "answer-contract/1.0.0"
 # 0으로 채우지 않고 범위 밖으로 답한다(마스터 플랜 9절).
 OUTCOME_RANGE_FROM = date(2010, 1, 1)
 DEFAULT_OUTCOME_HORIZONS: tuple[int, ...] = (1, 5, 20)
+# 답의 첫 줄이 말하는 구간. 사람들이 "며칠 뒤"로 가장 많이 묻는 값이다.
+_HEADLINE_HORIZON = 5
+
+
+def _median(values: Sequence[Decimal]) -> Decimal | None:
+    ordered = sorted(values)
+    return ordered[len(ordered) // 2] if ordered else None
 
 COUNT_UNIT_LABEL_KO: Mapping[CountUnit, str] = {
     CountUnit.DAILY_SECTION: "Daily 섹션",
@@ -42,8 +49,8 @@ COUNT_UNIT_LABEL_KO: Mapping[CountUnit, str] = {
     CountUnit.SOURCE_RECORD: "원천 기록",
     CountUnit.THEME_REACTION: "테마 반응",
     CountUnit.CATALYST: "고유 사건",
-    CountUnit.VALUE_FACT: "금액 fact",
-    CountUnit.OUTCOME_OBSERVATION: "outcome 관측",
+    CountUnit.VALUE_FACT: "금액 기록",
+    CountUnit.OUTCOME_OBSERVATION: "주가 관측",
 }
 
 
@@ -1975,41 +1982,70 @@ def _answer_company_historical_outcome(
     if not observations:
         return _no_record(plan, "그 구간에 실제 결과를 붙일 사건이 없습니다.")
     observed = [item for item in observations if item.base_close is not None]
+    # 한 사건에 주도주가 여럿이다. 종목을 한 줄씩 늘어놓으면 같은 사건
+    # 원문이 그 수만큼 되풀이된다. 사건 하나를 한 줄로 묶고 종목은 그 안에 둔다.
+    grouped: dict[tuple[str, date], list[OutcomeObservation]] = {}
+    for item in observations:
+        grouped.setdefault((item.catalyst_id, item.occurred_on), []).append(item)
+    events = sorted(grouped.items(), key=lambda pair: (-pair[0][1].toordinal(), pair[0][0]))
     rows = tuple(
         AnswerRow(
-            label=(
-                f"{item.occurred_on.isoformat()} · {item.company_name}"
-            ),
+            label=members[0].occurred_on.isoformat(),
             values={
-                "catalystId": item.catalyst_id,
-                "baseTradingDate": (
-                    None
-                    if item.base_trading_date is None
-                    else item.base_trading_date.isoformat()
+                "catalystId": catalyst_id,
+                "eventDate": occurred_on.isoformat(),
+                "leaderCount": len(members),
+                "upCount": sum(
+                    1
+                    for item in members
+                    if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                    and value > 0
                 ),
-                "baseClose": (
-                    None if item.base_close is None else format(item.base_close, "f")
-                ),
-                "returns": {
-                    f"T+{horizon}": (
-                        None
-                        if item.returns.get(horizon) is None
-                        else _rate(item.returns[horizon])
+                "medianReturn": _rate(
+                    _median(
+                        [
+                            value
+                            for item in members
+                            if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                        ]
                     )
-                    for horizon in DEFAULT_OUTCOME_HORIZONS
-                },
-                "missingReason": item.missing_reason,
+                ),
+                "leaders": [
+                    {
+                        "companyName": item.company_name,
+                        "baseTradingDate": (
+                            None
+                            if item.base_trading_date is None
+                            else item.base_trading_date.isoformat()
+                        ),
+                        "baseClose": (
+                            None
+                            if item.base_close is None
+                            else format(item.base_close, "f")
+                        ),
+                        "returns": {
+                            f"T+{horizon}": (
+                                None
+                                if item.returns.get(horizon) is None
+                                else _rate(item.returns[horizon])
+                            )
+                            for horizon in DEFAULT_OUTCOME_HORIZONS
+                        },
+                        "missingReason": item.missing_reason,
+                    }
+                    for item in members
+                ],
             },
             evidence=(
                 AnswerEvidence(
                     source_kind="ONTOLOGY_CATALYST",
-                    label_ko=f"{item.occurred_on.isoformat()} · {item.company_name}",
-                    occurred_on=item.occurred_on,
-                    excerpt=item.evidence_text[:200],
+                    label_ko=occurred_on.isoformat(),
+                    occurred_on=occurred_on,
+                    excerpt=members[0].evidence_text[:200],
                 ),
             ),
         )
-        for item in observations[:limit]
+        for (catalyst_id, occurred_on), members in events[:limit]
     )
     exclusions: list[AnswerExclusion] = []
     if out_of_range:
@@ -2025,37 +2061,51 @@ def _answer_company_historical_outcome(
         exclusions.append(
             AnswerExclusion("PRICE_MISSING", "가격을 찾지 못한 사건", missing)
         )
+    # 사건 수와 종목 관측 수를 한 이름으로 뭉뚱그리지 않는다 — 전에는 둘 다
+    # "대상 사건"으로 적혀 사건 2건이 10건으로 보였다.
     metrics: list[AnswerMetric] = [
         AnswerMetric(
-            label_ko="대상 사건",
-            value=str(len(observations)),
+            label_ko="사건",
+            value=f"{len(events)}건",
             count_unit=plan.count_unit,
-            sample_size=len(observations),
+            sample_size=len(events),
         ),
         AnswerMetric(
-            label_ko="가격 관측",
-            value=str(len(observed)),
+            label_ko=("주도주" if leader_axis else "종목"),
+            value=f"{len(observed)}곳",
             count_unit=CountUnit.OUTCOME_OBSERVATION,
-            note_ko="가격이 없는 사건은 0으로 바꾸지 않고 제외했습니다.",
+            note_ko=(
+                None
+                if len(observed) == len(observations)
+                else "주가를 못 찾은 곳은 0으로 바꾸지 않고 뺐습니다."
+            ),
         ),
     ]
+    headline_median: Decimal | None = None
+    up_count = 0
     for horizon in DEFAULT_OUTCOME_HORIZONS:
         observed_returns: list[Decimal] = [
             value
             for item in observed
             if (value := item.returns.get(horizon)) is not None
         ]
-        values = sorted(observed_returns)
+        middle = _median(observed_returns)
+        if horizon == _HEADLINE_HORIZON:
+            headline_median = middle
+            up_count = sum(1 for value in observed_returns if value > 0)
         metrics.append(
             AnswerMetric(
-                label_ko=f"T+{horizon} 중앙값",
-                value=(
-                    _rate(values[len(values) // 2]) if values else "관측 없음"
-                ),
+                label_ko=f"{horizon}거래일 뒤 중앙값",
+                value=(_rate(middle) if middle is not None else "아직 그날이 안 왔습니다"),
                 count_unit=CountUnit.OUTCOME_OBSERVATION,
-                sample_size=len(values),
+                sample_size=len(observed_returns),
             )
         )
+    headline_samples = [
+        value
+        for item in observed
+        if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+    ]
     return AnswerBlock(
         query_type=plan.query_type,
         count_unit=plan.count_unit,
@@ -2067,8 +2117,18 @@ def _answer_company_historical_outcome(
             },
         ),
         summary_ko=(
-            f"대상 {'사건 당시 주도주' if leader_axis else '사건'} "
-            f"{len(observations)}건 중 {len(observed)}건에 실제 주가를 연결했습니다."
+            (
+                f"{_HEADLINE_HORIZON}거래일 뒤 중앙값 {_rate(headline_median)}입니다."
+                if headline_median is not None
+                else f"{_HEADLINE_HORIZON}거래일 뒤 주가가 아직 나오지 않았습니다."
+            )
+            + f" 사건 {len(events)}건"
+            + (
+                f" · {'주도주' if leader_axis else '종목'} {len(headline_samples)}곳 중 "
+                f"{up_count}곳 상승."
+                if headline_samples
+                else "."
+            )
         ),
         metrics=tuple(metrics),
         rows=rows,

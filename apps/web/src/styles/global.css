@@ -2494,6 +2494,66 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
 }
 
+/* 날짜 한 줄 = 사건 하나. 눌러야 그날 원문과 주도주 성적이 열린다. */
+.research-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--djv-space-2);
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--djv-font-size-label);
+  text-align: left;
+  cursor: pointer;
+}
+
+.research-row__date {
+  font-weight: 600;
+}
+
+.research-row__brief {
+  display: flex;
+  gap: var(--djv-space-2);
+  align-items: baseline;
+}
+
+.research-row__brief em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.research-leaders {
+  margin: var(--djv-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.research-leaders li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--djv-space-2);
+  align-items: baseline;
+  padding: var(--djv-space-1) 0;
+  border-top: 1px solid var(--djv-color-border);
+  font-size: var(--djv-font-size-label);
+}
+
+.research-leaders__close,
+.research-leaders__returns em {
+  color: var(--djv-color-text-muted);
+  font-style: normal;
+}
+
+.research-leaders__returns {
+  display: flex;
+  gap: var(--djv-space-2);
+  margin-left: auto;
+}
+
 /* 목록 접기·과정 보기 버튼. 답 바로 아래 한 줄로 둔다. */
 .research-rows__toggle {
   display: block;

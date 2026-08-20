@@ -36,7 +36,9 @@ from .query_contracts import (
 )
 from .vocabulary import VOCABULARY
 
-QUERY_PLANNER_VERSION = "query-planner/1.1.0"
+QUERY_PLANNER_VERSION = "query-planner/1.2.0"
+# 인포스탁 수집본이 시작하는 해. "과거·역대"는 여기부터 오늘까지다.
+COLLECTION_FROM = date(2007, 1, 1)
 
 QueryDirection = Literal["UP", "DOWN"]
 
@@ -63,6 +65,7 @@ class RelativeExpression(StrEnum):
     LAST_3_MONTHS = "LAST_3_MONTHS"
     LAST_12_MONTHS = "LAST_12_MONTHS"
     RECENT = "RECENT"
+    ALL_TIME = "ALL_TIME"
 
 
 class FailureReason(StrEnum):
@@ -775,6 +778,13 @@ def _find_periods(
         ("작년", RelativeExpression.LAST_YEAR),
         ("지난해", RelativeExpression.LAST_YEAR),
         ("최근", RelativeExpression.RECENT),
+        # "과거·역대·지금까지"는 최근 몇 달이 아니라 가진 기록 전부다.
+        # 전에는 이 말이 무시되고 최근 3개월만 봐서 사건 대부분을 놓쳤다.
+        ("과거", RelativeExpression.ALL_TIME),
+        ("역대", RelativeExpression.ALL_TIME),
+        ("지금까지", RelativeExpression.ALL_TIME),
+        ("여태", RelativeExpression.ALL_TIME),
+        ("이제까지", RelativeExpression.ALL_TIME),
     )
     for marker, expression in relative_periods:
         position = text.find(marker)
@@ -796,6 +806,8 @@ def _find_periods(
 def _relative_period_bounds(
     expression: RelativeExpression, today: date
 ) -> tuple[date, date]:
+    if expression is RelativeExpression.ALL_TIME:
+        return COLLECTION_FROM, today
     if expression is RelativeExpression.THIS_WEEK:
         start = today - timedelta(days=today.weekday())
         return start, today

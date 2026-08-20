@@ -439,7 +439,8 @@ def test_outcome_keeps_missing_prices_null_and_blocks_pre_2010() -> None:
     )
 
     assert result.answer is not None
-    returns = result.answer.rows[0].values["returns"]
+    # 행 하나가 사건 하나다. 그날 주도주·종목은 그 안에 접혀 들어간다.
+    returns = result.answer.rows[0].values["leaders"][0]["returns"]
     assert returns["T+5"] == "+7.10%"
     # 값이 없으면 0이 아니라 null이다.
     assert returns["T+20"] is None

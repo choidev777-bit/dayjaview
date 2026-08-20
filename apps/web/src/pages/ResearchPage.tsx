@@ -77,11 +77,20 @@ const VALUE_LABELS: Record<string, string> = {
   baseClose: '기준일 종가',
   returns: '이후 수익률',
   missingReason: '값이 없는 이유',
+  leaderCount: '주도주',
+  upCount: '상승',
+  medianReturn: '5거래일 뒤 중앙값',
 };
 
 /** 값 자리에도 영어 코드가 온다. 항목 이름만 한글로 바꾸면 `ANTICIPATION`이 남는다. */
 const CODE_LABELS: Record<string, Record<string, string>> = {
   direction: { UP: '상승', DOWN: '하락', FLAT: '보합' },
+  missingReason: {
+    HORIZON_NOT_REACHED: '아직 그날이 오지 않았습니다',
+    NO_PRICE_ON_OR_BEFORE_EVENT: '그날 이전 주가 기록이 없습니다',
+    BASE_CLOSE_MISSING: '기준일 종가가 없습니다',
+    BEFORE_CORPUS_RANGE: '주가 자료가 시작되기 전입니다',
+  },
   certainty: { CONFIRMED: '확정', ANTICIPATION: '기대·전망', UNSPECIFIED: '표지 없음' },
   eventStage: {
     RUMOR: '소문',
@@ -301,12 +310,77 @@ function RowValues({
   );
 }
 
+/** 사건 하나에 딸린 주도주 성적표. 눌러서 펼치기 전에는 감춘다. */
+function LeaderTable({ leaders }: { leaders: Record<string, unknown>[] }) {
+  return (
+    <ul className="research-leaders">
+      {leaders.map((leader, index) => {
+        const returns = (leader.returns ?? {}) as Record<string, string | null>;
+        const close = leader.baseClose ? renderValue('baseClose', leader.baseClose) : '';
+        return (
+          <li key={`${String(leader.companyName ?? '')}:${index}`}>
+            <strong>{String(leader.companyName ?? '')}</strong>
+            {close ? <span className="research-leaders__close">{close}</span> : null}
+            <span className="research-leaders__returns">
+              {Object.entries(returns)
+                .filter(([, value]) => value)
+                .map(([horizon, value]) => (
+                  <em key={horizon} className={rateClass(String(value))}>
+                    {horizon.replace('T+', '')}일 {value}
+                  </em>
+                ))}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function RowBlock({ row }: { row: ResearchRow }) {
+  const [open, setOpen] = useState(false);
   const evidenceTexts = new Set(row.evidence.map((item) => item.excerpt));
   /* 행 제목과 같은 문장을 근거가 또 들고 있으면 한 번만 보인다.
      그 근거가 유일한 근거면 남긴다 — 근거 없는 답처럼 보이면 안 된다. */
   const deduped = row.evidence.filter((item) => item.excerpt !== row.label);
   const evidence = deduped.length ? deduped : row.evidence;
+  const leaders = Array.isArray(row.values.leaders)
+    ? (row.values.leaders as Record<string, unknown>[])
+    : null;
+
+  /* 사건 하나에 주도주가 여럿인 답은 날짜 줄만 먼저 보이고, 눌러야 그날의
+     원문과 종목별 성적이 열린다. 다 펴 두면 사건 두 개가 한 화면을 넘는다. */
+  if (leaders) {
+    const median = row.values.medianReturn ? String(row.values.medianReturn) : '';
+    return (
+      <li className="research-row research-row--event">
+        <button
+          type="button"
+          className="research-row__head"
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+        >
+          <span className="research-row__date">
+            {open ? '▾' : '▸'} {row.label}
+          </span>
+          <span className="research-row__brief">
+            {median ? <em className={rateClass(median)}>5일 뒤 {median}</em> : null}
+            <span className="research-more">
+              주도주 {String(row.values.leaderCount ?? leaders.length)}곳 중{' '}
+              {String(row.values.upCount ?? 0)}곳 상승
+            </span>
+          </span>
+        </button>
+        {open ? (
+          <>
+            <EvidenceList evidence={evidence} />
+            <LeaderTable leaders={leaders} />
+          </>
+        ) : null}
+      </li>
+    );
+  }
+
   return (
     <li className="research-row">
       <strong>{row.label}</strong>
