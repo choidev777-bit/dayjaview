@@ -193,14 +193,14 @@ ssh "$VM" "cd /opt/dayjaview/repo/infra/deployment && sudo docker compose -f com
 say "7) 기동 (migrate → api 순서는 compose가 보장)"
 ssh "$VM" "cd /opt/dayjaview/repo/infra/deployment && sudo docker compose -f compose.production.yml up -d"
 
-say "8) api healthy 대기 (최대 3분)"
-ssh "$VM" 'for i in $(seq 1 36); do
+say "8) api healthy 대기 (최대 5분)"
+ssh "$VM" 'for i in $(seq 1 60); do
     st=$(sudo docker inspect --format "{{.State.Health.Status}}" dayjaview-production-api-1 2>/dev/null || echo 없음)
     echo "api 상태: $st"
     [ "$st" = "healthy" ] && exit 0
     sleep 5
 done
-echo "3분 내 healthy가 아님 — 로그를 확인하세요:"
+echo "5분 내 healthy가 아님 — 로그를 확인하세요:"
 sudo docker compose -f /opt/dayjaview/repo/infra/deployment/compose.production.yml logs --tail 50 api
 exit 1'
 

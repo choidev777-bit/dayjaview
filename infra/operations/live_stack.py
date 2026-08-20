@@ -90,8 +90,10 @@ def _api() -> int:
 
 
 def _probe(url: str) -> int:
+    # 기동 직후 첫 요청들이 회사·테마 이름 목록을 읽는 동안 health 응답이
+    # 몇 초 밀린다. 3초로 끊으면 멀쩡한 API가 unhealthy로 찍힌다(2026-08-20 실측).
     try:
-        with urlopen(url, timeout=3.0) as response:
+        with urlopen(url, timeout=10.0) as response:
             payload = json.load(response)
     except (HTTPError, URLError, OSError, ValueError) as exc:
         _fail(f"health endpoint 호출 실패: {exc}")
