@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import hashlib
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -37,6 +39,31 @@ class ExtractionMethod(StrEnum):
     LLM_GROUNDED = "LLM_GROUNDED"
 
 
+_NAME_TOKEN_SPLIT = re.compile("[/,()\\s\u00b7]+")
+_NAME_TOKEN_SUFFIXES = ("관련주", "관련", "테마", "대표주", "수혜주")
+_NAME_TOKEN_STOPWORDS = frozenset({"등", "기타", *_NAME_TOKEN_SUFFIXES})
+
+
+def _name_tokens(name: str) -> tuple[str, ...]:
+    """인포스탁 공식 명칭을 기사에 실제로 나오는 낱말로 쪼갠다.
+
+    기사는 "반도체 관련주"가 아니라 "반도체"라고 쓴다. 명칭 전체 문자열만
+    비교하면 테마명 신호가 사실상 죽는다(운영 2026-08-19 실측).
+    """
+
+    tokens: list[str] = []
+    for part in _NAME_TOKEN_SPLIT.split(name):
+        part = part.strip()
+        for suffix in _NAME_TOKEN_SUFFIXES:
+            if part.endswith(suffix) and len(part) > len(suffix):
+                part = part[: -len(suffix)]
+                break
+        if len(part) < 2 or part in _NAME_TOKEN_STOPWORDS:
+            continue
+        tokens.append(part)
+    return tuple(tokens)
+
+
 @dataclass(frozen=True, slots=True)
 class ThemeContext:
     """매칭 시점에 확정된 Event·테마 정보."""
@@ -55,7 +82,16 @@ class ThemeContext:
 
     @property
     def theme_keywords(self) -> tuple[str, ...]:
-        return tuple(dict.fromkeys((self.display_name, *self.synonyms, *self.entities)))
+        names = (self.display_name, *self.synonyms)
+        return tuple(
+            dict.fromkeys(
+                (
+                    *names,
+                    *(token for name in names for token in _name_tokens(name)),
+                    *self.entities,
+                )
+            )
+        )
 
     @property
     def stock_ids(self) -> tuple[str, ...]:

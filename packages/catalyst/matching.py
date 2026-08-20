@@ -18,7 +18,10 @@ RELATED_WEIGHT = 0.15
 TIME_WEIGHT = 0.20
 BREADTH_WEIGHT = 0.10
 ENTITY_WEIGHT = 0.05
-RELEVANCE_THRESHOLD = 0.50
+# 후보 문턱. 정밀 판정은 LLM 접지 검증(엔티티 본문 대조·verbatim 차단)이
+# 맡는다. 0.50이던 시절 관련주 실명 기사(0.15+0.20=0.35)까지 떨어져 장중
+# 근거 생산이 0건이었다(운영 2026-08-19: 기사 62건 중 매칭 1건).
+RELEVANCE_THRESHOLD = 0.35
 DEFAULT_LOOKBACK = timedelta(minutes=60)
 
 

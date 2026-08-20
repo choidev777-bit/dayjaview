@@ -21,6 +21,7 @@ from packages.news import InMemoryNewsStore, NewsIngestor, NewsItem
 
 from ._factories import (
     ENTITY_VOCABULARY,
+    MARKET_DATE,
     STOCK_DIRECTORY,
     WINDOW_START,
     at,
@@ -106,6 +107,71 @@ def test_featured_marker_alone_does_not_match_an_unrelated_theme() -> None:
     )
 
     assert match_theme_to_news(nuclear_context(), items, decision_at=at(10, 10)) == ()
+
+
+def test_related_stock_with_recent_time_passes_the_threshold() -> None:
+    """관련주 실명 + 최신 기사(0.35)는 후보가 된다.
+
+    문턱이 0.50이던 시절 이 조합이 떨어져 장중 근거 생산이 0건이었다
+    (운영 2026-08-19: 기사 62건 중 매칭 1건). 정밀 판정은 LLM 접지
+    검증이 맡는다.
+    """
+
+    items = stored(
+        raw(
+            source_item_id="related-only",
+            title="[특징주] 원전기자재, 외국인 매수세에 강세",
+            description="수급 유입이 이어졌다.",
+            original_url="https://example.com/related",
+        )
+    )
+    context = nuclear_context()
+    without_theme_word = ThemeContext(
+        event_id=context.event_id,
+        theme_id=context.theme_id,
+        display_name="발전설비",
+        market_date=context.market_date,
+        activated_at=context.activated_at,
+        leader_stock_ids=context.leader_stock_ids,
+        related_stock_ids=context.related_stock_ids,
+    )
+
+    matches = match_theme_to_news(without_theme_word, items, decision_at=at(10, 10))
+
+    assert len(matches) == 1
+    assert matches[0].match_basis == (MatchBasis.STOCK, MatchBasis.TIME)
+    assert matches[0].relevance_score == 0.35
+
+
+def test_theme_name_matches_by_token_not_full_official_name() -> None:
+    """"반도체 관련주" 테마는 기사 속 "반도체" 낱말로 맞는다.
+
+    공식 명칭 전체 문자열은 실제 기사에 등장하지 않아 테마명 신호가
+    사실상 죽어 있었다.
+    """
+
+    # 수집기는 상장사 이름 없는 기사를 저장하지 않으므로(NO_LISTED_STOCK),
+    # 구성종목이 아닌 상장사를 언급한 기사로 테마 낱말 신호만 검증한다.
+    items = stored(
+        raw(
+            source_item_id="token",
+            title="[특징주] 바이오헬스, 반도체 신사업 기대에 강세",
+            description="업황 기대가 이어졌다.",
+            original_url="https://example.com/token",
+        )
+    )
+    context = ThemeContext(
+        event_id="evt_semis",
+        theme_id="thm_semis",
+        display_name="반도체 관련주",
+        market_date=MARKET_DATE,
+        activated_at=at(10, 0),
+    )
+
+    matches = match_theme_to_news(context, items, decision_at=at(10, 10))
+
+    assert len(matches) == 1
+    assert matches[0].match_basis == (MatchBasis.THEME, MatchBasis.TIME)
 
 
 def test_two_independent_publishers_confirm_multi_source() -> None:

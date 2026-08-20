@@ -115,6 +115,13 @@ def _validate(
     summary = raw.get("catalystSummary")
     confidence = raw.get("confidence")
     grounded = raw.get("grounded")
+    if not isinstance(grounded, bool):
+        return None, GroundingRejection.SCHEMA_INVALID
+    if not grounded:
+        # 프롬프트 계약상 접지 실패 응답은 빈 summary·entities로 온다. summary
+        # 검사를 먼저 하면 정상 거절이 SCHEMA_INVALID로 찍힌다
+        # (운영 2026-08-18~19: 35건 중 25건 오분류).
+        return None, GroundingRejection.NOT_GROUNDED
     if (
         stock_ids is None
         or theme_ids is None
@@ -123,12 +130,9 @@ def _validate(
         or not summary.strip()
         or not isinstance(confidence, (int, float))
         or isinstance(confidence, bool)
-        or not isinstance(grounded, bool)
         or not 0.0 <= float(confidence) <= 1.0
     ):
         return None, GroundingRejection.SCHEMA_INVALID
-    if not grounded:
-        return None, GroundingRejection.NOT_GROUNDED
     if not frozenset(stock_ids) <= frozenset(request.candidate_stock_ids):
         return None, GroundingRejection.UNKNOWN_STOCK
     if not frozenset(theme_ids) <= frozenset({request.theme_id}):
