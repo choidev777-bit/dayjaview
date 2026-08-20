@@ -636,7 +636,6 @@ export function ResearchPage() {
             value={question}
             maxLength={MAX_LENGTH}
             rows={1}
-            placeholder="예: 어제 뭐가 올랐어?"
             onChange={(event) => setQuestion(event.target.value)}
           />
           {/* 비활성으로 두면 왜 못 누르는지 모른다. 늘 누를 수 있게 두고, 빈 채로 누르면
