@@ -502,7 +502,8 @@ function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string 
             <small>{metric.labelKo}</small>
             <strong>{metric.value}</strong>
             {metric.countUnitLabelKo ? <span>{metric.countUnitLabelKo} 기준</span> : null}
-            {metric.sampleSize !== null ? <span>표본 {metric.sampleSize}</span> : null}
+            {/* 일부를 뽑아 추정한 게 아니라 그날 것을 다 세고 거른 분모다. `표본`은 오해를 준다. */}
+            {metric.sampleSize !== null ? <span>{metric.sampleSize}개 중</span> : null}
             {metric.noteKo ? <em>{metric.noteKo}</em> : null}
           </li>
         ))}

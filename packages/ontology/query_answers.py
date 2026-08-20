@@ -624,23 +624,33 @@ def _answer_day_movers(
         return _no_record(
             plan, f"{plan.date.value.isoformat()} 특징테마 기록이 없습니다."
         )
-    wanted = "DOWN" if plan.direction == "DOWN" else "UP"
+    # 섹션 단위로 거르면 오른 테마와 내린 테마가 섞인 섹션이 통째로 통과해,
+    # 물어본 방향과 반대인 테마까지 답에 들어간다. 테마 하나씩 등락률로 거른다.
     rows: list[AnswerRow] = []
-    excluded = 0
+    mismatched = 0
+    rateless = 0
+    theme_total = 0
+    matched = 0
     for section in day.sections:
-        direction = section.direction
-        if plan.direction is not None and direction not in {wanted, "MIXED"}:
-            excluded += 1
+        theme_total += len(section.themes)
+        kept = []
+        for theme in section.themes:
+            if theme.change_rate is None:
+                rateless += 1
+                continue
+            if not _matches_direction(plan, theme.change_rate):
+                mismatched += 1
+                continue
+            kept.append(theme)
+        if not kept:
             continue
-        if plan.direction is None and direction == "UNKNOWN":
-            excluded += 1
-            continue
+        matched += len(kept)
         rows.append(
             AnswerRow(
                 label=section.headline or section.section_name,
                 values={
                     "sectionName": section.section_name,
-                    "direction": direction,
+                    "direction": section.direction,
                     "themes": [
                         {
                             "themeName": theme.theme_name,
@@ -656,9 +666,9 @@ def _answer_day_movers(
                             ],
                             "stockTotal": len(theme.stocks),
                         }
-                        for theme in section.themes[:6]
+                        for theme in kept[:6]
                     ],
-                    "themeTotal": len(section.themes),
+                    "themeTotal": len(kept),
                 },
                 evidence=_section_evidence(day, section),
             )
@@ -666,12 +676,15 @@ def _answer_day_movers(
     if not rows:
         return _no_record(
             plan,
-            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 섹션이 없습니다.",
+            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 테마가 없습니다.",
         )
-    exclusions = (
-        (AnswerExclusion("DIRECTION_MISMATCH", "질문한 방향과 반대인 섹션", excluded),)
-        if excluded
-        else ()
+    exclusions = tuple(
+        AnswerExclusion(code, label, count)
+        for code, label, count in (
+            ("DIRECTION_MISMATCH", "질문한 방향과 반대인 테마", mismatched),
+            ("UNKNOWN_CHANGE_RATE", "등락률이 없어 방향을 알 수 없는 테마", rateless),
+        )
+        if count
     )
     return AnswerBlock(
         query_type=plan.query_type,
@@ -680,15 +693,16 @@ def _answer_day_movers(
             plan, extra={"tradingDate": day.trading_date.isoformat()}
         ),
         summary_ko=(
-            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 특징테마 "
-            f"섹션은 {len(rows)}개입니다."
+            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 테마는 "
+            f"{matched}개입니다."
         ),
+        # 섹션은 사람이 물어본 단위가 아니라 원문 글의 묶음 단위다. 대표 숫자는
+        # 테마로 세고, 분모는 걸러낸 것이 있을 때만 붙인다(같은 수는 정보가 없다).
         metrics=(
             AnswerMetric(
-                label_ko=f"{_direction_label(plan)} 섹션",
-                value=str(len(rows)),
-                count_unit=plan.count_unit,
-                sample_size=len(day.sections),
+                label_ko=f"{_direction_label(plan)} 테마",
+                value=str(matched),
+                sample_size=theme_total if theme_total != matched else None,
             ),
         ),
         rows=tuple(rows[:limit]),
