@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import date
 from threading import Lock
 from typing import Protocol
@@ -103,15 +103,14 @@ class ResearchBoundary:
             if len(successes) >= (1 if single_block is None else 2):
                 conclusion = pick_conclusion(steps, goal_type=goal_type)
                 assert conclusion is not None and conclusion.result.answer is not None
-                # 목표 유형의 답을 단일 경로가 이미 냈는데 분해가 그 유형을
-                # 못 답했으면 단일 답이 결론이다 — 분해기가 "당시 주도주"를
-                # 종목명으로 바꿔 물어 실패하면 구성 종목 목록이 결론으로
-                # 올라왔다(2026-08-20 실측).
-                composed_hits_goal = (
-                    goal_type is None
-                    or conclusion.result.answer.query_type is goal_type
-                )
-                if single_block is None or composed_hits_goal:
+                # 분해 결론이 유형만 같고 단일 해석의 좁힘 조건(주제어·소재·
+                # 테마·회사·방향)을 잃었으면 단일 답이 결론이다 — 분해기가
+                # "로봇 정책" 질문을 조건 없는 정책 질문으로 되물어 8건이
+                # 54건으로 넓어졌다(2026-08-20 실측).
+                if single_block is None or _keeps_narrowing_slots(
+                    single_block.interpretation,
+                    conclusion.result.answer.interpretation,
+                ):
                     return {
                         "status": "ANSWERED",
                         "answer": conclusion.result.answer.as_dict(),
@@ -228,3 +227,31 @@ __all__ = [
     "example_questions",
     "supported_query_types",
 ]
+
+
+def _keeps_narrowing_slots(
+    single: Mapping[str, object], composed: Mapping[str, object]
+) -> bool:
+    """단일 해석이 좁힌 조건을 분해 결론이 그대로 갖고 있는지 확인한다."""
+
+    def _slots(interpretation: Mapping[str, object]) -> dict[str, object]:
+        catalyst = interpretation.get("catalystType")
+        company = interpretation.get("company")
+        themes = interpretation.get("themes") or ()
+        return {
+            "topic": interpretation.get("topic"),
+            "catalyst": catalyst.get("typeId") if isinstance(catalyst, Mapping) else None,
+            "company": company.get("seedStockCode") if isinstance(company, Mapping) else None,
+            "themes": tuple(
+                sorted(
+                    str(theme.get("sourceThemeId"))
+                    for theme in themes
+                    if isinstance(theme, Mapping)
+                )
+            ),
+            "direction": interpretation.get("direction"),
+        }
+
+    wanted = _slots(single)
+    got = _slots(composed)
+    return all(not value or got[key] == value for key, value in wanted.items())
