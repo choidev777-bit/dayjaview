@@ -48,6 +48,17 @@ class SqliteOutcomeReader:
         return self._range_from
 
     @staticmethod
+    def _stock_id(stock_code: str) -> str:
+        """E-16 corpus는 종목을 ``KRX:005930``으로 적는다.
+
+        온톨로지는 같은 종목을 ``005930``으로 들고 있어서, 붙이지 않으면 모든
+        조회가 빈손이 된다(2026-08-19 운영 실측: outcome 10/10 미연결).
+        """
+
+        code = stock_code.strip()
+        return code if ":" in code else f"KRX:{code}"
+
+    @staticmethod
     def _close(row: Sequence[object]) -> Decimal | None:
         adjusted, raw = row[1], row[2]
         if adjusted is not None:
@@ -63,11 +74,12 @@ class SqliteOutcomeReader:
         if occurred_on < self.price_range_from():
             return None, None, empty, "BEFORE_CORPUS_RANGE"
         wanted = max(horizons) if horizons else 0
+        stock_id = self._stock_id(stock_code)
         rows = self._connection.execute(
             "SELECT trade_date, adjusted_close, close FROM daily_prices"
             " WHERE stock_id = ? AND trade_date <= ?"
             " ORDER BY trade_date DESC LIMIT 1",
-            (stock_code, occurred_on.isoformat()),
+            (stock_id, occurred_on.isoformat()),
         ).fetchall()
         if not rows:
             return None, None, empty, "NO_PRICE_ON_OR_BEFORE_EVENT"
@@ -79,7 +91,7 @@ class SqliteOutcomeReader:
             "SELECT trade_date, adjusted_close, close FROM daily_prices"
             " WHERE stock_id = ? AND trade_date > ?"
             " ORDER BY trade_date ASC LIMIT ?",
-            (stock_code, base_date.isoformat(), wanted),
+            (stock_id, base_date.isoformat(), wanted),
         ).fetchall()
         computed: dict[int, Decimal | None] = {}
         for horizon in horizons:
