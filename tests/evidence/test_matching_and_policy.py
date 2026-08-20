@@ -48,12 +48,13 @@ def evidence(
     entities: tuple[str, ...] = ("원전",),
     summary: str = "신규 원전 수주 기대 관련 보도",
     published_at: datetime | None = None,
+    title: str = "[특징주] 한국원전 강세",
 ) -> CatalystEvidence:
     return CatalystEvidence(
         news_id=news_id,
         event_id="evt_nuclear",
         publisher=publisher,
-        title="[특징주] 한국원전 강세",
+        title=title,
         summary=summary,
         match_basis=(MatchBasis.THEME, MatchBasis.STOCK),
         entities=entities,
@@ -174,15 +175,61 @@ def test_theme_name_matches_by_token_not_full_official_name() -> None:
     assert matches[0].match_basis == (MatchBasis.THEME, MatchBasis.TIME)
 
 
+def test_theme_token_alone_without_stock_or_recency_does_not_match() -> None:
+    """테마 낱말만 맞는 오래된 기사는 후보가 아니다.
+
+    전일 마감 리뷰 기사가 낱말 하나로 오늘 상승 이유에 붙는 것을 막는다.
+    """
+
+    items = stored(
+        raw(
+            source_item_id="stale-token",
+            title="[특징주] 바이오헬스, 반도체 업황 리뷰 속 강세 마감",
+            description="전장 마감 정리 기사다.",
+            original_url="https://example.com/stale",
+            published_at=at(8, 0),
+            retrieved_at=at(8, 1),
+        )
+    )
+    context = ThemeContext(
+        event_id="evt_semis",
+        theme_id="thm_semis",
+        display_name="반도체 관련주",
+        market_date=MARKET_DATE,
+        activated_at=at(10, 0),
+    )
+
+    assert match_theme_to_news(context, items, decision_at=at(10, 10)) == ()
+
+
 def test_two_independent_publishers_confirm_multi_source() -> None:
+    decision = decide(
+        nuclear_context(),
+        [
+            evidence(),
+            evidence(
+                news_id="news_2",
+                publisher="두번째 예시 언론사",
+                title="[특징주] 한국원전, 수주 기대감에 상승폭 확대",
+            ),
+        ],
+        now=at(10, 12),
+    )
+
+    assert decision.evidence_status is EvidenceStatus.MULTI_SOURCE_CONFIRMED
+    assert decision.news_ids == ("news_1", "news_2")
+
+
+def test_syndicated_copies_with_the_same_title_stay_an_estimate() -> None:
+    """통신사 원고를 두 매체가 그대로 실으면 독립 확인이 아니다."""
+
     decision = decide(
         nuclear_context(),
         [evidence(), evidence(news_id="news_2", publisher="두번째 예시 언론사")],
         now=at(10, 12),
     )
 
-    assert decision.evidence_status is EvidenceStatus.MULTI_SOURCE_CONFIRMED
-    assert decision.news_ids == ("news_1", "news_2")
+    assert decision.evidence_status is EvidenceStatus.SINGLE_SOURCE
 
 
 def test_single_publisher_stays_an_estimate() -> None:

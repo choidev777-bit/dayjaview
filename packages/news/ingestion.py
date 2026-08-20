@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -113,13 +115,34 @@ class NewsIngestor:
 
     def _resolve_stocks(self, title: str, description: str) -> tuple[str, ...]:
         haystack = f"{title} {description}"
-        return tuple(
-            dict.fromkeys(
-                stock_id
-                for name, stock_id in self._stock_directory.items()
-                if name and name in haystack
-            )
-        )
+        spans: dict[str, list[tuple[int, int]]] = {}
+        for name in self._stock_directory:
+            if not name or name not in haystack:
+                continue
+            spans[name] = [
+                (match.start(), match.end())
+                for match in re.finditer(re.escape(name), haystack)
+            ]
+        kept: list[str] = []
+        for name, own_spans in spans.items():
+            # 더 긴 상장사명 안에서만 나온 이름은 그 회사 언급이 아니다.
+            # "SK하이닉스" 속 "SK"가 지주사로 태그되면 무관 테마의 근거
+            # 후보가 된다. 독립된 위치에서 한 번이라도 나와야 인정한다.
+            longer_spans = [
+                span
+                for other, other_spans in spans.items()
+                if other != name and len(other) > len(name) and name in other
+                for span in other_spans
+            ]
+            if any(
+                not any(
+                    outer_start <= start and end <= outer_end
+                    for outer_start, outer_end in longer_spans
+                )
+                for start, end in own_spans
+            ):
+                kept.append(name)
+        return tuple(dict.fromkeys(self._stock_directory[name] for name in kept))
 
     def _resolve_entities(self, raw: RawNewsItem) -> tuple[str, ...]:
         haystack = f"{raw.title} {raw.description} {raw.body}"
