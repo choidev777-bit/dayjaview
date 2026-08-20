@@ -23,7 +23,7 @@ body {
   min-width: 320px;
   min-height: 100%;
   color: var(--djv-color-text);
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
   font-family: var(--djv-font-sans);
   font-size: var(--djv-font-size-body);
   font-synthesis: none;
@@ -56,10 +56,12 @@ a:focus-visible,
 
 .app-shell {
   min-height: 100dvh;
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
 }
 
-/* 내용이 짧은 화면에서 아래로 app-shell의 베이지가 비치지 않게 여기서 흰 바탕을 깐다.
+/* 바탕은 옅은 회색을 깔고 카드·섹션만 흰색으로 띄운다. 예전에는 여기에 흰 바탕을
+   깔았는데, 그때는 바탕색이 베이지라 아래로 비치면 지저분했다. 회색으로 바뀌면서
+   비쳐도 되는 색이 됐다.
    `.page`에 flex를 주면 순위 휠의 높이 계산이 틀어지므로 배경만 여기서 해결한다. */
 .app-content {
   display: flex;
@@ -67,7 +69,7 @@ a:focus-visible,
   min-height: 100dvh;
   flex-direction: column;
   margin: 0 auto;
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
 }
 
 .app-content > * {
@@ -148,7 +150,7 @@ a:focus-visible,
   display: flex;
   flex-direction: column;
   padding-bottom: var(--djv-nav-space);
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
 }
 
 /* flex 항목의 기본 `min-height: auto` 때문에 카드가 많아지면 height 100dvh가 무시되고
@@ -161,10 +163,12 @@ a:focus-visible,
   height: 100dvh;
   min-height: 0;
   flex: none;
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
 }
 
-/* 시안 `.loading`. 첫 진입에서만 쓰는 검은 스플래시. 값은 시안 그대로다. */
+/* 첫 진입에서만 쓰는 스플래시. 시안은 검정 위 주황이었고, 브랜드 색이 바뀌면서
+   같은 구성을 분홍으로 옮겼다. 여기 값들은 토큰을 쓰지 않는다 — 스플래시는 앱 셸이
+   뜨기 전 화면이라 라이트/다크 어느 쪽에서도 같은 그림이어야 한다. */
 .splash {
   position: relative;
   display: flex;
@@ -172,7 +176,7 @@ a:focus-visible,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #111111;
+  background: #0d1030;
   color: #ffffff;
 }
 
@@ -184,7 +188,7 @@ a:focus-visible,
   height: 520px;
   margin: -335px 0 0 -260px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 111, 15, .34) 0%, rgba(255, 111, 15, .1) 38%, rgba(255, 111, 15, 0) 68%);
+  background: radial-gradient(circle, rgba(255, 45, 142, .34) 0%, rgba(255, 45, 142, .1) 38%, rgba(255, 45, 142, 0) 68%);
   animation: splash-halo var(--splash-duration, 3s) cubic-bezier(.45, 0, .55, 1) infinite;
   filter: blur(18px);
 }
@@ -206,7 +210,7 @@ a:focus-visible,
 
 .splash__logo-base {
   inset: 0;
-  background: #825039;
+  background: #3a3a72;
 }
 
 .splash__glow {
@@ -231,11 +235,11 @@ a:focus-visible,
 }
 
 .splash__glow i {
-  background: linear-gradient(100deg, rgba(255, 111, 15, 0) 34%, rgba(255, 111, 15, .82) 50%, rgba(255, 156, 92, .88) 56%, rgba(255, 111, 15, 0) 70%);
+  background: linear-gradient(100deg, rgba(255, 45, 142, 0) 34%, rgba(255, 45, 142, .82) 50%, rgba(255, 138, 190, .88) 56%, rgba(255, 45, 142, 0) 70%);
 }
 
 .splash__sharp i {
-  background: linear-gradient(100deg, rgba(255, 111, 15, 0) 36%, rgba(255, 111, 15, .82) 48%, #ffad76 55%, rgba(255, 111, 15, .55) 62%, rgba(255, 111, 15, 0) 74%);
+  background: linear-gradient(100deg, rgba(255, 45, 142, 0) 36%, rgba(255, 45, 142, .82) 48%, #ff9ecb 55%, rgba(255, 45, 142, .55) 62%, rgba(255, 45, 142, 0) 74%);
 }
 
 .splash__footer {
@@ -268,7 +272,7 @@ a:focus-visible,
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background: #ff5c00;
+  background: #ff2d8e;
   transform-origin: left;
   animation: splash-bar var(--splash-duration, 3s) cubic-bezier(.3, .7, .2, 1) both;
 }
@@ -312,9 +316,8 @@ a:focus-visible,
   width: 38px;
   height: 48px;
   margin-bottom: var(--djv-space-2);
-  background: var(--djv-color-brand);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .error-page h1 {
@@ -338,9 +341,23 @@ a:focus-visible,
   margin-top: var(--djv-space-3);
 }
 
+/* 화면 제목 줄은 바탕 위에 그냥 둔다. 카드로 감싸면 아래 내용과 같은 무게로 읽혀
+   제목이 아니라 또 하나의 카드가 된다. */
 .page-intro {
   padding: var(--djv-space-6) var(--djv-space-4) var(--djv-space-5);
-  border-bottom: 1px solid var(--djv-color-border);
+}
+
+/* 사건 화면의 머리글만 카드다. 여기서는 제목이 아니라 `무슨 일이 있었나`라는
+   내용 자체라서 아래 카드들과 같은 무게로 묶는 게 맞다. */
+.page--case-detail > .page-intro,
+.page--catalyst > .page-intro,
+.page--cases > .page-intro {
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .page-intro--with-action {
@@ -373,13 +390,18 @@ a:focus-visible,
 
 /* 시안 `.wireHeader` 실측: 배경 흰색, 높이 60px, 제목 15px, 뒤로가기 버튼 배경 #f4f4f5.
    시안 CSS의 `background: var(--djv-color-bg)`는 뒤에서 흰색으로 덮인다. */
+/* 상세 상단바와 같은 규칙을 쓴다. 바탕을 깔지 않고 페이지 색이 그대로 비치게 두고,
+   버튼만 흰 동그라미로 띄운다. 둘이 달라 보이면 같은 깊이의 화면인데 다른 앱처럼 읽힌다. */
+/* 상자를 두르지 않는다. 뒤로·저장 아이콘 둘만 든 흰 카드는 담을 게 없어
+   빈 판으로 보인다. 아이콘을 바탕 위에 그대로 놓는다. */
 .app-bar {
   display: grid;
-  height: 60px;
+  height: 56px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
-  padding: 0 12px;
-  background: var(--djv-color-surface);
+  /* 좌우는 카드들과 같은 선에 맞춘다. 아이콘이 42px 상자 가운데 있으므로
+     그 여백만큼 당겨야 아이콘 가장자리가 아래 카드 모서리와 맞는다. */
+  margin: 0 calc(var(--djv-card-gutter) - var(--djv-space-2)) var(--djv-space-1);
 }
 
 .app-bar > strong {
@@ -389,6 +411,7 @@ a:focus-visible,
   text-align: center;
 }
 
+/* 아이콘 뒤 동그라미는 뺀다. 바탕이 회색이 되면서 흰 원이 도장처럼 떠 보인다. */
 .app-bar button {
   display: grid;
   width: 42px;
@@ -398,13 +421,24 @@ a:focus-visible,
   border: 0;
   border-radius: 50%;
   color: var(--djv-color-text);
-  background: var(--djv-color-surface-muted);
+  background: transparent;
 }
 
-/* 저장한 상태의 별은 브랜드 색이다. 기본 글자색이면 까맣게 칠해져 저장 여부가 안 읽힌다. */
-.app-bar button[aria-pressed='true'] {
-  color: var(--djv-color-brand);
-  background: var(--djv-color-brand-soft);
+/* 저장한 별은 주황이다. 주색(보라)을 쓰면 활성 탭·초점 카드와 같은 색이라
+   `저장했다`는 신호가 화면의 다른 보라들에 묻힌다. */
+.app-bar button[aria-pressed='true'],
+.detail-app-bar button[aria-pressed='true'] {
+  color: var(--djv-color-favorite);
+  background: transparent;
+}
+
+.detail-app-bar__close svg {
+  transform: rotate(90deg);
+}
+
+/* 오른쪽 꺾쇠를 왼쪽으로 돌려 뒤로 가기로 쓴다. 꼬리 달린 화살표보다 가볍다. */
+.app-bar__back svg {
+  transform: rotate(180deg);
 }
 
 .app-bar__spacer {
@@ -614,12 +648,17 @@ a:focus-visible,
 /* 회색 위의 갈색 글씨만으로는 경고가 어중간하게 읽힌다. 띠 자체를 옅은 경고색으로 깔아
    `보통 안내`가 아니라 `지금 상태가 정상이 아니다`로 먼저 보이게 한다. */
 /* 상태는 배경 대신 글자 색으로만 구분한다. 색만으로 전달하지 않도록 문구도 함께 적는다
-   (screen_spec §4.2 · §13.3). */
+   (screen_spec §4.2 · §13.3).
+   경고색은 수신이 정상이 아닐 때만 쓴다. `장 시작 전`·`장 마감`은 정상적인 시장
+   상태라 경고로 칠하면 문제가 있는 것처럼 읽힌다. */
 .data-status--delayed strong,
-.data-status--degraded strong,
+.data-status--degraded strong {
+  color: var(--djv-color-warning);
+}
+
 .data-status--closed strong,
 .data-status--preopen strong {
-  color: var(--djv-color-warning);
+  color: var(--djv-color-text-muted);
 }
 
 .live-dot {
@@ -632,10 +671,15 @@ a:focus-visible,
 }
 
 .data-status--delayed .live-dot,
-.data-status--degraded .live-dot,
+.data-status--degraded .live-dot {
+  background: var(--djv-color-warning);
+  box-shadow: 0 0 0 4px var(--djv-color-surface-muted);
+  animation: none;
+}
+
 .data-status--closed .live-dot,
 .data-status--preopen .live-dot {
-  background: var(--djv-color-warning);
+  background: var(--djv-color-text-muted);
   box-shadow: 0 0 0 4px var(--djv-color-surface-muted);
   animation: none;
 }
@@ -656,9 +700,9 @@ a:focus-visible,
   justify-items: center;
   align-content: center;
   gap: var(--djv-space-2);
-  margin: var(--djv-space-3) var(--djv-space-4);
-  padding: var(--djv-space-6) var(--djv-space-5);
-  border-radius: var(--djv-radius-lg);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-space-6) var(--djv-space-4);
+  border-radius: var(--djv-radius-xl);
   color: var(--djv-color-text-muted);
   background: var(--djv-color-surface-muted);
   text-align: center;
@@ -753,9 +797,8 @@ a:focus-visible,
   width: 24px;
   height: 29px;
   flex: 0 0 auto;
-  background: var(--djv-color-brand);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .home-title {
@@ -766,7 +809,7 @@ a:focus-visible,
 .home-title > strong {
   display: block;
   color: var(--djv-color-brand);
-  font-size: 24px;
+  font-size: 27px;
   font-weight: 600;
   line-height: 1.14;
   letter-spacing: -.03em;
@@ -774,7 +817,7 @@ a:focus-visible,
 
 .home-title h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 27px;
   font-weight: 700;
   line-height: 1.14;
   letter-spacing: -.04em;
@@ -896,7 +939,7 @@ a:focus-visible,
 .wheel-card[data-focused="true"] {
   border-color: color-mix(in srgb, var(--djv-color-brand) 55%, transparent);
   background: color-mix(in srgb, var(--djv-color-brand) 9%, var(--djv-color-surface));
-  box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--djv-brand-contrast) 35%, transparent);
+  box-shadow: 0 10px 22px -14px color-mix(in srgb, var(--djv-color-brand) 45%, transparent);
 }
 
 /* 시안 `.card::after`. 눌리는 줄이라는 표시를 오른쪽 끝에 둔다. */
@@ -931,7 +974,7 @@ a:focus-visible,
 
 .wheel-card[data-top="true"] .wheel-card__rank {
   background: var(--djv-color-brand-soft);
-  color: var(--djv-brand-contrast);
+  color: var(--djv-color-brand);
   font-weight: 700;
 }
 
@@ -1026,7 +1069,8 @@ a:focus-visible,
 }
 
 /* 값이 멈춘 화면(장 마감·수신 지연)에서는 굳이 천천히 움직일 이유가 없다. */
-.treemap[data-motion='off'] .treemap__cell {
+.treemap[data-motion='off'] .treemap__cell,
+.treemap[data-ready='false'] .treemap__cell {
   transition: none;
 }
 
@@ -1052,14 +1096,18 @@ a:focus-visible,
   border-radius: var(--djv-radius-lg);
   color: var(--djv-color-text);
   /*
-   * 타일을 진하게 칠한다. 옅게 칠하면 강한 날에 순위 차이가 안 보인다.
-   * 그 대가로 1위 타일에서는 등락색 숫자의 대비가 약해진다. 색을 흰색으로 바꾸면
-   * 상승·하락 구분이 사라지므로(screen_spec §13.3) 색을 살리는 쪽을 택했다.
+   * 채움은 brand가 아니라 상승색 계열을 쓴다. 타일이 나타내는 건 브랜드가 아니라
+   * 등락 강도이고, brand(네이비)로 칠하면 하락 타일과 같은 파랑 계열이 되어
+   * 상승·하락이 구분되지 않는다.
+   *
+   * 흰 바탕 쪽으로 섞지 않고 짙은 두 색 사이를 오간다. 옅은 쪽으로 섞으면 약한 칸이
+   * 연분홍이 되어 글자를 흰색으로도 검정으로도 읽히게 할 수 없다. 어느 칸이든
+   * 흰 글씨가 4.5 이상 나오는 농도에서 시작한다.
    */
   --tile-fill: color-mix(
     in srgb,
-    var(--djv-color-brand) calc(var(--tile-intensity, 0) * 92%),
-    var(--djv-color-surface-muted)
+    var(--djv-color-tile-up-strong) calc(var(--tile-intensity, 0) * 100%),
+    var(--djv-color-tile-up-weak)
   );
   background: var(--tile-fill);
   text-align: left;
@@ -1069,35 +1117,35 @@ a:focus-visible,
 .treemap__tile[data-tone="down"] {
   background: color-mix(
     in srgb,
-    var(--djv-color-market-down) calc(var(--tile-intensity, 0) * 30%),
-    var(--djv-color-surface-muted)
+    var(--djv-color-tile-down-strong) calc(var(--tile-intensity, 0) * 100%),
+    var(--djv-color-tile-down-weak)
   );
 }
 
 /* 납작한 타일에서 flex가 이름 줄을 눌러 글자 아래가 잘리던 걸 막는다.
-   타일 색이 1위와 꼴찌 사이에서 크게 달라져, 흰 글씨로 두면 옅은 타일에서 묻힌다.
-   어느 밝기에서도 읽히도록 본문 색을 쓴다. */
+   타일 채움이 모두 짙은 색이라 글자는 흰색으로 통일한다. */
 .treemap__tile strong {
   flex: none;
   max-width: 100%;
   overflow: hidden;
-  color: var(--djv-color-text);
-  font-size: 14px;
+  color: var(--djv-color-on-brand);
+  font-size: 15px;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 타일이 진해져서 상승 빨강이 배경에 묻힌다. 색은 등락색 그대로 두고 흰 테두리를 둘러
-   읽히게 한다. 색을 흰색으로 바꾸면 상승·하락 구분이 사라진다 (screen_spec §13.3). */
-/* 읽히게 하려고 흰 테두리를 둘러 봤지만 글자가 뭉갠다. 등락색을 그대로 둔다. */
+/* 등락색을 그대로 두면 짙은 배경에 묻힌다. 채움이 어느 칸이든 짙으므로 흰 글씨로
+   통일한다. 상승·하락 구분은 타일 배경 계열(분홍 / 파랑)과 숫자 앞의 부호가
+   이미 지고 있다 (screen_spec §13.3). */
 .treemap__tile b {
+  color: var(--djv-color-on-brand);
   font-size: 16px;
 }
 
 .treemap__tile small {
-  color: var(--djv-color-text-muted);
-  font-size: 10px;
+  color: color-mix(in srgb, var(--djv-color-on-brand) 78%, transparent);
+  font-size: 11px;
 }
 
 .treemap__tile[data-tier="compact"] {
@@ -1181,21 +1229,25 @@ a:focus-visible,
 
 /* --------------------------------------------------------- 테마 상세 */
 
-/* 시안 실측: 홈만 베이지(#eae8e3)고 상세·인사이트·과거 화면은 전부 흰 바탕이다.
-   `.page` 기본값이 이미 흰색이라 여기서 베이지로 덮으면 안 된다. */
+/* 상세는 목록 위로 올라오는 시트처럼 보이게 한다. 라우팅은 그대로 페이지라서
+   뒤로 가기·딥링크·새로고침이 전부 지금처럼 동작하고, 올라오는 인상만 가져온다.
+   모션 감소 설정에서는 전역 규칙이 이 애니메이션을 끈다. */
 .page--detail {
-  background: var(--djv-color-surface);
+  background: var(--djv-color-bg);
+  animation: page-sheet-up var(--djv-motion-screen) var(--djv-easing-standard);
 }
 
+/* 보라 머리 카드 안 첫 줄이다. 자기 상자(테두리·배경·그림자)를 갖지 않는다.
+   카드 padding 안에 있으므로 좌우 여백도 카드가 준다. */
 .detail-app-bar {
   position: relative;
   z-index: 3;
   display: grid;
-  height: 56px;
+  height: 40px;
   align-items: center;
   grid-template-columns: 40px 1fr 40px;
-  padding: 0 14px;
-  background: var(--djv-brand-header);
+  /* 카드 좌우 padding 만큼 밖으로 빼서 버튼이 카드 모서리에 붙게 한다. */
+  margin: calc(var(--djv-space-1) * -1) calc(var(--djv-space-1) * -1) var(--djv-space-2);
 }
 
 .detail-app-bar > span {
@@ -1217,15 +1269,18 @@ a:focus-visible,
   place-items: center;
   border: 0;
   border-radius: 50%;
+  /* 보라 바탕 위라 본문 먹색은 안 읽힌다. */
   color: var(--djv-color-on-brand);
-  background: color-mix(in srgb, var(--djv-color-on-brand) 18%, transparent);
+  background: transparent;
 }
 
 .theme-summary {
   min-height: 150px;
-  margin-bottom: 10px;
-  padding: 16px var(--djv-space-5) var(--djv-space-5);
-  border-radius: 0 0 var(--djv-radius-xl) var(--djv-radius-xl);
+  /* 상단바를 품으면서 이 카드가 화면 첫 요소가 됐다. 위 여백이 0이면 카드가
+     화면 꼭대기에 붙어 위쪽 모서리가 잘려 보인다. 좌우와 같은 값으로 닫는다. */
+  margin: var(--djv-card-gutter) var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
+  border-radius: var(--djv-radius-xl);
   color: var(--djv-color-on-brand);
   background: var(--djv-brand-header);
 }
@@ -1362,62 +1417,60 @@ a:focus-visible,
   letter-spacing: -.02em;
 }
 
-/* 시안 `.detailTabs`. 밑줄 탭이 아니라 회색 트랙 위에서 선택된 쪽만 흰 종이로 올라오는
-   폴더형이다. 사선은 `clip-path`로 내고, 겹치는 만큼 음수 margin으로 붙인다. */
+/* 예전에는 회색 트랙 위로 선택된 쪽만 흰 종이가 올라오는 폴더형이었다. 아래 내용이
+   절마다 따로 카드가 되면서 이어 붙일 종이가 사라져 탭만 붕 떴다. 기간 토글과 같은
+   세그먼트 토글로 바꿔 화면 안에서 같은 방식이 반복되게 한다. */
 .detail-tabs {
-  display: flex;
-  height: 46px;
-  background: var(--djv-color-surface-muted);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 0 0 var(--djv-space-3);
+  padding: 5px;
+  border-radius: 18px;
+  /* 트랙이 바탕(회색)과 같은 밝기면 선택된 칸만 떠 보인다. 한 단계 진한 회색으로
+     깔아 토글 전체가 하나의 상자로 읽히게 한다. */
+  background: var(--djv-color-track);
 }
 
 .detail-tabs button {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  height: 46px;
+  height: 42px;
   padding: 0;
   border: 0;
-  border-radius: 0;
+  border-radius: 15px;
   background: transparent;
   color: var(--djv-color-text-muted);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -.02em;
-  transition: color var(--djv-motion-fast) var(--djv-easing-standard);
+  transition:
+    color var(--djv-motion-fast) var(--djv-easing-standard),
+    background var(--djv-motion-fast) var(--djv-easing-standard);
 }
 
 .detail-tabs button[aria-selected="true"] {
-  z-index: 2;
-  background: var(--djv-color-surface);
-  color: var(--djv-brand-contrast);
+  background: var(--djv-color-brand);
+  color: var(--djv-color-on-brand);
   font-weight: 700;
 }
 
-.detail-tabs button:first-child[aria-selected="true"] {
-  margin-right: -12px;
-  clip-path: polygon(0 0, 82% 0, 100% 100%, 0 100%);
-}
-
-.detail-tabs button:last-child[aria-selected="true"] {
-  margin-left: -12px;
-  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
-}
-
+/* 예전에는 큰 흰 카드 하나 안에 절을 회색 띠로 갈랐다. 바탕이 회색이 되면서
+   절마다 따로 카드를 세우고 카드 사이를 바탕색으로 띄우는 쪽이 더 잘 읽힌다.
+   바깥은 탭을 담는 틀로만 남기고 배경·테두리를 벗긴다. */
 .detail-card {
-  margin: 0 var(--djv-space-3) var(--djv-space-3);
-  overflow: hidden;
-  border: 1px solid var(--djv-color-border);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   border-radius: 26px;
-  background: var(--djv-color-surface);
-  box-shadow: var(--djv-shadow-card);
+  background: transparent;
 }
 
-/* 탭 패널이 생기면서 section이 한 단계 안으로 들어갔다. 시안처럼 두 자리 모두에 같은 여백을 준다. */
-/* 절마다 아래 선을 긋지 않는다. 절 사이 회색 띠가 그 역할을 한다.
-   둘 다 두면 선이 세 줄로 겹쳐 보인다. */
+/* 탭이 붙는 첫 카드만 위쪽을 각지게 두고 나머지는 독립 카드다. */
 .detail-card > section,
 .detail-panel > section {
-  padding: var(--djv-space-6) var(--djv-space-4);
+  margin-bottom: var(--djv-card-gap);
+  padding: var(--djv-card-pad);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .detail-card h2 {
@@ -1864,15 +1917,17 @@ a:focus-visible,
   line-height: 1.55;
 }
 
-/* 시안 `.horizonToggle`. 낱개 pill이 아니라 한 트랙 안에서 3등분되는 세그먼트 토글이다. */
+/* 낱개 pill이 아니라 한 트랙 안에서 3등분되는 세그먼트 토글이다.
+   트랙 색(surface-muted)이 회색 바탕과 거의 같아 트랙이 안 보이고 선택된 칸만
+   떠 보였다. 흰 카드로 감싸 토글이 하나의 덩어리로 읽히게 한다. */
 .horizon-toggle {
   display: grid;
   gap: 4px;
   grid-template-columns: repeat(3, 1fr);
-  margin: var(--djv-space-4);
-  padding: 4px;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: 5px;
   border-radius: 18px;
-  background: var(--djv-color-surface-muted);
+  background: var(--djv-color-track);
 }
 
 .horizon-toggle button {
@@ -1892,8 +1947,8 @@ a:focus-visible,
 
 .case-list {
   display: grid;
-  gap: 8px;
-  margin: var(--djv-space-2) var(--djv-space-4) 0;
+  gap: var(--djv-card-gap);
+  margin: 0 var(--djv-card-gutter);
   padding: 0;
   list-style: none;
 }
@@ -1951,9 +2006,8 @@ a:focus-visible,
   height: 16px;
   margin-right: 5px;
   vertical-align: -2px;
-  background: var(--djv-color-brand);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 /* 오늘 화면과 이 과거 사례를 잇는 칸. 겹치는 종목 목록은 다른 화면의 종목 줄과
@@ -2169,6 +2223,17 @@ a:focus-visible,
 
 /* --------------------------------------------------------- 즐겨찾기 */
 
+/* 바탕이 회색이라 구역 내용이 맨바닥에 놓인다. 카드로 묶어 다른 화면과 맞춘다. */
+.page--saved .state-panel,
+.page--saved .library-empty {
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
+}
+
 .library-heading {
   display: flex;
   min-height: 34px;
@@ -2196,21 +2261,25 @@ a:focus-visible,
   scrollbar-width: thin;
 }
 
+/* 선택은 주색으로 꽉 채우고 글씨를 뒤집는다. 테두리만 바꾸면 무엇이 켜졌는지
+   멀리서 안 읽힌다. */
 .filter-row button {
-  height: 34px;
+  height: 38px;
   flex: none;
-  padding: 0 13px;
+  padding: 0 17px;
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-pill);
-  color: var(--djv-color-text-muted);
+  color: var(--djv-color-text);
   background: var(--djv-color-surface);
+  font-size: var(--djv-font-size-label);
+  font-weight: 700;
+  box-shadow: var(--djv-shadow-card);
 }
 
 .filter-row button[aria-selected="true"] {
-  border-color: var(--djv-color-brand);
-  color: var(--djv-brand-contrast);
-  background: var(--djv-color-brand-soft);
-  font-weight: 600;
+  border-color: transparent;
+  color: var(--djv-color-on-brand);
+  background: var(--djv-color-brand);
 }
 
 .saved-list {
@@ -2345,8 +2414,8 @@ a:focus-visible,
 
 .research-form {
   display: grid;
-  gap: var(--djv-space-3);
-  margin: var(--djv-space-4);
+  gap: var(--djv-card-gap);
+  margin: var(--djv-card-gap) var(--djv-card-gutter);
 }
 
 .research-form label {
@@ -2354,32 +2423,39 @@ a:focus-visible,
   font-size: var(--djv-font-size-label);
 }
 
+/* 입력창과 아래 버튼은 곡률을 낮춰 각진 상자로 둔다. pill로 두면 답변 카드들과
+   모양 언어가 어긋난다. */
 .research-form textarea {
-  padding: var(--djv-space-3);
+  padding: var(--djv-space-4);
   border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-md);
+  border-radius: var(--djv-radius-sm);
   background: var(--djv-color-surface);
   color: var(--djv-color-text);
   font: inherit;
   line-height: 1.6;
   resize: vertical;
+  box-shadow: var(--djv-shadow-card);
+}
+
+.research-form__submit {
+  border-radius: var(--djv-radius-sm);
 }
 
 .research-examples {
   display: flex;
   flex-wrap: wrap;
   gap: var(--djv-space-2);
-  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
 
 .research-answer,
 .research-failure {
-  margin: 0 var(--djv-space-4) var(--djv-space-4);
-  padding: var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-lg);
+  border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
   box-shadow: var(--djv-shadow-card);
 }
@@ -2398,11 +2474,12 @@ a:focus-visible,
   line-height: 1.6;
 }
 
+/* 기간이 셋으로 고정이라 줄바꿈 없이 3등분한다. 폭이 들쭉날쭉하면 값 비교가 어렵다. */
 .research-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--djv-space-3);
-  margin: var(--djv-space-3) 0 0;
+  display: grid;
+  gap: var(--djv-space-2);
+  grid-template-columns: repeat(3, 1fr);
+  margin: var(--djv-space-4) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -2410,10 +2487,29 @@ a:focus-visible,
 .research-metrics li {
   display: grid;
   gap: 2px;
-  padding: var(--djv-space-3);
-  border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-md);
+  padding: var(--djv-space-3) var(--djv-space-2);
+  border-radius: var(--djv-radius-sm);
+  background: var(--djv-color-surface-muted);
   font-size: var(--djv-font-size-caption);
+  text-align: center;
+}
+
+/* 오름·내림을 화면 다른 곳과 같은 색으로 칠한다. 숫자만 색을 주면 칸이 다 회색이라
+   어느 기간이 좋았는지 한눈에 안 들어온다. */
+.research-metrics li[data-tone="up"] {
+  background: var(--djv-color-market-up-soft);
+}
+
+.research-metrics li[data-tone="down"] {
+  background: var(--djv-color-market-down-soft);
+}
+
+.research-metrics li[data-tone="up"] strong {
+  color: var(--djv-color-market-up);
+}
+
+.research-metrics li[data-tone="down"] strong {
+  color: var(--djv-color-market-down);
 }
 
 .research-metrics strong {
@@ -2427,16 +2523,20 @@ a:focus-visible,
   font-style: normal;
 }
 
+/* 답변 카드 밖으로 나왔다. 사례마다 흰 카드로 세워 답변과 구분한다. */
 .research-rows {
-  margin: var(--djv-space-4) 0 0;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
 
 .research-row {
-  margin-top: var(--djv-space-3);
-  padding-top: var(--djv-space-3);
-  border-top: 1px solid var(--djv-color-border);
+  margin-top: var(--djv-card-gap);
+  padding: var(--djv-card-pad);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .research-row__values {
@@ -2781,9 +2881,8 @@ a:focus-visible,
   display: block;
   width: 38px;
   height: 48px;
-  background: var(--djv-color-brand);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .login-card__copy {
@@ -2876,13 +2975,12 @@ a:focus-visible,
   from { opacity: 0; transform: translateY(24px); }
 }
 
-/* 시안의 유일한 화면 경계. 이보다 넓은 화면에서는 420px 열이 가운데 정렬된다. */
-@media (max-width: 440px) {
-  .theme-summary {
-    border-radius: 0 0 var(--djv-radius-lg) var(--djv-radius-lg);
-  }
+/* 화면 전체가 올라오는 거라 작은 시트보다 이동 거리를 크게 준다. */
+@keyframes page-sheet-up {
+  from { opacity: .4; transform: translateY(64px); }
 }
 
+/* 시안의 유일한 화면 경계. 이보다 넓은 화면에서는 420px 열이 가운데 정렬된다. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2975,24 +3073,8 @@ a:focus-visible,
 }
 
 
-/* 절 사이는 선 하나가 아니라 얇은 회색 띠로 가른다. 선 두 줄 사이를 회색으로 채워
-   `여기서 내용이 바뀐다`가 한눈에 보이게 한다. */
-.detail-card > section + section,
-.detail-panel > section + section {
-  /* 간격은 아래 띠가 담당한다. 여기서 또 주면 빈 공간이 두 배가 된다. */
-  margin-top: 0;
-}
-
-.detail-card > section + section::before,
-.detail-panel > section + section::before {
-  content: '';
-  display: block;
-  height: 8px;
-  margin: 0 calc(var(--djv-space-4) * -1) var(--djv-space-4);
-  border-top: 1px solid #0000000a;
-  border-bottom: 1px solid #0000000a;
-  background: var(--djv-color-surface-muted);
-}
+/* 절이 각자 카드가 되면서 사이를 가르던 회색 띠는 필요 없어졌다. 카드 사이의
+   바탕색이 그 역할을 한다. */
 
 /* 유사사례 카드: 화살표를 오른쪽 끝에 바짝 붙이고 결과도 오른쪽으로 민다. */
 .case-list a {
@@ -3158,7 +3240,7 @@ textarea.research-form__input {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
@@ -3277,12 +3359,20 @@ p.page-intro__origin {
 
 /* 새로 들어온 타일은 자리를 옮겨 온 게 아니라 나타난 것이다. 크기 전환 대신 서서히 뜬다. */
 @keyframes treemap-cell-in {
-  from { opacity: 0; transform: scale(.96); }
+  from { opacity: 0; transform: scale(.86); }
   to { opacity: 1; transform: scale(1); }
 }
 
+/* 폭을 재기 전에는 칸이 0 크기라, 그때 효과를 걸면 보이지 않는 사이에 끝나 버리고
+   자리를 잡을 때 다 같이 튀어나온 것처럼 보인다. 잰 뒤에 이 규칙이 걸리면서
+   그제서야 각 칸이 제 중심에서 커진다. 이미 떠 있던 칸은 효과가 끝난 상태라
+   자리만 옮기고, 나중에 들어온 칸은 붙는 순간 이 규칙에 걸려 혼자 나타난다. */
 .treemap__cell {
-  animation: treemap-cell-in 420ms var(--djv-easing-standard);
+  transform-origin: center;
+}
+
+.treemap[data-ready='true'] .treemap__cell {
+  animation: treemap-cell-in 420ms var(--djv-easing-standard) backwards;
 }
 
 .treemap[data-motion='off'] .treemap__cell {
