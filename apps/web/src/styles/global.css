@@ -1246,9 +1246,19 @@ a:focus-visible,
   background: var(--djv-color-surface);
 }
 
-/* 오른쪽 꺾쇠를 아래 방향으로 돌린다. */
-.detail-app-bar__close svg {
+/* 오른쪽 꺾쇠를 아래 방향으로 돌린다. 상세와 그 아래 화면들이 같은 아이콘을 쓴다. */
+.detail-app-bar__close svg,
+.app-bar__close svg {
   transform: rotate(90deg);
+}
+
+/* 상세와 마찬가지로 아래에서 올라오게 한다. 그래야 `내려서 닫기` 아이콘이 맞다. */
+.page--case-detail,
+.page--catalyst,
+.page--cases,
+.page--gate {
+  border-radius: var(--djv-radius-xl) var(--djv-radius-xl) 0 0;
+  animation: page-sheet-up var(--djv-motion-screen) var(--djv-easing-standard);
 }
 
 .theme-summary {

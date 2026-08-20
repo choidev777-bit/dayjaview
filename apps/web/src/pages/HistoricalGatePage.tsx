@@ -1,4 +1,4 @@
-import { IconArrowLeftLine } from '@karrotmarket/react-monochrome-icon';
+import { IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
 import { useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import { ErrorPage, LoadingState, PermissionState } from '../shared/StatePanel';
@@ -23,8 +23,8 @@ export function HistoricalGatePage() {
   return (
     <div className="page page--gate">
       <header className="app-bar">
-        <button type="button" onClick={goBack} aria-label="이전 화면으로 돌아가기">
-          <IconArrowLeftLine size={24} aria-hidden="true" />
+        <button type="button" className="app-bar__close" onClick={goBack} aria-label="닫기">
+          <IconChevronRightSmallLine size={24} aria-hidden="true" />
         </button>
         <strong>과거 사례</strong>
         <span className="app-bar__spacer" aria-hidden="true" />
