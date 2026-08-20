@@ -79,7 +79,8 @@ const VALUE_LABELS: Record<string, string> = {
   missingReason: '값이 없는 이유',
   leaderCount: '주도주',
   upCount: '상승',
-  medianReturn: '5거래일 뒤 중앙값',
+  medianReturn: '기준 거래일 뒤 중앙값',
+  horizon: '기준 거래일',
 };
 
 /** 값 자리에도 영어 코드가 온다. 항목 이름만 한글로 바꾸면 `ANTICIPATION`이 남는다. */
@@ -371,6 +372,9 @@ function RowBlock({ row }: { row: ResearchRow }) {
      원문과 종목별 성적이 열린다. 다 펴 두면 사건 두 개가 한 화면을 넘는다. */
   if (leaders) {
     const median = row.values.medianReturn ? String(row.values.medianReturn) : '';
+    /* 며칠 뒤를 물었는지는 질문마다 다르다. 서버가 고른 기준일을 그대로 쓴다 —
+       화면이 5로 박아 두면 "3거래일 뒤" 질문에 5일 답이 붙는다. */
+    const horizon = Number(row.values.horizon) || 5;
     const themeNames = Array.isArray(row.values.themeNames)
       ? (row.values.themeNames as string[])
       : [];
@@ -386,7 +390,11 @@ function RowBlock({ row }: { row: ResearchRow }) {
             {open ? '▾' : '▸'} {row.label}
           </span>
           <span className="research-row__brief">
-            {median ? <em className={rateClass(median)}>5일 뒤 {median}</em> : null}
+            {median ? (
+              <em className={rateClass(median)}>
+                {horizon}일 뒤 {median}
+              </em>
+            ) : null}
             <span className="research-more">
               {themeNames.length ? `테마 ${themeNames.length}곳 · ` : ''}
               주도주 {String(row.values.leaderCount ?? leaders.length)}곳 중{' '}

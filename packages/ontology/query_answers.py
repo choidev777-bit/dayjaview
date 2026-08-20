@@ -1974,14 +1974,14 @@ def _answer_company_historical_outcome(
     # 회사를 물으면 그 회사의 직접 사건 축, 소재·테마로 물으면 사건 당시
     # 주도주 축이다(계획서 4.1 "회사 또는 당시 주도주 outcome").
     leader_axis = plan.company is None
+    # 손님이 "3거래일 뒤"라고 물으면 그 3이 대표 숫자다. 안 물었으면 5다.
+    # 기본 1·5·20은 그대로 곁들여 보여 준다 — 하나만 남기면 비교가 사라진다.
+    headline_horizon = plan.outcome_horizon or _HEADLINE_HORIZON
+    horizons = tuple(sorted({*DEFAULT_OUTCOME_HORIZONS, headline_horizon}))
     if leader_axis:
-        observations = repository.leader_outcomes(
-            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
-        )
+        observations = repository.leader_outcomes(outcome_filter, horizons=horizons)
     else:
-        observations = repository.outcomes(
-            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
-        )
+        observations = repository.outcomes(outcome_filter, horizons=horizons)
     if not observations:
         return _no_record(plan, "그 구간에 실제 결과를 붙일 사건이 없습니다.")
     observed = [item for item in observations if item.base_close is not None]
@@ -2001,10 +2001,11 @@ def _answer_company_historical_outcome(
                 "themeNames": sorted(
                     {item.theme_name for item in members if item.theme_name}
                 ),
+                "horizon": headline_horizon,
                 "upCount": sum(
                     1
                     for item in members
-                    if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                    if (value := item.returns.get(headline_horizon)) is not None
                     and value > 0
                 ),
                 "medianReturn": _rate(
@@ -2012,7 +2013,7 @@ def _answer_company_historical_outcome(
                         [
                             value
                             for item in members
-                            if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                            if (value := item.returns.get(headline_horizon)) is not None
                         ]
                     )
                 ),
@@ -2036,7 +2037,7 @@ def _answer_company_historical_outcome(
                                 if item.returns.get(horizon) is None
                                 else _rate(item.returns[horizon])
                             )
-                            for horizon in DEFAULT_OUTCOME_HORIZONS
+                            for horizon in horizons
                         },
                         "missingReason": item.missing_reason,
                     }
@@ -2090,14 +2091,14 @@ def _answer_company_historical_outcome(
     ]
     headline_median: Decimal | None = None
     up_count = 0
-    for horizon in DEFAULT_OUTCOME_HORIZONS:
+    for horizon in horizons:
         observed_returns: list[Decimal] = [
             value
             for item in observed
             if (value := item.returns.get(horizon)) is not None
         ]
         middle = _median(observed_returns)
-        if horizon == _HEADLINE_HORIZON:
+        if horizon == headline_horizon:
             headline_median = middle
             up_count = sum(1 for value in observed_returns if value > 0)
         metrics.append(
@@ -2111,7 +2112,7 @@ def _answer_company_historical_outcome(
     headline_samples = [
         value
         for item in observed
-        if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+        if (value := item.returns.get(headline_horizon)) is not None
     ]
     return AnswerBlock(
         query_type=plan.query_type,
@@ -2120,14 +2121,15 @@ def _answer_company_historical_outcome(
             plan,
             extra={
                 "outcomeRangeFrom": availability.outcome_range_from.isoformat(),
-                "horizons": list(DEFAULT_OUTCOME_HORIZONS),
+                "horizons": list(horizons),
+                "headlineHorizon": headline_horizon,
             },
         ),
         summary_ko=(
             (
-                f"{_HEADLINE_HORIZON}거래일 뒤 중앙값 {_rate(headline_median)}입니다."
+                f"{headline_horizon}거래일 뒤 중앙값 {_rate(headline_median)}입니다."
                 if headline_median is not None
-                else f"{_HEADLINE_HORIZON}거래일 뒤 주가가 아직 나오지 않았습니다."
+                else f"{headline_horizon}거래일 뒤 주가가 아직 나오지 않았습니다."
             )
             + f" 사건 {len(events)}건"
             + (

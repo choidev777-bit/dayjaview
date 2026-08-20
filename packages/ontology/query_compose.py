@@ -21,7 +21,7 @@ from .query_answers import (
 from .query_contracts import QueryType
 from .query_planning import PUBLIC_FAILURE_LABEL_KO, QuestionCatalog
 
-COMPOSE_PROMPT_VERSION = "research-compose/1.0.0"
+COMPOSE_PROMPT_VERSION = "research-compose/1.1.0"
 MAX_COMPOSE_STEPS = 3
 
 # 절이 이어지는 복합 질문 표지(과거형 연결어미 포함). 단일 질문은 LLM 없이

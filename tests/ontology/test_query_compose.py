@@ -165,3 +165,63 @@ def test_conclusion_is_the_goal_type_not_whatever_ended_last() -> None:
     # 목표 유형을 모르면 마지막 성공 단계로 물러난다.
     fallback = pick_conclusion(steps, goal_type=None)
     assert fallback is not None and fallback.question == "신성델타테크 어떤 테마에 속해?"
+
+
+def test_answer_uses_the_horizon_the_question_asked() -> None:
+    """"3거래일 뒤"라고 물으면 3거래일이 대표 숫자다. 5로 갈아치우지 않는다."""
+
+    from datetime import date as date_type
+    from decimal import Decimal
+
+    from packages.ontology import OutcomeObservation, QueryAvailability, QueryType
+    from packages.ontology import plan_question
+    from packages.ontology.query_answers import answer_plan
+
+    result = plan_question(
+        "과거 로봇 산업 육성 정책 발표 뒤 당시 주도주 3거래일 뒤 주가 어떻게 됐어?",
+        catalog=_catalog(),
+        today=TODAY,
+    )
+    assert result.plan is not None
+    assert result.plan.outcome_horizon == 3
+
+    repository = FakeRepository(
+        outcomes=(
+            OutcomeObservation(
+                catalyst_id="catalyst_" + "1" * 24,
+                occurred_on=date_type(2026, 7, 1),
+                seed_stock_code="065350",
+                company_name="신성델타테크",
+                base_trading_date=date_type(2026, 7, 1),
+                base_close=Decimal("34000"),
+                returns={
+                    1: Decimal("2.0"),
+                    3: Decimal("7.25"),
+                    5: Decimal("5.5"),
+                    20: None,
+                },
+                missing_reason=None,
+                evidence_text="정부, 로봇 산업 육성 정책 발표",
+            ),
+        ),
+    )
+    answered = answer_plan(
+        result.plan,
+        repository,
+        availability=QueryAvailability(
+            human_verified=frozenset(QueryType),
+            outcome_gate_open=True,
+            outcome_range_from=date_type(2010, 1, 1),
+        ),
+        today=TODAY,
+    )
+    assert answered.answer is not None
+    assert answered.answer.summary_ko.startswith("3거래일 뒤 중앙값 +7.25%")
+    labels = [metric.label_ko for metric in answered.answer.metrics]
+    assert "3거래일 뒤 중앙값" in labels
+    # 기본 1·5·20도 그대로 곁들인다 — 비교할 것이 사라지면 안 된다.
+    assert "5거래일 뒤 중앙값" in labels
+    row = answered.answer.rows[0]
+    assert row.values["horizon"] == 3
+    assert row.values["medianReturn"] == "+7.25%"
+    assert row.values["leaders"][0]["returns"]["T+3"] == "+7.25%"
