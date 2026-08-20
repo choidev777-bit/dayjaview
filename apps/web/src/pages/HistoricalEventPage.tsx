@@ -116,7 +116,7 @@ export function HistoricalEventPage() {
         <section aria-labelledby="outcome-title">
           <h2 id="outcome-title">이 사건 뒤 주가</h2>
           <p className="section-note">
-            사건 당일 기록된 주도 종목 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
+            사건 당일 그 테마에 속했던 {detail.leaders.length.toLocaleString('ko-KR')}종목 중 가격이 확인된{' '}
             {priced.toLocaleString('ko-KR')}종목을 같은 비중으로 담았다고 보고, 사건 당일 종가부터
             1·5·20거래일 뒤까지 얼마나 움직였는지 계산했습니다.
           </p>
@@ -137,7 +137,7 @@ export function HistoricalEventPage() {
 
         <section aria-labelledby="historical-leaders-title">
           {/* 기준을 제목에 넣으면 아래 설명 줄이 필요 없다. */}
-          <h2 id="historical-leaders-title">당시 주도 종목 당일 등락률</h2>
+          <h2 id="historical-leaders-title">당시 구성 종목 당일 등락률</h2>
           {/* 현재 관련주를 과거에 소급하지 않는다. 서버가 준 당시 명단만 그대로 쓴다 (screen_spec 10.5). */}
           {detail.leaders.length ? (
             <>
@@ -160,7 +160,7 @@ export function HistoricalEventPage() {
             </>
           ) : (
             <EmptyState
-              title="당시 기록된 주도 종목이 없습니다"
+              title="당시 기록된 구성 종목이 없습니다"
               description="가격이 확보되지 않아 바스켓에서 제외된 경우도 여기에 포함됩니다."
             />
           )}

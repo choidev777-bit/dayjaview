@@ -117,6 +117,7 @@ class MarketDataPipeline:
         event_store: EventStore,
         snapshot_repository: SnapshotRepository,
         history: IntradayHistory | None = None,
+        historical_theme_ids: frozenset[str] = frozenset(),
         hysteresis_policy: HysteresisPolicy = HYSTERESIS_POLICY_V1,
     ) -> None:
         if not stream_id.strip():
@@ -147,6 +148,7 @@ class MarketDataPipeline:
         self._evidence_documents: dict[str, dict[str, object]] = {}
         self._latest_metrics: dict[str, ThemeMetricUpdate] = {}
         self._history = history
+        self._historical_theme_ids = historical_theme_ids
         self._observed_stock_ids: set[str] = set()
         self._membership_recorded = False
         self._recorded_bucket: time | None = None
@@ -346,16 +348,26 @@ class MarketDataPipeline:
                 {**leader, "role": "LEADER"}
                 for leader in self._leaders(theme_id, limit=3)
             ],
-            # 유사사례는 온톨로지 재검증(E-19) 통과 전까지 잠겨 있다.
-            "historicalAccess": {
-                "status": "GATED",
-                "reason": "ONTOLOGY_VALIDATION_REQUIRED",
-            },
+            "historicalAccess": self._historical_access(theme_id),
             "canonicalPath": f"/v1/themes/{theme_id}/events/{event_id}",
             "qualityFlags": sorted(
                 set(metrics.quality_flags) | self._baseline_flags(turnover)
             ),
         }
+
+    def _historical_access(self, theme_id: str) -> dict[str, object]:
+        """과거 사건 색인이 이 테마를 들고 있을 때만 유사사례를 연다.
+
+        색인 자체가 없으면(연습용 2테마 모드) 아직 잠긴 것이고, 색인은 있는데
+        이 테마의 과거 기록이 없으면 비교할 과거가 없는 것이다. 둘을 같은
+        상태로 적지 않는다.
+        """
+
+        if not self._historical_theme_ids:
+            return {"status": "GATED", "reason": "ONTOLOGY_VALIDATION_REQUIRED"}
+        if theme_id not in self._historical_theme_ids:
+            return {"status": "UNAVAILABLE", "reason": "NO_THEME_HISTORY"}
+        return {"status": "AVAILABLE", "reason": None}
 
     def _baseline_flags(self, turnover: ThemeTurnoverResult | None) -> set[str]:
         """기준선이 20거래일에 못 미치면 값을 내되 잠정임을 표시한다.

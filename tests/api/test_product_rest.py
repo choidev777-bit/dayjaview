@@ -18,7 +18,7 @@ from apps.api import (
 )
 from apps.api.app_types import JsonObject
 from apps.api.cookies import CSRF_COOKIE, SESSION_COOKIE
-from packages.identity import GoogleIdentity, Role
+from packages.identity import GoogleIdentity
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIXTURES = _ROOT / "contracts" / "fixtures"
@@ -245,14 +245,13 @@ def test_null_zero_empty_coverage_and_quality_flags_are_not_collapsed() -> None:
     asyncio.run(scenario())
 
 
-def test_identifier_query_and_historical_entitlement_fail_closed() -> None:
+def test_identifier_query_failures_and_historical_detail() -> None:
     async def scenario() -> None:
         environment = create_fixture_app(
             clock=MutableClock(),
             product_repository=_product_repository(),
         )
         completion = _service_login(environment, subject="google-gate-user")
-        principal = environment.service.require_authenticated(completion.session_token)
         transport = ASGITransport(app=environment.app)
         async with AsyncClient(
             transport=transport,
@@ -274,20 +273,14 @@ def test_identifier_query_and_historical_entitlement_fail_closed() -> None:
                 "/v1/themes/rankings",
                 params={"marketDate": "2026-08-13"},
             )
-            gated_detail = await client.get("/v1/events/evt_historical")
-
             assert mismatch.status_code == 409
             assert mismatch.json()["error"]["code"] == "RESOURCE_ID_MISMATCH"
             assert invalid_limit.status_code == 400
             assert unknown_query.status_code == 400
             assert unsupported_date.status_code == 422
-            assert gated_detail.status_code == 403
-            assert gated_detail.json()["error"]["code"] == "FEATURE_NOT_ENTITLED"
 
-            environment.repository.add_role(
-                principal.user.user_id,
-                Role.HISTORICAL_PILOT,
-            )
+            # 과거 사례는 파일럿 명단이 아니라 자료 유무로 열린다. 로그인한
+            # 사용자면 바로 받는다.
             entitled = await client.get(
                 "/v1/events/evt_historical",
                 params={"contextEventId": "evt_current"},

@@ -111,5 +111,21 @@ class SqliteOutcomeReader:
         )
         return base_date, base_close, computed, missing
 
+    def daily_return(self, stock_code: str, on: date) -> Decimal | None:
+        """사건일 등락률(%). 직전 거래일 종가 대비 사건일 종가다."""
+
+        rows = self._connection.execute(
+            "SELECT trade_date, adjusted_close, close FROM daily_prices"
+            " WHERE stock_id = ? AND trade_date <= ?"
+            " ORDER BY trade_date DESC LIMIT 2",
+            (self._stock_id(stock_code), on.isoformat()),
+        ).fetchall()
+        if len(rows) < 2:
+            return None
+        close, previous = self._close(rows[0]), self._close(rows[1])
+        if close is None or previous is None or previous == 0:
+            return None
+        return ((close / previous) - Decimal(1)) * Decimal(100)
+
 
 __all__ = ["CORPUS_RANGE_FROM", "SqliteOutcomeReader"]

@@ -33,6 +33,8 @@ class ThemeUniverse:
     theme_names: dict[str, str]
     stock_names: dict[str, str]
     references: tuple[StockReference, ...] = field(default=())
+    # 과거 사건 매칭이 같은 수집본의 history를 다시 읽지 않도록 들고 있는다.
+    details: tuple[ThemeDetail, ...] = field(default=())
 
     def catalog(self) -> VersionedThemeCatalog:
         return VersionedThemeCatalog(self.snapshots)
@@ -51,10 +53,11 @@ def build_theme_universe(
     제외한다. 원본 loader가 이미 `quality_status`로 표시해 둔 것을 그대로 쓴다.
     """
 
+    ordered = tuple(details)
     snapshots: list[ThemeMembershipSnapshot] = []
     theme_names: dict[str, str] = {}
     stock_names: dict[str, str] = {}
-    for detail in details:
+    for detail in ordered:
         theme_id = f"thm_{detail.source_theme_id}"
         theme_names[theme_id] = detail.theme_name
         members: list[ThemeMember] = []
@@ -78,6 +81,7 @@ def build_theme_universe(
         snapshots=tuple(snapshots),
         theme_names=theme_names,
         stock_names=stock_names,
+        details=ordered,
     )
 
 
