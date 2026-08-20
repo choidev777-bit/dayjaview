@@ -1231,7 +1231,6 @@ a:focus-visible,
    모션 감소 설정에서는 전역 규칙이 이 애니메이션을 끈다. */
 .page--detail {
   background: var(--djv-color-bg);
-  border-radius: var(--djv-radius-xl) var(--djv-radius-xl) 0 0;
   animation: page-sheet-up var(--djv-motion-screen) var(--djv-easing-standard);
 }
 
@@ -1274,7 +1273,7 @@ a:focus-visible,
 
 .theme-summary {
   min-height: 150px;
-  margin: 0 var(--djv-space-4) 10px;
+  margin: var(--djv-space-2) var(--djv-space-4) 10px;
   padding: var(--djv-space-5);
   border-radius: var(--djv-radius-xl);
   color: var(--djv-color-on-brand);
@@ -2219,6 +2218,17 @@ a:focus-visible,
 
 /* --------------------------------------------------------- 즐겨찾기 */
 
+/* 바탕이 회색이라 구역 내용이 맨바닥에 놓인다. 카드로 묶어 다른 화면과 맞춘다. */
+.page--saved .state-panel,
+.page--saved .library-empty {
+  margin: 0 var(--djv-space-4) var(--djv-space-3);
+  padding: var(--djv-space-6) var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
+}
+
 .library-heading {
   display: flex;
   min-height: 34px;
@@ -2246,21 +2256,25 @@ a:focus-visible,
   scrollbar-width: thin;
 }
 
+/* 선택은 주색으로 꽉 채우고 글씨를 뒤집는다. 테두리만 바꾸면 무엇이 켜졌는지
+   멀리서 안 읽힌다. */
 .filter-row button {
-  height: 34px;
+  height: 38px;
   flex: none;
-  padding: 0 13px;
+  padding: 0 17px;
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-pill);
-  color: var(--djv-color-text-muted);
+  color: var(--djv-color-text);
   background: var(--djv-color-surface);
+  font-size: var(--djv-font-size-label);
+  font-weight: 700;
+  box-shadow: var(--djv-shadow-card);
 }
 
 .filter-row button[aria-selected="true"] {
-  border-color: var(--djv-color-brand);
-  color: var(--djv-brand-contrast);
-  background: var(--djv-color-brand-soft);
-  font-weight: 600;
+  border-color: transparent;
+  color: var(--djv-color-on-brand);
+  background: var(--djv-color-brand);
 }
 
 .saved-list {

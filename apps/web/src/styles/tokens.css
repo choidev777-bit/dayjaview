@@ -35,8 +35,8 @@
   /* 트리맵 타일 채움 범위. 옅은 분홍에서 시작하면 흰 글씨가 묻히고 본문 색도 어중간해
      타일마다 글자색이 달라진다. 약한 칸도 흰 글씨가 읽히는 농도에서 시작해
      강한 칸으로 갈수록 더 짙어지게 둔다. */
-  --djv-color-tile-up-weak: #ff2d8e;
-  --djv-color-tile-up-strong: #b0005c;
+  --djv-color-tile-up-weak: #ff5aa8;
+  --djv-color-tile-up-strong: #8f0049;
   --djv-color-tile-down-weak: #3f6fd8;
   --djv-color-tile-down-strong: #1b3a86;
   /* 하락 칸 배경. up-soft와 같은 밝기로 맞춘 파랑이다. */

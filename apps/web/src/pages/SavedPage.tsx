@@ -206,7 +206,6 @@ export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
           <EmptyState
             title="저장한 항목이 없습니다"
             description="홈과 실시간에서 관심 있는 테마를 찾아 저장해 보세요."
-            action={<Link className="button button--secondary" to="/today">홈으로 이동</Link>}
           />
         ) : null}
         {resource.status === 'success' && resource.data.data.items.length ? (
