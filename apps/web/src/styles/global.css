@@ -316,9 +316,8 @@ a:focus-visible,
   width: 38px;
   height: 48px;
   margin-bottom: var(--djv-space-2);
-  background: var(--djv-color-logo);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .error-page h1 {
@@ -795,9 +794,8 @@ a:focus-visible,
   width: 24px;
   height: 29px;
   flex: 0 0 auto;
-  background: var(--djv-color-logo);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .home-title {
@@ -2004,9 +2002,8 @@ a:focus-visible,
   height: 16px;
   margin-right: 5px;
   vertical-align: -2px;
-  background: var(--djv-color-logo);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 /* 오늘 화면과 이 과거 사례를 잇는 칸. 겹치는 종목 목록은 다른 화면의 종목 줄과
@@ -2859,9 +2856,8 @@ a:focus-visible,
   display: block;
   width: 38px;
   height: 48px;
-  background: var(--djv-color-logo);
-  -webkit-mask: url("/dayjaview-mark.png") center / contain no-repeat;
-  mask: url("/dayjaview-mark.png") center / contain no-repeat;
+  /* 두 가지 색 로고라 단색 마스크로는 표현할 수 없다. 이미지 그대로 얹는다. */
+  background: url("/dayjaview-mark-color.png") center / contain no-repeat;
 }
 
 .login-card__copy {
