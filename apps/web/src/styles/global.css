@@ -1394,10 +1394,19 @@ a:focus-visible,
 
 /* 시안 `.detailTabs`. 밑줄 탭이 아니라 회색 트랙 위에서 선택된 쪽만 흰 종이로 올라오는
    폴더형이다. 사선은 `clip-path`로 내고, 겹치는 만큼 음수 margin으로 붙인다. */
+/* 탭은 아래 첫 카드와 붙어 한 덩어리로 읽혀야 한다. 위 모서리만 둥글린다. */
 .detail-tabs {
   display: flex;
+  overflow: hidden;
   height: 46px;
+  border-radius: var(--djv-radius-xl) var(--djv-radius-xl) 0 0;
   background: var(--djv-color-surface-muted);
+}
+
+/* 탭 바로 아래 오는 패널의 첫 카드는 위쪽을 각지게 둬서 탭에 이어 붙인다. */
+.detail-panel > section:first-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .detail-tabs button {
@@ -1433,21 +1442,24 @@ a:focus-visible,
   clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
 }
 
+/* 예전에는 큰 흰 카드 하나 안에 절을 회색 띠로 갈랐다. 바탕이 회색이 되면서
+   절마다 따로 카드를 세우고 카드 사이를 바탕색으로 띄우는 쪽이 더 잘 읽힌다.
+   바깥은 탭을 담는 틀로만 남기고 배경·테두리를 벗긴다. */
 .detail-card {
   margin: 0 var(--djv-space-3) var(--djv-space-3);
-  overflow: hidden;
-  border: 1px solid var(--djv-color-border);
   border-radius: 26px;
-  background: var(--djv-color-surface);
-  box-shadow: var(--djv-shadow-card);
+  background: transparent;
 }
 
-/* 탭 패널이 생기면서 section이 한 단계 안으로 들어갔다. 시안처럼 두 자리 모두에 같은 여백을 준다. */
-/* 절마다 아래 선을 긋지 않는다. 절 사이 회색 띠가 그 역할을 한다.
-   둘 다 두면 선이 세 줄로 겹쳐 보인다. */
+/* 탭이 붙는 첫 카드만 위쪽을 각지게 두고 나머지는 독립 카드다. */
 .detail-card > section,
 .detail-panel > section {
-  padding: var(--djv-space-6) var(--djv-space-4);
+  margin-bottom: var(--djv-space-3);
+  padding: var(--djv-space-5) var(--djv-space-4);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .detail-card h2 {
@@ -3004,24 +3016,8 @@ a:focus-visible,
 }
 
 
-/* 절 사이는 선 하나가 아니라 얇은 회색 띠로 가른다. 선 두 줄 사이를 회색으로 채워
-   `여기서 내용이 바뀐다`가 한눈에 보이게 한다. */
-.detail-card > section + section,
-.detail-panel > section + section {
-  /* 간격은 아래 띠가 담당한다. 여기서 또 주면 빈 공간이 두 배가 된다. */
-  margin-top: 0;
-}
-
-.detail-card > section + section::before,
-.detail-panel > section + section::before {
-  content: '';
-  display: block;
-  height: 8px;
-  margin: 0 calc(var(--djv-space-4) * -1) var(--djv-space-4);
-  border-top: 1px solid #0000000a;
-  border-bottom: 1px solid #0000000a;
-  background: var(--djv-color-surface-muted);
-}
+/* 절이 각자 카드가 되면서 사이를 가르던 회색 띠는 필요 없어졌다. 카드 사이의
+   바탕색이 그 역할을 한다. */
 
 /* 유사사례 카드: 화살표를 오른쪽 끝에 바짝 붙이고 결과도 오른쪽으로 민다. */
 .case-list a {
