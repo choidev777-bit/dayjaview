@@ -273,6 +273,18 @@ def test_plan_failure_never_carries_the_question_text() -> None:
     assert "publicReason" in payload and "reason" not in payload
 
 
+def test_market_index_name_resolves_to_the_market_sync_catalyst() -> None:
+    """지수 이름은 통제어휘 keywords에만 있어 질문에서 안 잡혔다. 이름으로 잇는다."""
+
+    plan = _plan("필라델피아 지수에 영향받는 테마들은 뭐야?")
+    assert plan.query_type is QueryType.CATALYST_THEME_REACTION
+    assert plan.catalyst_type is not None
+    assert plan.catalyst_type.type_id == "MARKET_SYNC"
+    # 주제어가 없으면 나스닥·코스피 동조 사건까지 통째로 세어 답이 그 지수 것이
+    # 아니게 된다.
+    assert plan.topic == "필라델피아"
+
+
 def test_theme_alias_resolves_fragments_but_never_guesses_ambiguous_ones() -> None:
     """"지능형로봇"처럼 테마명 일부만 쳐도 유일하면 알아듣는다."""
 

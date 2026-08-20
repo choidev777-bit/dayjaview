@@ -10,16 +10,6 @@ import type {
 } from '../domain/contracts';
 import { asRepositoryError } from '../domain/repositoryErrors';
 
-/** 계약서 4.0절 17종 중 지금 물어볼 수 있는 형태의 예시.
- *  첫 번째는 기술 발표 대본 9장의 질문과 같다. 발표자가 눌러 그 답을 띄운다.
- *  문장 틀은 서버 `apps/api/research.py`의 `EXAMPLE_QUESTIONS[THEME_HISTORY]`를 따른다.
- *  틀을 벗어나면 실서비스 해석기가 17종 중 어디에도 못 넣고 `질문 해석 실패`가 뜬다. */
-const EXAMPLES = [
-  '핵융합에너지 테마 과거에 뭘로 움직였어?',
-  '이번 주 시장 어땠어?',
-  '2차전지 테마에 어떤 종목이 있어?',
-] as const;
-
 const MAX_LENGTH = 300;
 
 function EvidenceList({ evidence }: { evidence: ResearchEvidence[] }) {
@@ -585,9 +575,6 @@ export function ResearchPage() {
   /** 빈 채로 눌렀을 때 버튼을 한 번 흔든다. */
   const [nudge, setNudge] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  /** 예시를 눌렀을 때 한 글자씩 치는 중인지. 치는 동안은 다른 예시를 막는다. */
-  const [typing, setTyping] = useState(false);
-  const typeTimer = useRef<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // 값을 코드로 넣으면 onInput이 걸리지 않아 높이가 그대로다. 값이 바뀔 때마다 다시 잰다.
@@ -597,13 +584,6 @@ export function ResearchPage() {
     field.style.height = 'auto';
     field.style.height = `${field.scrollHeight}px`;
   }, [question]);
-
-  useEffect(
-    () => () => {
-      if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
-    },
-    [],
-  );
 
   const ask = useCallback(
     async (text: string) => {
@@ -627,30 +607,6 @@ export function ResearchPage() {
       }
     },
     [repository],
-  );
-
-  /** 예시를 누르면 사람이 친 것처럼 입력창을 채운 뒤 스스로 보낸다.
-   *  발표 시연에서 버튼 한 번에 질문이 어디로 들어가는지 보이게 하려는 것이다. */
-  const typeAndAsk = useCallback(
-    (text: string) => {
-      if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
-      setTyping(true);
-      setQuestion('');
-      let index = 0;
-      typeTimer.current = window.setInterval(() => {
-        index += 1;
-        setQuestion(text.slice(0, index));
-        if (index < text.length) return;
-        if (typeTimer.current !== null) window.clearInterval(typeTimer.current);
-        typeTimer.current = null;
-        // 다 친 뒤 잠깐 둔다. 바로 보내면 무엇을 물었는지 읽을 틈이 없다.
-        window.setTimeout(() => {
-          setTyping(false);
-          void ask(text);
-        }, 360);
-      }, 45);
-    },
-    [ask],
   );
 
   return (
@@ -683,7 +639,6 @@ export function ResearchPage() {
             value={question}
             maxLength={MAX_LENGTH}
             rows={1}
-            placeholder="예: 어제 뭐가 올랐어?"
             onChange={(event) => setQuestion(event.target.value)}
           />
           {/* 비활성으로 두면 왜 못 누르는지 모른다. 늘 누를 수 있게 두고, 빈 채로 누르면
@@ -692,22 +647,11 @@ export function ResearchPage() {
             type="submit"
             className="research-form__submit"
             data-nudge={nudge ? 'true' : 'false'}
-            disabled={pending || typing}
+            disabled={pending}
           >
             {pending ? '찾는 중' : '질문하기'}
           </button>
         </form>
-
-        <p className="research-examples__title">이런 걸 물어볼 수 있어요</p>
-        <ul className="research-examples">
-          {EXAMPLES.map((example) => (
-            <li key={example}>
-              <button type="button" onClick={() => typeAndAsk(example)} disabled={typing || pending}>
-                {example}
-              </button>
-            </li>
-          ))}
-        </ul>
 
         <p className="section-note">
           보유한 과거 데이터 안에서만 답합니다. 근거 없는 답은 만들지 않습니다.

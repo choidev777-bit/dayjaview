@@ -149,9 +149,14 @@ class ProductReadRepository(Protocol):
         self,
         event_id: str,
         cursor: str | None,
+        limit: int = 20,
     ) -> ProductDocument | None: ...
 
-    def historical_event(self, event_id: str) -> ProductDocument | None: ...
+    def historical_event(
+        self,
+        event_id: str,
+        context_event_id: str | None = None,
+    ) -> ProductDocument | None: ...
 
 
 class EmptyProductReadRepository:
@@ -185,10 +190,15 @@ class EmptyProductReadRepository:
         self,
         event_id: str,
         cursor: str | None,
+        limit: int = 20,
     ) -> ProductDocument | None:
         return None
 
-    def historical_event(self, event_id: str) -> ProductDocument | None:
+    def historical_event(
+        self,
+        event_id: str,
+        context_event_id: str | None = None,
+    ) -> ProductDocument | None:
         return None
 
 
@@ -303,10 +313,15 @@ class InMemoryProductReadRepository(EmptyProductReadRepository):
         self,
         event_id: str,
         cursor: str | None,
+        limit: int = 20,
     ) -> ProductDocument | None:
         with self._lock:
             return self._similar.get((event_id, cursor))
 
-    def historical_event(self, event_id: str) -> ProductDocument | None:
+    def historical_event(
+        self,
+        event_id: str,
+        context_event_id: str | None = None,
+    ) -> ProductDocument | None:
         with self._lock:
             return self._historical.get(event_id)

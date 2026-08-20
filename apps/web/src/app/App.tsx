@@ -80,8 +80,7 @@ function AuthenticatedRoutes({ onLogout }: { onLogout: () => Promise<void> }) {
         <Route path="/saved" element={<SavedPage onLogout={onLogout} />} />
         <Route path="/research" element={<ResearchPage />} />
         <Route path="/themes/:themeId/events/:eventId" element={<ThemeDetailPage />} />
-        {/* 조건부 route. 게이트가 닫혀 있으면 각 화면이 제한 안내로 닫는다 (adaptation plan §5.2).
-            production adapter는 게이트를 GATED로 고정하므로 배포에서는 진입점도 화면도 열리지 않는다. */}
+        {/* 조건부 route. 그 테마의 과거 기록이 없으면 각 화면이 제한 안내로 닫는다. */}
         <Route path="/themes/:themeId/events/:eventId/similar" element={<SimilarEventsPage />} />
         <Route path="/events/:matchedEventId" element={<HistoricalEventPage />} />
         <Route path="/catalysts/:catalystId" element={<CatalystDetailPage />} />

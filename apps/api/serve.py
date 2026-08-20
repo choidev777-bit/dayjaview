@@ -32,6 +32,7 @@ from packages.adapters.kiwoom import (
 )
 from packages.catalyst import PostgresEvidenceRepository
 from packages.domain import DataStatus
+from packages.historical_matching import HistoricalCaseIndex
 from packages.events import (
     EventStore,
     InMemoryEventStore,
@@ -39,6 +40,8 @@ from packages.events import (
     PostgresEventStore,
 )
 from packages.identity import GoogleIdentity
+from packages.infostock import load_existing_collection
+from packages.ontology import SqliteOutcomeReader
 from packages.pipeline import (
     IntradayHistory,
     LiveMarketRunner,
@@ -70,7 +73,7 @@ from .config import ApiSettings
 from .fixture_universe import FIXTURE_MARKET_DATE, fixture_universe
 from .production import ProductionIdentityEnvironment, create_production_app
 from .realtime import RealtimeSnapshotHub
-from .snapshot_product import SnapshotProductReadRepository
+from .snapshot_product import HistoricalMatching, SnapshotProductReadRepository
 from .snapshot_targets import SnapshotTargetCatalog
 
 KIWOOM_FIXTURE_PATH = "tests/market-gateway/fixtures/kiwoom-market-v1.json"
@@ -85,7 +88,11 @@ KIWOOM_APP_KEY_ENV = "KIWOOM_APP_KEY"
 KIWOOM_APP_SECRET_ENV = "KIWOOM_APP_SECRET"
 KIWOOM_CONDITION_IDS_ENV = "KIWOOM_CONDITION_IDS"
 INTRADAY_HISTORY_ROOT_ENV = "INTRADAY_HISTORY_ROOT"
+# 운영은 이미 E-16 corpus를 이 이름으로 주입한다(deploy_production.sh). 새 이름을
+# 만들면 배포본에서 파일을 못 찾아 모든 사례가 `기록 없음`이 된다.
+PRICE_CORPUS_PATH_ENV = "PRICE_CORPUS_PATH"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
+DEFAULT_PRICE_CORPUS_PATH = "./research/data/daily_prices.sqlite"
 DEFAULT_INTRADAY_HISTORY_ROOT = "./data/intraday-history"
 PUBLISH_INTERVAL = timedelta(seconds=2)
 MARKET_OPEN_KST = time(9, 0)
@@ -211,6 +218,41 @@ def theme_universe_from_environment(
     )
 
 
+def historical_matching_from_environment(
+    environment: Mapping[str, str],
+    *,
+    universe: ThemeUniverse | None = None,
+) -> HistoricalMatching | None:
+    """수집본 history와 일봉 corpus로 과거 사건 색인을 만든다.
+
+    수집본이 없으면(연습용 2테마 모드) 비교할 과거가 없으므로 None이다. corpus
+    파일이 없으면 사례는 나오되 실제 등락이 `기록 없음`으로 남는다.
+    """
+
+    details = () if universe is None else universe.details
+    if not details:
+        if environment.get(THEME_UNIVERSE_MODE_ENV, "fixture").strip().lower() != (
+            "infostock"
+        ):
+            return None
+        details = load_existing_collection(
+            Path(
+                environment.get(
+                    INFOSTOCK_IMPORT_DIR_ENV, DEFAULT_INFOSTOCK_IMPORT_DIR
+                )
+            )
+        ).details
+    if not details:
+        return None
+    corpus = Path(
+        environment.get(PRICE_CORPUS_PATH_ENV, DEFAULT_PRICE_CORPUS_PATH)
+    )
+    outcomes = SqliteOutcomeReader(corpus) if corpus.is_file() else None
+    if outcomes is None:
+        LOG.warning("일봉 corpus가 없어 과거 사례 등락을 붙이지 못합니다: %s", corpus)
+    return HistoricalMatching(index=HistoricalCaseIndex(details), outcomes=outcomes)
+
+
 def create_pipeline_stores(
     environment: Mapping[str, str],
 ) -> tuple[EventStore, SnapshotRepository]:
@@ -241,6 +283,9 @@ def build_fixture_environment(
 
     effective_settings = settings or ApiSettings.from_environment(os.environ)
     effective_universe = universe or theme_universe_from_environment(os.environ)
+    historical = historical_matching_from_environment(
+        os.environ, universe=effective_universe
+    )
     events, gateway_status = replay_fixture_market_events()
     data_status = _to_data_status(gateway_status)
     event_store, snapshot_repository = create_pipeline_stores(os.environ)
@@ -258,6 +303,9 @@ def build_fixture_environment(
         stock_names=effective_universe.stock_names,
         event_store=event_store,
         snapshot_repository=snapshot_repository,
+        historical_theme_ids=(
+            frozenset() if historical is None else historical.index.theme_ids
+        ),
     )
     for event in events:
         update = _to_update(event)
@@ -272,8 +320,8 @@ def build_fixture_environment(
     )
     environment = create_fixture_app(
         settings=effective_settings,
-        product_repository=SnapshotProductReadRepository(pipeline),
-        target_catalog=SnapshotTargetCatalog(pipeline),
+        product_repository=SnapshotProductReadRepository(pipeline, historical),
+        target_catalog=SnapshotTargetCatalog(pipeline, historical),
     )
     publish_view_to_hub(environment.realtime_hub, view)
     environment.oauth_provider.register_code(
@@ -491,8 +539,10 @@ class LiveSessionController:
         hub: RealtimeSnapshotHub,
         handle: LivePipelineHandle,
         environment: Mapping[str, str] | None = None,
+        historical_theme_ids: frozenset[str] = frozenset(),
     ) -> None:
         env = dict(os.environ if environment is None else environment)
+        self._historical_theme_ids = historical_theme_ids
         mode = env.get(KIWOOM_MODE_ENV, "").strip().lower()
         if mode not in ("real", "demo"):
             raise ValueError(
@@ -572,6 +622,7 @@ class LiveSessionController:
             event_store=self._event_store,
             snapshot_repository=self._snapshot_repository,
             history=self._history,
+            historical_theme_ids=self._historical_theme_ids,
         )
         close_at = session_close_at(market_date, close_time=MARKET_CLOSE_KST)
         if datetime.now(UTC) >= close_at:
@@ -725,11 +776,12 @@ def serve_live_api(
         _load_env_file(Path(env_file))
     settings = ApiSettings.from_environment(os.environ)
     handle = LivePipelineHandle()
+    historical = historical_matching_from_environment(os.environ)
     environment = create_production_app(
         os.environ,
         settings=settings,
-        product_repository=SnapshotProductReadRepository(handle),
-        target_catalog=SnapshotTargetCatalog(handle),
+        product_repository=SnapshotProductReadRepository(handle, historical),
+        target_catalog=SnapshotTargetCatalog(handle, historical),
     )
     LOG.info(
         "identity 조립: google=%s store=%s redirect_uri=%s",
@@ -752,6 +804,9 @@ def serve_live_api(
         settings=settings,
         hub=environment.realtime_hub,
         handle=handle,
+        historical_theme_ids=(
+            frozenset() if historical is None else historical.index.theme_ids
+        ),
     )
     trading_day_loop = TradingDayLoop(
         build_session=controller.build_session,

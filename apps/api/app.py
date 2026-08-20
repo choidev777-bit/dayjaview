@@ -439,7 +439,7 @@ class IdentityApiApp:
         request_id: str,
         event_id: str,
     ) -> ApiResponse:
-        principal = self.identity_service.require_authenticated(
+        self.identity_service.require_authenticated(
             request.cookies.get(SESSION_COOKIE)
         )
         request.require_query_keys(
@@ -455,17 +455,11 @@ class IdentityApiApp:
             raise InvalidApiRequest("정렬 기준을 확인해 주세요.")
         cursor = self._query_cursor(request)
         limit = self._query_limit(request, default=20, maximum=100)
-        document = self._product_repository.similar_events(event_id, cursor)
+        document = self._product_repository.similar_events(event_id, cursor, limit)
         if document is None:
             if cursor is not None:
                 raise InvalidApiRequest("다음 페이지 정보를 확인해 주세요.")
             raise ProductResourceNotFound
-        availability = document.data.get("availability")
-        if availability == "AVAILABLE" and Role.HISTORICAL_PILOT not in principal.roles:
-            raise FeatureNotEntitled(
-                "과거 유사사례 기능을 사용할 권한이 없습니다.",
-                reason_code="HISTORICAL_PILOT_REQUIRED",
-            )
         return self._document_response(
             self._limit_page(document, limit=limit),
             request_id,
@@ -477,7 +471,7 @@ class IdentityApiApp:
         request_id: str,
         event_id: str,
     ) -> ApiResponse:
-        principal = self.identity_service.require_authenticated(
+        self.identity_service.require_authenticated(
             request.cookies.get(SESSION_COOKIE)
         )
         request.require_query_keys({"contextEventId"})
@@ -486,12 +480,9 @@ class IdentityApiApp:
         context_event_id = request.query_value("contextEventId")
         if context_event_id is not None:
             self._validate_identifier(context_event_id)
-        if Role.HISTORICAL_PILOT not in principal.roles:
-            raise FeatureNotEntitled(
-                "과거 이벤트 기능을 사용할 권한이 없습니다.",
-                reason_code="HISTORICAL_PILOT_REQUIRED",
-            )
-        document = self._product_repository.historical_event(event_id)
+        document = self._product_repository.historical_event(
+            event_id, context_event_id
+        )
         if document is None:
             raise ProductResourceNotFound
         return self._document_response(document, request_id)

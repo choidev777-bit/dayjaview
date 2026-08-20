@@ -947,7 +947,12 @@ _DIRECT_EVENT_MARKERS = ("직접", "본인 사건", "주체인 사건", "자체 
 _CONTINUATION_MARKERS = ("처음이야", "처음 나온", "처음인", "재부각", "반복된", "다시 나온")
 _CERTAINTY_MARKERS = ("기대감", "확정", "기대야", "기대 건")
 _FREQUENCY_MARKERS = ("몇 번", "몇 건", "건수", "빈도")
-_REACTION_MARKERS = ("반응", "움직였", "움직인 테마")
+_REACTION_MARKERS = ("반응", "움직였", "움직인 테마", "영향")
+# 지수 이름은 통제어휘의 keywords에만 있어 질문에서는 안 잡혔다. keywords를 통째로
+# 질문 매칭에 쓰면 "주가"·"시장" 같은 낱말이 아무 질문에나 걸리므로 지수 이름만
+# 따로 둔다. 목록은 transform.py의 _MARKET_INDEX_MARKERS를 따르되, 사건 원문에
+# 그대로 나오지 않는 "반도체 지수"·"증시"는 뺀다 — 주제어로 쓸 수 없다.
+_MARKET_INDEX_NAMES = ("필라델피아", "나스닥", "다우", "코스피", "코스닥")
 _THEME_FREQUENCY_MARKERS = (
     "자주 나온", "많이 등장", "빈도 높은", "자주 부각", "자주 등장", "많이 나온",
 )
@@ -1149,12 +1154,28 @@ def plan_question(
         period_slot.end if period_slot is not None else None
     )
 
+    # "필라델피아 지수"를 소재 "시장·주가 동조"로 잇는다. 소재 이름을 직접 친
+    # 질문이 이미 있으면 그쪽이 우선이다.
+    index_name = (
+        None
+        if catalyst_matches
+        else next((name for name in _MARKET_INDEX_NAMES if name in text), None)
+    )
+    market_sync = (
+        next(
+            (item for item in catalog.catalyst_types if item.type_id == "MARKET_SYNC"),
+            None,
+        )
+        if index_name is not None
+        else None
+    )
+
     direction = _direction(text)
     query_type = _classify(
         text,
         has_company=bool(company_matches or stock_codes),
         theme_count=len(theme_matches),
-        has_catalyst=bool(catalyst_matches),
+        has_catalyst=bool(catalyst_matches) or market_sync is not None,
         has_date=date_slot is not None,
         has_period=period_slot is not None,
         has_amount=amount is not None,
@@ -1201,10 +1222,20 @@ def plan_question(
             matched_text=catalyst_matches[0].text,
         )
         if catalyst_matches
+        else CatalystTypeRef(
+            type_id=market_sync.type_id,
+            name_ko=market_sync.name_ko,
+            matched_text=index_name or "",
+        )
+        if market_sync is not None and index_name is not None
         else None
     )
 
     topic: str | None = None
+    # 지수 이름을 주제어로 남긴다. 안 남기면 "필라델피아 지수"를 물어도 나스닥·
+    # 코스피 동조 사건까지 통째로 세어 답이 그 지수 것이 아니게 된다.
+    if index_name is not None:
+        topic = index_name
     if catalyst_matches:
         matched_texts = frozenset(
             item.text

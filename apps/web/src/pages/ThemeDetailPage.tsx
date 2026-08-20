@@ -337,7 +337,25 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
   if (resource.status !== 'success') return null;
 
   const data = resource.data.data;
-  if (data.availability !== 'AVAILABLE') return null;
+  // 여기서 null을 돌려주면 DAY JA VIEW 탭이 통째로 빈 화면이 된다. 오늘 소재를
+  // 분류하지 못했거나(availability != AVAILABLE) 닮은 과거가 없을 때도 왜
+  // 비었는지 말한다.
+  if (data.availability !== 'AVAILABLE') {
+    return (
+      <EmptyState
+        title="오늘 소재로는 과거를 찾지 못했어요"
+        description="오늘 상승 이유가 아직 정리되지 않았습니다. 근거가 확인되면 비슷했던 과거를 붙여 보여드립니다."
+      />
+    );
+  }
+  if (!data.items.length) {
+    return (
+      <EmptyState
+        title="비슷했던 과거가 없어요"
+        description="이 테마의 과거 기록 중 오늘과 같은 소재로 움직인 날이 없습니다."
+      />
+    );
+  }
 
   const total = data.summary[0]?.eligibleCount ?? data.items.length;
 
@@ -350,8 +368,8 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
         {/* `이벤트 스터디`는 버튼처럼 보여서 제목 옆에서 내려 설명 문장에 녹인다.
             분모가 되는 건수는 표본 크기라 굵게 둔다 (screen_spec 8.8 표본 부족 경고). */}
         <p className="section-note">
-          비슷했던 <strong>과거 {total.toLocaleString('ko-KR')}건</strong>에서 당시 주도 종목이 어떻게
-          움직였는지 모아 중앙값으로 봤어요.
+          비슷했던 <strong>과거 {total.toLocaleString('ko-KR')}건</strong>에서 당시 그 테마에 속했던
+          종목들이 어떻게 움직였는지 모아 중앙값으로 봤어요.
         </p>
         {/* 칸 안은 값만 둔다. `중앙`과 기간별 분모는 아래 계산 기준에서 밝힌다
             (screen_spec 8.8 `대표를 사용한다면 계산 기준에서 중앙값임을 명시한다`). */}

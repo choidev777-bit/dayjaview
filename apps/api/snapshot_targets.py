@@ -13,6 +13,8 @@ from typing import Protocol, cast
 from packages.identity import SavedCurrentState, SavedType, TargetRecord
 from packages.realtime import ReadSnapshot
 
+from .snapshot_product import HistoricalMatching
+
 
 class TargetSource(Protocol):
     """MarketDataPipeline이 이미 만족하는 읽기 전용 표면."""
@@ -32,8 +34,13 @@ class TargetSource(Protocol):
 
 
 class SnapshotTargetCatalog:
-    def __init__(self, source: TargetSource) -> None:
+    def __init__(
+        self,
+        source: TargetSource,
+        historical: HistoricalMatching | None = None,
+    ) -> None:
         self._source = source
+        self._historical = historical
 
     def get_target(
         self,
@@ -64,13 +71,27 @@ class SnapshotTargetCatalog:
 
         detail = self._source.theme_detail(event_id)
         if detail is None:
-            return None
+            return self._historical_event(event_id)
         classification = cast("dict[str, object]", detail["classification"])
         return TargetRecord(
             saved_type=SavedType.EVENT,
             target_id=event_id,
             display_name=str(classification["displayName"]),
             current_state=self._current_state(detail),
+        )
+
+    def _historical_event(self, event_id: str) -> TargetRecord | None:
+        """과거 사건도 저장 대상이다. 오늘 등락이 없으므로 현재 상태는 비운다."""
+
+        if self._historical is None:
+            return None
+        case = self._historical.index.case(event_id)
+        if case is None:
+            return None
+        return TargetRecord(
+            saved_type=SavedType.EVENT,
+            target_id=event_id,
+            display_name=case.catalyst_summary,
         )
 
     def _stock(self, stock_id: str) -> TargetRecord | None:
