@@ -70,6 +70,10 @@ _SAVED_PATH = re.compile(r"^/v1/me/saved/(themes|stocks|events)/([^/]+)$")
 _THEME_EVENT_PATH = re.compile(r"^/v1/themes/([^/]+)/events/([^/]+)$")
 _EVENT_EVIDENCE_PATH = re.compile(r"^/v1/events/([^/]+)/evidence$")
 _SIMILAR_EVENTS_PATH = re.compile(r"^/v1/events/([^/]+)/similar-events$")
+_CATALYST_TOP3_PATH = re.compile(
+    r"^/v1/themes/([^/]+)/events/([^/]+)/catalysts$"
+)
+_CATALYST_DETAIL_PATH = re.compile(r"^/v1/catalysts/([^/]+)$")
 _HISTORICAL_EVENT_PATH = re.compile(r"^/v1/events/([^/]+)$")
 _OPERATOR_JOB_PATH = re.compile(r"^/v1/operator/jobs/([^/]+)(?:/(retry|resume))?$")
 _OPERATOR_REVIEW_PATH = re.compile(r"^/v1/operator/reviews/([^/]+)(?:/(resolve))?$")
@@ -177,6 +181,17 @@ class IdentityApiApp:
         match = _SIMILAR_EVENTS_PATH.fullmatch(request.path)
         if match is not None and request.method == "GET":
             return self._similar_events(request, request_id, unquote(match.group(1)))
+        match = _CATALYST_TOP3_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._catalyst_top3(
+                request,
+                request_id,
+                unquote(match.group(1)),
+                unquote(match.group(2)),
+            )
+        match = _CATALYST_DETAIL_PATH.fullmatch(request.path)
+        if match is not None and request.method == "GET":
+            return self._catalyst_detail(request, request_id, unquote(match.group(1)))
         match = _HISTORICAL_EVENT_PATH.fullmatch(request.path)
         if match is not None and request.method == "GET":
             return self._historical_event(
@@ -464,6 +479,42 @@ class IdentityApiApp:
             self._limit_page(document, limit=limit),
             request_id,
         )
+
+    def _catalyst_top3(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        theme_id: str,
+        event_id: str,
+    ) -> ApiResponse:
+        self.identity_service.require_authenticated(
+            request.cookies.get(SESSION_COOKIE)
+        )
+        request.require_query_keys(set())
+        request.require_empty_body()
+        self._validate_identifier(theme_id)
+        self._validate_identifier(event_id)
+        document = self._product_repository.catalyst_top3(theme_id, event_id)
+        if document is None:
+            raise ProductResourceNotFound
+        return self._document_response(document, request_id)
+
+    def _catalyst_detail(
+        self,
+        request: ApiRequest,
+        request_id: str,
+        catalyst_id: str,
+    ) -> ApiResponse:
+        self.identity_service.require_authenticated(
+            request.cookies.get(SESSION_COOKIE)
+        )
+        request.require_query_keys(set())
+        request.require_empty_body()
+        self._validate_identifier(catalyst_id)
+        document = self._product_repository.catalyst_detail(catalyst_id)
+        if document is None:
+            raise ProductResourceNotFound
+        return self._document_response(document, request_id)
 
     def _historical_event(
         self,

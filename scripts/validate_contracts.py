@@ -46,6 +46,8 @@ REQUIRED_HTTP_SURFACE = {
     "/v1/me/saved/events/{eventId}": {"put", "delete"},
     "/v1/me": {"delete"},
     "/v1/events/{eventId}/similar-events": {"get"},
+    "/v1/themes/{themeId}/events/{eventId}/catalysts": {"get"},
+    "/v1/catalysts/{catalystId}": {"get"},
     "/v1/events/{eventId}": {"get"},
     "/v1/operator/status": {"get"},
     "/v1/operator/jobs": {"get"},

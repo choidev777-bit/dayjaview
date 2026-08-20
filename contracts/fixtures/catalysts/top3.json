@@ -1,0 +1,46 @@
+{
+  "data": {
+    "themeId": "thm_12",
+    "eventId": "evt_current",
+    "items": [
+      {
+        "catalystId": "ctl_thm_12_PRODUCT_TECH",
+        "catalystName": "신제품·기술",
+        "eligibleCount": 33,
+        "observedCount": 33,
+        "medianSameDayReturn": 0.039005,
+        "matchesToday": false
+      },
+      {
+        "catalystId": "ctl_thm_12_ORDER_CONTRACT",
+        "catalystName": "수주·공급계약",
+        "eligibleCount": 29,
+        "observedCount": 29,
+        "medianSameDayReturn": 0.037391,
+        "matchesToday": false
+      },
+      {
+        "catalystId": "ctl_thm_12_INVESTMENT_CAPACITY",
+        "catalystName": "투자·증설",
+        "eligibleCount": 67,
+        "observedCount": 66,
+        "medianSameDayReturn": 0.036291,
+        "matchesToday": true
+      }
+    ],
+    "qualityNote": null
+  },
+  "meta": {
+    "requestId": "req_catalyst_top3",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": "catalyst-transform/1.2.0+vocab/1.2.0",
+      "retrievalArtifactVersion": "historical-match/1.0.0",
+      "calculationVersion": null,
+      "rankingModelVersion": null,
+      "membershipVersion": null
+    }
+  }
+}

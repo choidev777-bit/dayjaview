@@ -184,6 +184,14 @@
     {
       "path": "research/failure.quality-not-verified.json",
       "schema": "ResearchAnswerResponse"
+    },
+    {
+      "path": "catalysts/top3.json",
+      "schema": "CatalystTop3Response"
+    },
+    {
+      "path": "catalysts/detail.json",
+      "schema": "CatalystDetailResponse"
     }
   ],
   "invariantSeries": [

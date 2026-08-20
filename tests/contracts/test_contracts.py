@@ -26,9 +26,9 @@ def read_fixture(relative_path: str) -> dict:
 def test_complete_contract_suite_passes() -> None:
     counts = run_validation()
 
-    assert counts["http_operations"] == 31
+    assert counts["http_operations"] == 33
     assert counts["websocket_messages"] == 9
-    assert counts["fixtures"] == 46
+    assert counts["fixtures"] == 48
     assert counts["prose_json_examples"] >= 20
 
 

@@ -496,6 +496,57 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+  /v1/themes/{themeId}/events/{eventId}/catalysts:
+    get:
+      tags: [Historical]
+      operationId: getCatalystTop3
+      summary: 이 테마가 과거 크게 반응한 소재 유형 최대 3개를 조회한다
+      description: 순위는 소재 유형별 당일 반응 중앙값이며 미래 예측이 아니다.
+      parameters:
+        - $ref: "#/components/parameters/ThemeId"
+        - $ref: "#/components/parameters/EventId"
+      x-stage0-fixtures:
+        - catalysts/top3.json
+      responses:
+        "200":
+          description: 소재 유형 최대 3개와 유효 표본
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/CatalystTop3Response"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/catalysts/{catalystId}:
+    get:
+      tags: [Historical]
+      operationId: getCatalystDetail
+      summary: 소재 유형 하나의 과거 사건과 반응을 조회한다
+      parameters:
+        - name: catalystId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      x-stage0-fixtures:
+        - catalysts/detail.json
+      responses:
+        "200":
+          description: 소재 유형 상세
+          content:
+            application/json:
+              schema:
+                $ref: "./schemas/stage0.schema.json#/$defs/CatalystDetailResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /v1/events/{eventId}:
     get:
       tags: [Historical]

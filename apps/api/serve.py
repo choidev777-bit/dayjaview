@@ -32,7 +32,10 @@ from packages.adapters.kiwoom import (
 )
 from packages.catalyst import PostgresEvidenceRepository
 from packages.domain import DataStatus
-from packages.historical_matching import HistoricalCaseIndex
+from packages.historical_matching import (
+    CatalystGroupIndex,
+    HistoricalCaseIndex,
+)
 from packages.events import (
     EventStore,
     InMemoryEventStore,
@@ -250,7 +253,12 @@ def historical_matching_from_environment(
     outcomes = SqliteOutcomeReader(corpus) if corpus.is_file() else None
     if outcomes is None:
         LOG.warning("일봉 corpus가 없어 과거 사례 등락을 붙이지 못합니다: %s", corpus)
-    return HistoricalMatching(index=HistoricalCaseIndex(details), outcomes=outcomes)
+    index = HistoricalCaseIndex(details)
+    return HistoricalMatching(
+        index=index,
+        outcomes=outcomes,
+        groups=CatalystGroupIndex(index, outcomes),
+    )
 
 
 def create_pipeline_stores(

@@ -158,6 +158,14 @@ class ProductReadRepository(Protocol):
         context_event_id: str | None = None,
     ) -> ProductDocument | None: ...
 
+    def catalyst_top3(
+        self,
+        theme_id: str,
+        event_id: str,
+    ) -> ProductDocument | None: ...
+
+    def catalyst_detail(self, catalyst_id: str) -> ProductDocument | None: ...
+
 
 class EmptyProductReadRepository:
     def market_session(self) -> ProductDocument | None:
@@ -201,6 +209,16 @@ class EmptyProductReadRepository:
     ) -> ProductDocument | None:
         return None
 
+    def catalyst_top3(
+        self,
+        theme_id: str,
+        event_id: str,
+    ) -> ProductDocument | None:
+        return None
+
+    def catalyst_detail(self, catalyst_id: str) -> ProductDocument | None:
+        return None
+
 
 class InMemoryProductReadRepository(EmptyProductReadRepository):
     """Deterministic fixture read repository; it never calls a live source."""
@@ -214,6 +232,8 @@ class InMemoryProductReadRepository(EmptyProductReadRepository):
         self._evidence: dict[tuple[str, str | None], ProductDocument] = {}
         self._similar: dict[tuple[str, str | None], ProductDocument] = {}
         self._historical: dict[str, ProductDocument] = {}
+        self._catalyst_top3: dict[tuple[str, str], ProductDocument] = {}
+        self._catalyst_detail: dict[str, ProductDocument] = {}
         self._lock = RLock()
 
     def put_market_session(self, document: ProductDocument) -> None:
@@ -274,6 +294,23 @@ class InMemoryProductReadRepository(EmptyProductReadRepository):
         with self._lock:
             self._historical[event_id] = document
 
+    def put_catalyst_top3(
+        self,
+        theme_id: str,
+        event_id: str,
+        document: ProductDocument,
+    ) -> None:
+        with self._lock:
+            self._catalyst_top3[(theme_id, event_id)] = document
+
+    def put_catalyst_detail(
+        self,
+        catalyst_id: str,
+        document: ProductDocument,
+    ) -> None:
+        with self._lock:
+            self._catalyst_detail[catalyst_id] = document
+
     def market_session(self) -> ProductDocument | None:
         with self._lock:
             return self._market_session
@@ -325,3 +362,15 @@ class InMemoryProductReadRepository(EmptyProductReadRepository):
     ) -> ProductDocument | None:
         with self._lock:
             return self._historical.get(event_id)
+
+    def catalyst_top3(
+        self,
+        theme_id: str,
+        event_id: str,
+    ) -> ProductDocument | None:
+        with self._lock:
+            return self._catalyst_top3.get((theme_id, event_id))
+
+    def catalyst_detail(self, catalyst_id: str) -> ProductDocument | None:
+        with self._lock:
+            return self._catalyst_detail.get(catalyst_id)

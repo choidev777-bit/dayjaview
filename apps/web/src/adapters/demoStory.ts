@@ -53,6 +53,13 @@ interface LegacyCatalyst {
   catalystId: string;
   catalystName: string;
   matchesToday: boolean;
+  /** 사건 당일 반응. TOP3 순위의 기준이라 T+1과 따로 둔다. */
+  sameDay: {
+    eligibleCount: number;
+    observedCount: number;
+    positiveCount: number;
+    medianReturn: number | null;
+  };
   horizons: Array<{
     horizonTradingDays: number;
     eligibleCount: number;
@@ -390,8 +397,8 @@ export const demoHistoricalEvents: Record<string, HistoricalEventResponse> = Obj
 ]);
 
 /**
- * 소재 유형. 온톨로지 라벨(E-17)은 아직 없어서, 그 테마의 과거 사건에 실제로 붙어 있던
- * 키워드를 유형 대신 쓴다. 건수·중앙값은 그 키워드가 붙은 사건만 세어 계산한 값이다.
+ * 소재 유형. E-17 통제어휘 28종으로 그 테마의 과거 사건을 분류하고, 사건마다 primary
+ * 유형 하나에만 넣어 센다. 순위 기준은 당시 구성종목 동일가중 당일 반응 중앙값이다.
  */
 function horizonRows(catalyst: LegacyCatalyst) {
   return catalyst.horizons.map((row) => ({
@@ -413,12 +420,12 @@ export const demoCatalystTop3ByTheme: Record<string, CatalystTop3Response> = Obj
         items: theme.catalysts.map((catalyst) => ({
           catalystId: catalyst.catalystId,
           catalystName: catalyst.catalystName,
-          eligibleCount: catalyst.horizons[0]?.eligibleCount ?? 0,
-          observedCount: catalyst.horizons[0]?.observedCount ?? 0,
-          medianSameDayReturn: catalyst.horizons[0]?.medianReturn ?? null,
+          eligibleCount: catalyst.sameDay.eligibleCount,
+          observedCount: catalyst.sameDay.observedCount,
+          medianSameDayReturn: catalyst.sameDay.medianReturn,
           matchesToday: catalyst.matchesToday,
         })),
-        qualityNote: '소재 유형은 온톨로지 검증 전이라 사건에 기록된 키워드로 대신합니다.',
+        qualityNote: null,
       },
       meta,
     },
@@ -444,7 +451,10 @@ export const demoCatalystDetails: Record<string, CatalystDetailResponse> = Objec
             themeDisplayName: theme.displayName,
             catalystName: catalyst.catalystName,
             availability: 'AVAILABLE' as const,
-            sameDay: rows[0],
+            sameDay: {
+              horizonTradingDays: 1 as HistoricalHorizon,
+              ...catalyst.sameDay,
+            },
             horizons: rows,
             events: catalyst.events.map((event) => ({
               matchedEventId: event.matchedEventId,
@@ -453,7 +463,7 @@ export const demoCatalystDetails: Record<string, CatalystDetailResponse> = Objec
               sameDayReturn: event.sameDayReturn,
               leaderName: event.leaderName,
             })),
-            qualityNote: '소재 유형은 온톨로지 검증 전이라 사건에 기록된 키워드로 대신합니다.',
+            qualityNote: null,
           },
           meta,
         },

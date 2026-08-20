@@ -491,21 +491,255 @@ def _timestamp(value: datetime) -> str:
     )
 
 
+# ------------------------------------------------- 과거 테마 반응 소재 TOP3
+
+# 표본이 1~2건이면 한 번의 급등이 순위를 지배한다(기능 정의서 12.1 초기값 5).
+MIN_GROUP_EVENTS = 5
+TOP_GROUPS = 3
+
+
+class SameDaySource(Protocol):
+    """당일 반응 읽기 표면. `SqliteOutcomeReader`가 만족한다."""
+
+    def basket_daily_return(
+        self, stock_codes: Sequence[str], on: date
+    ) -> Decimal | None: ...
+
+
+@dataclass(frozen=True, slots=True)
+class CatalystGroup:
+    """한 테마의 소재 유형 하나와 그 유형의 과거 반응."""
+
+    catalyst_id: str
+    theme_id: str
+    type_id: str
+    name_ko: str
+    eligible_count: int
+    observed_count: int
+    positive_count: int
+    median_same_day: float | None
+    p25_same_day: float | None
+    events: tuple[tuple[PastCase, float | None], ...]
+
+
+def _percentile(values: Sequence[float], fraction: float) -> float | None:
+    """정렬된 표본의 백분위. 보간 없이 가장 가까운 아래 값을 쓴다."""
+
+    if not values:
+        return None
+    ordered = sorted(values)
+    position = min(int(fraction * len(ordered)), len(ordered) - 1)
+    return ordered[position]
+
+
+def _catalyst_id(theme_id: str, type_id: str) -> str:
+    return f"ctl_{theme_id}_{type_id}"
+
+
+def split_catalyst_id(catalyst_id: str) -> tuple[str, str] | None:
+    """`ctl_thm_12_MARKET_SYNC`를 (`thm_12`, `MARKET_SYNC`)로 되돌린다."""
+
+    if not catalyst_id.startswith("ctl_thm_"):
+        return None
+    number, separator, type_id = catalyst_id[len("ctl_thm_") :].partition("_")
+    if not separator or not number.isdigit() or type_id not in _TYPE_NAMES:
+        return None
+    return f"thm_{number}", type_id
+
+
+class CatalystGroupIndex:
+    """테마별 소재 유형 집계. 당일 반응 조회가 비싸 테마마다 한 번만 한다."""
+
+    def __init__(
+        self,
+        index: HistoricalCaseIndex,
+        same_day: SameDaySource | None = None,
+    ) -> None:
+        self._index = index
+        self._same_day = same_day
+        self._groups: dict[str, tuple[CatalystGroup, ...]] = {}
+
+    def groups(self, theme_id: str) -> tuple[CatalystGroup, ...]:
+        """대표 반응 내림차순 전체 유형. 최소 표본을 못 채운 유형은 빠진다."""
+
+        cached = self._groups.get(theme_id)
+        if cached is not None:
+            return cached
+        if self._same_day is None:
+            self._groups[theme_id] = ()
+            return ()
+        buckets: dict[str, list[tuple[PastCase, float | None]]] = {}
+        for case in self._index.cases(theme_id):
+            # 한 사건이 여러 유형의 표본을 동시에 부풀리지 않도록 primary만 센다
+            # (기능 정의서 6.2).
+            codes = [code for code, _ in case.basket]
+            value = self._same_day.basket_daily_return(codes, case.market_date)
+            buckets.setdefault(case.primary_type_id, []).append(
+                (case, None if value is None else round(float(value) / 100.0, 6))
+            )
+        built: list[CatalystGroup] = []
+        for type_id, rows in buckets.items():
+            observed = [value for _, value in rows if value is not None]
+            if len(observed) < MIN_GROUP_EVENTS:
+                continue
+            built.append(
+                CatalystGroup(
+                    catalyst_id=_catalyst_id(theme_id, type_id),
+                    theme_id=theme_id,
+                    type_id=type_id,
+                    name_ko=_TYPE_NAMES[type_id],
+                    eligible_count=len(rows),
+                    observed_count=len(observed),
+                    positive_count=sum(1 for value in observed if value > 0),
+                    median_same_day=round(median(observed), 6),
+                    p25_same_day=_percentile(observed, 0.25),
+                    events=tuple(
+                        sorted(rows, key=lambda row: row[0].market_date, reverse=True)
+                    ),
+                )
+            )
+        # 1차 중앙값, 동률이면 25백분위, 그다음 사건 수 (기능 정의서 12.2).
+        built.sort(
+            key=lambda group: (
+                -(group.median_same_day or 0.0),
+                -(group.p25_same_day or 0.0),
+                -group.observed_count,
+                group.type_id,
+            )
+        )
+        result = tuple(built)
+        self._groups[theme_id] = result
+        return result
+
+    def group(self, catalyst_id: str) -> CatalystGroup | None:
+        parsed = split_catalyst_id(catalyst_id)
+        if parsed is None:
+            return None
+        theme_id, type_id = parsed
+        for group in self.groups(theme_id):
+            if group.type_id == type_id:
+                return group
+        return None
+
+
+def catalyst_top3_data(
+    *,
+    theme_id: str,
+    event_id: str,
+    today: TodayContext | None,
+    groups: CatalystGroupIndex,
+) -> dict[str, object]:
+    """`과거 {테마} 반응 TOP3` 응답 data. 세 개가 안 되면 채우지 않는다."""
+
+    ranked = groups.groups(theme_id)[:TOP_GROUPS]
+    today_types: frozenset[str] = (
+        frozenset() if today is None else today.type_ids
+    )
+    return {
+        "themeId": theme_id,
+        "eventId": event_id,
+        "items": [
+            {
+                "catalystId": group.catalyst_id,
+                "catalystName": group.name_ko,
+                "eligibleCount": group.eligible_count,
+                "observedCount": group.observed_count,
+                "medianSameDayReturn": group.median_same_day,
+                # 오늘과 같은 유형이라는 표시일 뿐 같은 수익률을 뜻하지 않는다.
+                "matchesToday": group.type_id in today_types,
+            }
+            for group in ranked
+        ],
+        "qualityNote": (
+            None if ranked else "표본이 모자라 과거 반응을 요약하지 못했습니다."
+        ),
+    }
+
+
+def catalyst_detail_data(
+    *,
+    group: CatalystGroup,
+    theme_display_name: str,
+    outcomes: OutcomeSource | None,
+    limit: int = MAX_ITEMS,
+) -> dict[str, object]:
+    """소재 유형 하나의 상세. 당일 반응과 T+1·5·20을 함께 낸다."""
+
+    # 요약은 유형 전체 표본으로 낸다. 목록만 잘라 놓고 분모까지 잘리면 TOP3에
+    # 적힌 중앙값과 상세의 중앙값이 어긋난다.
+    listed = group.events[:limit]
+    per_case = [(case, _outcomes(case, outcomes)) for case, _ in group.events]
+    horizon_rows: list[dict[str, object]] = []
+    for horizon in HORIZONS:
+        observed: list[float] = []
+        for _, rows in per_case:
+            for row in rows:
+                if (
+                    row["horizonTradingDays"] == horizon
+                    and row["status"] == "OBSERVED"
+                    and isinstance(row["return"], float)
+                ):
+                    observed.append(row["return"])
+        horizon_rows.append(
+            {
+                "horizonTradingDays": horizon,
+                "eligibleCount": group.eligible_count,
+                "observedCount": len(observed),
+                "positiveCount": sum(1 for value in observed if value > 0),
+                "medianReturn": None if not observed else round(median(observed), 6),
+            }
+        )
+    return {
+        "catalystId": group.catalyst_id,
+        "themeId": group.theme_id,
+        "themeDisplayName": theme_display_name,
+        "catalystName": group.name_ko,
+        "availability": "AVAILABLE",
+        "sameDay": {
+            "horizonTradingDays": 1,
+            "eligibleCount": group.eligible_count,
+            "observedCount": group.observed_count,
+            "positiveCount": group.positive_count,
+            "medianReturn": group.median_same_day,
+        },
+        "horizons": horizon_rows,
+        "events": [
+            {
+                "matchedEventId": case.matched_event_id,
+                "marketDate": case.market_date.isoformat(),
+                "normalizedCatalystSummary": case.catalyst_summary,
+                "sameDayReturn": value,
+                "leaderName": case.leaders[0][1] if case.leaders else None,
+            }
+            for case, value in listed
+        ],
+        "qualityNote": None,
+    }
+
+
 ONTOLOGY_VERSION = f"{TRANSFORM_VERSION}+vocab/{VOCABULARY_VERSION}"
 
 __all__ = [
     "HORIZONS",
     "MATCH_MODEL_VERSION",
     "MAX_ITEMS",
+    "MIN_GROUP_EVENTS",
     "MIN_SCORE",
     "ONTOLOGY_VERSION",
+    "TOP_GROUPS",
+    "CatalystGroup",
+    "CatalystGroupIndex",
     "HistoricalCaseIndex",
     "OutcomeSource",
+    "SameDaySource",
     "PastCase",
     "ScoredCase",
     "TodayContext",
+    "catalyst_detail_data",
+    "catalyst_top3_data",
     "historical_event_data",
     "rank_cases",
     "similar_events_data",
+    "split_catalyst_id",
     "today_context",
 ]

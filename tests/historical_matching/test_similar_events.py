@@ -5,7 +5,10 @@ from decimal import Decimal
 from typing import Mapping, Sequence
 
 from packages.historical_matching import (
+    CatalystGroupIndex,
     HistoricalCaseIndex,
+    catalyst_detail_data,
+    catalyst_top3_data,
     historical_event_data,
     similar_events_data,
     today_context,
@@ -258,3 +261,89 @@ def test_historical_event_detail_marks_the_basket_and_the_exclusion() -> None:
     # 당시 주도주로 기록된 종목만 LEADER다. 나머지 당시 구성종목은 RELATED로 남는다.
     assert [leader["role"] for leader in detail["leaders"]] == ["LEADER", "RELATED"]
     assert detail["similarityReasons"] is not None
+
+
+class _StubSameDay:
+    """사건일마다 정해진 당일 반응(%)을 주는 corpus 대역."""
+
+    def __init__(self, values: Mapping[date, Decimal | None]) -> None:
+        self._values = values
+
+    def basket_daily_return(
+        self, stock_codes: Sequence[str], on: date
+    ) -> Decimal | None:
+        return None if not stock_codes else self._values.get(on)
+
+
+def _group_index(same_day: Mapping[date, Decimal | None]) -> CatalystGroupIndex:
+    """같은 유형 6건과 표본 부족 유형 2건을 가진 테마."""
+
+    history = tuple(
+        _history(
+            order,
+            date(2015 + order, 3, 16),
+            "필라델피아 반도체지수 급등 및 인텔 대규모 투자 계획 발표 등에 상승",
+        )
+        for order in range(6)
+    ) + tuple(
+        _history(
+            10 + order,
+            date(2015 + order, 7, 1),
+            "대표이사 횡령 혐의 검찰 수사 소식에 하락",
+        )
+        for order in range(2)
+    )
+    return CatalystGroupIndex(
+        HistoricalCaseIndex((_detail(history),)), _StubSameDay(same_day)
+    )
+
+
+_SAME_DAY = {date(2015 + order, 3, 16): Decimal(order + 1) for order in range(6)}
+
+
+def test_only_types_with_enough_samples_enter_the_ranking() -> None:
+    groups = _group_index(_SAME_DAY)
+    data = catalyst_top3_data(
+        theme_id="thm_12",
+        event_id="evt_today",
+        today=today_context(TODAY),
+        groups=groups,
+    )
+
+    # 표본 2건짜리 `소송·수사·논란`은 한 번의 급등이 순위를 지배하므로 빠진다.
+    assert [item["catalystName"] for item in data["items"]] == ["시장·주가 동조"]
+    item = data["items"][0]
+    assert item["observedCount"] == 6
+    assert item["medianSameDayReturn"] == 0.035
+    assert item["matchesToday"] is True
+
+
+def test_empty_ranking_says_why_instead_of_padding() -> None:
+    data = catalyst_top3_data(
+        theme_id="thm_12",
+        event_id="evt_today",
+        today=today_context(TODAY),
+        groups=_group_index({}),
+    )
+
+    assert data["items"] == []
+    assert data["qualityNote"] is not None
+
+
+def test_catalyst_detail_keeps_the_whole_sample_as_the_denominator() -> None:
+    groups = _group_index(_SAME_DAY)
+    group = groups.groups("thm_12")[0]
+
+    detail = catalyst_detail_data(
+        group=group,
+        theme_display_name="반도체 장비",
+        outcomes=None,
+        limit=2,
+    )
+
+    # 목록만 2건으로 자르고 분모는 6건 그대로여야 TOP3의 중앙값과 어긋나지 않는다.
+    assert len(detail["events"]) == 2
+    assert detail["sameDay"]["eligibleCount"] == 6
+    assert detail["sameDay"]["observedCount"] == 6
+    assert detail["sameDay"]["medianReturn"] == 0.035
+    assert all(row["eligibleCount"] == 6 for row in detail["horizons"])

@@ -33,6 +33,8 @@ class SqliteOutcomeReader:
             f"file:{self._path.as_posix()}?mode=ro", uri=True
         )
         self._range_from: date | None = None
+        self._days: list[str] | None = None
+        self._day_index: dict[str, int] | None = None
 
     def close(self) -> None:
         self._connection.close()
@@ -110,6 +112,58 @@ class SqliteOutcomeReader:
             else None
         )
         return base_date, base_close, computed, missing
+
+    def _trading_days(self) -> list[str]:
+        if self._days is None:
+            self._days = [
+                str(row[0])
+                for row in self._connection.execute(
+                    "SELECT DISTINCT trade_date FROM daily_prices ORDER BY trade_date"
+                )
+            ]
+            self._day_index = {day: order for order, day in enumerate(self._days)}
+        return self._days
+
+    def basket_daily_return(
+        self, stock_codes: Sequence[str], on: date
+    ) -> Decimal | None:
+        """그날 그 종목들의 동일가중 당일 등락(%). 직전 거래일 종가 대비다.
+
+        종목마다 따로 조회하면 사건 하나에 수십 번을 묻게 되므로 한 번에 읽는다.
+        가격이 없는 종목은 바스켓에서 빠지고, 하나도 없으면 None이다.
+        """
+
+        self._trading_days()
+        assert self._day_index is not None
+        order = self._day_index.get(on.isoformat())
+        if order is None or order == 0 or not stock_codes:
+            return None
+        previous = self._days[order - 1] if self._days else None
+        if previous is None:
+            return None
+        stock_ids = [self._stock_id(code) for code in stock_codes if code]
+        if not stock_ids:
+            return None
+        placeholders = ",".join("?" * len(stock_ids))
+        rows = self._connection.execute(
+            "SELECT stock_id, trade_date, adjusted_close, close FROM daily_prices"
+            f" WHERE stock_id IN ({placeholders}) AND trade_date IN (?, ?)",
+            (*stock_ids, previous, on.isoformat()),
+        ).fetchall()
+        closes: dict[str, dict[str, Decimal | None]] = {}
+        for stock_id, trade_date, adjusted, raw in rows:
+            closes.setdefault(str(stock_id), {})[str(trade_date)] = self._close(
+                (trade_date, adjusted, raw)
+            )
+        returns: list[Decimal] = []
+        for prices in closes.values():
+            before, after = prices.get(previous), prices.get(on.isoformat())
+            if before is None or after is None or before == 0:
+                continue
+            returns.append(((after / before) - Decimal(1)) * Decimal(100))
+        if not returns:
+            return None
+        return sum(returns, Decimal(0)) / Decimal(len(returns))
 
     def daily_return(self, stock_code: str, on: date) -> Decimal | None:
         """사건일 등락률(%). 직전 거래일 종가 대비 사건일 종가다."""

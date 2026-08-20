@@ -1,0 +1,76 @@
+{
+  "data": {
+    "catalystId": "ctl_thm_12_PRODUCT_TECH",
+    "themeId": "thm_12",
+    "themeDisplayName": "반도체 장비",
+    "catalystName": "신제품·기술",
+    "availability": "AVAILABLE",
+    "sameDay": {
+      "horizonTradingDays": 1,
+      "eligibleCount": 33,
+      "observedCount": 33,
+      "positiveCount": 27,
+      "medianReturn": 0.039005
+    },
+    "horizons": [
+      {
+        "horizonTradingDays": 1,
+        "eligibleCount": 33,
+        "observedCount": 33,
+        "positiveCount": 21,
+        "medianReturn": 0.007756
+      },
+      {
+        "horizonTradingDays": 5,
+        "eligibleCount": 33,
+        "observedCount": 33,
+        "positiveCount": 18,
+        "medianReturn": 0.007723
+      },
+      {
+        "horizonTradingDays": 20,
+        "eligibleCount": 33,
+        "observedCount": 32,
+        "positiveCount": 22,
+        "medianReturn": 0.053762
+      }
+    ],
+    "events": [
+      {
+        "matchedEventId": "evt_hist_12_0bf86ee727a20242",
+        "marketDate": "2026-08-07",
+        "normalizedCatalystSummary": "엔비디아, 차세대 GPU '루빈 울트라'에 당초 계획보다 적은 메모리 탑재 방안 검토 소식 등에 하락",
+        "sameDayReturn": -0.035641,
+        "leaderName": null
+      },
+      {
+        "matchedEventId": "evt_hist_12_90cca120bf7975ab",
+        "marketDate": "2026-02-12",
+        "normalizedCatalystSummary": "삼성전자 세계 최초 HBM4 양산 출하 소식 및 마이크론(+9.94%), 'HBM 논란' 일축 속 필라델피아 반도체지수(+2.28%) 급등 영향 등에 상승",
+        "sameDayReturn": 0.055183,
+        "leaderName": "레이저쎌"
+      },
+      {
+        "matchedEventId": "evt_hist_12_a87c9ae890956e95",
+        "marketDate": "2026-01-26",
+        "normalizedCatalystSummary": "삼성전자, 엔비디아·AMD HBM4 최종 품질 테스트 통과 소식 등에 상승",
+        "sameDayReturn": 0.053121,
+        "leaderName": "엑시콘"
+      }
+    ],
+    "qualityNote": null
+  },
+  "meta": {
+    "requestId": "req_catalyst_detail",
+    "apiVersion": "1",
+    "schemaVersion": "2026-08-14.1",
+    "generatedAt": "2026-08-14T01:18:23.042Z",
+    "versions": {
+      "ontologyVersion": "catalyst-transform/1.2.0+vocab/1.2.0",
+      "retrievalArtifactVersion": "historical-match/1.0.0",
+      "calculationVersion": null,
+      "rankingModelVersion": null,
+      "membershipVersion": null
+    }
+  }
+}

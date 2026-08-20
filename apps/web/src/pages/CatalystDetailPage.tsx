@@ -95,7 +95,7 @@ export function CatalystDetailPage() {
             </article>
           </div>
           <p className="section-note">
-            사건 당시 기록된 주도 종목을 동일가중해 계산한 중앙값입니다. 평균이 아닙니다.
+            사건 당시 그 테마에 속했던 종목을 동일가중해 계산한 중앙값입니다. 평균이 아닙니다.
           </p>
         </section>
 

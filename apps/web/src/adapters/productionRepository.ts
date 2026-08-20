@@ -444,23 +444,20 @@ class LiveProductRepository implements ProductRepository {
     );
   }
 
-  async getCatalystDetail(): Promise<CatalystDetailResponse> {
-    // api_contract에 대응 endpoint가 없다(배선 매핑표 §5.1). 없는 주소를 호출하지 않고 미제공으로 닫는다.
-    throw new RepositoryError({
-      kind: 'permission',
-      message: '과거 소재 유형 상세는 아직 제공되지 않습니다.',
-    });
+  async getCatalystDetail(catalystId: string): Promise<CatalystDetailResponse> {
+    return this.request<CatalystDetailResponse>(
+      `/api/v1/catalysts/${encodeURIComponent(catalystId)}`,
+    );
   }
 
   getCachedRank(eventId: string): number | null {
     return this.rankingCache?.data.items.find((item) => item.eventId === eventId)?.rank ?? null;
   }
 
-  async getCatalystTop3(): Promise<CatalystTop3Response> {
-    throw new RepositoryError({
-      kind: 'permission',
-      message: '과거 상승 소재 TOP3는 아직 제공되지 않습니다.',
-    });
+  async getCatalystTop3(themeId: string, eventId: string): Promise<CatalystTop3Response> {
+    return this.request<CatalystTop3Response>(
+      `/api/v1/themes/${encodeURIComponent(themeId)}/events/${encodeURIComponent(eventId)}/catalysts`,
+    );
   }
 
   private sequenceKey(topic: RealtimeTopic): string {

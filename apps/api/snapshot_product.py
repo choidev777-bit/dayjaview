@@ -9,6 +9,7 @@ REST 응답과 WebSocket 스냅샷이 같은 ReadSnapshot 하나에서 나오도
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Mapping
 from datetime import UTC, datetime, time, timedelta
 from typing import Protocol, cast
 
@@ -16,9 +17,12 @@ from packages.domain import DataStatus
 from packages.historical_matching import (
     MATCH_MODEL_VERSION,
     ONTOLOGY_VERSION,
+    CatalystGroupIndex,
     HistoricalCaseIndex,
     OutcomeSource,
     TodayContext,
+    catalyst_detail_data,
+    catalyst_top3_data,
     historical_event_data,
     similar_events_data,
     today_context,
@@ -48,6 +52,9 @@ class SnapshotSource(Protocol):
     def last_as_of(self) -> datetime | None: ...
 
     def theme_id_for_event(self, event_id: str) -> str | None: ...
+
+    @property
+    def theme_names(self) -> Mapping[str, str]: ...
 
     def theme_detail(self, event_id: str) -> dict[str, object] | None: ...
 
@@ -94,6 +101,7 @@ class HistoricalMatching:
 
     index: HistoricalCaseIndex
     outcomes: OutcomeSource | None = None
+    groups: CatalystGroupIndex | None = None
 
 
 class SnapshotProductReadRepository(EmptyProductReadRepository):
@@ -232,6 +240,55 @@ class SnapshotProductReadRepository(EmptyProductReadRepository):
             decision_at=self._source.last_as_of or snapshot.as_of,
             market_date=snapshot.market_date,
             limit=limit,
+        )
+        base = _snapshot_document(snapshot)
+        return ProductDocument(
+            cast(JsonObject, data),
+            base.copy_market_context(),
+            _matching_versions(base),
+        )
+
+    def catalyst_top3(
+        self,
+        theme_id: str,
+        event_id: str,
+    ) -> ProductDocument | None:
+        groups = None if self._historical is None else self._historical.groups
+        snapshot = self._source.latest_rankings
+        if groups is None or snapshot is None:
+            return None
+        if self._source.theme_id_for_event(event_id) != theme_id:
+            return None
+        detail = self._source.theme_detail(event_id)
+        if detail is None:
+            return None
+        data = catalyst_top3_data(
+            theme_id=theme_id,
+            event_id=event_id,
+            today=_today_context(detail),
+            groups=groups,
+        )
+        base = _snapshot_document(snapshot)
+        return ProductDocument(
+            cast(JsonObject, data),
+            base.copy_market_context(),
+            _matching_versions(base),
+        )
+
+    def catalyst_detail(self, catalyst_id: str) -> ProductDocument | None:
+        groups = None if self._historical is None else self._historical.groups
+        snapshot = self._source.latest_rankings
+        if groups is None or snapshot is None:
+            return None
+        group = groups.group(catalyst_id)
+        if group is None:
+            return None
+        data = catalyst_detail_data(
+            group=group,
+            theme_display_name=self._source.theme_names.get(
+                group.theme_id, group.theme_id
+            ),
+            outcomes=None if self._historical is None else self._historical.outcomes,
         )
         base = _snapshot_document(snapshot)
         return ProductDocument(

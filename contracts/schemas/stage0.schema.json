@@ -28,6 +28,216 @@
         }
       }
     },
+    "CatalystDetailEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matchedEventId",
+        "marketDate",
+        "normalizedCatalystSummary",
+        "sameDayReturn",
+        "leaderName"
+      ],
+      "properties": {
+        "matchedEventId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "marketDate": {
+          "$ref": "#/$defs/MarketDate"
+        },
+        "normalizedCatalystSummary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sameDayReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "leaderName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "CatalystDetailResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "catalystId",
+            "themeId",
+            "themeDisplayName",
+            "catalystName",
+            "availability",
+            "sameDay",
+            "horizons",
+            "events",
+            "qualityNote"
+          ],
+          "properties": {
+            "catalystId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "themeId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "themeDisplayName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "catalystName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "availability": {
+              "enum": [
+                "AVAILABLE",
+                "GATED",
+                "UNAVAILABLE"
+              ]
+            },
+            "sameDay": {
+              "$ref": "#/$defs/HistoricalSummary"
+            },
+            "horizons": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/HistoricalSummary"
+              }
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/CatalystDetailEvent"
+              }
+            },
+            "qualityNote": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "meta": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "versions"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "CatalystTop3Item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalystId",
+        "catalystName",
+        "eligibleCount",
+        "observedCount",
+        "medianSameDayReturn",
+        "matchesToday"
+      ],
+      "properties": {
+        "catalystId": {
+          "$ref": "#/$defs/OpaqueId"
+        },
+        "catalystName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "eligibleCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medianSameDayReturn": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "matchesToday": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CatalystTop3Response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data",
+        "meta"
+      ],
+      "properties": {
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "themeId",
+            "eventId",
+            "items",
+            "qualityNote"
+          ],
+          "properties": {
+            "themeId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "eventId": {
+              "$ref": "#/$defs/OpaqueId"
+            },
+            "items": {
+              "type": "array",
+              "maxItems": 3,
+              "items": {
+                "$ref": "#/$defs/CatalystTop3Item"
+              }
+            },
+            "qualityNote": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "meta": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ResponseMeta"
+            },
+            {
+              "type": "object",
+              "required": [
+                "versions"
+              ]
+            }
+          ]
+        }
+      }
+    },
     "Classification": {
       "type": "object",
       "additionalProperties": false,
