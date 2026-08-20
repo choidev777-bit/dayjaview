@@ -46,7 +46,9 @@ describe('접근성 foundation', () => {
   });
 
   it('시안 토큰과 420px 단일 열, focus-visible, reduced-motion 규칙을 CSS 계약으로 고정한다', () => {
-    expect(tokens).toMatch(/--djv-color-brand: #ff6600/);
+    expect(tokens).toMatch(/--djv-color-brand: #7b2ff7/);
+    // 로고는 주색을 따라가지 않는다. 마크만 네이비로 남긴다.
+    expect(tokens).toMatch(/--djv-color-logo: #1c1c5e/);
     expect(tokens).toMatch(/--djv-app-max-width: 420px/);
     expect(tokens).toMatch(/--djv-touch-size: 48px/);
     expect(styles).toMatch(/:focus-visible/);

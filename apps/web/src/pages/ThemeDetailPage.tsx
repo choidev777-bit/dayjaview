@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import {
-  IconArrowLeftLine,
   IconChevronRightSmallLine,
   IconStarFill,
   IconStarLine,
@@ -848,12 +847,15 @@ export function ThemeDetailPage() {
   return (
     <div className="page page--detail">
       <header className="detail-app-bar">
+        {/* 화면이 아래에서 올라오므로 되돌아가는 동작도 `내려서 닫기`로 읽히게 한다.
+            아이콘은 오른쪽 꺾쇠를 90도 돌려 아래 방향으로 쓴다. */}
         <button
           type="button"
+          className="detail-app-bar__close"
           onClick={goBack}
-          aria-label="이전 화면으로 돌아가기"
+          aria-label="닫기"
         >
-          <IconArrowLeftLine size={24} aria-hidden="true" />
+          <IconChevronRightSmallLine size={24} aria-hidden="true" />
         </button>
         <span>{detail.classification.displayName}</span>
         <SaveThemeButton
