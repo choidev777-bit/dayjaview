@@ -310,33 +310,49 @@ function RowValues({
   );
 }
 
-/** 사건 하나에 딸린 주도주 성적표. 눌러서 펼치기 전에는 감춘다. */
+/** 사건 하나에 딸린 주도주 성적표. 반응한 테마별로 묶는다 — 섞어 놓으면
+ *  '테마 3곳'이 어느 셋인지 세어 보기 전엔 알 수 없다. */
 function LeaderTable({ leaders }: { leaders: Record<string, unknown>[] }) {
+  const byTheme = new Map<string, Record<string, unknown>[]>();
+  for (const leader of leaders) {
+    const theme = String(leader.themeName ?? '테마 미상');
+    const bucket = byTheme.get(theme);
+    if (bucket) bucket.push(leader);
+    else byTheme.set(theme, [leader]);
+  }
   return (
-    <ul className="research-leaders">
-      {leaders.map((leader, index) => {
-        const returns = (leader.returns ?? {}) as Record<string, string | null>;
-        const close = leader.baseClose ? renderValue('baseClose', leader.baseClose) : '';
-        return (
-          <li key={`${String(leader.companyName ?? '')}:${index}`}>
-            <strong>{String(leader.companyName ?? '')}</strong>
-            {leader.themeName ? (
-              <span className="research-leaders__theme">{String(leader.themeName)}</span>
-            ) : null}
-            {close ? <span className="research-leaders__close">{close}</span> : null}
-            <span className="research-leaders__returns">
-              {Object.entries(returns)
-                .filter(([, value]) => value)
-                .map(([horizon, value]) => (
-                  <em key={horizon} className={rateClass(String(value))}>
-                    {horizon.replace('T+', '')}일 {value}
-                  </em>
-                ))}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="research-leaders">
+      {[...byTheme].map(([theme, members]) => (
+        <section key={theme}>
+          <h4 className="research-leaders__theme">
+            {theme} <span className="research-more">{members.length}곳</span>
+          </h4>
+          <ul>
+            {members.map((leader, index) => {
+              const returns = (leader.returns ?? {}) as Record<string, string | null>;
+              const close = leader.baseClose
+                ? renderValue('baseClose', leader.baseClose)
+                : '';
+              return (
+                <li key={`${String(leader.companyName ?? '')}:${index}`}>
+                  <strong>{String(leader.companyName ?? '')}</strong>
+                  {close ? <span className="research-leaders__close">{close}</span> : null}
+                  <span className="research-leaders__returns">
+                    {Object.entries(returns)
+                      .filter(([, value]) => value)
+                      .map(([horizon, value]) => (
+                        <em key={horizon} className={rateClass(String(value))}>
+                          {horizon.replace('T+', '')}일 {value}
+                        </em>
+                      ))}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }
 
