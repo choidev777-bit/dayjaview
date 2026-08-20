@@ -325,3 +325,24 @@ def test_asked_horizon_survives_and_never_eats_dates_or_periods() -> None:
         result = plan_question(question, catalog=catalog, today=TODAY)
         assert result.plan is not None, question
         assert result.plan.outcome_horizon == expected, question
+
+
+def test_theme_alias_before_catalyst_still_becomes_topic() -> None:
+    """"로봇"이 테마로 잡혀도 "로봇 ~ 정책"의 주제어 자리는 비우지 않는다."""
+
+    catalog = QuestionCatalog(
+        company_master=_catalog().company_master,
+        themes=(
+            ThemeEntry("505", "로봇(산업용/협동로봇 등)"),
+            ThemeEntry("101", "2차전지"),
+        ),
+    )
+    result = plan_question(
+        "과거 로봇 산업 육성 정책이 발표됐을 때 당시 주도주는 3거래일 뒤 어떻게 움직였어?",
+        catalog=catalog,
+        today=TODAY,
+    )
+    assert result.plan is not None
+    assert result.plan.themes and result.plan.themes[0].source_theme_id == "505"
+    assert result.plan.catalyst_type is not None
+    assert result.plan.topic == "로봇"

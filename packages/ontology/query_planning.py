@@ -36,7 +36,7 @@ from .query_contracts import (
 )
 from .vocabulary import VOCABULARY
 
-QUERY_PLANNER_VERSION = "query-planner/1.3.0"
+QUERY_PLANNER_VERSION = "query-planner/1.4.0"
 # 인포스탁 수집본이 시작하는 해. "과거·역대"는 여기부터 오늘까지다.
 COLLECTION_FROM = date(2007, 1, 1)
 
@@ -1204,6 +1204,15 @@ def plan_question(
             for item in group
         )
         topic = _topic_before(text, catalyst_matches[0].start, matched_texts)
+        # "로봇 산업 육성 정책"의 로봇이 테마 별칭으로 먼저 잡히면 주제어가
+        # 비어 소재 필터가 통째로 풀린다(2026-08-20 운영 실측: 무관 사건
+        # 29건 통과). 소재 낱말 바로 앞의 테마 글자는 주제어로도 쓴다.
+        if topic is None:
+            catalyst_start = catalyst_matches[0].start
+            for item in theme_matches:
+                if item.end <= catalyst_start and catalyst_start - item.end <= 20:
+                    topic = item.text
+                    break
 
     plan_kwargs: dict[str, Any] = {
         "query_type": query_type,
