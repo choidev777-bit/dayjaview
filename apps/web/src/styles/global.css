@@ -392,17 +392,16 @@ a:focus-visible,
    시안 CSS의 `background: var(--djv-color-bg)`는 뒤에서 흰색으로 덮인다. */
 /* 상세 상단바와 같은 규칙을 쓴다. 바탕을 깔지 않고 페이지 색이 그대로 비치게 두고,
    버튼만 흰 동그라미로 띄운다. 둘이 달라 보이면 같은 깊이의 화면인데 다른 앱처럼 읽힌다. */
+/* 상자를 두르지 않는다. 뒤로·저장 아이콘 둘만 든 흰 카드는 담을 게 없어
+   빈 판으로 보인다. 아이콘을 바탕 위에 그대로 놓는다. */
 .app-bar {
   display: grid;
   height: 56px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
-  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
-  padding: 0 var(--djv-space-3);
-  border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-xl);
-  background: var(--djv-color-surface);
-  box-shadow: var(--djv-shadow-card);
+  /* 좌우는 카드들과 같은 선에 맞춘다. 아이콘이 42px 상자 가운데 있으므로
+     그 여백만큼 당겨야 아이콘 가장자리가 아래 카드 모서리와 맞는다. */
+  margin: 0 calc(var(--djv-card-gutter) - var(--djv-space-2)) var(--djv-space-1);
 }
 
 .app-bar > strong {
