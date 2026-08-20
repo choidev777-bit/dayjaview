@@ -489,7 +489,7 @@ export interface ResearchFailure {
 }
 
 /** 복합 질문을 단일 질의로 풀어 답한 한 단계. */
-export type ResearchStep = { question: string } & (
+export type ResearchStep = { question: string; conclusion?: boolean } & (
   | { status: 'ANSWERED'; answer: ResearchAnswer }
   | { status: 'FAILED'; failure: ResearchFailure }
 );

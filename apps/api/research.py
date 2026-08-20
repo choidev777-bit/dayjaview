@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from datetime import date
 from threading import Lock
 from typing import Protocol
@@ -23,6 +23,7 @@ from packages.ontology.query_compose import (
     ComposeLlm,
     compose_answer,
     looks_compound,
+    pick_conclusion,
 )
 from packages.ontology.query_contracts import QUERY_CONTRACTS, QueryType
 from packages.ontology.query_planning import (
@@ -94,22 +95,38 @@ class ResearchBoundary:
         # 다음 질문 문장만 만들고 수치는 전부 기존 엔진이 낸다. 실패하면
         # 아래 단일 경로 결과가 그대로 나간다.
         if self._llm is not None and (single_block is None or looks_compound(question)):
-            steps = self._composed_steps(question, today)
+            # 손님이 끝내 묻는 것(목표 유형)은 해석기가 정한다. LLM이 아니다.
+            goal_type = None if result.plan is None else result.plan.query_type
+            steps = self._composed_steps(question, today, goal_type)
             successes = [step for step in steps if step.result.answer is not None]
             # 단일 답이 이미 있으면 두 단계 이상 성공했을 때만 분해가 낫다.
             if len(successes) >= (1 if single_block is None else 2):
-                return {
-                    "status": "ANSWERED",
-                    "answer": successes[0].result.answer.as_dict(),  # type: ignore[union-attr]
-                    "steps": [self._step_dict(step) for step in steps],
-                }
+                conclusion = pick_conclusion(steps, goal_type=goal_type)
+                assert conclusion is not None and conclusion.result.answer is not None
+                # 분해 결론이 유형만 같고 단일 해석의 좁힘 조건(주제어·소재·
+                # 테마·회사·방향)을 잃었으면 단일 답이 결론이다 — 분해기가
+                # "로봇 정책" 질문을 조건 없는 정책 질문으로 되물어 8건이
+                # 54건으로 넓어졌다(2026-08-20 실측).
+                if single_block is None or _keeps_narrowing_slots(
+                    single_block.interpretation,
+                    conclusion.result.answer.interpretation,
+                ):
+                    return {
+                        "status": "ANSWERED",
+                        "answer": conclusion.result.answer.as_dict(),
+                        "steps": [
+                            self._step_dict(step, step is conclusion) for step in steps
+                        ],
+                    }
 
         if single_block is not None:
             return {"status": "ANSWERED", "answer": single_block.as_dict()}
         assert single_failure is not None
         return self._failed(single_failure)
 
-    def _composed_steps(self, question: str, today: date) -> tuple[ComposedStep, ...]:
+    def _composed_steps(
+        self, question: str, today: date, goal_type: object | None = None
+    ) -> tuple[ComposedStep, ...]:
         assert self._llm is not None
         try:
             return compose_answer(
@@ -120,22 +137,25 @@ class ResearchBoundary:
                 availability=self._availability,
                 today=today,
                 limit=self._limit,
+                goal_type=goal_type,  # type: ignore[arg-type]
             )
         except Exception:  # noqa: BLE001 - LLM 장애는 단일 경로로 조용히 물러난다
             return ()
 
     @staticmethod
-    def _step_dict(step: ComposedStep) -> JsonObject:
+    def _step_dict(step: ComposedStep, conclusion: bool = False) -> JsonObject:
         if step.result.answer is not None:
             return {
                 "question": step.question,
                 "status": "ANSWERED",
+                "conclusion": conclusion,
                 "answer": step.result.answer.as_dict(),
             }
         assert step.result.failure is not None
         return {
             "question": step.question,
             "status": "FAILED",
+            "conclusion": False,
             "failure": step.result.failure.as_dict(),  # type: ignore[attr-defined]
         }
 
@@ -207,3 +227,31 @@ __all__ = [
     "example_questions",
     "supported_query_types",
 ]
+
+
+def _keeps_narrowing_slots(
+    single: Mapping[str, object], composed: Mapping[str, object]
+) -> bool:
+    """단일 해석이 좁힌 조건을 분해 결론이 그대로 갖고 있는지 확인한다."""
+
+    def _slots(interpretation: Mapping[str, object]) -> dict[str, object]:
+        catalyst = interpretation.get("catalystType")
+        company = interpretation.get("company")
+        themes = interpretation.get("themes") or ()
+        return {
+            "topic": interpretation.get("topic"),
+            "catalyst": catalyst.get("typeId") if isinstance(catalyst, Mapping) else None,
+            "company": company.get("seedStockCode") if isinstance(company, Mapping) else None,
+            "themes": tuple(
+                sorted(
+                    str(theme.get("sourceThemeId"))
+                    for theme in themes
+                    if isinstance(theme, Mapping)
+                )
+            ),
+            "direction": interpretation.get("direction"),
+        }
+
+    wanted = _slots(single)
+    got = _slots(composed)
+    return all(not value or got[key] == value for key, value in wanted.items())

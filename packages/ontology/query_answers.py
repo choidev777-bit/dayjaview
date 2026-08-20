@@ -624,23 +624,33 @@ def _answer_day_movers(
         return _no_record(
             plan, f"{plan.date.value.isoformat()} 특징테마 기록이 없습니다."
         )
-    wanted = "DOWN" if plan.direction == "DOWN" else "UP"
+    # 섹션 단위로 거르면 오른 테마와 내린 테마가 섞인 섹션이 통째로 통과해,
+    # 물어본 방향과 반대인 테마까지 답에 들어간다. 테마 하나씩 등락률로 거른다.
     rows: list[AnswerRow] = []
-    excluded = 0
+    mismatched = 0
+    rateless = 0
+    theme_total = 0
+    matched = 0
     for section in day.sections:
-        direction = section.direction
-        if plan.direction is not None and direction not in {wanted, "MIXED"}:
-            excluded += 1
+        theme_total += len(section.themes)
+        kept = []
+        for theme in section.themes:
+            if theme.change_rate is None:
+                rateless += 1
+                continue
+            if not _matches_direction(plan, theme.change_rate):
+                mismatched += 1
+                continue
+            kept.append(theme)
+        if not kept:
             continue
-        if plan.direction is None and direction == "UNKNOWN":
-            excluded += 1
-            continue
+        matched += len(kept)
         rows.append(
             AnswerRow(
                 label=section.headline or section.section_name,
                 values={
                     "sectionName": section.section_name,
-                    "direction": direction,
+                    "direction": section.direction,
                     "themes": [
                         {
                             "themeName": theme.theme_name,
@@ -656,9 +666,9 @@ def _answer_day_movers(
                             ],
                             "stockTotal": len(theme.stocks),
                         }
-                        for theme in section.themes[:6]
+                        for theme in kept[:6]
                     ],
-                    "themeTotal": len(section.themes),
+                    "themeTotal": len(kept),
                 },
                 evidence=_section_evidence(day, section),
             )
@@ -666,12 +676,15 @@ def _answer_day_movers(
     if not rows:
         return _no_record(
             plan,
-            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 섹션이 없습니다.",
+            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 테마가 없습니다.",
         )
-    exclusions = (
-        (AnswerExclusion("DIRECTION_MISMATCH", "질문한 방향과 반대인 섹션", excluded),)
-        if excluded
-        else ()
+    exclusions = tuple(
+        AnswerExclusion(code, label, count)
+        for code, label, count in (
+            ("DIRECTION_MISMATCH", "질문한 방향과 반대인 테마", mismatched),
+            ("UNKNOWN_CHANGE_RATE", "등락률이 없어 방향을 알 수 없는 테마", rateless),
+        )
+        if count
     )
     return AnswerBlock(
         query_type=plan.query_type,
@@ -680,15 +693,16 @@ def _answer_day_movers(
             plan, extra={"tradingDate": day.trading_date.isoformat()}
         ),
         summary_ko=(
-            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 특징테마 "
-            f"섹션은 {len(rows)}개입니다."
+            f"{day.trading_date.isoformat()}에 {_direction_label(plan)} 테마는 "
+            f"{matched}개입니다."
         ),
+        # 섹션은 사람이 물어본 단위가 아니라 원문 글의 묶음 단위다. 대표 숫자는
+        # 테마로 세고, 분모는 걸러낸 것이 있을 때만 붙인다(같은 수는 정보가 없다).
         metrics=(
             AnswerMetric(
-                label_ko=f"{_direction_label(plan)} 섹션",
-                value=str(len(rows)),
-                count_unit=plan.count_unit,
-                sample_size=len(day.sections),
+                label_ko=f"{_direction_label(plan)} 테마",
+                value=str(matched),
+                sample_size=theme_total if theme_total != matched else None,
             ),
         ),
         rows=tuple(rows[:limit]),
@@ -1974,14 +1988,14 @@ def _answer_company_historical_outcome(
     # 회사를 물으면 그 회사의 직접 사건 축, 소재·테마로 물으면 사건 당시
     # 주도주 축이다(계획서 4.1 "회사 또는 당시 주도주 outcome").
     leader_axis = plan.company is None
+    # 손님이 "3거래일 뒤"라고 물으면 그 3이 대표 숫자다. 안 물었으면 5다.
+    # 기본 1·5·20은 그대로 곁들여 보여 준다 — 하나만 남기면 비교가 사라진다.
+    headline_horizon = plan.outcome_horizon or _HEADLINE_HORIZON
+    horizons = tuple(sorted({*DEFAULT_OUTCOME_HORIZONS, headline_horizon}))
     if leader_axis:
-        observations = repository.leader_outcomes(
-            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
-        )
+        observations = repository.leader_outcomes(outcome_filter, horizons=horizons)
     else:
-        observations = repository.outcomes(
-            outcome_filter, horizons=DEFAULT_OUTCOME_HORIZONS
-        )
+        observations = repository.outcomes(outcome_filter, horizons=horizons)
     if not observations:
         return _no_record(plan, "그 구간에 실제 결과를 붙일 사건이 없습니다.")
     observed = [item for item in observations if item.base_close is not None]
@@ -2001,10 +2015,11 @@ def _answer_company_historical_outcome(
                 "themeNames": sorted(
                     {item.theme_name for item in members if item.theme_name}
                 ),
+                "horizon": headline_horizon,
                 "upCount": sum(
                     1
                     for item in members
-                    if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                    if (value := item.returns.get(headline_horizon)) is not None
                     and value > 0
                 ),
                 "medianReturn": _rate(
@@ -2012,7 +2027,7 @@ def _answer_company_historical_outcome(
                         [
                             value
                             for item in members
-                            if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+                            if (value := item.returns.get(headline_horizon)) is not None
                         ]
                     )
                 ),
@@ -2036,7 +2051,7 @@ def _answer_company_historical_outcome(
                                 if item.returns.get(horizon) is None
                                 else _rate(item.returns[horizon])
                             )
-                            for horizon in DEFAULT_OUTCOME_HORIZONS
+                            for horizon in horizons
                         },
                         "missingReason": item.missing_reason,
                     }
@@ -2090,14 +2105,14 @@ def _answer_company_historical_outcome(
     ]
     headline_median: Decimal | None = None
     up_count = 0
-    for horizon in DEFAULT_OUTCOME_HORIZONS:
+    for horizon in horizons:
         observed_returns: list[Decimal] = [
             value
             for item in observed
             if (value := item.returns.get(horizon)) is not None
         ]
         middle = _median(observed_returns)
-        if horizon == _HEADLINE_HORIZON:
+        if horizon == headline_horizon:
             headline_median = middle
             up_count = sum(1 for value in observed_returns if value > 0)
         metrics.append(
@@ -2111,7 +2126,7 @@ def _answer_company_historical_outcome(
     headline_samples = [
         value
         for item in observed
-        if (value := item.returns.get(_HEADLINE_HORIZON)) is not None
+        if (value := item.returns.get(headline_horizon)) is not None
     ]
     return AnswerBlock(
         query_type=plan.query_type,
@@ -2120,14 +2135,15 @@ def _answer_company_historical_outcome(
             plan,
             extra={
                 "outcomeRangeFrom": availability.outcome_range_from.isoformat(),
-                "horizons": list(DEFAULT_OUTCOME_HORIZONS),
+                "horizons": list(horizons),
+                "headlineHorizon": headline_horizon,
             },
         ),
         summary_ko=(
             (
-                f"{_HEADLINE_HORIZON}거래일 뒤 중앙값 {_rate(headline_median)}입니다."
+                f"{headline_horizon}거래일 뒤 중앙값 {_rate(headline_median)}입니다."
                 if headline_median is not None
-                else f"{_HEADLINE_HORIZON}거래일 뒤 주가가 아직 나오지 않았습니다."
+                else f"{headline_horizon}거래일 뒤 주가가 아직 나오지 않았습니다."
             )
             + f" 사건 {len(events)}건"
             + (

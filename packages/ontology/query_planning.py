@@ -36,7 +36,7 @@ from .query_contracts import (
 )
 from .vocabulary import VOCABULARY
 
-QUERY_PLANNER_VERSION = "query-planner/1.2.0"
+QUERY_PLANNER_VERSION = "query-planner/1.4.0"
 # 인포스탁 수집본이 시작하는 해. "과거·역대"는 여기부터 오늘까지다.
 COLLECTION_FROM = date(2007, 1, 1)
 
@@ -272,6 +272,8 @@ class QueryPlan:
     amount_condition: AmountCondition | None = None
     # 소재를 좁히는 주제어("로봇 정책"의 로봇). 원문에 있던 낱말 하나만 담는다.
     topic: str | None = None
+    # 사건일 기준 며칠 뒤 주가를 물었는지("3거래일 뒤"의 3). 안 물었으면 None.
+    outcome_horizon: int | None = None
     planner_version: str = QUERY_PLANNER_VERSION
     contract_version: str = QUERY_CONTRACT_VERSION
 
@@ -336,6 +338,7 @@ class QueryPlan:
                 if self.amount_condition is None
                 else self.amount_condition.as_dict()
             ),
+            "outcomeHorizon": self.outcome_horizon,
             "plannerVersion": self.planner_version,
             "contractVersion": self.contract_version,
             "contractHash": query_contract_content_hash(),
@@ -592,6 +595,18 @@ _WEEKDAY_EXPRESSIONS: tuple[tuple[str, RelativeExpression, int], ...] = (
 )
 _PREVIOUS_TRADING_MARKERS = ("전 거래일", "직전 거래일", "지난 거래일")
 
+# "3거래일 뒤", "17일 후", "5일 수익률", "T+3" — 사건 뒤 며칠째 주가를 묻는지.
+# 기간(최근 3개월)이나 날짜(8월 5일)와 겹치는 자리는 앞 단계가 이미 가려 둔다.
+_HORIZON_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"(?<![0-9])(\d{1,3})\s*(?:거래일|영업일|일)\s*(?:뒤|후|이후|만에|째|차)"),
+    re.compile(
+        r"(?<![0-9])(\d{1,3})\s*(?:거래일|영업일|일)\s*(?:주가|수익률|등락률|성적|결과)"
+    ),
+    re.compile(r"(?<![0-9])[Tt]\s*\+\s*(\d{1,3})"),
+)
+# 가격 corpus가 한 사건 뒤로 세어 줄 수 있는 거래일 상한. 1년치보다 넉넉하다.
+MAX_OUTCOME_HORIZON = 250
+
 
 def _clamp_day(year: int, month: int, day: int) -> date | None:
     if not 1 <= month <= 12:
@@ -688,6 +703,20 @@ def _find_dates(text: str, today: date) -> tuple[list[tuple[DateSlot, _Literal]]
         _take(match.start(), match.end(), value, None)
     found.sort(key=lambda item: item[1].start)
     return found, masked
+
+
+def _find_outcome_horizon(text: str, masked: Sequence[tuple[int, int]]) -> int | None:
+    """사건일 기준 며칠 뒤 주가를 물었는지. 안 물었으면 None이다."""
+
+    for pattern in _HORIZON_PATTERNS:
+        for match in pattern.finditer(text):
+            start, end = match.start(), match.end()
+            if any(start < stop and begin < end for begin, stop in masked):
+                continue
+            value = int(match.group(1))
+            if 1 <= value <= MAX_OUTCOME_HORIZON:
+                return value
+    return None
 
 
 def _find_periods(
@@ -882,14 +911,19 @@ def _find_amount(text: str) -> tuple[AmountCondition | None, list[tuple[int, int
 
 # ---------------------------------------------------------------- 방향·분류
 
+# `올랏노`처럼 받침을 ㅅ으로 적는 사투리·오타 표기가 실제 질문에 들어온다.
+# 이걸 못 잡으면 방향이 없는 질문으로 답해 반대 방향까지 섞어 보여준다.
 _UP_MARKERS = (
-    "올랐", "올라", "오른", "오르", "상승", "강세", "급등", "뛴", "뛰었",
-    "셌", "강했", "상한가", "폭등", "반등",
+    "올랐", "올랏", "올라", "오른", "오르", "오름", "상승", "강세", "급등",
+    "뛴", "뛰었", "뛰엇", "셌", "셋노", "강했", "강햇", "상한가", "폭등", "반등",
 )
 _DOWN_MARKERS = (
-    "빠졌", "빠져", "빠진", "떨어", "하락", "약세", "급락", "내린", "내려",
-    "내렸", "약했", "하한가", "폭락",
+    "빠졌", "빠젓", "빠졋", "빠져", "빠진", "빠짐", "떨어", "하락", "약세",
+    "급락", "내린", "내려", "내렸", "내렷", "내림", "약했", "약햇", "하한가",
+    "폭락",
 )
+# `빠짐없이`는 방향이 아니라 "전부"라는 뜻이다. 표식으로 세면 하락으로 뒤집힌다.
+_DIRECTION_NOISE = ("빠짐없",)
 
 # 매매·미래 판단 요청. `공매도 잔고`는 매매 요청이 아니므로 `매도`·`매수`는
 # 앞에 `공`이 붙지 않을 때만 센다.
@@ -940,6 +974,9 @@ _COMPARISON_MARKERS = ("중에", "비교", "vs", "VS", "어디가", "쪽", "중 
 
 
 def _direction(text: str) -> QueryDirection | None:
+    # 아래에서 표식의 위치로 앞뒤를 가리므로 글자 수를 유지한 채 지운다.
+    for noise in _DIRECTION_NOISE:
+        text = text.replace(noise, " " * len(noise))
     up = min((text.find(marker) for marker in _UP_MARKERS if marker in text), default=-1)
     down = min(
         (text.find(marker) for marker in _DOWN_MARKERS if marker in text), default=-1
@@ -1080,6 +1117,7 @@ def plan_question(
     dates, masked = _find_dates(text, today)
     masked.extend(amount_spans)
     periods = _find_periods(text, today, masked)
+    outcome_horizon = _find_outcome_horizon(text, masked)
 
     # 명시적 날짜가 둘 이상이면 기간 질문이다("A부터 B까지", "A~B", "A B 사이").
     if len(dates) >= 2 and not periods:
@@ -1174,6 +1212,15 @@ def plan_question(
             for item in group
         )
         topic = _topic_before(text, catalyst_matches[0].start, matched_texts)
+        # "로봇 산업 육성 정책"의 로봇이 테마 별칭으로 먼저 잡히면 주제어가
+        # 비어 소재 필터가 통째로 풀린다(2026-08-20 운영 실측: 무관 사건
+        # 29건 통과). 소재 낱말 바로 앞의 테마 글자는 주제어로도 쓴다.
+        if topic is None:
+            catalyst_start = catalyst_matches[0].start
+            for item in theme_matches:
+                if item.end <= catalyst_start and catalyst_start - item.end <= 20:
+                    topic = item.text
+                    break
 
     plan_kwargs: dict[str, Any] = {
         "query_type": query_type,
@@ -1184,6 +1231,7 @@ def plan_question(
         "catalyst_type": catalyst,
         "amount_condition": amount,
         "topic": topic,
+        "outcome_horizon": outcome_horizon,
     }
     if query_type is QueryType.STOCK_DAY_REASON or query_type is QueryType.DAY_MOVERS:
         plan_kwargs["date"] = date_slot

@@ -37,6 +37,7 @@ from .query_answers import (
     ValueFact,
 )
 from .query_contracts import QueryPrerequisite
+from .transform import topic_clause_match
 from .query_planning import QuestionCatalog, ThemeEntry
 
 
@@ -686,6 +687,17 @@ class PostgresResearchRepository:
                     review_state=_text(row[14]) or "AI_DRAFT",
                 )
             )
+        if catalyst_filter.topic_text:
+            # SQL ILIKE는 글자 포함만 본다. 소식 조각·주체·행위 검사는 여기서.
+            summaries = [
+                summary
+                for summary in summaries
+                if topic_clause_match(
+                    summary.evidence_text,
+                    catalyst_filter.topic_text,
+                    catalyst_filter.catalyst_type,
+                )
+            ]
         return tuple(summaries)
 
     def _catalyst_roles(
@@ -876,18 +888,15 @@ class PostgresResearchRepository:
         # 통계(중앙값)는 화면에 보이는 몇 줄이 아니라 조건에 맞는 사건 전부로
         # 내야 뜻이 있다. 화면 자르기는 답변 쪽이 따로 한다.
         event_limit = catalyst_filter.limit or 60
-        theme_clause = ""
-        theme_params: list[object] = []
-        if catalyst_filter.source_theme_id is not None:
-            # 테마로 물었으면 그 테마 반응의 주도주만 센다.
-            theme_clause = " AND tt.source_theme_id = %s"
-            theme_params.append(catalyst_filter.source_theme_id)
+        # 테마는 사건을 고를 때만 쓴다(_catalyst_where). 주도주까지 그 테마
+        # 하나로 거르면 같은 사건이 움직인 다른 테마가 통째로 빠진다 —
+        # 2026-08-06 로봇 정책은 테마 3곳인데 1곳만 보였다(2026-08-20 실측).
         db = self._connection.cursor()
         try:
             db.execute(
                 "WITH latest AS ("
                 " SELECT DISTINCT ON (cr.catalyst_id) cr.catalyst_revision_id,"
-                " cr.catalyst_id, cr.occurred_on"
+                " cr.catalyst_id, cr.occurred_on, cr.primary_source_mention_id"
                 " FROM ontology.current_catalyst_revisions cr"
                 f"{where}"
                 " ORDER BY cr.catalyst_id, cr.revision_no DESC"
@@ -896,7 +905,17 @@ class PostgresResearchRepository:
                 " ORDER BY occurred_on DESC, catalyst_id LIMIT %s"
                 ")"
                 " SELECT p.catalyst_id, p.occurred_on, ce.seed_stock_code,"
-                " ce.canonical_name, th.raw_text, tt.current_name"
+                " ce.canonical_name, th.raw_text, tt.current_name,"
+                # 주제어 절 검사는 테마 원문이 아니라 사건을 뽑은 근거 구간을 본다.
+                " (SELECT substr(pth.raw_text, psm.start_offset + 1,"
+                "         psm.end_offset - psm.start_offset)"
+                "  FROM ontology.source_mentions psm"
+                "  JOIN ontology.source_mention_history psmh"
+                "    ON psmh.source_mention_id = psm.source_mention_id"
+                "  JOIN core.infostock_theme_history pth"
+                "    ON pth.history_id = psmh.history_id"
+                "  WHERE psm.source_mention_id = p.primary_source_mention_id"
+                "  LIMIT 1)"
                 " FROM picked p"
                 " JOIN ontology.catalyst_theme_reactions ctr"
                 "   ON ctr.catalyst_revision_id = p.catalyst_revision_id"
@@ -909,9 +928,8 @@ class PostgresResearchRepository:
                 " JOIN core.infostock_theme_history th"
                 "   ON th.history_id = trr.history_id"
                 " JOIN core.infostock_themes tt ON tt.theme_id = th.theme_id"
-                f"{theme_clause}"
                 " ORDER BY p.occurred_on DESC, p.catalyst_id, ce.seed_stock_code",
-                (*params, event_limit, *theme_params),
+                (*params, event_limit),
             )
             rows = db.fetchall()
         finally:
@@ -919,10 +937,20 @@ class PostgresResearchRepository:
         observations: list[OutcomeObservation] = []
         seen: set[tuple[str, str]] = set()
         per_event: dict[str, int] = {}
+        topic_pass: dict[str, bool] = {}
         for row in rows:
             catalyst_id = str(row[0])
             occurred_on = row[1]
             stock_code = str(row[2]).strip()
+            if catalyst_filter.topic_text:
+                if catalyst_id not in topic_pass:
+                    topic_pass[catalyst_id] = topic_clause_match(
+                        _text(row[6]),
+                        catalyst_filter.topic_text,
+                        catalyst_filter.catalyst_type,
+                    )
+                if not topic_pass[catalyst_id]:
+                    continue
             key = (catalyst_id, stock_code)
             if key in seen:
                 continue

@@ -21,7 +21,7 @@ REASONING_EFFORTS = ("minimal", "low", "medium", "high")
 
 # 리서치 복합 질문 분해(E-21 열린 질문 1단계). 숫자·사실을 만들지 않고
 # 다음에 던질 단일 질의 문장 하나만 쓴다.
-RESEARCH_COMPOSE_PROMPT_VERSION = "research-compose/1.0.0"
+RESEARCH_COMPOSE_PROMPT_VERSION = "research-compose/1.1.0"
 
 _SYSTEM_PROMPTS: Mapping[str, str] = {
     RESEARCH_COMPOSE_PROMPT_VERSION: (
@@ -47,7 +47,11 @@ _SYSTEM_PROMPTS: Mapping[str, str] = {
         "2. '당시 주도주' 같은 참조는 앞 단계 result에 나온 실제 종목명으로 바꿔 쓴다.\n"
         "2-1. 원 질문의 기간 표현('과거'·'올해'·'최근 3개월'·'2024년')을 빼지 않고\n"
         "   그대로 옮긴다. 빼면 엔진이 최근 몇 달만 보고 사건 대부분을 놓친다.\n"
+        "2-2. 원 질문의 기준일 표현('3거래일 뒤'·'17일 후')도 주가를 묻는 질문에\n"
+        "   그대로 옮긴다. 빼면 엔진이 5거래일로 답해 손님이 물은 날이 아니게 된다.\n"
         "3. 원 질문이 이미 충분히 답해졌으면 next를 null로 한다.\n"
+        "3-1. 입력에 finalQueryType이 있으면 그 유형을 묻는 질문으로 끝낸다 —\n"
+        "   손님이 끝내 알고 싶은 것이 그것이다.\n"
         "4. 한 번에 질문 문장 하나만 낸다. 문장은 위 틀을 따른다.\n"
         "5. 앞 단계가 '해석 실패'면 같은 뜻을 위 틀에 더 가깝게 한 번만 고쳐 쓴다.\n"
         "\n"

@@ -2631,6 +2631,17 @@ a:focus-visible,
 
 .research-leaders {
   margin: var(--djv-space-2) 0 0;
+}
+
+/* 반응한 테마 이름이 곧 소제목이다. 어느 테마가 움직였는지 여기서 읽는다. */
+.research-leaders h4 {
+  margin: var(--djv-space-3) 0 0;
+  font-size: var(--djv-font-size-label);
+  font-weight: 600;
+}
+
+.research-leaders ul {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -2646,14 +2657,9 @@ a:focus-visible,
 }
 
 .research-leaders__close,
-.research-leaders__theme,
 .research-leaders__returns em {
   color: var(--djv-color-text-muted);
   font-style: normal;
-}
-
-.research-leaders__theme {
-  font-size: var(--djv-font-size-caption);
 }
 
 .research-leaders__returns {

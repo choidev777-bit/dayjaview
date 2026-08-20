@@ -79,7 +79,8 @@ const VALUE_LABELS: Record<string, string> = {
   missingReason: '값이 없는 이유',
   leaderCount: '주도주',
   upCount: '상승',
-  medianReturn: '5거래일 뒤 중앙값',
+  medianReturn: '기준 거래일 뒤 중앙값',
+  horizon: '기준 거래일',
 };
 
 /** 값 자리에도 영어 코드가 온다. 항목 이름만 한글로 바꾸면 `ANTICIPATION`이 남는다. */
@@ -310,33 +311,49 @@ function RowValues({
   );
 }
 
-/** 사건 하나에 딸린 주도주 성적표. 눌러서 펼치기 전에는 감춘다. */
+/** 사건 하나에 딸린 주도주 성적표. 반응한 테마별로 묶는다 — 섞어 놓으면
+ *  '테마 3곳'이 어느 셋인지 세어 보기 전엔 알 수 없다. */
 function LeaderTable({ leaders }: { leaders: Record<string, unknown>[] }) {
+  const byTheme = new Map<string, Record<string, unknown>[]>();
+  for (const leader of leaders) {
+    const theme = String(leader.themeName ?? '테마 미상');
+    const bucket = byTheme.get(theme);
+    if (bucket) bucket.push(leader);
+    else byTheme.set(theme, [leader]);
+  }
   return (
-    <ul className="research-leaders">
-      {leaders.map((leader, index) => {
-        const returns = (leader.returns ?? {}) as Record<string, string | null>;
-        const close = leader.baseClose ? renderValue('baseClose', leader.baseClose) : '';
-        return (
-          <li key={`${String(leader.companyName ?? '')}:${index}`}>
-            <strong>{String(leader.companyName ?? '')}</strong>
-            {leader.themeName ? (
-              <span className="research-leaders__theme">{String(leader.themeName)}</span>
-            ) : null}
-            {close ? <span className="research-leaders__close">{close}</span> : null}
-            <span className="research-leaders__returns">
-              {Object.entries(returns)
-                .filter(([, value]) => value)
-                .map(([horizon, value]) => (
-                  <em key={horizon} className={rateClass(String(value))}>
-                    {horizon.replace('T+', '')}일 {value}
-                  </em>
-                ))}
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="research-leaders">
+      {[...byTheme].map(([theme, members]) => (
+        <section key={theme}>
+          <h4 className="research-leaders__theme">
+            {theme} <span className="research-more">{members.length}곳</span>
+          </h4>
+          <ul>
+            {members.map((leader, index) => {
+              const returns = (leader.returns ?? {}) as Record<string, string | null>;
+              const close = leader.baseClose
+                ? renderValue('baseClose', leader.baseClose)
+                : '';
+              return (
+                <li key={`${String(leader.companyName ?? '')}:${index}`}>
+                  <strong>{String(leader.companyName ?? '')}</strong>
+                  {close ? <span className="research-leaders__close">{close}</span> : null}
+                  <span className="research-leaders__returns">
+                    {Object.entries(returns)
+                      .filter(([, value]) => value)
+                      .map(([horizon, value]) => (
+                        <em key={horizon} className={rateClass(String(value))}>
+                          {horizon.replace('T+', '')}일 {value}
+                        </em>
+                      ))}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -355,6 +372,9 @@ function RowBlock({ row }: { row: ResearchRow }) {
      원문과 종목별 성적이 열린다. 다 펴 두면 사건 두 개가 한 화면을 넘는다. */
   if (leaders) {
     const median = row.values.medianReturn ? String(row.values.medianReturn) : '';
+    /* 며칠 뒤를 물었는지는 질문마다 다르다. 서버가 고른 기준일을 그대로 쓴다 —
+       화면이 5로 박아 두면 "3거래일 뒤" 질문에 5일 답이 붙는다. */
+    const horizon = Number(row.values.horizon) || 5;
     const themeNames = Array.isArray(row.values.themeNames)
       ? (row.values.themeNames as string[])
       : [];
@@ -370,7 +390,11 @@ function RowBlock({ row }: { row: ResearchRow }) {
             {open ? '▾' : '▸'} {row.label}
           </span>
           <span className="research-row__brief">
-            {median ? <em className={rateClass(median)}>5일 뒤 {median}</em> : null}
+            {median ? (
+              <em className={rateClass(median)}>
+                {horizon}일 뒤 {median}
+              </em>
+            ) : null}
             <span className="research-more">
               {themeNames.length ? `테마 ${themeNames.length}곳 · ` : ''}
               주도주 {String(row.values.leaderCount ?? leaders.length)}곳 중{' '}
@@ -401,8 +425,13 @@ function RowBlock({ row }: { row: ResearchRow }) {
  *  그것만 펴 두고, 거기까지 간 과정은 접어 둔다. */
 function ComposedAnswer({ asked, steps }: { asked: string | null; steps: ResearchStep[] }) {
   const [openSteps, setOpenSteps] = useState(false);
+  /* 어느 단계가 손님이 물은 답인지는 서버가 정한다(conclusion). 화면이
+     '마지막 성공 단계'로 고르면 LLM이 끝에 딴 질문을 던졌을 때 그게 결론이
+     된다 — 2026-08-20에 실제로 그랬다. */
   const answered = steps.filter((step) => step.status === 'ANSWERED');
-  const conclusion = answered.length ? answered[answered.length - 1] : null;
+  const conclusion =
+    answered.find((step) => step.conclusion) ??
+    (answered.length ? answered[answered.length - 1] : null);
   const rest = steps.filter((step) => step !== conclusion);
   return (
     <>
@@ -481,7 +510,8 @@ function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string 
             <small>{metric.labelKo}</small>
             <strong>{metric.value}</strong>
             {metric.countUnitLabelKo ? <span>{metric.countUnitLabelKo} 기준</span> : null}
-            {metric.sampleSize !== null ? <span>표본 {metric.sampleSize}</span> : null}
+            {/* 일부를 뽑아 추정한 게 아니라 그날 것을 다 세고 거른 분모다. `표본`은 오해를 준다. */}
+            {metric.sampleSize !== null ? <span>{metric.sampleSize}개 중</span> : null}
             {metric.noteKo ? <em>{metric.noteKo}</em> : null}
           </li>
         ))}
