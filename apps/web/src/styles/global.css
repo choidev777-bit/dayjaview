@@ -2441,15 +2441,6 @@ a:focus-visible,
   border-radius: var(--djv-radius-sm);
 }
 
-.research-examples {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--djv-space-2);
-  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
-  padding: 0;
-  list-style: none;
-}
-
 .research-answer,
 .research-failure {
   margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
@@ -3227,34 +3218,6 @@ textarea.research-form__input {
 .research-form__submit:disabled {
   color: var(--djv-color-text-muted);
   background: var(--djv-color-surface-muted);
-}
-
-.research-examples__title {
-  margin: var(--djv-space-5) 0 var(--djv-space-2);
-  color: var(--djv-color-text-muted);
-  font-size: var(--djv-font-size-caption);
-  font-weight: 600;
-}
-
-.research-examples {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
-  padding: 0;
-  list-style: none;
-}
-
-.research-examples button {
-  padding: 8px 12px;
-  border: 1px solid var(--djv-color-border);
-  border-radius: var(--djv-radius-pill);
-  color: var(--djv-color-text);
-  background: var(--djv-color-surface);
-  font-family: inherit;
-  font-size: var(--djv-font-size-caption);
-  font-weight: 600;
-  text-align: left;
 }
 
 /* 시트 안 닫기 버튼. 스크림을 눌러도 닫히지만 버튼이 있어야 닫을 수 있다는 걸 안다. */
