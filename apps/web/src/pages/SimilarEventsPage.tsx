@@ -88,7 +88,7 @@ export function SimilarEventsPage() {
 
   return (
     <div className="page page--cases">
-      <GateHeader onBack={goBack} title="과거 사례 전체보기" />
+      <GateHeader onBack={goBack} />
 
       <div className="page-intro">
         <h1>과거에는 이런 일이 있었어요</h1>
@@ -207,13 +207,14 @@ export function SimilarEventsPage() {
   );
 }
 
-function GateHeader({ onBack, title = '과거 사례' }: { onBack: () => void; title?: string }) {
+function GateHeader({ onBack }: { onBack: () => void }) {
   return (
     <header className="app-bar">
       <button type="button" onClick={onBack} aria-label="이전 화면으로 돌아가기">
         <IconArrowLeftLine size={24} aria-hidden="true" />
       </button>
-      <strong>{title}</strong>
+      {/* 화면 이름은 바로 아래 머리글 카드가 진다. 상단바에 또 두면 두 번 나온다. */}
+      <span aria-hidden="true" />
       <span className="app-bar__spacer" aria-hidden="true" />
     </header>
   );

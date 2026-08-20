@@ -342,9 +342,17 @@ a:focus-visible,
   margin-top: var(--djv-space-3);
 }
 
-/* 바탕이 회색이 되면서 이 머리글이 맨바닥에 놓였다. 아래 내용과 같이 흰 카드로 묶는다. */
+/* 화면 제목 줄은 바탕 위에 그냥 둔다. 카드로 감싸면 아래 내용과 같은 무게로 읽혀
+   제목이 아니라 또 하나의 카드가 된다. */
 .page-intro {
-  margin: 0 var(--djv-space-3) var(--djv-space-3);
+  padding: var(--djv-space-6) var(--djv-space-4) var(--djv-space-5);
+}
+
+/* 사건 화면의 머리글만 카드다. 여기서는 제목이 아니라 `무슨 일이 있었나`라는
+   내용 자체라서 아래 카드들과 같은 무게로 묶는 게 맞다. */
+.page--case-detail > .page-intro,
+.page--cases > .page-intro {
+  margin: 0 var(--djv-space-3) var(--djv-space-2);
   padding: var(--djv-space-5) var(--djv-space-4);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
