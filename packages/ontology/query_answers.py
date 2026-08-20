@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Literal, Mapping, Protocol, Sequence
 
 from .query_contracts import (
@@ -486,7 +486,10 @@ def _no_record(plan: QueryPlan, message: str) -> PlanFailure:
 def _rate(value: Decimal | None) -> str:
     if value is None:
         return "—"
-    return f"{'+' if value >= 0 else ''}{format(value, 'f')}%"
+    # 나눗셈으로 만든 수익률은 소수점이 끝없이 붙는다. 원문 등락률과 같은
+    # 소수점 둘째 자리로 맞춰 보여준다(2026-08-19 운영 실측).
+    shown = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    return f"{'+' if shown >= 0 else ''}{format(shown, 'f')}%"
 
 
 def _display_limit_exclusions(total: int, limit: int) -> tuple[AnswerExclusion, ...]:

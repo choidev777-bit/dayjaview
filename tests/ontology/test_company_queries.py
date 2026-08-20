@@ -440,7 +440,7 @@ def test_outcome_keeps_missing_prices_null_and_blocks_pre_2010() -> None:
 
     assert result.answer is not None
     returns = result.answer.rows[0].values["returns"]
-    assert returns["T+5"] == "+7.1%"
+    assert returns["T+5"] == "+7.10%"
     # 값이 없으면 0이 아니라 null이다.
     assert returns["T+20"] is None
 

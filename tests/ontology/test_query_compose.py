@@ -126,4 +126,4 @@ def test_topic_narrows_catalyst_questions_and_leader_axis_answers_outcome() -> N
     assert answered.answer is not None
     assert "주도주" in answered.answer.summary_ko
     row = answered.answer.rows[0]
-    assert row.values["returns"]["T+5"] == "+5.5%"
+    assert row.values["returns"]["T+5"] == "+5.50%"
