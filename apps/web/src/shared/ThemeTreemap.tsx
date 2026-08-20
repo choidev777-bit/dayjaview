@@ -80,6 +80,10 @@ export function ThemeTreemap({ items, motion }: { items: TreemapItem[]; motion: 
       role="list"
       aria-label={`실시간 테마 강도 지도, 총 ${rects.length.toLocaleString('ko-KR')}개`}
       data-motion={motion ? 'on' : 'off'}
+      /* 첫 배치는 크기 0에서 시작해, 위치·크기 전환을 그대로 두면 왼쪽 위에서 자라는
+         것처럼 보인다. 폭을 재기 전에는 전환을 끄고 자리부터 잡는다. 등장 효과는
+         각 타일이 제 중심에서 커지는 `treemap-cell-in`이 맡는다. */
+      data-ready={size.width > 0 ? 'true' : 'false'}
     >
       {rects.map((rect) => {
         // 면적은 1초 주기 레이아웃, 숫자와 색상은 500ms 주기 최신값을 쓴다.

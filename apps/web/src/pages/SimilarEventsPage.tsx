@@ -1,8 +1,5 @@
 import { useCallback } from 'react';
-import {
-  IconArrowLeftLine,
-  IconChevronRightSmallLine,
-} from '@karrotmarket/react-monochrome-icon';
+import { IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { HistoricalHorizon, HistoricalSummary } from '../domain/contracts';
@@ -210,8 +207,8 @@ export function SimilarEventsPage() {
 function GateHeader({ onBack }: { onBack: () => void }) {
   return (
     <header className="app-bar">
-      <button type="button" onClick={onBack} aria-label="이전 화면으로 돌아가기">
-        <IconArrowLeftLine size={24} aria-hidden="true" />
+      <button type="button" className="app-bar__back" onClick={onBack} aria-label="이전 화면으로 돌아가기">
+        <IconChevronRightSmallLine size={24} aria-hidden="true" />
       </button>
       {/* 화면 이름은 바로 아래 머리글 카드가 진다. 상단바에 또 두면 두 번 나온다. */}
       <span aria-hidden="true" />

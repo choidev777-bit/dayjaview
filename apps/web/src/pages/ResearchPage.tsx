@@ -462,14 +462,22 @@ function RowList({ rows }: { rows: ResearchRow[] }) {
 
 function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string | null }) {
   return (
-    <section className="research-answer" aria-label="답변">
+    <>
+      <section className="research-answer" aria-label="답변">
       {/* 물어본 문장을 따로 띄우면 박스가 둘로 늘어난다. 답변 머리에 붙인다. */}
       {asked ? <p className="research-answer__asked">{asked}</p> : null}
       <p className="research-answer__summary">{answer.summaryKo}</p>
 
       <ul className="research-metrics">
         {answer.metrics.map((metric) => (
-          <li key={metric.labelKo}>
+          /* 값이 오름인지 내림인지를 화면 다른 곳과 같은 색으로 알린다. 부호는 값 문자열이
+             이미 달고 있으므로 그것으로 가른다. */
+          <li
+            key={metric.labelKo}
+            data-tone={
+              metric.value.startsWith('+') ? 'up' : metric.value.startsWith('-') ? 'down' : 'flat'
+            }
+          >
             <small>{metric.labelKo}</small>
             <strong>{metric.value}</strong>
             {metric.countUnitLabelKo ? <span>{metric.countUnitLabelKo} 기준</span> : null}
@@ -490,8 +498,6 @@ function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string 
         </p>
       ))}
 
-      <RowList rows={answer.rows} />
-
       {answer.exclusions.length ? (
         <section className="research-exclusions" aria-label="답에서 뺀 것">
           <h3>답에서 뺀 것</h3>
@@ -506,7 +512,11 @@ function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string 
       ) : null}
 
       {/* 집계 단위·표본은 위 지표 칸에 이미 있고, 엔진 버전 목록은 화면에 둘 값이 아니다. */}
-    </section>
+      </section>
+      {/* 사례는 답변 카드 밖으로 뺀다. 답변은 `무엇을 알아냈나`이고 사례는 그 근거라,
+          같은 카드에 넣으면 어디까지가 답인지 흐려진다. */}
+      <RowList rows={answer.rows} />
+    </>
   );
 }
 

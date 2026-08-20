@@ -351,6 +351,7 @@ a:focus-visible,
 /* 사건 화면의 머리글만 카드다. 여기서는 제목이 아니라 `무슨 일이 있었나`라는
    내용 자체라서 아래 카드들과 같은 무게로 묶는 게 맞다. */
 .page--case-detail > .page-intro,
+.page--catalyst > .page-intro,
 .page--cases > .page-intro {
   margin: 0 var(--djv-space-3) var(--djv-space-2);
   padding: var(--djv-space-5) var(--djv-space-4);
@@ -431,6 +432,11 @@ a:focus-visible,
 
 .detail-app-bar__close svg {
   transform: rotate(90deg);
+}
+
+/* 오른쪽 꺾쇠를 왼쪽으로 돌려 뒤로 가기로 쓴다. 꼬리 달린 화살표보다 가볍다. */
+.app-bar__back svg {
+  transform: rotate(180deg);
 }
 
 .app-bar__spacer {
@@ -1062,7 +1068,8 @@ a:focus-visible,
 }
 
 /* 값이 멈춘 화면(장 마감·수신 지연)에서는 굳이 천천히 움직일 이유가 없다. */
-.treemap[data-motion='off'] .treemap__cell {
+.treemap[data-motion='off'] .treemap__cell,
+.treemap[data-ready='false'] .treemap__cell {
   transition: none;
 }
 
@@ -2471,6 +2478,24 @@ a:focus-visible,
   text-align: center;
 }
 
+/* 오름·내림을 화면 다른 곳과 같은 색으로 칠한다. 숫자만 색을 주면 칸이 다 회색이라
+   어느 기간이 좋았는지 한눈에 안 들어온다. */
+.research-metrics li[data-tone="up"] {
+  background: var(--djv-color-market-up-soft);
+}
+
+.research-metrics li[data-tone="down"] {
+  background: var(--djv-color-market-down-soft);
+}
+
+.research-metrics li[data-tone="up"] strong {
+  color: var(--djv-color-market-up);
+}
+
+.research-metrics li[data-tone="down"] strong {
+  color: var(--djv-color-market-down);
+}
+
 .research-metrics strong {
   font-size: var(--djv-font-size-heading-3);
   font-variant-numeric: tabular-nums;
@@ -2482,8 +2507,9 @@ a:focus-visible,
   font-style: normal;
 }
 
+/* 답변 카드 밖으로 나왔다. 사례마다 흰 카드로 세워 답변과 구분한다. */
 .research-rows {
-  margin: var(--djv-space-4) 0 0;
+  margin: 0 var(--djv-space-4) var(--djv-space-4);
   padding: 0;
   list-style: none;
 }
@@ -2491,8 +2517,10 @@ a:focus-visible,
 .research-row {
   margin-top: var(--djv-space-2);
   padding: var(--djv-space-4);
-  border-radius: var(--djv-radius-sm);
-  background: var(--djv-color-surface-muted);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .research-row__values {
@@ -3316,11 +3344,12 @@ p.page-intro__origin {
 
 /* 새로 들어온 타일은 자리를 옮겨 온 게 아니라 나타난 것이다. 크기 전환 대신 서서히 뜬다. */
 @keyframes treemap-cell-in {
-  from { opacity: 0; transform: scale(.96); }
+  from { opacity: 0; transform: scale(.86); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .treemap__cell {
+  transform-origin: center;
   animation: treemap-cell-in 420ms var(--djv-easing-standard);
 }
 
