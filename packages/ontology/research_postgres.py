@@ -590,7 +590,9 @@ class PostgresResearchRepository:
             )
             params.append(catalyst_filter.source_theme_id)
         if catalyst_filter.topic_text:
-            # 사건 원문에 주제어가 있는 것만("로봇 정책"의 로봇).
+            # 사건 문장에 주제어가 있는 것만("로봇 정책"의 로봇). 게시물 전체가
+            # 아니라 그 사건의 근거 구간만 본다 — 같은 글 딴 문장에 낱말이
+            # 있다는 이유로 무관한 사건이 딸려 오면 안 된다.
             clauses.append(
                 "EXISTS (SELECT 1 FROM ontology.source_mentions psm"
                 " JOIN ontology.source_mention_history psmh"
@@ -598,7 +600,8 @@ class PostgresResearchRepository:
                 " JOIN core.infostock_theme_history pth"
                 "   ON pth.history_id = psmh.history_id"
                 " WHERE psm.source_mention_id = cr.primary_source_mention_id"
-                "   AND pth.raw_text ILIKE %s)"
+                "   AND substr(pth.raw_text, psm.start_offset + 1,"
+                "              psm.end_offset - psm.start_offset) ILIKE %s)"
             )
             params.append(f"%{catalyst_filter.topic_text}%")
         return clauses, params

@@ -6,6 +6,7 @@ import type {
   ResearchEvidence,
   ResearchFailure,
   ResearchRow,
+  ResearchStep,
 } from '../domain/contracts';
 import { asRepositoryError } from '../domain/repositoryErrors';
 
@@ -315,6 +316,69 @@ function RowBlock({ row }: { row: ResearchRow }) {
   );
 }
 
+/** 복합 질문의 답. 마지막으로 답한 단계가 손님이 물은 것에 가장 가깝다 —
+ *  그것만 펴 두고, 거기까지 간 과정은 접어 둔다. */
+function ComposedAnswer({ asked, steps }: { asked: string | null; steps: ResearchStep[] }) {
+  const [openSteps, setOpenSteps] = useState(false);
+  const answered = steps.filter((step) => step.status === 'ANSWERED');
+  const conclusion = answered.length ? answered[answered.length - 1] : null;
+  const rest = steps.filter((step) => step !== conclusion);
+  return (
+    <>
+      {conclusion?.status === 'ANSWERED' ? (
+        <AnswerBlock answer={conclusion.answer} asked={asked} />
+      ) : null}
+      {rest.length ? (
+        <>
+          <button
+            type="button"
+            className="research-rows__toggle research-steps__toggle"
+            onClick={() => setOpenSteps(!openSteps)}
+          >
+            {openSteps ? '찾아간 과정 접기' : `찾아간 과정 ${rest.length}단계 보기`}
+          </button>
+          {openSteps
+            ? rest.map((step, index) =>
+                step.status === 'ANSWERED' ? (
+                  <AnswerBlock key={index} answer={step.answer} asked={step.question} />
+                ) : (
+                  <FailureBlock key={index} failure={step.failure} asked={step.question} />
+                ),
+              )
+            : null}
+        </>
+      ) : null}
+    </>
+  );
+}
+
+/** 처음 3개만 펴 둔다. 20개를 다 펴면 답이 스크롤 밑으로 밀린다. */
+const VISIBLE_ROWS = 3;
+
+function RowList({ rows }: { rows: ResearchRow[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const shown = expanded ? rows : rows.slice(0, VISIBLE_ROWS);
+  const hidden = rows.length - shown.length;
+  return (
+    <>
+      <ul className="research-rows">
+        {shown.map((row, index) => (
+          <RowBlock key={`${row.label}:${index}`} row={row} />
+        ))}
+      </ul>
+      {hidden > 0 || expanded ? (
+        <button
+          type="button"
+          className="research-rows__toggle"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? '접기' : `나머지 ${hidden}개 보기`}
+        </button>
+      ) : null}
+    </>
+  );
+}
+
 function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string | null }) {
   return (
     <section className="research-answer" aria-label="답변">
@@ -345,11 +409,7 @@ function AnswerBlock({ answer, asked }: { answer: ResearchAnswer; asked: string 
         </p>
       ))}
 
-      <ul className="research-rows">
-        {answer.rows.map((row) => (
-          <RowBlock key={row.label} row={row} />
-        ))}
-      </ul>
+      <RowList rows={answer.rows} />
 
       {answer.exclusions.length ? (
         <section className="research-exclusions" aria-label="답에서 뺀 것">
@@ -532,18 +592,7 @@ export function ResearchPage() {
 
       {error ? <p className="research-failure">{error}</p> : null}
       {result?.data.status === 'ANSWERED' && result.data.steps?.length ? (
-        /* 복합 질문 — 단일 질의로 풀어 답한 단계를 순서대로 보인다.
-           각 단계 머리에는 다시 쓴 질문이 붙는다. */
-        <>
-          {asked ? <p className="research-answer__asked">{asked}</p> : null}
-          {result.data.steps.map((step, index) =>
-            step.status === 'ANSWERED' ? (
-              <AnswerBlock key={index} answer={step.answer} asked={step.question} />
-            ) : (
-              <FailureBlock key={index} failure={step.failure} asked={step.question} />
-            ),
-          )}
-        </>
+        <ComposedAnswer asked={asked} steps={result.data.steps} />
       ) : result?.data.status === 'ANSWERED' ? (
         <AnswerBlock answer={result.data.answer} asked={asked} />
       ) : null}

@@ -2494,6 +2494,29 @@ a:focus-visible,
   color: var(--djv-color-text-muted);
 }
 
+/* 목록 접기·과정 보기 버튼. 답 바로 아래 한 줄로 둔다. */
+.research-rows__toggle {
+  display: block;
+  width: 100%;
+  margin-top: var(--djv-space-2);
+  padding: var(--djv-space-2);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-md);
+  background: transparent;
+  color: var(--djv-color-text-muted);
+  font-size: var(--djv-font-size-label);
+  cursor: pointer;
+}
+
+.research-rows__toggle:hover {
+  color: var(--djv-color-text);
+}
+
+.research-steps__toggle {
+  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  width: auto;
+}
+
 /* "외 N개 종목"처럼 서버가 잘라낸 개수를 알리는 줄 */
 .research-more {
   color: var(--djv-color-text-muted);

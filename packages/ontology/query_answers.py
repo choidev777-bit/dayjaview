@@ -1127,8 +1127,8 @@ def _answer_theme_history(
         sample_size=len(records),
         human_verified=plan.query_type in availability.human_verified,
         notes_ko=(
-            "소재 유형은 자동 분류 결과이며 test split 기준 primary 정확도가 "
-            "77.8%입니다.",
+            "소재 종류는 기계가 자동으로 분류했고, 검수 표본에서 10건 중 "
+            "약 8건이 맞았습니다(77.8%).",
         ),
     )
 
@@ -1391,8 +1391,8 @@ def _answer_catalyst_theme_reaction(
         sample_size=len(items),
         human_verified=plan.query_type in availability.human_verified,
         notes_ko=(
-            "소재 유형은 자동 분류 결과이며 test split 기준 primary 정확도가 "
-            "77.8%입니다.",
+            "소재 종류는 기계가 자동으로 분류했고, 검수 표본에서 10건 중 "
+            "약 8건이 맞았습니다(77.8%).",
         ),
     )
 
@@ -1546,7 +1546,8 @@ def _answer_catalyst_certainty(
         sample_size=len(items),
         human_verified=plan.query_type in availability.human_verified,
         notes_ko=(
-            "확실성은 자동 분류 결과이며 test split 기준 정확도가 90.0%입니다.",
+            "확정·기대 구분은 기계가 자동으로 판단했고, 검수 표본에서 10건 중 "
+            "9건이 맞았습니다(90.0%).",
         ),
     )
 
