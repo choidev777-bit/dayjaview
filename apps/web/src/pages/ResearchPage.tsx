@@ -320,6 +320,9 @@ function LeaderTable({ leaders }: { leaders: Record<string, unknown>[] }) {
         return (
           <li key={`${String(leader.companyName ?? '')}:${index}`}>
             <strong>{String(leader.companyName ?? '')}</strong>
+            {leader.themeName ? (
+              <span className="research-leaders__theme">{String(leader.themeName)}</span>
+            ) : null}
             {close ? <span className="research-leaders__close">{close}</span> : null}
             <span className="research-leaders__returns">
               {Object.entries(returns)
@@ -352,6 +355,9 @@ function RowBlock({ row }: { row: ResearchRow }) {
      원문과 종목별 성적이 열린다. 다 펴 두면 사건 두 개가 한 화면을 넘는다. */
   if (leaders) {
     const median = row.values.medianReturn ? String(row.values.medianReturn) : '';
+    const themeNames = Array.isArray(row.values.themeNames)
+      ? (row.values.themeNames as string[])
+      : [];
     return (
       <li className="research-row research-row--event">
         <button
@@ -366,6 +372,7 @@ function RowBlock({ row }: { row: ResearchRow }) {
           <span className="research-row__brief">
             {median ? <em className={rateClass(median)}>5일 뒤 {median}</em> : null}
             <span className="research-more">
+              {themeNames.length ? `테마 ${themeNames.length}곳 · ` : ''}
               주도주 {String(row.values.leaderCount ?? leaders.length)}곳 중{' '}
               {String(row.values.upCount ?? 0)}곳 상승
             </span>

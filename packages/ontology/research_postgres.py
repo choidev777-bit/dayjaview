@@ -864,7 +864,9 @@ class PostgresResearchRepository:
 
         회사 축(outcomes)과 달리 사건에 붙은 테마 반응의 주도주 목록을 쓴다
         (계획서 4.1 "회사 또는 당시 주도주 outcome"). 최근 사건부터 최대
-        12건, 사건당 주도주 5종목까지만 가격을 조회해 폭주를 막는다.
+        12건까지 본다. 한 사건이 여러 테마를 움직이므로 사건당 주도주는
+        테마를 합쳐 20종목까지 받는다 — 5로 묶었더니 첫 테마 주도주만 남고
+        나머지 두 테마가 통째로 빠졌다(2026-08-20 실측).
         """
 
         if self._price_reader is None:
@@ -892,7 +894,7 @@ class PostgresResearchRepository:
                 " ORDER BY occurred_on DESC, catalyst_id LIMIT %s"
                 ")"
                 " SELECT p.catalyst_id, p.occurred_on, ce.seed_stock_code,"
-                " ce.canonical_name, th.raw_text"
+                " ce.canonical_name, th.raw_text, tt.current_name"
                 " FROM picked p"
                 " JOIN ontology.catalyst_theme_reactions ctr"
                 "   ON ctr.catalyst_revision_id = p.catalyst_revision_id"
@@ -922,7 +924,7 @@ class PostgresResearchRepository:
             key = (catalyst_id, stock_code)
             if key in seen:
                 continue
-            if per_event.get(catalyst_id, 0) >= 5:
+            if per_event.get(catalyst_id, 0) >= 20:
                 continue
             seen.add(key)
             per_event[catalyst_id] = per_event.get(catalyst_id, 0) + 1
@@ -940,6 +942,7 @@ class PostgresResearchRepository:
                     returns=returns,
                     missing_reason=missing,
                     evidence_text=_text(row[4])[:300],
+                    theme_name=_text(row[5]),
                 )
             )
         return tuple(observations)

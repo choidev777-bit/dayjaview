@@ -2543,9 +2543,14 @@ a:focus-visible,
 }
 
 .research-leaders__close,
+.research-leaders__theme,
 .research-leaders__returns em {
   color: var(--djv-color-text-muted);
   font-style: normal;
+}
+
+.research-leaders__theme {
+  font-size: var(--djv-font-size-caption);
 }
 
 .research-leaders__returns {

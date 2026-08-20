@@ -209,6 +209,9 @@ class OutcomeObservation:
     returns: Mapping[int, Decimal | None]
     missing_reason: str | None
     evidence_text: str
+    # 주도주 축에서 이 종목이 어느 테마의 주도주였는지. 한 사건이 여러 테마를
+    # 움직이므로 테마를 안 적으면 어느 목록에서 온 종목인지 알 수 없다.
+    theme_name: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1995,6 +1998,9 @@ def _answer_company_historical_outcome(
                 "catalystId": catalyst_id,
                 "eventDate": occurred_on.isoformat(),
                 "leaderCount": len(members),
+                "themeNames": sorted(
+                    {item.theme_name for item in members if item.theme_name}
+                ),
                 "upCount": sum(
                     1
                     for item in members
@@ -2013,6 +2019,7 @@ def _answer_company_historical_outcome(
                 "leaders": [
                     {
                         "companyName": item.company_name,
+                        "themeName": item.theme_name,
                         "baseTradingDate": (
                             None
                             if item.base_trading_date is None
