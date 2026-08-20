@@ -66,6 +66,12 @@
   --djv-space-6: 24px;
   --djv-space-8: 32px;
 
+  /* 카드 배치 기준. 화면마다 값이 달라 박스 간격이 들쭉날쭉했다. 좌우 여백과
+     카드 사이 간격, 카드 안쪽 여백을 이 셋으로만 쓴다. */
+  --djv-card-gutter: 16px;
+  --djv-card-gap: 12px;
+  --djv-card-pad: 20px 16px;
+
   --djv-radius-sm: 11px;
   --djv-radius-md: 16px;
   --djv-radius-lg: 22px;

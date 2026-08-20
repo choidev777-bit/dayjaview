@@ -352,8 +352,8 @@ a:focus-visible,
 .page--case-detail > .page-intro,
 .page--catalyst > .page-intro,
 .page--cases > .page-intro {
-  margin: 0 var(--djv-space-3) var(--djv-space-2);
-  padding: var(--djv-space-5) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
@@ -697,9 +697,9 @@ a:focus-visible,
   justify-items: center;
   align-content: center;
   gap: var(--djv-space-2);
-  margin: var(--djv-space-3) var(--djv-space-4);
-  padding: var(--djv-space-6) var(--djv-space-5);
-  border-radius: var(--djv-radius-lg);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-space-6) var(--djv-space-4);
+  border-radius: var(--djv-radius-xl);
   color: var(--djv-color-text-muted);
   background: var(--djv-color-surface-muted);
   text-align: center;
@@ -1273,8 +1273,8 @@ a:focus-visible,
 
 .theme-summary {
   min-height: 150px;
-  margin: var(--djv-space-2) var(--djv-space-4) 10px;
-  padding: var(--djv-space-5);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border-radius: var(--djv-radius-xl);
   color: var(--djv-color-on-brand);
   background: var(--djv-brand-header);
@@ -1452,7 +1452,7 @@ a:focus-visible,
    절마다 따로 카드를 세우고 카드 사이를 바탕색으로 띄우는 쪽이 더 잘 읽힌다.
    바깥은 탭을 담는 틀로만 남기고 배경·테두리를 벗긴다. */
 .detail-card {
-  margin: 0 var(--djv-space-3) var(--djv-space-3);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   border-radius: 26px;
   background: transparent;
 }
@@ -1460,8 +1460,8 @@ a:focus-visible,
 /* 탭이 붙는 첫 카드만 위쪽을 각지게 두고 나머지는 독립 카드다. */
 .detail-card > section,
 .detail-panel > section {
-  margin-bottom: var(--djv-space-3);
-  padding: var(--djv-space-5) var(--djv-space-4);
+  margin-bottom: var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
@@ -1919,7 +1919,7 @@ a:focus-visible,
   display: grid;
   gap: 4px;
   grid-template-columns: repeat(3, 1fr);
-  margin: var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 5px;
   border-radius: 18px;
   background: var(--djv-color-track);
@@ -1942,8 +1942,8 @@ a:focus-visible,
 
 .case-list {
   display: grid;
-  gap: 8px;
-  margin: var(--djv-space-2) var(--djv-space-4) 0;
+  gap: var(--djv-card-gap);
+  margin: 0 var(--djv-card-gutter);
   padding: 0;
   list-style: none;
 }
@@ -2221,8 +2221,8 @@ a:focus-visible,
 /* 바탕이 회색이라 구역 내용이 맨바닥에 놓인다. 카드로 묶어 다른 화면과 맞춘다. */
 .page--saved .state-panel,
 .page--saved .library-empty {
-  margin: 0 var(--djv-space-4) var(--djv-space-3);
-  padding: var(--djv-space-6) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
@@ -2409,8 +2409,8 @@ a:focus-visible,
 
 .research-form {
   display: grid;
-  gap: var(--djv-space-3);
-  margin: var(--djv-space-4);
+  gap: var(--djv-card-gap);
+  margin: var(--djv-card-gap) var(--djv-card-gutter);
 }
 
 .research-form label {
@@ -2440,15 +2440,15 @@ a:focus-visible,
   display: flex;
   flex-wrap: wrap;
   gap: var(--djv-space-2);
-  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
 
 .research-answer,
 .research-failure {
-  margin: 0 var(--djv-space-4) var(--djv-space-3);
-  padding: var(--djv-space-5) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
@@ -2520,14 +2520,14 @@ a:focus-visible,
 
 /* 답변 카드 밖으로 나왔다. 사례마다 흰 카드로 세워 답변과 구분한다. */
 .research-rows {
-  margin: 0 var(--djv-space-4) var(--djv-space-4);
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
 
 .research-row {
-  margin-top: var(--djv-space-2);
-  padding: var(--djv-space-4);
+  margin-top: var(--djv-card-gap);
+  padding: var(--djv-card-pad);
   border: 1px solid var(--djv-color-border);
   border-radius: var(--djv-radius-xl);
   background: var(--djv-color-surface);
@@ -3235,7 +3235,7 @@ textarea.research-form__input {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
   padding: 0;
   list-style: none;
 }
