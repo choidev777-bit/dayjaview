@@ -24,6 +24,7 @@ from packages.pipeline import (
     reference_directory,
     resolve_stock_references,
 )
+from packages.pipeline.daily import COLLECTION_COMPLETE_MARKER
 from packages.realtime import (
     InMemorySnapshotRepository,
     StockRealtimeUpdate,
@@ -361,11 +362,14 @@ def test_resolved_references_make_the_pipeline_rank_the_theme() -> None:
 
 
 def test_prepare_reference_data_reuses_an_already_collected_day(tmp_path: Path) -> None:
-    """그날 수집본이 있으면 외부 호출 없이 해석만 한다."""
+    """완료 도장이 있으면 외부 호출 없이 해석만 한다."""
 
     directory = reference_directory(tmp_path, date(2026, 8, 13))
     directory.mkdir(parents=True)
     _write_collected_bundle(directory)
+    (directory / COLLECTION_COMPLETE_MARKER).write_text(
+        "2026-08-13T00:05:00+09:00", encoding="utf-8"
+    )
     calls: list[object] = []
 
     prepared = prepare_reference_data(
@@ -403,3 +407,67 @@ def test_prepare_reference_data_refuses_to_start_the_day_on_failed_collection(
             report_code="11012",
             collect=failing_collect,
         )
+
+
+def test_prepare_reference_data_recollects_leftovers_without_the_marker(
+    tmp_path: Path,
+) -> None:
+    """파일 잔해가 있어도 완료 도장이 없으면 수집을 다시 돌린다.
+
+    2026-08-20 운영: 자정 수집이 중간에 죽어 남긴 잔해를 완성본으로 읽어
+    기준정보 없이 하루가 돌았다.
+    """
+
+    directory = reference_directory(tmp_path, date(2026, 8, 13))
+    directory.mkdir(parents=True)
+    (directory / "KRX_STOCK_DAILY.KOSPI_2026-08-12.json").write_text(
+        "{}", encoding="utf-8"
+    )
+    calls: list[object] = []
+
+    def resuming_collect(_arguments: Any, **_kwargs: Any) -> dict[str, object]:
+        calls.append(_arguments)
+        # 실제 collect처럼 미발행 시점의 빈 잔해는 지우고 다시 받아 채운다.
+        (directory / "KRX_STOCK_DAILY.KOSPI_2026-08-12.json").unlink()
+        _write_collected_bundle(directory)
+        return {"status": "COMPLETE"}
+
+    prepared = prepare_reference_data(
+        market_date=date(2026, 8, 13),
+        root=tmp_path,
+        stock_ids=("KRX:A00001",),
+        decision_at=datetime.fromisoformat("2026-08-13T09:00:00+09:00"),
+        environment={},
+        business_year=2026,
+        report_code="11012",
+        collect=resuming_collect,
+    )
+
+    assert len(calls) == 1
+    assert prepared.collected is True
+    assert (directory / COLLECTION_COMPLETE_MARKER).is_file()
+
+
+def test_prepare_reference_data_refuses_a_day_without_any_previous_close(
+    tmp_path: Path,
+) -> None:
+    """수집이 COMPLETE여도 전일 종가가 하나도 없으면 세우지 않는다.
+
+    자정에는 KRX가 전일 데이터를 아직 안 냈을 수 있다. 도장을 지워 다음
+    재시도가 다시 수집하게 한다.
+    """
+
+    with pytest.raises(RuntimeError, match="전일 종가"):
+        prepare_reference_data(
+            market_date=date(2026, 8, 13),
+            root=tmp_path,
+            stock_ids=("KRX:A00001",),
+            decision_at=datetime.fromisoformat("2026-08-13T00:00:30+09:00"),
+            environment={},
+            business_year=2026,
+            report_code="11012",
+            collect=lambda *args, **kwargs: {"status": "COMPLETE"},
+        )
+
+    directory = reference_directory(tmp_path, date(2026, 8, 13))
+    assert not (directory / COLLECTION_COMPLETE_MARKER).is_file()

@@ -509,6 +509,46 @@ def test_intraday_base_price_does_not_override_a_known_previous_close() -> None:
     assert items[0]["weightedReturn"] == pytest.approx(0.05)
 
 
+def test_trading_day_loop_retries_a_failed_session_within_the_day() -> None:
+    """자정 준비 실패를 그날 안에 다시 시도한다.
+
+    2026-08-20 운영: 자정 수집 실패 후 재시도가 없어 수동 재시작(14:46)까지
+    엔진이 서지 않았다.
+    """
+
+    clock = FakeClock(datetime(2026, 8, 13, 15, 0, tzinfo=UTC))  # 금 00:00 KST
+    built: list[date] = []
+    published: list[PublishedView] = []
+    sessions: dict[date, MarketPublishLoop] = {}
+    working_builder = _session_builder(clock, published, built, sessions=sessions)
+
+    def flaky_builder(market_date: date) -> MarketPublishLoop | None:
+        if len(built) < 1:
+            built.append(market_date)
+            return None  # 자정 수집 실패
+        return working_builder(market_date)
+
+    loop = TradingDayLoop(
+        build_session=flaky_builder,
+        interval=timedelta(seconds=2),
+        clock=clock,
+    )
+
+    assert loop.tick() is None
+    assert built == [FRIDAY]
+
+    # 재시도 간격 전에는 다시 세우지 않는다.
+    clock.now += timedelta(minutes=1)
+    assert loop.tick() is None
+    assert built == [FRIDAY]
+
+    # 간격이 지나면 같은 날 안에서 다시 세운다.
+    clock.now += timedelta(minutes=5)
+    assert loop.tick() is not None
+    assert built == [FRIDAY, FRIDAY]
+    assert loop.session is not None
+
+
 def test_trading_day_loop_survives_a_failing_tick() -> None:
     """tick 하나가 실패해도 루프를 멈추지 않는다.
 

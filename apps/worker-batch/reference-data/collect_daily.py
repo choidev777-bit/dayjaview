@@ -13,7 +13,7 @@ import os
 import re
 from collections.abc import Mapping
 from dataclasses import replace
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from importlib import import_module
 from pathlib import Path
 from typing import Any
@@ -132,6 +132,20 @@ def _existing(dataset: str, source_key: str, *, output_dir: Path) -> bool:
     return (output_dir / f"{dataset}.{_slug(source_key)}.json").is_file()
 
 
+def _empty_daily_trustworthy(queried: date, *, at: datetime) -> bool:
+    """빈 일별매매 응답을 휴장으로 믿어도 되는 시각인가.
+
+    KRX는 그날 데이터를 늦어도 다음날 아침에는 낸다. 그 전의 빈 응답은
+    휴장인지 아직 미발행인지 구분할 수 없다. 자정 수집이 전일을 빈 응답으로
+    저장하면 달력이 전일을 휴장으로 오판해 이틀 전 종가가 전일 종가가 되고,
+    잔해가 남으면 재수집도 그 파일을 믿고 건너뛴다(2026-08-20 운영 실측).
+    """
+
+    return at >= datetime.combine(
+        queried + timedelta(days=1), time(6, 0), tzinfo=KST
+    )
+
+
 def collect(
     arguments: argparse.Namespace,
     *,
@@ -174,18 +188,18 @@ def collect(
     for market_date in market_dates:
         for market in adapters.KRX_MARKET_PATHS:
             source_key = f"{market}:{market_date.isoformat()}"
-            if _existing("KRX_STOCK_DAILY", source_key, output_dir=output_dir):
-                krx_snapshots.append(
-                    parsers.load_collected_snapshot(
-                        json.loads(
-                            (
-                                output_dir
-                                / f"KRX_STOCK_DAILY.{_slug(source_key)}.json"
-                            ).read_text(encoding="utf-8")
-                        )
-                    )
+            path = output_dir / f"KRX_STOCK_DAILY.{_slug(source_key)}.json"
+            if path.is_file():
+                stored = parsers.load_collected_snapshot(
+                    json.loads(path.read_text(encoding="utf-8"))
                 )
-                continue
+                if parsers.parse_krx_stock_daily(stored) or _empty_daily_trustworthy(
+                    market_date, at=stored.metadata.collected_at
+                ):
+                    krx_snapshots.append(stored)
+                    continue
+                # 미발행 시점에 저장된 빈 응답 잔해다. 지우고 다시 받는다.
+                path.unlink()
             snapshot = krx.fetch_stock_daily(
                 market=market,
                 market_date=market_date,
@@ -197,6 +211,12 @@ def collect(
                 collected_at=collected_at,
             )
             krx_calls += 1
+            if not parsers.parse_krx_stock_daily(snapshot) and not (
+                _empty_daily_trustworthy(market_date, at=collected_at)
+            ):
+                # 휴장인지 미발행인지 모르는 빈 응답은 저장도, 달력 증거도
+                # 남기지 않는다. 다음 재시도가 다시 확인한다.
+                continue
             _store(snapshot, output_dir=output_dir)
             krx_snapshots.append(snapshot)
 

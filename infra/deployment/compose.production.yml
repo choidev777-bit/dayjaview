@@ -21,12 +21,15 @@ x-app-security: &app-security
     - /tmp:rw,noexec,nosuid,size=64m
   init: true
 
+# json-file은 컨테이너를 갈아끼우는 배포마다 로그가 사라진다. 2026-08-20
+# 자정 수집 실패의 원인 로그가 이렇게 유실됐다. journald는 system journal에
+# 남아 재배포 뒤에도 journalctl CONTAINER_NAME=<이름>으로 읽을 수 있고,
+# docker logs / compose logs도 그대로 동작한다.
 x-app-logging: &app-logging
   logging:
-    driver: json-file
+    driver: journald
     options:
-      max-size: 10m
-      max-file: "5"
+      tag: "{{.Name}}"
 
 services:
   caddy:

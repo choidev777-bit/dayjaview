@@ -26,6 +26,10 @@ from .references import load_collected_references
 # KRX에는 달력 endpoint가 없어 조회한 날짜만 판정된다(fail-closed).
 CALENDAR_LOOKBACK_DAYS = 10
 
+# 수집이 끝까지 갔을 때만 이 도장 파일이 생긴다. 파일 유무로 판정하면 중간에
+# 죽은 수집의 잔해를 완성본으로 읽는다(2026-08-20 운영 실측).
+COLLECTION_COMPLETE_MARKER = "COLLECTION_COMPLETE"
+
 
 @dataclass(frozen=True, slots=True)
 class ReferenceDataPreparation:
@@ -66,8 +70,12 @@ def prepare_reference_data(
     """
 
     directory = reference_directory(root, market_date)
+    marker = directory / COLLECTION_COMPLETE_MARKER
     collected = False
-    if not any(directory.glob("*.json")):
+    if not marker.is_file():
+        # 도장이 없으면 수집을 (다시) 돌린다. collect는 파일 단위로 재개하므로
+        # 이미 받은 원문은 다시 부르지 않고 빠진 것만 채운다.
+        directory.mkdir(parents=True, exist_ok=True)
         runner = collect or _worker().collect
         result = runner(
             argparse.Namespace(
@@ -86,6 +94,7 @@ def prepare_reference_data(
                 f"{market_date} 기준정보 수집이 끝나지 않아 그날 계산을 시작하지 "
                 f"않습니다: {result}"
             )
+        marker.write_text(clock().isoformat(), encoding="utf-8")
         collected = True
         # 방금 수집한 원문의 collected_at(=known_at)은 decision_at보다 늦다.
         # point-in-time 필터가 방금 수집분을 통째로 걸러내지 않도록 결정
@@ -98,6 +107,17 @@ def prepare_reference_data(
         decision_at=decision_at,
         stock_ids=stock_ids,
     )
+    if not any(
+        reference.previous_adjusted_close is not None for reference in references
+    ):
+        # 전일 종가가 하나도 없으면 그날 수익률을 만들 수 없다. KRX가 전일
+        # 데이터를 아직 안 낸 시각(자정 직후)이 대표적이다. 도장을 지워 다음
+        # 재시도가 빠진 원문만 다시 받게 하고, 그날 계산은 시작하지 않는다.
+        marker.unlink(missing_ok=True)
+        raise RuntimeError(
+            f"{market_date} 전일 종가를 하나도 확보하지 못해 그날 계산을 "
+            "시작하지 않습니다"
+        )
     return ReferenceDataPreparation(
         market_date=market_date,
         directory=directory,

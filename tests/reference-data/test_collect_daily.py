@@ -352,12 +352,84 @@ def test_collect_daily_runs_at_kst_midnight_rollover(tmp_path: Path) -> None:
     )
 
     assert result["status"] == "COMPLETE"
+    # 자정에는 그날·전날의 빈 응답이 휴장인지 미발행인지 알 수 없어 저장하지
+    # 않는다. 저장하면 달력이 전일을 휴장으로 오판하고 잔해가 재수집을 막는다.
+    assert not (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-14.json").is_file()
     stored = _reference_modules()["parsers"].load_collected_snapshot(
         json.loads(
-            (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-14.json").read_text(
+            (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-13.json").read_text(
                 encoding="utf-8"
             )
         )
     )
-    assert stored.metadata.as_of.date() == date(2026, 8, 14)
+    assert stored.metadata.as_of.date() == date(2026, 8, 13)
     assert stored.metadata.as_of <= stored.metadata.collected_at
+
+
+def test_collect_daily_replaces_a_stale_empty_previous_day(tmp_path: Path) -> None:
+    """미발행 시점에 저장된 빈 전일 응답은 잔해로 보고 다시 받는다.
+
+    2026-08-20 운영: 자정 잔해의 빈 전일 파일 때문에 재수집이 전일 종가를
+    영영 확보하지 못했다.
+    """
+
+    published: list[str] = []
+
+    def krx_handler(request: httpx.Request) -> httpx.Response:
+        traded = (
+            request.url.params["basDd"] == "20260813"
+            and request.url.path.endswith("stk_bydd_trd")
+        )
+        if traded:
+            published.append(request.url.params["basDd"])
+        return httpx.Response(
+            200,
+            json={"OutBlock_1": [KRX_ROW] if traded else []},
+            request=request,
+        )
+
+    def dart_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("corpCode.xml"):
+            return httpx.Response(200, content=_corp_code_zip(), request=request)
+        return httpx.Response(
+            200,
+            json={
+                "status": "000",
+                "message": "정상",
+                "list": _DART_ROWS[request.url.path.rsplit("/", 1)[-1]],
+            },
+            request=request,
+        )
+
+    environment = {"KRX_API_KEY": "krx-secret", "OPENDART_API_KEY": "dart-secret"}
+    worker = _worker()
+    # 자정 실행: 08-13 데이터가 아직 KRX에 없던 시각을 흉내 내 빈 응답만 온다.
+    def empty_krx_handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"OutBlock_1": []}, request=request)
+
+    midnight = worker.collect(
+        _arguments(tmp_path, market_date=date(2026, 8, 14)),
+        environment=environment,
+        krx_client=httpx.Client(transport=httpx.MockTransport(empty_krx_handler)),
+        dart_client=httpx.Client(transport=httpx.MockTransport(dart_handler)),
+        now=aware("2026-08-14T00:00:00+09:00"),
+    )
+    assert midnight["status"] == "COMPLETE"
+    assert not (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-13.json").is_file()
+
+    # 아침 재시도: 이제 08-13 데이터가 나왔고, 잔해 없이 새로 받아 저장한다.
+    morning = worker.collect(
+        _arguments(tmp_path, market_date=date(2026, 8, 14)),
+        environment=environment,
+        krx_client=httpx.Client(transport=httpx.MockTransport(krx_handler)),
+        dart_client=httpx.Client(transport=httpx.MockTransport(dart_handler)),
+        now=aware("2026-08-14T06:10:00+09:00"),
+    )
+    assert morning["status"] == "COMPLETE"
+    assert published == ["20260813"]
+    body = json.loads(
+        (tmp_path / "KRX_STOCK_DAILY.KOSPI_2026-08-13.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert json.loads(body["rawPayloadText"])["OutBlock_1"][0]["ISU_CD"] == "A00001"
