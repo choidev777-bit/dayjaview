@@ -377,13 +377,15 @@ a:focus-visible,
 
 /* 시안 `.wireHeader` 실측: 배경 흰색, 높이 60px, 제목 15px, 뒤로가기 버튼 배경 #f4f4f5.
    시안 CSS의 `background: var(--djv-color-bg)`는 뒤에서 흰색으로 덮인다. */
+/* 상세 상단바와 같은 규칙을 쓴다. 바탕을 깔지 않고 페이지 색이 그대로 비치게 두고,
+   버튼만 흰 동그라미로 띄운다. 둘이 달라 보이면 같은 깊이의 화면인데 다른 앱처럼 읽힌다. */
 .app-bar {
   display: grid;
   height: 60px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
   padding: 0 12px;
-  background: var(--djv-color-surface);
+  background: transparent;
 }
 
 .app-bar > strong {
@@ -399,10 +401,10 @@ a:focus-visible,
   height: 42px;
   justify-self: center;
   place-items: center;
-  border: 0;
+  border: 1px solid var(--djv-color-border);
   border-radius: 50%;
   color: var(--djv-color-text);
-  background: var(--djv-color-surface-muted);
+  background: var(--djv-color-surface);
 }
 
 /* 저장한 상태의 별은 브랜드 색이다. 기본 글자색이면 까맣게 칠해져 저장 여부가 안 읽힌다. */

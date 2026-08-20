@@ -248,7 +248,9 @@ function EventHeader({
       <button type="button" onClick={onBack} aria-label="이전 화면으로 돌아가기">
         <IconArrowLeftLine size={24} aria-hidden="true" />
       </button>
-      <strong>과거 사례</strong>
+      {/* 바로 아래 h1이 사건 제목을 이미 크게 달고 있다. 상단바에 `과거 사례`를 또 두면
+          같은 화면을 두 번 이름 붙이는 셈이라 뺐다. 가운데 칸은 자리만 남긴다. */}
+      <span aria-hidden="true" />
       {save ? <SaveEventButton {...save} /> : <span className="app-bar__spacer" aria-hidden="true" />}
     </header>
   );
