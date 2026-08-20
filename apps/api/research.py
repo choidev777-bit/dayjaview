@@ -103,13 +103,22 @@ class ResearchBoundary:
             if len(successes) >= (1 if single_block is None else 2):
                 conclusion = pick_conclusion(steps, goal_type=goal_type)
                 assert conclusion is not None and conclusion.result.answer is not None
-                return {
-                    "status": "ANSWERED",
-                    "answer": conclusion.result.answer.as_dict(),
-                    "steps": [
-                        self._step_dict(step, step is conclusion) for step in steps
-                    ],
-                }
+                # 목표 유형의 답을 단일 경로가 이미 냈는데 분해가 그 유형을
+                # 못 답했으면 단일 답이 결론이다 — 분해기가 "당시 주도주"를
+                # 종목명으로 바꿔 물어 실패하면 구성 종목 목록이 결론으로
+                # 올라왔다(2026-08-20 실측).
+                composed_hits_goal = (
+                    goal_type is None
+                    or conclusion.result.answer.query_type is goal_type
+                )
+                if single_block is None or composed_hits_goal:
+                    return {
+                        "status": "ANSWERED",
+                        "answer": conclusion.result.answer.as_dict(),
+                        "steps": [
+                            self._step_dict(step, step is conclusion) for step in steps
+                        ],
+                    }
 
         if single_block is not None:
             return {"status": "ANSWERED", "answer": single_block.as_dict()}
