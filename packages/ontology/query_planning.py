@@ -914,13 +914,16 @@ def _find_amount(text: str) -> tuple[AmountCondition | None, list[tuple[int, int
 # `올랏노`처럼 받침을 ㅅ으로 적는 사투리·오타 표기가 실제 질문에 들어온다.
 # 이걸 못 잡으면 방향이 없는 질문으로 답해 반대 방향까지 섞어 보여준다.
 _UP_MARKERS = (
-    "올랐", "올랏", "올라", "오른", "오르", "상승", "강세", "급등", "뛴", "뛰었",
-    "뛰엇", "셌", "셋노", "강했", "강햇", "상한가", "폭등", "반등",
+    "올랐", "올랏", "올라", "오른", "오르", "오름", "상승", "강세", "급등",
+    "뛴", "뛰었", "뛰엇", "셌", "셋노", "강했", "강햇", "상한가", "폭등", "반등",
 )
 _DOWN_MARKERS = (
-    "빠졌", "빠젓", "빠졋", "빠져", "빠진", "떨어", "하락", "약세", "급락",
-    "내린", "내려", "내렸", "내렷", "약했", "약햇", "하한가", "폭락",
+    "빠졌", "빠젓", "빠졋", "빠져", "빠진", "빠짐", "떨어", "하락", "약세",
+    "급락", "내린", "내려", "내렸", "내렷", "내림", "약했", "약햇", "하한가",
+    "폭락",
 )
+# `빠짐없이`는 방향이 아니라 "전부"라는 뜻이다. 표식으로 세면 하락으로 뒤집힌다.
+_DIRECTION_NOISE = ("빠짐없",)
 
 # 매매·미래 판단 요청. `공매도 잔고`는 매매 요청이 아니므로 `매도`·`매수`는
 # 앞에 `공`이 붙지 않을 때만 센다.
@@ -971,6 +974,9 @@ _COMPARISON_MARKERS = ("중에", "비교", "vs", "VS", "어디가", "쪽", "중 
 
 
 def _direction(text: str) -> QueryDirection | None:
+    # 아래에서 표식의 위치로 앞뒤를 가리므로 글자 수를 유지한 채 지운다.
+    for noise in _DIRECTION_NOISE:
+        text = text.replace(noise, " " * len(noise))
     up = min((text.find(marker) for marker in _UP_MARKERS if marker in text), default=-1)
     down = min(
         (text.find(marker) for marker in _DOWN_MARKERS if marker in text), default=-1
