@@ -213,6 +213,7 @@ class SnapshotProductReadRepository(EmptyProductReadRepository):
         self,
         event_id: str,
         cursor: str | None,
+        limit: int = 20,
     ) -> ProductDocument | None:
         # 유사사례는 한 페이지로 발행하고 nextCursor를 만들지 않는다.
         if cursor is not None or self._historical is None:
@@ -230,6 +231,7 @@ class SnapshotProductReadRepository(EmptyProductReadRepository):
             outcomes=self._historical.outcomes,
             decision_at=self._source.last_as_of or snapshot.as_of,
             market_date=snapshot.market_date,
+            limit=limit,
         )
         base = _snapshot_document(snapshot)
         return ProductDocument(

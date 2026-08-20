@@ -209,6 +209,38 @@ def test_future_outcomes_do_not_change_which_cases_are_selected() -> None:
     ]
 
 
+def test_requested_limit_is_honoured_and_the_rest_is_flagged() -> None:
+    """서버가 limit보다 많이 실어 보내면 API가 cursor 없는 절단으로 500을 낸다."""
+
+    crowded = HistoricalCaseIndex(
+        (
+            _detail(
+                tuple(
+                    _history(
+                        order,
+                        date(2020 + order, 3, 16),
+                        "필라델피아 반도체지수 급등 및 인텔 대규모 투자 계획 발표 등에 상승",
+                    )
+                    for order in range(4)
+                )
+            ),
+        )
+    )
+    data = similar_events_data(
+        event_id="evt_today",
+        theme_id="thm_12",
+        today=today_context(TODAY),
+        index=crowded,
+        outcomes=None,
+        decision_at=datetime(2026, 8, 14, 6, 20, tzinfo=UTC),
+        market_date=MARKET_DATE,
+        limit=2,
+    )
+
+    assert len(data["items"]) == 2
+    assert data["page"] == {"nextCursor": None, "hasMore": True, "limit": 2}
+
+
 def test_historical_event_detail_marks_the_basket_and_the_exclusion() -> None:
     index = _index()
     matched = _document(None)["items"][0]["matchedEventId"]

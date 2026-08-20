@@ -407,9 +407,13 @@ def similar_events_data(
             "items": [],
             "page": {"nextCursor": None, "hasMore": False, "limit": limit},
         }
+    # 한 건 더 뽑아 잘린 게 있는지 본다. 잘린 것을 hasMore로 알리지 않으면
+    # 화면이 이 20건이 전부라고 읽는다.
     ranked = rank_cases(
-        today, index.cases(theme_id), before=market_date, limit=limit
+        today, index.cases(theme_id), before=market_date, limit=limit + 1
     )
+    has_more = len(ranked) > limit
+    ranked = ranked[:limit]
     items = [
         {
             "matchedEventId": scored.case.matched_event_id,
@@ -427,7 +431,7 @@ def similar_events_data(
         "availability": "AVAILABLE",
         "summary": _summary(items),
         "items": items,
-        "page": {"nextCursor": None, "hasMore": False, "limit": limit},
+        "page": {"nextCursor": None, "hasMore": has_more, "limit": limit},
     }
 
 

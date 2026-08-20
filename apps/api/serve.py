@@ -88,7 +88,9 @@ KIWOOM_APP_KEY_ENV = "KIWOOM_APP_KEY"
 KIWOOM_APP_SECRET_ENV = "KIWOOM_APP_SECRET"
 KIWOOM_CONDITION_IDS_ENV = "KIWOOM_CONDITION_IDS"
 INTRADAY_HISTORY_ROOT_ENV = "INTRADAY_HISTORY_ROOT"
-PRICE_CORPUS_PATH_ENV = "HISTORICAL_PRICE_CORPUS"
+# 운영은 이미 E-16 corpus를 이 이름으로 주입한다(deploy_production.sh). 새 이름을
+# 만들면 배포본에서 파일을 못 찾아 모든 사례가 `기록 없음`이 된다.
+PRICE_CORPUS_PATH_ENV = "PRICE_CORPUS_PATH"
 DEFAULT_INFOSTOCK_IMPORT_DIR = "./data/infostock/import"
 DEFAULT_PRICE_CORPUS_PATH = "./research/data/daily_prices.sqlite"
 DEFAULT_INTRADAY_HISTORY_ROOT = "./data/intraday-history"

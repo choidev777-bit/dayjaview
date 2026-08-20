@@ -337,7 +337,25 @@ function DejavuSummarySection({ themeId, eventId }: { themeId: string; eventId: 
   if (resource.status !== 'success') return null;
 
   const data = resource.data.data;
-  if (data.availability !== 'AVAILABLE') return null;
+  // 여기서 null을 돌려주면 DAY JA VIEW 탭이 통째로 빈 화면이 된다. 오늘 소재를
+  // 분류하지 못했거나(availability != AVAILABLE) 닮은 과거가 없을 때도 왜
+  // 비었는지 말한다.
+  if (data.availability !== 'AVAILABLE') {
+    return (
+      <EmptyState
+        title="오늘 소재로는 과거를 찾지 못했어요"
+        description="오늘 상승 이유가 아직 정리되지 않았습니다. 근거가 확인되면 비슷했던 과거를 붙여 보여드립니다."
+      />
+    );
+  }
+  if (!data.items.length) {
+    return (
+      <EmptyState
+        title="비슷했던 과거가 없어요"
+        description="이 테마의 과거 기록 중 오늘과 같은 소재로 움직인 날이 없습니다."
+      />
+    );
+  }
 
   const total = data.summary[0]?.eligibleCount ?? data.items.length;
 

@@ -455,7 +455,7 @@ class IdentityApiApp:
             raise InvalidApiRequest("정렬 기준을 확인해 주세요.")
         cursor = self._query_cursor(request)
         limit = self._query_limit(request, default=20, maximum=100)
-        document = self._product_repository.similar_events(event_id, cursor)
+        document = self._product_repository.similar_events(event_id, cursor, limit)
         if document is None:
             if cursor is not None:
                 raise InvalidApiRequest("다음 페이지 정보를 확인해 주세요.")
