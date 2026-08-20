@@ -20,6 +20,10 @@ def _utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+# 그날 세션 준비(기준정보 수집 포함)가 실패했을 때 다시 시도하기까지의 간격.
+SESSION_RETRY_INTERVAL = timedelta(minutes=5)
+
+
 class MarketPublishLoop:
     """수 초 간격으로 파이프라인을 publish하고 결과를 구독 경로에 넘긴다.
 
@@ -137,6 +141,7 @@ class TradingDayLoop:
         self._known_trading_days = known_trading_days
         self._market_date: date | None = None
         self._session: MarketPublishLoop | None = None
+        self._retry_at: datetime | None = None
 
     @property
     def market_date(self) -> date | None:
@@ -149,22 +154,39 @@ class TradingDayLoop:
         return self._session
 
     def tick(self) -> PublishedView | None:
-        today = market_date_for(self._clock())
+        now = self._clock()
+        today = market_date_for(now)
         if today != self._market_date:
-            self._roll_over(today)
+            self._roll_over(today, now=now)
+        elif (
+            self._session is None
+            and self._retry_at is not None
+            and now >= self._retry_at
+        ):
+            # 자정 준비 실패(수집 미완·KRX 미발행)를 그날 안에 다시 시도한다.
+            # 재시도가 없으면 자정 한 번의 실패로 그날 전체가 조용히 죽는다
+            # (2026-08-20 운영: 00:00 수집 실패 후 14:46 수동 재시작까지 공백).
+            self._retry_at = now + SESSION_RETRY_INTERVAL
+            self._session = self._build_session(today)
         if self._session is None:
             return None
         return self._session.tick()
 
-    def _roll_over(self, today: date) -> None:
+    def _roll_over(self, today: date, *, now: datetime) -> None:
         # 넘어가기 전에 이전 거래일 장 마감을 반드시 적용한다. 마감 시각과
         # 날짜 전환 사이에 tick이 한 번도 없었으면 아직 안 닫혀 있다.
         if self._session is not None:
             self._session.close()
+        # build가 예외로 죽어도 어제 세션이 남아 어제 날짜로 계속 발행하지
+        # 않도록 먼저 비운다.
+        self._session = None
         self._market_date = today
+        self._retry_at = None
         if not is_trading_day(today, known_trading_days=self._known_trading_days):
-            self._session = None
             return
+        # 재시도 예약을 build보다 먼저 잡는다. build가 예외로 죽으면 예약이
+        # 없어 2초마다 무거운 수집을 다시 때리게 된다.
+        self._retry_at = now + SESSION_RETRY_INTERVAL
         self._session = self._build_session(today)
 
     async def run(

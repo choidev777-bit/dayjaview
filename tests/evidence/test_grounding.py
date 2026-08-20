@@ -70,6 +70,14 @@ def test_accepted_output_records_model_prompt_and_input_articles() -> None:
         ({"stockIds": [], "grounded": True}, GroundingRejection.SCHEMA_INVALID),
         (grounded_response(confidence="높음"), GroundingRejection.SCHEMA_INVALID),
         (grounded_response(grounded=False), GroundingRejection.NOT_GROUNDED),
+        # 운영 실제 모양: 접지 실패 응답은 프롬프트 계약대로 빈 값으로 온다.
+        # summary 검사를 먼저 하면 SCHEMA_INVALID로 오분류된다(2026-08-18~19).
+        (
+            grounded_response(
+                grounded=False, summary="", entities=(), stock_ids=(), theme_ids=()
+            ),
+            GroundingRejection.NOT_GROUNDED,
+        ),
         (grounded_response(stock_ids=("stk_unknown",)), GroundingRejection.UNKNOWN_STOCK),
         (grounded_response(theme_ids=("thm_other",)), GroundingRejection.UNKNOWN_THEME),
         (grounded_response(confidence=0.2), GroundingRejection.LOW_CONFIDENCE),
@@ -83,6 +91,7 @@ def test_accepted_output_records_model_prompt_and_input_articles() -> None:
         "schema",
         "confidence-type",
         "not-grounded",
+        "not-grounded-empty-fields",
         "unknown-stock",
         "unknown-theme",
         "low-confidence",

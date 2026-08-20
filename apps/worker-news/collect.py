@@ -384,6 +384,11 @@ def _run_postgres(args: argparse.Namespace, database_url: str) -> int:
                         llm_record=outcome.llm_record,
                     )
                     last_refresh[outcome.event_id] = now
+                # 단계별 통과 수. 이 깔때기가 없어서 2026-08-19 "기사 62건 →
+                # 매칭 1건 → 근거 0건" 기아 상태를 아무도 몰랐다.
+                matched_news = sum(len(outcome.matches) for outcome in outcomes)
+                llm_calls = sum(1 for outcome in outcomes if outcome.llm_called)
+                evidence_rows = sum(len(outcome.evidence) for outcome in outcomes)
                 final_status = (
                     operator.JobStatus.PARTIAL
                     if collection.sources_degraded
@@ -405,6 +410,9 @@ def _run_postgres(args: argparse.Namespace, database_url: str) -> int:
                         "rejected": len(collection.report.rejected),
                         "activeEvents": len(contexts),
                         "evidenceEvaluated": len(outcomes),
+                        "matchedNews": matched_news,
+                        "llmCalls": llm_calls,
+                        "evidenceRows": evidence_rows,
                         "degradedSources": list(collection.degraded_source_ids),
                     },
                 )
@@ -416,6 +424,9 @@ def _run_postgres(args: argparse.Namespace, database_url: str) -> int:
                             "stored": len(collection.report.stored),
                             "activeEvents": len(contexts),
                             "evidenceEvaluated": len(outcomes),
+                            "matchedNews": matched_news,
+                            "llmCalls": llm_calls,
+                            "evidenceRows": evidence_rows,
                             "degraded": list(collection.degraded_source_ids),
                         },
                         ensure_ascii=False,
