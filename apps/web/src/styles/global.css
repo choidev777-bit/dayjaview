@@ -394,11 +394,15 @@ a:focus-visible,
    버튼만 흰 동그라미로 띄운다. 둘이 달라 보이면 같은 깊이의 화면인데 다른 앱처럼 읽힌다. */
 .app-bar {
   display: grid;
-  height: 60px;
+  height: 56px;
   align-items: center;
   grid-template-columns: 42px 1fr 42px;
-  padding: 0 var(--djv-space-5);
-  background: transparent;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: 0 var(--djv-space-3);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .app-bar > strong {
@@ -1236,6 +1240,7 @@ a:focus-visible,
 
 /* 예전에는 상단바와 아래 요약이 같은 브랜드색이라 200px 가까운 색 덩어리로 붙어 보였다.
    상단바는 바탕에 맡기고 요약만 카드로 띄운다. */
+/* 상단바만 바탕에 맨몸으로 놓이면 그 위가 잘려 보인다. 아래 카드들과 같은 흰 카드로 둔다. */
 .detail-app-bar {
   position: relative;
   z-index: 3;
@@ -1243,9 +1248,12 @@ a:focus-visible,
   height: 56px;
   align-items: center;
   grid-template-columns: 40px 1fr 40px;
-  /* 버튼이 화면 가장자리에 붙으면 외곽에 동떨어져 보인다. 카드 좌우 여백에 맞춘다. */
-  padding: 0 var(--djv-space-5);
-  background: transparent;
+  margin: 0 var(--djv-card-gutter) var(--djv-card-gap);
+  padding: 0 var(--djv-space-3);
+  border: 1px solid var(--djv-color-border);
+  border-radius: var(--djv-radius-xl);
+  background: var(--djv-color-surface);
+  box-shadow: var(--djv-shadow-card);
 }
 
 .detail-app-bar > span {
