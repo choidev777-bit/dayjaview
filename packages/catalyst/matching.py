@@ -96,6 +96,11 @@ def evaluate(
     )
     if relevance < config.threshold or not basis:
         return None
+    if MatchBasis.STOCK not in basis and MatchBasis.TIME not in basis:
+        # 테마 낱말 단독 매칭은 근거로 쓰지 않는다. 전일 마감 리뷰 같은
+        # 오래된 기사가 낱말 하나로 오늘 이유에 붙는 것을 막는다. 종목
+        # 실명 또는 시간 창 중 하나는 반드시 붙어야 한다.
+        return None
     return NewsThemeMatch(
         news_id=item.news_id,
         event_id=context.event_id,

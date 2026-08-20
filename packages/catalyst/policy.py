@@ -66,8 +66,15 @@ def decide(
         )
 
     publishers = {item.publisher.strip().casefold() for item in evidence if item.publisher.strip()}
+    # 통신사 원고를 여러 매체가 그대로 받아쓰면 매체 수만으로는 독립 확인이
+    # 아니다. 제목까지 서로 달라야 별도 취재로 본다.
+    titles = {
+        " ".join(item.title.split()).casefold()
+        for item in evidence
+        if item.title.strip()
+    }
     key = _key(context, evidence)
-    if len(publishers) >= 2:
+    if len(publishers) >= 2 and len(titles) >= 2:
         status = EvidenceStatus.MULTI_SOURCE_CONFIRMED
         reason = f"독립 매체 {len(publishers)}곳에서 같은 소재를 확인했습니다"
     elif key is not None and key in context.known_catalyst_keys:

@@ -48,6 +48,52 @@ def test_stores_featured_news_with_source_metadata_and_entities() -> None:
     assert item.entities == ("수주", "원전")
 
 
+def test_short_holding_company_name_inside_a_longer_name_is_not_tagged() -> None:
+    """"SK하이닉스" 기사에서 지주사 "SK"를 회사 언급으로 태그하지 않는다.
+
+    짧은 지주사명이 긴 계열사명 안에서 잡히면 무관 테마의 근거 후보가 된다.
+    독립된 위치에서 따로 나올 때만 인정한다.
+    """
+
+    store = InMemoryNewsStore()
+    ingestor = NewsIngestor(
+        store,
+        stock_directory={
+            "에스케": "stk_holding",
+            "에스케하이닉스": "stk_chip",
+        },
+        entity_vocabulary=(),
+    )
+
+    nested_only = ingestor.ingest(
+        [
+            raw(
+                source_item_id="nested",
+                title="[특징주] 에스케하이닉스, 반도체 훈풍에 급등",
+                description="업황 회복 기대가 반영됐다.",
+                original_url="https://example.com/nested",
+            )
+        ],
+        now=at(10, 10),
+        window_start=WINDOW_START,
+    )
+    assert nested_only.stored[0].stock_ids == ("stk_chip",)
+
+    standalone = ingestor.ingest(
+        [
+            raw(
+                source_item_id="standalone",
+                title="[특징주] 에스케하이닉스 강세, 지주사 에스케도 동반 상승",
+                description="계열 전반에 매수세가 유입됐다.",
+                original_url="https://example.com/standalone",
+            )
+        ],
+        now=at(10, 10),
+        window_start=WINDOW_START,
+    )
+    assert set(standalone.stored[0].stock_ids) == {"stk_chip", "stk_holding"}
+
+
 def test_rejects_non_featured_titles_and_unlisted_stocks() -> None:
     _, ingestor = make_ingestor()
 
