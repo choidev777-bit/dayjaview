@@ -876,12 +876,9 @@ class PostgresResearchRepository:
         # 통계(중앙값)는 화면에 보이는 몇 줄이 아니라 조건에 맞는 사건 전부로
         # 내야 뜻이 있다. 화면 자르기는 답변 쪽이 따로 한다.
         event_limit = catalyst_filter.limit or 60
-        theme_clause = ""
-        theme_params: list[object] = []
-        if catalyst_filter.source_theme_id is not None:
-            # 테마로 물었으면 그 테마 반응의 주도주만 센다.
-            theme_clause = " AND tt.source_theme_id = %s"
-            theme_params.append(catalyst_filter.source_theme_id)
+        # 테마는 사건을 고를 때만 쓴다(_catalyst_where). 주도주까지 그 테마
+        # 하나로 거르면 같은 사건이 움직인 다른 테마가 통째로 빠진다 —
+        # 2026-08-06 로봇 정책은 테마 3곳인데 1곳만 보였다(2026-08-20 실측).
         db = self._connection.cursor()
         try:
             db.execute(
@@ -909,9 +906,8 @@ class PostgresResearchRepository:
                 " JOIN core.infostock_theme_history th"
                 "   ON th.history_id = trr.history_id"
                 " JOIN core.infostock_themes tt ON tt.theme_id = th.theme_id"
-                f"{theme_clause}"
                 " ORDER BY p.occurred_on DESC, p.catalyst_id, ce.seed_stock_code",
-                (*params, event_limit, *theme_params),
+                (*params, event_limit),
             )
             rows = db.fetchall()
         finally:
