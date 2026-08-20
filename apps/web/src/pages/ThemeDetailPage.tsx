@@ -846,6 +846,9 @@ export function ThemeDetailPage() {
 
   return (
     <div className="page page--detail">
+      <section className="theme-summary">
+      {/* 상단바를 흰 카드로 따로 띄우면 보라 카드와 상자가 둘로 겹친다.
+          보라 카드 안 첫 줄로 넣어 하나의 머리 카드로 읽히게 한다. */}
       <header className="detail-app-bar">
         {/* 이 화면만 아래에서 올라온다. 그래서 되돌아가기도 `내려서 닫기`로 읽히게
             오른쪽 꺾쇠를 90도 돌려 아래 방향으로 쓴다. */}
@@ -878,7 +881,6 @@ export function ThemeDetailPage() {
         />
       </header>
 
-      <section className="theme-summary">
         {/* 테마명과 수익률을 위아래로 쌓으면 주황 카드만 화면의 절반을 먹는다.
             이름은 왼쪽, 수익률은 오른쪽에 두고 이름만 줄바꿈을 허용한다. */}
         <div className="theme-summary__head">
