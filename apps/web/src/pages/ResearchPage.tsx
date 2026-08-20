@@ -655,10 +655,13 @@ export function ResearchPage() {
 
   return (
     <div className="page page--research">
-      {/* 다른 탭과 같은 머리말 형식: 화면 이름이 제목이고 안내는 그 아래 한 단계 작게. */}
+      {/* 다른 탭과 같은 머리말 형식: 마크와 화면 이름만 둔다. 무엇을 묻는 곳인지는
+          바로 아래 입력칸의 예시 문구가 이미 말해 준다. */}
       <header className="page-intro">
-        <h1>테마 서치</h1>
-        <p className="page-intro__lead">무엇이 궁금하세요?</p>
+        <h1 className="page-intro__heading">
+          <span className="page-intro__mark" aria-hidden="true" />
+          테마 서치
+        </h1>
       </header>
 
       <div className="research-panel">

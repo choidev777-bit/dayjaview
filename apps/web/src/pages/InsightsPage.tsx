@@ -76,7 +76,10 @@ function InsightsScreen({ response, refresh }: { response: TreemapResponse; refr
       {/* LIVE 표시는 하단 탭에 이미 있다. 제목 옆에 또 달면 같은 화면에 두 번 나온다.
           지금이 실시간인지는 바로 아래 상태 줄이 문구로 알려 준다. */}
       <header className="page-intro">
-        <h1>실시간 테마 중계</h1>
+        <h1 className="page-intro__heading">
+          <span className="page-intro__mark" aria-hidden="true" />
+          실시간 테마 중계
+        </h1>
       </header>
       <div className="page-status">
         <DataStatusBar context={displayContext} />
@@ -126,7 +129,10 @@ export function InsightsPage() {
     return (
       <div className="page page--insights">
         <header className="page-intro">
-          <h1>실시간 테마 중계</h1>
+          <h1 className="page-intro__heading">
+          <span className="page-intro__mark" aria-hidden="true" />
+          실시간 테마 중계
+        </h1>
         </header>
           <TreemapSkeleton />
       </div>

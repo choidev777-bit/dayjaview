@@ -175,7 +175,9 @@
 
 ### 4.4 배포
 
-- `main`에 올려 뒀으나 Vercel 자동 배포가 걸려 있지 않다. 배포된 번들과 로컬 빌드 산출물이 다르다.
+- ~~`main`에 올려 뒀으나 Vercel 자동 배포가 걸려 있지 않다. 배포된 번들과 로컬 빌드 산출물이 다르다.~~
+  **2026-08-21 해소.** `main` push마다 자동 재배포된다. 배포본의 토큰 값과 로고 파일 해시를
+  로컬 빌드와 대조해 일치를 확인했다([운영 런북 5절](./operations_runbook.md)).
 - 백엔드는 살아 있고 `/api/health`는 정상(postgresql HEALTHY, migrations APPLIED, fixtureMode false)이나 **DB가 비어 있어** 화면에 표시할 값이 없다.
 
 ### 4.5 아직 손대지 않은 것

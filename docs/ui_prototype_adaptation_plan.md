@@ -328,20 +328,43 @@ apps/web/src/
 
 ### 7.1 색상
 
-| 토큰 | 시안 파일 fallback | **실측값 (기준)** | 용도 |
+**2026-08-21 갱신.** 임원 재발표를 앞두고 키움증권 앱 계열로 옮겼다. §0.1의 시각 계층
+규칙(시안이 최상위, 다르면 기준 문서를 고친다)에 따라 이 표를 현재 값으로 다시 적는다.
+전환 배경과 화면별 파급은 [2026-08-21 키움 팔레트 전환 기록](./release/2026-08-21_kiwoom_palette.md).
+
+색은 **역할별로 넷**이다. 하나가 브랜드·활성 상태·수치를 겸하지 않는다.
+
+| 토큰 | 이전 (당근 계열) | **현재 (기준)** | 용도 |
 |---|---|---|---|
-| `--djv-color-bg` | `#eae8e3` | `#eae8e3` | 배경 |
+| `--djv-color-bg` | `#eae8e3` | **`#f4f4f6`** | 배경. 카드가 뜨도록 흰색에서 내렸다 |
 | `--djv-color-surface` | `#ffffff` | `#ffffff` | 카드 |
-| `--djv-color-surface-muted` | `#f7f7f8` | **`#f3f4f5`** | 보조 면 |
-| `--djv-color-border` | `#eaebee` | **`#00000010`** | 테두리 (검정 6% 알파) |
-| `--djv-color-text` | `#212124` | **`#1a1c20`** | 본문 |
-| `--djv-color-text-muted` | `#868b94` | **`#555d6d`** | 보조 문구 |
-| `--djv-color-brand` | `#ff6f0f` | **`#ff6600`** | 브랜드 |
-| `--djv-color-brand-soft` | `#fff0e5` | **`#fff2ec`** | 브랜드 배경 |
-| `--djv-color-on-brand` | `#ffffff` | `#ffffff` | 브랜드 위 글자 |
-| `--djv-color-market-up` | `#e5484d` | `#e5484d` | 상승 |
-| `--djv-color-market-down` | `#356ae6` | `#356ae6` | 하락 |
+| `--djv-color-surface-muted` | `#f3f4f5` | `#f3f4f5` | 보조 면 |
+| `--djv-color-track` | — | **`#e6e7ee`** | 세그먼트 토글 트랙 (신규) |
+| `--djv-color-border` | `#00000010` | `#00000010` | 테두리 (검정 6% 알파) |
+| `--djv-color-text` | `#1a1c20` | `#1a1c20` | 본문 |
+| `--djv-color-text-muted` | `#555d6d` | `#555d6d` | 보조 문구 |
+| `--djv-color-brand` | `#ff6600` | **`#7b2ff7`** | 화면 주색. 활성 탭·초점 카드·강조 헤더 |
+| `--djv-color-brand-soft` | `#fff2ec` | **`#f2eafe`** | 주색 배경 |
+| `--djv-color-logo` | — | **`#1c1c5e`** | 로고 마크 전용 (신규) |
+| `--djv-color-favorite` | — | **`#ffc02e`** | 즐겨찾기 별 (신규) |
+| `--djv-color-on-brand` | `#ffffff` | `#ffffff` | 주색 위 글자 |
+| `--djv-color-market-up` | `#e5484d` | **`#ff2d8e`** | 상승 수치 |
+| `--djv-color-market-down` | `#356ae6` | **`#2b5be8`** | 하락 수치 |
 | `--djv-color-warning` | `#a76700` | `#a76700` | 경고 |
+
+**로고를 주색에서 분리한 이유.** 마크가 주색을 따라가면 팔레트를 바꿀 때마다 로고 색이
+바뀐다. 로고는 제품 아이덴티티라 화면 주색과 수명이 다르다.
+
+**즐겨찾기를 따로 둔 이유.** 별을 주색으로 칠하면 활성 탭·초점 카드와 같은 색이라
+`저장했다`는 신호가 화면의 다른 보라들에 묻힌다.
+
+트리맵 타일 채움은 별도 토큰 네 개로 범위를 잡는다. 옅은 색에서 시작하면 흰 글씨가
+묻혀 타일마다 글자색이 달라지므로, 약한 칸도 흰 글씨가 읽히는 농도에서 출발한다.
+
+| 방향 | weak | strong |
+|---|---|---|
+| 상승 | `#ff5aa8` | `#8f0049` |
+| 하락 | `#3f6fd8` | `#1b3a86` |
 
 market color를 오류·성공 색으로 재사용하지 않는다.
 
@@ -349,15 +372,18 @@ market color를 오류·성공 색으로 재사용하지 않는다.
 
 `--djv-font-sans`: `"Pretendard Variable", Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif`
 
-| 토큰 | 값 |
-|---|---|
-| `--djv-font-size-caption` | 12px |
-| `--djv-font-size-label` | 13px |
-| `--djv-font-size-body` | 15px |
-| `--djv-font-size-heading-3` | 17px |
-| `--djv-font-size-heading-2` | 20px |
-| `--djv-font-size-heading-1` | 24px |
-| `--djv-font-size-display` | 32px |
+**2026-08-21 갱신.** 디자이너 요청으로 한 단계씩 올렸다. 토스 TDS 기준(15/13/12)보다
+한 단계 크다. 제목 계열도 위계가 무너지지 않게 같은 폭으로 올렸다.
+
+| 토큰 | 이전 | **현재 (기준)** |
+|---|---|---|
+| `--djv-font-size-caption` | 12px | **13px** |
+| `--djv-font-size-label` | 13px | **15px** |
+| `--djv-font-size-body` | 15px | **17px** |
+| `--djv-font-size-heading-3` | 17px | **19px** |
+| `--djv-font-size-heading-2` | 20px | **22px** |
+| `--djv-font-size-heading-1` | 24px | **25px** |
+| `--djv-font-size-display` | 32px | **31px** |
 
 ### 7.3 간격·곡률·모션·레이아웃
 
@@ -371,6 +397,16 @@ market color를 오류·성공 색으로 재사용하지 않는다.
 | 레이아웃 | `--djv-touch-size` | 48px |
 | 그림자 | `--djv-shadow-card` | `0 1px 2px rgba(0,0,0,.025)` |
 | 그림자 | `--djv-shadow-nav` | `0 2px 10px rgba(0,0,0,.06)` |
+
+**카드 간격 (2026-08-21 신규).** 바탕이 회색이 되면서 화면이 카드의 나열이 됐다.
+카드마다 여백이 제각각이면 내려 읽을 때 리듬이 끊기므로 세 값으로 묶었다.
+새 카드를 만들 때 이 셋 밖의 값을 쓰지 않는다.
+
+| 토큰 | 값 | 뜻 |
+|---|---|---|
+| `--djv-card-gutter` | 16px | 카드 좌우 |
+| `--djv-card-gap` | 12px | 카드 사이 |
+| `--djv-card-pad` | 20px 16px | 카드 안쪽 |
 
 ### 7.4 다크 테마
 

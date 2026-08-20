@@ -167,7 +167,10 @@ export function SavedPage({ onLogout }: { onLogout: () => Promise<void> }) {
       {/* 로그아웃은 계정 동작이라 목록 맨 아래 본문 흐름에 두면 저장 항목처럼 읽힌다.
           화면 제목 옆으로 올려 계정 영역이라는 걸 분명히 한다. */}
       <header className="page-intro page-intro--with-action">
-        <h1>저장</h1>
+        <h1 className="page-intro__heading">
+          <span className="page-intro__mark" aria-hidden="true" />
+          저장
+        </h1>
         <button className="text-button" type="button" onClick={onLogout}>
           로그아웃
         </button>
