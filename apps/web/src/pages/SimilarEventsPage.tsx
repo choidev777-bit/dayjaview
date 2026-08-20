@@ -1,5 +1,8 @@
 import { useCallback } from 'react';
-import { IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
+import {
+  IconArrowLeftLine,
+  IconChevronRightSmallLine,
+} from '@karrotmarket/react-monochrome-icon';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
 import type { HistoricalHorizon, HistoricalSummary } from '../domain/contracts';
@@ -207,8 +210,8 @@ export function SimilarEventsPage() {
 function GateHeader({ onBack, title = '과거 사례' }: { onBack: () => void; title?: string }) {
   return (
     <header className="app-bar">
-      <button type="button" className="app-bar__close" onClick={onBack} aria-label="닫기">
-        <IconChevronRightSmallLine size={24} aria-hidden="true" />
+      <button type="button" onClick={onBack} aria-label="이전 화면으로 돌아가기">
+        <IconArrowLeftLine size={24} aria-hidden="true" />
       </button>
       <strong>{title}</strong>
       <span className="app-bar__spacer" aria-hidden="true" />

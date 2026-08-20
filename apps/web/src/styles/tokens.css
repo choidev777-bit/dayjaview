@@ -10,6 +10,8 @@
   --djv-color-bg: #f4f4f6;
   --djv-color-surface: #ffffff;
   --djv-color-surface-muted: #f3f4f5;
+  /* 세그먼트 토글 트랙. surface-muted는 바탕색과 밝기가 거의 같아 트랙이 안 보인다. */
+  --djv-color-track: #e6e7ee;
   --djv-color-border: #00000010;
   --djv-color-text: #1a1c20;
   --djv-color-text-muted: #555d6d;
@@ -20,6 +22,9 @@
   --djv-color-brand: #7b2ff7;
   --djv-color-brand-soft: #f2eafe;
   --djv-color-logo: #1c1c5e;
+  /* 즐겨찾기 별. 주색을 쓰면 활성 탭·초점 카드와 같은 색이라 `저장했다`가 묻힌다. */
+  --djv-color-favorite: #ffc02e;
+  --djv-color-favorite-soft: #fff6e0;
   --djv-color-on-brand: #ffffff;
   --djv-color-market-up: #ff2d8e;
   --djv-color-market-down: #2b5be8;
@@ -30,8 +35,8 @@
   /* 트리맵 타일 채움 범위. 옅은 분홍에서 시작하면 흰 글씨가 묻히고 본문 색도 어중간해
      타일마다 글자색이 달라진다. 약한 칸도 흰 글씨가 읽히는 농도에서 시작해
      강한 칸으로 갈수록 더 짙어지게 둔다. */
-  --djv-color-tile-up-weak: #e00072;
-  --djv-color-tile-up-strong: #7a0040;
+  --djv-color-tile-up-weak: #ff2d8e;
+  --djv-color-tile-up-strong: #b0005c;
   --djv-color-tile-down-weak: #3f6fd8;
   --djv-color-tile-down-strong: #1b3a86;
   /* 하락 칸 배경. up-soft와 같은 밝기로 맞춘 파랑이다. */
@@ -89,12 +94,15 @@
   --djv-color-bg: #171719;
   --djv-color-surface: #222225;
   --djv-color-surface-muted: #2b2b2f;
+  --djv-color-track: #34343a;
   --djv-color-border: #343438;
   --djv-color-text: #f2f2f3;
   --djv-color-text-muted: #a4a4aa;
   --djv-color-brand: #a97bff;
   --djv-color-brand-soft: #2a1f45;
   --djv-color-logo: #9b9bdd;
+  --djv-color-favorite: #ffa53d;
+  --djv-color-favorite-soft: #3a2a12;
   --djv-color-warning-soft: #38301f;
   --djv-color-market-up-soft: #3a1a2c;
   --djv-color-market-down-soft: #22293a;

@@ -1,4 +1,7 @@
-import { IconChevronRightSmallLine } from '@karrotmarket/react-monochrome-icon';
+import {
+  IconArrowLeftLine,
+  IconChevronRightSmallLine,
+} from '@karrotmarket/react-monochrome-icon';
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useRepository } from '../app/RepositoryContext';
@@ -177,8 +180,8 @@ export function CatalystDetailPage() {
 function CatalystHeader({ onBack }: { onBack: () => void }) {
   return (
     <header className="app-bar">
-      <button type="button" className="app-bar__close" onClick={onBack} aria-label="닫기">
-        <IconChevronRightSmallLine size={24} aria-hidden="true" />
+      <button type="button" onClick={onBack} aria-label="이전 화면으로 돌아가기">
+        <IconArrowLeftLine size={24} aria-hidden="true" />
       </button>
       <strong>상승 소재</strong>
       <span className="app-bar__spacer" aria-hidden="true" />

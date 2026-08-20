@@ -847,8 +847,8 @@ export function ThemeDetailPage() {
   return (
     <div className="page page--detail">
       <header className="detail-app-bar">
-        {/* 화면이 아래에서 올라오므로 되돌아가는 동작도 `내려서 닫기`로 읽히게 한다.
-            아이콘은 오른쪽 꺾쇠를 90도 돌려 아래 방향으로 쓴다. */}
+        {/* 이 화면만 아래에서 올라온다. 그래서 되돌아가기도 `내려서 닫기`로 읽히게
+            오른쪽 꺾쇠를 90도 돌려 아래 방향으로 쓴다. */}
         <button
           type="button"
           className="detail-app-bar__close"
@@ -857,7 +857,9 @@ export function ThemeDetailPage() {
         >
           <IconChevronRightSmallLine size={24} aria-hidden="true" />
         </button>
-        <span>{detail.classification.displayName}</span>
+        {/* 테마명은 바로 아래 요약 카드가 크게 달고 있다. 상단바에 또 두면 같은 이름이
+            두 번 나온다. 가운데 칸은 자리만 남긴다. */}
+        <span aria-hidden="true" />
         <SaveThemeButton
           themeId={detail.classification.themeId}
           displayName={detail.classification.displayName}
