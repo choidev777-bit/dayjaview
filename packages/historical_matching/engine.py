@@ -29,6 +29,12 @@ HORIZONS: tuple[int, ...] = (1, 5, 20)
 # hasMore로만 알린다.
 MAX_ITEMS = 20
 
+# 점수가 낮은 사건까지 20건을 채우면 요약 중앙값이 닮지도 않은 과거로 계산된다
+# (문턱 없이 실측: 뽑힌 3,845건 중 주 소재까지 같은 것 73.5%, 하위 10% 테마는
+# 6%). 0.35는 주 소재가 같거나(0.45+) 유형 교집합·방향·확실성이 함께 맞는
+# 경우만 남긴다 — 실측 주 소재 일치율 95.6%, 사례가 나오는 테마 255→241.
+MIN_SCORE = 0.35
+
 PRIMARY_WEIGHT = 0.45
 OVERLAP_WEIGHT = 0.25
 DIRECTION_WEIGHT = 0.15
@@ -269,7 +275,7 @@ def rank_cases(
         for result in (
             _score(today, case) for case in cases if case.market_date < before
         )
-        if result is not None
+        if result is not None and result.score >= MIN_SCORE
     ]
     scored.sort(
         key=lambda item: (
@@ -491,6 +497,7 @@ __all__ = [
     "HORIZONS",
     "MATCH_MODEL_VERSION",
     "MAX_ITEMS",
+    "MIN_SCORE",
     "ONTOLOGY_VERSION",
     "HistoricalCaseIndex",
     "OutcomeSource",
