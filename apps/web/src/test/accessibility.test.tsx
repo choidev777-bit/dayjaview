@@ -52,10 +52,10 @@ describe('접근성 foundation', () => {
     expect(tokens).toMatch(/--djv-app-max-width: 420px/);
     expect(tokens).toMatch(/--djv-touch-size: 48px/);
     expect(styles).toMatch(/:focus-visible/);
-    // 시안에는 440px 경계 하나뿐이다. 데스크톱 사이드바 전환 breakpoint는 두지 않는다.
-    expect(styles).toMatch(/@media \(max-width: 440px\)/);
-    expect(styles).not.toMatch(/min-width: 40rem/);
-    expect(styles).not.toMatch(/min-width: 64rem/);
+    // 420px 단일 열이라 폭으로 갈리는 화면이 없다. breakpoint 자체를 두지 않는다.
+    // 예전에는 440px 경계 하나가 머리띠 곡률만 바꿨는데, 그 머리띠가 떠 있는 카드가
+    // 되면서 규칙이 사라졌다. 데스크톱 사이드바 전환도 여전히 두지 않는다.
+    expect(styles).not.toMatch(/@media[^{]*width/);
     expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
     expect(styles).toMatch(/transition-duration:\s*0\.01ms\s*!important/);
     expect(styles).toMatch(/env\(safe-area-inset-bottom\)/);

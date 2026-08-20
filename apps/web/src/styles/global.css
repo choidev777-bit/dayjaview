@@ -2982,12 +2982,6 @@ a:focus-visible,
 }
 
 /* 시안의 유일한 화면 경계. 이보다 넓은 화면에서는 420px 열이 가운데 정렬된다. */
-@media (max-width: 440px) {
-  .theme-summary {
-    border-radius: 0 0 var(--djv-radius-lg) var(--djv-radius-lg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
