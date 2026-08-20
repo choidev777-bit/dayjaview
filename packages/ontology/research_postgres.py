@@ -873,7 +873,9 @@ class PostgresResearchRepository:
             return ()
         clauses, params = self._catalyst_where(catalyst_filter)
         where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-        event_limit = catalyst_filter.limit or 12
+        # 통계(중앙값)는 화면에 보이는 몇 줄이 아니라 조건에 맞는 사건 전부로
+        # 내야 뜻이 있다. 화면 자르기는 답변 쪽이 따로 한다.
+        event_limit = catalyst_filter.limit or 60
         theme_clause = ""
         theme_params: list[object] = []
         if catalyst_filter.source_theme_id is not None:
