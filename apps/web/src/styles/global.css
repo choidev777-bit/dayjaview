@@ -3344,9 +3344,16 @@ p.page-intro__origin {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* 폭을 재기 전에는 칸이 0 크기라, 그때 효과를 걸면 보이지 않는 사이에 끝나 버리고
+   자리를 잡을 때 다 같이 튀어나온 것처럼 보인다. 잰 뒤에 이 규칙이 걸리면서
+   그제서야 각 칸이 제 중심에서 커진다. 이미 떠 있던 칸은 효과가 끝난 상태라
+   자리만 옮기고, 나중에 들어온 칸은 붙는 순간 이 규칙에 걸려 혼자 나타난다. */
 .treemap__cell {
   transform-origin: center;
-  animation: treemap-cell-in 420ms var(--djv-easing-standard);
+}
+
+.treemap[data-ready='true'] .treemap__cell {
+  animation: treemap-cell-in 420ms var(--djv-easing-standard) backwards;
 }
 
 .treemap[data-motion='off'] .treemap__cell {

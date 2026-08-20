@@ -85,10 +85,13 @@ export function ThemeTreemap({ items, motion }: { items: TreemapItem[]; motion: 
          각 타일이 제 중심에서 커지는 `treemap-cell-in`이 맡는다. */
       data-ready={size.width > 0 ? 'true' : 'false'}
     >
-      {rects.map((rect) => {
+      {rects.map((rect, index) => {
         // 면적은 1초 주기 레이아웃, 숫자와 색상은 500ms 주기 최신값을 쓴다.
         const item = values.get(rect.item.themeId) ?? rect.item;
         const value = formatReturn(item.weightedReturn);
+        // 큰 칸부터 차례로 들어오게 조금씩 늦춘다. 한꺼번에 나타나면 화면이 통째로
+        // 튀어나온 것처럼 보이고, 나중에 들어온 칸은 남은 칸들이 자리를 비켜 준 뒤에 뜬다.
+        const delay = Math.min(index, 7) * 45;
         return (
           <li
             key={item.themeId}
@@ -98,6 +101,7 @@ export function ThemeTreemap({ items, motion }: { items: TreemapItem[]; motion: 
               top: `${rect.y + TREEMAP_GAP}px`,
               width: `${rect.width}px`,
               height: `${rect.height}px`,
+              animationDelay: `${delay}ms`,
             }}
           >
             <Link
