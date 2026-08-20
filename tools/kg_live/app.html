@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DAY JA VIEW · 지식그래프 질의 추적</title>
+<style>
+  :root {
+    --bg: #05070f;
+    --panel: rgba(12, 18, 34, 0.86);
+    --panel-line: rgba(120, 160, 220, 0.18);
+    --ink: #e8eefc;
+    --muted: #8ba0c4;
+    --theme: #f5b544;
+    --type: #ff6b6b;
+    --event: #4fd6e0;
+    --accent: #ff7a3d;
+    --up: #29c97f;
+    --down: #ff5f6d;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Pretendard", "Malgun Gothic", system-ui, sans-serif; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+
+  .topbar { position: fixed; top: 0; left: 0; right: 0; height: 62px; display: flex;
+    align-items: center; gap: 28px; padding: 0 24px; z-index: 5;
+    background: linear-gradient(180deg, rgba(5,7,15,0.92), rgba(5,7,15,0)); }
+  .brand { font-weight: 800; letter-spacing: 0.14em; font-size: 15px; }
+  .brand small { display: block; font-weight: 500; letter-spacing: 0.18em;
+    font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .stats { display: flex; gap: 22px; margin-left: 12px; }
+  .stat small { display: block; font-size: 9px; letter-spacing: 0.16em; color: var(--muted); }
+  .stat b { font-size: 15px; font-variant-numeric: tabular-nums; }
+  .status { margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 0.14em; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #3a4a66; }
+  .dot.live { background: var(--up); box-shadow: 0 0 12px var(--up); }
+  .dot.busy { background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+
+  .side { position: fixed; top: 70px; right: 20px; width: 396px; z-index: 5;
+    max-height: calc(100vh - 190px); overflow-y: auto; display: flex; flex-direction: column;
+    gap: 12px; scrollbar-width: thin; scrollbar-color: rgba(120,160,220,0.3) transparent; }
+  .card { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 14px;
+    padding: 14px 16px; backdrop-filter: blur(12px); animation: rise 0.32s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .card h3 { margin: 0 0 10px; font-size: 10px; letter-spacing: 0.18em; color: var(--muted);
+    font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .card h3 em { font-style: normal; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .slot { display: flex; gap: 10px; font-size: 12.5px; padding: 4px 0;
+    border-bottom: 1px dashed rgba(120,160,220,0.12); }
+  .slot:last-child { border-bottom: 0; }
+  .slot span { color: var(--muted); min-width: 96px; }
+  .slot b { font-weight: 600; color: var(--ink); }
+  .log { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .log div { display: flex; gap: 8px; padding: 3px 0; align-items: baseline;
+    animation: rise 0.25s ease both; }
+  .log i { font-style: normal; color: var(--event); min-width: 128px; }
+  .log u { text-decoration: none; color: var(--muted); flex: 1; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap; }
+  .log b { color: var(--ink); font-weight: 600; }
+  .calc { font-size: 12px; font-variant-numeric: tabular-nums; }
+  .calc .rowline { display: flex; justify-content: space-between; padding: 3px 0;
+    border-bottom: 1px dashed rgba(120,160,220,0.1); animation: rise 0.2s ease both; }
+  .calc .rowline b { font-weight: 600; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+  .metric { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px 10px; }
+  .metric small { display: block; font-size: 9.5px; color: var(--muted); }
+  .metric b { font-size: 17px; font-variant-numeric: tabular-nums; }
+  .summary { font-size: 14px; line-height: 1.55; }
+  .note { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  .focus { position: fixed; top: 96px; left: 50%; transform: translateX(-50%); z-index: 5;
+    background: rgba(9,14,28,0.9); border: 1px solid rgba(255,122,61,0.5); border-radius: 12px;
+    padding: 10px 18px; text-align: center; max-width: 620px; display: none;
+    box-shadow: 0 12px 40px rgba(255,122,61,0.16); animation: rise 0.3s ease both; }
+  .focus small { display: block; font-size: 9px; letter-spacing: 0.2em; color: var(--accent);
+    margin-bottom: 4px; }
+  .focus b { font-size: 15px; font-weight: 600; }
+
+  .ask { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 6;
+    width: min(980px, calc(100vw - 460px)); display: flex; gap: 10px;
+    background: var(--panel); border: 1px solid var(--panel-line); border-radius: 14px;
+    padding: 10px 12px; backdrop-filter: blur(12px); }
+  .ask input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--ink);
+    font-size: 15px; padding: 8px 6px; font-family: inherit; }
+  .ask button { background: var(--accent); border: 0; border-radius: 10px; color: #16110c;
+    font-weight: 700; font-size: 13px; padding: 0 22px; cursor: pointer; font-family: inherit; }
+  .ask button:disabled { opacity: 0.45; cursor: default; }
+  .samples { position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%); z-index: 6;
+    width: min(980px, calc(100vw - 460px)); display: flex; gap: 8px; flex-wrap: wrap; }
+  .samples button { background: rgba(12,18,34,0.8); border: 1px solid var(--panel-line);
+    color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: 11.5px;
+    cursor: pointer; font-family: inherit; }
+  .samples button:hover { color: var(--ink); border-color: var(--accent); }
+
+  .legend { position: fixed; left: 20px; bottom: 26px; z-index: 5; background: var(--panel);
+    border: 1px solid var(--panel-line); border-radius: 12px; padding: 12px 14px; font-size: 11.5px; }
+  .legend h4 { margin: 0 0 8px; font-size: 9px; letter-spacing: 0.18em; color: var(--muted); }
+  .legend div { display: flex; align-items: center; gap: 8px; padding: 2px 0;
+    font-variant-numeric: tabular-nums; }
+  .legend i { width: 8px; height: 8px; border-radius: 50%; }
+  .legend b { margin-left: auto; color: var(--muted); font-weight: 500; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="topbar">
+  <div class="brand">DAY JA VIEW<small>ONTOLOGY KNOWLEDGE GRAPH · LIVE QUERY TRACE</small></div>
+  <div class="stats">
+    <div class="stat"><small>NODES</small><b id="statNodes">—</b></div>
+    <div class="stat"><small>RELATIONS</small><b id="statRelations">—</b></div>
+    <div class="stat"><small>ENGINE</small><b>운영 그대로</b></div>
+  </div>
+  <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">준비 중</span></div>
+</div>
+
+<div class="focus" id="focusCard"><small id="focusKind">FOCUS</small><b id="focusTitle"></b>
+  <div class="note" id="focusCaption" style="margin-top:4px"></div></div>
+
+<div class="side" id="side"></div>
+
+<div class="samples" id="samples"></div>
+<form class="ask" id="askForm">
+  <input id="question" autocomplete="off" placeholder="질문을 입력하고 Enter — 예: 과거 로봇 산업 육성 정책이 발표됐을 때 어떤 테마가 반응했고, 당시 주도주는 5거래일 뒤 어떻게 움직였어?" />
+  <button id="askButton" type="submit">질문</button>
+</form>
+
+<div class="legend">
+  <h4>ACTUAL NODE TYPES</h4>
+  <div><i style="background:var(--theme)"></i>테마 <b id="legendTheme">—</b></div>
+  <div><i style="background:var(--type)"></i>소재 유형 <b id="legendType">—</b></div>
+  <div><i style="background:var(--event)"></i>테마 사건 기록 <b id="legendEvent">—</b></div>
+</div>
+
+<script>
+const canvas = document.getElementById('stage');
+const context = canvas.getContext('2d', { alpha: false });
+const side = document.getElementById('side');
+const focusCard = document.getElementById('focusCard');
+
+let graph = null;
+let positions = null;
+let kinds = null;
+let nodeCount = 0;
+let eventThemeIndex = null;
+let themeWeight = null;      // 테마별 기록 수 (노드 크기)
+let filaments = null;        // 사건→테마 연결선 표본
+const selected = new Map();      // nodeIndex -> {kind, at}
+const links = [];                // [aNode, bNode, color]
+let satellites = [];             // 주도주 위성 {x,y,name,value,up}
+const camera = { x: 0, y: 0, scale: 0.42, targetX: 0, targetY: 0, targetScale: 0.42 };
+let devicePixel = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+  devicePixel = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.floor(window.innerWidth * devicePixel);
+  canvas.height = Math.floor(window.innerHeight * devicePixel);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function decode(base64, Kind) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new Kind(bytes.buffer);
+}
+
+async function loadGraph() {
+  const response = await fetch('/graph.json');
+  graph = await response.json();
+  positions = decode(graph.positions, Float32Array);
+  kinds = decode(graph.kinds, Uint8Array);
+  eventThemeIndex = decode(graph.eventThemeIndex, Uint16Array);
+  nodeCount = graph.nodeCount;
+  const maxEvents = Math.max(...graph.themes.map((theme) => theme.events));
+  themeWeight = graph.themes.map((theme) => 0.45 + 0.55 * Math.sqrt(theme.events / maxEvents));
+  const eventStart = graph.themeCount + graph.typeCount;
+  filaments = [];
+  for (let row = 0; row < graph.eventCount; row += 9) {
+    filaments.push(eventStart + row, eventThemeIndex[row]);
+  }
+  document.getElementById('statNodes').textContent = graph.nodeCount.toLocaleString();
+  document.getElementById('statRelations').textContent = graph.relationCount.toLocaleString();
+  document.getElementById('legendTheme').textContent = graph.themeCount.toLocaleString();
+  document.getElementById('legendType').textContent = graph.typeCount.toLocaleString();
+  document.getElementById('legendEvent').textContent = graph.eventCount.toLocaleString();
+  setStatus('idle', '대기 — 질문을 입력하세요');
+}
+
+function setStatus(mode, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'dot' + (mode === 'busy' ? ' busy' : mode === 'idle' ? ' live' : '');
+  document.getElementById('statusText').textContent = text;
+}
+
+// ------------------------------------------------------------------ 렌더
+
+const COLORS = ['#f5b544', '#ff6b6b', '#4fd6e0'];
+const DIM = ['rgba(245,181,68,0.55)', 'rgba(255,107,107,0.5)', 'rgba(79,214,224,0.30)'];
+
+function toScreen(x, y) {
+  return [
+    (x - camera.x) * camera.scale + canvas.width / 2,
+    (y - camera.y) * camera.scale + canvas.height / 2,
+  ];
+}
+
+function draw() {
+  camera.x += (camera.targetX - camera.x) * 0.075;
+  camera.y += (camera.targetY - camera.y) * 0.075;
+  camera.scale += (camera.targetScale - camera.scale) * 0.06;
+
+  context.fillStyle = '#05070f';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  if (!positions) return requestAnimationFrame(draw);
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const scale = camera.scale * devicePixel;
+
+  // 사건과 테마를 잇는 실. 표본만 그려 40,000 노드에서도 60fps를 지킨다.
+  context.beginPath();
+  for (let index = 0; index < filaments.length; index += 2) {
+    const from = filaments[index];
+    const to = filaments[index + 1];
+    const ax = (positions[from * 2] - camera.x) * scale + width / 2;
+    const ay = (positions[from * 2 + 1] - camera.y) * scale + height / 2;
+    if (ax < -60 || ay < -60 || ax > width + 60 || ay > height + 60) continue;
+    context.moveTo(ax, ay);
+    context.lineTo((positions[to * 2] - camera.x) * scale + width / 2,
+      (positions[to * 2 + 1] - camera.y) * scale + height / 2);
+  }
+  context.strokeStyle = 'rgba(88,140,200,0.075)';
+  context.lineWidth = Math.max(0.6, 0.7 * devicePixel);
+  context.stroke();
+
+  // 배경 노드 3종을 색깔별로 한 번씩만 칠한다 (40,000개를 60fps로 유지).
+  for (let kind = 2; kind >= 1; kind -= 1) {
+    context.beginPath();
+    const size = kind === 2 ? Math.max(1.2, 1.7 * scale) : Math.max(3, 7 * scale);
+    for (let index = 0; index < nodeCount; index += 1) {
+      if (kinds[index] !== kind) continue;
+      const screenX = (positions[index * 2] - camera.x) * scale + width / 2;
+      const screenY = (positions[index * 2 + 1] - camera.y) * scale + height / 2;
+      if (screenX < -40 || screenY < -40 || screenX > width + 40 || screenY > height + 40) continue;
+      context.rect(screenX - size / 2, screenY - size / 2, size, size);
+    }
+    context.fillStyle = DIM[kind];
+    context.fill();
+  }
+
+  // 테마 노드는 기록 수만큼 커지고 옅은 후광을 갖는다.
+  for (let index = 0; index < graph.themeCount; index += 1) {
+    const screenX = (positions[index * 2] - camera.x) * scale + width / 2;
+    const screenY = (positions[index * 2 + 1] - camera.y) * scale + height / 2;
+    if (screenX < -60 || screenY < -60 || screenX > width + 60 || screenY > height + 60) continue;
+    const radius = Math.max(2.4, 9 * scale * themeWeight[index]);
+    const glow = context.createRadialGradient(screenX, screenY, 0, screenX, screenY, radius * 3.4);
+    glow.addColorStop(0, 'rgba(245,181,68,0.30)');
+    glow.addColorStop(1, 'rgba(245,181,68,0)');
+    context.fillStyle = glow;
+    context.beginPath();
+    context.arc(screenX, screenY, radius * 3.4, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = '#f5b544';
+    context.beginPath();
+    context.arc(screenX, screenY, radius, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  // 선택된 노드 사이의 관계선
+  context.lineWidth = Math.max(1, 1.4 * devicePixel);
+  for (const [a, b, color] of links) {
+    const [ax, ay] = toScreen(positions[a * 2], positions[a * 2 + 1]);
+    const [bx, by] = toScreen(positions[b * 2], positions[b * 2 + 1]);
+    context.strokeStyle = color;
+    context.beginPath();
+    context.moveTo(ax, ay);
+    context.lineTo(bx, by);
+    context.stroke();
+  }
+
+  // 주도주 위성
+  const now = performance.now();
+  for (const satellite of satellites) {
+    const age = Math.min(1, (now - satellite.at) / 420);
+    const [x, y] = toScreen(satellite.x, satellite.y);
+    context.globalAlpha = age;
+    context.fillStyle = satellite.up ? '#29c97f' : '#ff5f6d';
+    context.beginPath();
+    context.arc(x, y, 5 * devicePixel * age, 0, Math.PI * 2);
+    context.fill();
+    context.font = `${11 * devicePixel}px system-ui`;
+    context.fillStyle = 'rgba(232,238,252,0.92)';
+    context.fillText(`${satellite.name} ${satellite.value}`, x + 10 * devicePixel, y + 4 * devicePixel);
+    context.globalAlpha = 1;
+  }
+
+  // 선택 노드 강조
+  for (const [index, meta] of selected) {
+    const [x, y] = toScreen(positions[index * 2], positions[index * 2 + 1]);
+    const age = Math.min(1, (now - meta.at) / 500);
+    const radius = (meta.kind === 'EVENT' ? 7 : 11) * devicePixel;
+    const halo = radius + 10 * devicePixel * (1 + Math.sin(now / 320) * 0.25);
+    context.fillStyle = meta.kind === 'THEME' ? 'rgba(245,181,68,0.16)'
+      : meta.kind === 'TYPE' ? 'rgba(255,107,107,0.16)' : 'rgba(255,122,61,0.18)';
+    context.beginPath();
+    context.arc(x, y, halo * age, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = meta.kind === 'THEME' ? '#f5b544' : meta.kind === 'TYPE' ? '#ff6b6b' : '#ff7a3d';
+    context.beginPath();
+    context.arc(x, y, radius * age, 0, Math.PI * 2);
+    context.fill();
+    if (meta.label) {
+      context.font = `600 ${12 * devicePixel}px system-ui`;
+      context.fillStyle = 'rgba(232,238,252,0.95)';
+      context.fillText(meta.label, x + 14 * devicePixel, y + 4 * devicePixel);
+    }
+  }
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+function flyTo(nodeIndex, scale) {
+  camera.targetX = positions[nodeIndex * 2];
+  camera.targetY = positions[nodeIndex * 2 + 1];
+  camera.targetScale = scale;
+}
+function resetCamera() {
+  camera.targetX = 0; camera.targetY = 0; camera.targetScale = 0.42;
+}
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function showFocus(kind, title, caption) {
+  document.getElementById('focusKind').textContent = kind;
+  document.getElementById('focusTitle').textContent = title;
+  document.getElementById('focusCaption').textContent = caption || '';
+  focusCard.style.display = 'block';
+}
+
+// ------------------------------------------------------------------ 패널
+
+function card(title, right) {
+  const element = document.createElement('div');
+  element.className = 'card';
+  element.innerHTML = `<h3>${title}${right ? `<em>${right}</em>` : ''}</h3>`;
+  side.appendChild(element);
+  side.scrollTop = side.scrollHeight;
+  return element;
+}
+function clearPanels() {
+  side.innerHTML = '';
+  selected.clear();
+  links.length = 0;
+  satellites = [];
+  focusCard.style.display = 'none';
+}
+
+const SLOT_LABEL = {
+  queryType: '질의 유형', topic: '주제어', catalystType: '소재 유형', themes: '테마',
+  period: '기간', date: '날짜', company: '회사', direction: '방향',
+  outcomeHorizon: '관측 지평', date_range: '기간', horizon: '관측 지평',
+};
+
+function renderPlan(event) {
+  const element = card('질문 해석 · 조회 계획', `${event.ms}ms`);
+  if (!event.ok) {
+    element.innerHTML += `<div class="summary">${event.failure.messageKo}</div>
+      <div class="note">${event.failure.publicLabelKo}</div>`;
+    return;
+  }
+  const slots = event.slots || {};
+  const used = new Set(['topic', 'catalystType', 'event', 'themes', 'theme', 'period',
+    'date_range', 'date', 'company', 'direction', 'outcomeHorizon', 'horizon']);
+  const lines = [
+    ['질의 유형', event.queryType],
+    ['주제어', slots.topic],
+    ['소재 유형', slots.catalystType && `${slots.catalystType}${slots.event ? ` · ${slots.event}` : ''}`],
+    ['테마', (slots.themes || []).join(', ') && `${(slots.themes || []).join(', ')}${slots.theme ? ` · #${slots.theme}` : ''}`],
+    ['회사', slots.company],
+    ['기간', slots.period || slots.date_range || slots.date],
+    ['방향', slots.direction],
+    ['관측 지평', slots.outcomeHorizon || slots.horizon],
+  ];
+  for (const [key, value] of Object.entries(slots)) {
+    if (used.has(key) || value === null || value === undefined || value === '') continue;
+    lines.push([SLOT_LABEL[key] || key, Array.isArray(value) ? value.join(', ') : String(value)]);
+  }
+  for (const [label, value] of lines) {
+    if (!value) continue;
+    element.innerHTML += `<div class="slot"><span>${label}</span><b>${value}</b></div>`;
+  }
+  element.innerHTML += `<div class="note">해석기가 만든 실제 조회 계획입니다. 여기에 없는 조건은 조회에 쓰이지 않습니다.` +
+    `${event.llm ? ' 복합 질문이면 LLM이 단계로 쪼갠 뒤 수치는 같은 엔진이 냅니다.' : ''}</div>`;
+}
+
+let logElement = null;
+function renderDbCall(event) {
+  if (!logElement) {
+    logElement = card('실제 데이터 조회', '운영 Postgres');
+    const box = document.createElement('div');
+    box.className = 'log';
+    logElement.appendChild(box);
+    logElement.dataset.count = '0';
+  }
+  const box = logElement.querySelector('.log');
+  const line = document.createElement('div');
+  line.innerHTML = `<i>${event.labelKo}</i><u>${event.detail || ''}</u>` +
+    `<b>${event.rows === null ? '' : event.rows + '행'} ${event.ms}ms</b>`;
+  box.appendChild(line);
+  const count = Number(logElement.dataset.count) + 1;
+  logElement.dataset.count = String(count);
+  logElement.querySelector('h3 em')?.remove();
+  logElement.querySelector('h3').insertAdjacentHTML('beforeend', `<em>${count}회</em>`);
+  side.scrollTop = side.scrollHeight;
+}
+
+// ------------------------------------------------------------------ 진행
+
+async function playAnswer(payload) {
+  const block = payload.answer;
+  const focus = payload.focus || [];
+  const pace = focus.length > 8 ? 900 : 1400;
+  const themeNode = focus.find((item) => item.kind === 'THEME');
+  const events = focus.filter((item) => item.kind === 'EVENT');
+  const calcCard = events.length ? card('사건별 계산', `${events.length}건`) : null;
+  const calcBox = document.createElement('div');
+  if (calcCard) { calcBox.className = 'calc'; calcCard.appendChild(calcBox); }
+  const KIND_LABEL = {
+    THEME: 'ONTOLOGY · THEME',
+    TYPE: 'ONTOLOGY · CATALYST TYPE',
+    EVENT: 'KNOWLEDGE GRAPH · EVENT',
+  };
+
+  for (const target of focus) {
+    selected.set(target.node, {
+      kind: target.kind,
+      at: performance.now(),
+      label: target.kind === 'EVENT' ? '' : target.title,
+    });
+    for (const extra of target.alsoNodes || []) {
+      selected.set(extra, { kind: 'EVENT', at: performance.now() });
+      links.push([target.node, extra, 'rgba(79,214,224,0.30)']);
+    }
+    for (const themeIndex of target.themeNodes || []) {
+      links.push([target.node, themeIndex, 'rgba(79,214,224,0.35)']);
+    }
+    if (themeNode && target !== themeNode && target.kind !== 'THEME') {
+      links.push([target.node, themeNode.node, 'rgba(255,122,61,0.28)']);
+    }
+    showFocus(KIND_LABEL[target.kind] || target.kind, target.title, target.caption);
+    flyTo(target.node, target.kind === 'EVENT' ? 1.75 : 0.95);
+
+    const row = target.row;
+    if (row) {
+      const leaders = (row.leaders || []).slice(0, 8);
+      satellites = leaders.map((leader, index) => {
+        const angle = (Math.PI * 2 * index) / Math.max(leaders.length, 1) + 0.35;
+        const orbit = index % 2 === 0 ? 62 : 104;
+        const value = (leader.returns || {})[`T+${row.horizon || 5}`];
+        return {
+          x: positions[target.node * 2] + Math.cos(angle) * orbit,
+          y: positions[target.node * 2 + 1] + Math.sin(angle) * orbit,
+          name: leader.companyName,
+          value: value || '—',
+          up: String(value || '').startsWith('+'),
+          at: performance.now(),
+        };
+      });
+      if (calcCard) {
+        const line = document.createElement('div');
+        line.className = 'rowline';
+        const median = row.medianReturn || '—';
+        line.innerHTML = `<span>${row.eventDate} · 주도주 ${row.leaderCount ?? '—'}곳</span>` +
+          `<b class="${String(median).startsWith('-') ? 'down' : 'up'}">T+${row.horizon || 5} 중앙 ${median}` +
+          ` <span style="color:var(--muted)">상승 ${row.upCount ?? '—'}</span></b>`;
+        calcBox.appendChild(line);
+        side.scrollTop = side.scrollHeight;
+      }
+    } else {
+      satellites = [];
+    }
+    await wait(pace);
+  }
+
+  satellites = [];
+  resetCamera();
+  showFocus('GROUNDED ANSWER', block.summaryKo, '');
+  await wait(500);
+
+  const answerCard = card('최종 답변', block.humanVerified ? '검수 통과' : '검수 전');
+  answerCard.innerHTML += `<div class="summary">${block.summaryKo}</div>`;
+  const metrics = document.createElement('div');
+  metrics.className = 'metrics';
+  for (const metric of block.metrics || []) {
+    metrics.innerHTML += `<div class="metric"><small>${metric.labelKo}</small>` +
+      `<b class="${String(metric.value).startsWith('-') ? 'down' : String(metric.value).startsWith('+') ? 'up' : ''}">${metric.value}</b>` +
+      `<small>${metric.countUnitLabelKo || ''} ${metric.sampleSize ? metric.sampleSize + '개 중' : ''}</small></div>`;
+  }
+  answerCard.appendChild(metrics);
+  for (const note of block.notesKo || []) {
+    answerCard.innerHTML += `<div class="note">${note}</div>`;
+  }
+  if ((block.exclusions || []).length) {
+    const excluded = block.exclusions.map((item) => `${item.labelKo} ${item.count}건`).join(' · ');
+    answerCard.innerHTML += `<div class="note">답에서 뺀 것 — ${excluded}</div>`;
+  }
+  answerCard.innerHTML += `<div class="note">계약 ${block.contractVersion} · 근거 적용률 ${(block.evidenceCoverage * 100).toFixed(0)}% · 총 ${payload.ms}ms</div>`;
+  side.scrollTop = side.scrollHeight;
+}
+
+// ------------------------------------------------------------------ 질문
+
+let running = false;
+
+async function ask(question) {
+  if (running || !question.trim()) return;
+  running = true;
+  document.getElementById('askButton').disabled = true;
+  clearPanels();
+  logElement = null;
+  resetCamera();
+  setStatus('busy', '질문 해석 중');
+  card('질문', '원문').innerHTML += `<div class="summary">${question}</div>`;
+
+  const response = await fetch('/ask', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ question }),
+  });
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let answerPayload = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let split;
+    while ((split = buffer.indexOf('\n\n')) >= 0) {
+      const raw = buffer.slice(0, split).replace(/^data: /, '');
+      buffer = buffer.slice(split + 2);
+      if (!raw) continue;
+      const event = JSON.parse(raw);
+      if (event.type === 'plan') { renderPlan(event); setStatus('busy', '데이터 조회 중'); }
+      else if (event.type === 'db') renderDbCall(event);
+      else if (event.type === 'answer') answerPayload = event;
+      else if (event.type === 'error') {
+        card('실패', '엔진').innerHTML += `<div class="summary">${event.message}</div>`;
+      }
+    }
+  }
+
+  if (answerPayload && answerPayload.status === 'ANSWERED') {
+    setStatus('busy', '그래프 추적 중');
+    await playAnswer(answerPayload);
+    setStatus('idle', '답변 완료');
+  } else if (answerPayload) {
+    const failure = answerPayload.failure || {};
+    card('답하지 못함', failure.publicLabelKo || '').innerHTML +=
+      `<div class="summary">${failure.messageKo || '답할 수 없는 질문입니다.'}</div>`;
+    setStatus('idle', '답변 없음');
+  }
+  running = false;
+  document.getElementById('askButton').disabled = false;
+}
+
+document.getElementById('askForm').addEventListener('submit', (submitEvent) => {
+  submitEvent.preventDefault();
+  ask(document.getElementById('question').value);
+});
+
+const SAMPLES = [
+  '과거 로봇 산업 육성 정책이 발표됐을 때 어떤 테마가 반응했고, 당시 주도주는 5거래일 뒤 어떻게 움직였어?',
+  '2차전지 테마 과거에 뭘로 움직였어?',
+  '정책 소재에 어떤 테마가 반응했어?',
+  '한화에어로스페이스 과거 수주 발표 뒤에 주가 어떻게 됐어?',
+];
+for (const sample of SAMPLES) {
+  const button = document.createElement('button');
+  button.textContent = sample.length > 34 ? sample.slice(0, 33) + '…' : sample;
+  button.title = sample;
+  button.onclick = () => { document.getElementById('question').value = sample; ask(sample); };
+  document.getElementById('samples').appendChild(button);
+}
+
+// 마우스로 그래프를 직접 둘러볼 수 있게 둔다.
+let dragging = null;
+canvas.addEventListener('mousedown', (mouseEvent) => { dragging = { x: mouseEvent.clientX, y: mouseEvent.clientY }; });
+window.addEventListener('mouseup', () => { dragging = null; });
+window.addEventListener('mousemove', (mouseEvent) => {
+  if (!dragging) return;
+  camera.targetX -= (mouseEvent.clientX - dragging.x) / camera.scale / devicePixel * devicePixel;
+  camera.targetY -= (mouseEvent.clientY - dragging.y) / camera.scale / devicePixel * devicePixel;
+  dragging = { x: mouseEvent.clientX, y: mouseEvent.clientY };
+});
+canvas.addEventListener('wheel', (wheelEvent) => {
+  wheelEvent.preventDefault();
+  camera.targetScale = Math.min(6, Math.max(0.16, camera.targetScale * (wheelEvent.deltaY < 0 ? 1.15 : 0.87)));
+}, { passive: false });
+
+loadGraph();
+</script>
+</body>
+</html>
