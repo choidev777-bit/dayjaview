@@ -471,3 +471,38 @@ def test_prepare_reference_data_refuses_a_day_without_any_previous_close(
 
     directory = reference_directory(tmp_path, date(2026, 8, 13))
     assert not (directory / COLLECTION_COMPLETE_MARKER).is_file()
+
+
+def test_prepare_reference_data_starts_the_day_when_only_corporate_action_is_unresolved(
+    tmp_path: Path,
+) -> None:
+    """전일 row는 있는데 기업행위 원천이 없어 전일 종가만 비면 세션을 세운다.
+
+    2026-08-21 운영: 전일(08-20) 942종목을 확보하고도 기업행위 미해결 100%로
+    이 가드가 장중 내내 세션을 막았다. 그 자리는 파이프라인
+    `_supplement_base_price`가 키움 기준가로 메우고, 못 메운 종목은
+    corporate_action_resolved=False로 계산에서 빠진다.
+    """
+
+    directory = reference_directory(tmp_path, date(2026, 8, 14))
+    directory.mkdir(parents=True)
+    _write_collected_bundle(directory)
+    (directory / COLLECTION_COMPLETE_MARKER).write_text(
+        "2026-08-14T00:05:00+09:00", encoding="utf-8"
+    )
+
+    prepared = prepare_reference_data(
+        market_date=date(2026, 8, 14),
+        root=tmp_path,
+        stock_ids=("KRX:A00001",),
+        decision_at=datetime.fromisoformat("2026-08-14T09:00:00+09:00"),
+        environment={},
+        business_year=2026,
+        report_code="11012",
+        collect=lambda *args, **kwargs: {"status": "COMPLETE"},
+    )
+
+    reference = prepared.references[0]
+    assert reference.previous_adjusted_close is None
+    assert reference.corporate_action_resolved is False
+    assert (directory / COLLECTION_COMPLETE_MARKER).is_file()

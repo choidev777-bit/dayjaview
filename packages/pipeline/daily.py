@@ -107,12 +107,22 @@ def prepare_reference_data(
         decision_at=decision_at,
         stock_ids=stock_ids,
     )
-    if not any(
+    has_previous_close = any(
         reference.previous_adjusted_close is not None for reference in references
-    ):
-        # 전일 종가가 하나도 없으면 그날 수익률을 만들 수 없다. KRX가 전일
-        # 데이터를 아직 안 낸 시각(자정 직후)이 대표적이다. 도장을 지워 다음
-        # 재시도가 빠진 원문만 다시 받게 하고, 그날 계산은 시작하지 않는다.
+    )
+    awaiting_corporate_action = any(
+        not reference.corporate_action_resolved for reference in references
+    )
+    if not has_previous_close and not awaiting_corporate_action:
+        # KRX가 전일 원문 자체를 아직 안 낸 시각(자정 직후)이다. 도장을 지워
+        # 다음 재시도가 빠진 원문만 다시 받게 하고, 그날 계산은 시작하지 않는다.
+        #
+        # 전일 row는 확보됐는데 기업행위 원천이 없어 전일 종가가 비는 것은
+        # 장중의 정상 상태다(2026-08-21 운영 실측: 08-20 942종목 확보에도
+        # 미해결 100%로 이 가드가 세션을 하루 종일 막았다). 그 경우는 통과
+        # 시킨다 — 파이프라인 `_supplement_base_price`가 키움 기준가(권리락·
+        # 액면분할 반영)로 그 자리를 메우고, 못 메운 종목은
+        # corporate_action_resolved=False로 계산에서 빠진다.
         marker.unlink(missing_ok=True)
         raise RuntimeError(
             f"{market_date} 전일 종가를 하나도 확보하지 못해 그날 계산을 "
