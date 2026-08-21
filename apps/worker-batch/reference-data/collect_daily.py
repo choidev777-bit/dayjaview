@@ -133,16 +133,19 @@ def _existing(dataset: str, source_key: str, *, output_dir: Path) -> bool:
 
 
 def _empty_daily_trustworthy(queried: date, *, at: datetime) -> bool:
-    """빈 일별매매 응답을 휴장으로 믿어도 되는 시각인가.
+    """빈 일별매매 응답을 시각만으로 휴장이라 믿어도 되는가.
 
-    KRX는 그날 데이터를 늦어도 다음날 아침에는 낸다. 그 전의 빈 응답은
-    휴장인지 아직 미발행인지 구분할 수 없다. 자정 수집이 전일을 빈 응답으로
-    저장하면 달력이 전일을 휴장으로 오판해 이틀 전 종가가 전일 종가가 되고,
-    잔해가 남으면 재수집도 그 파일을 믿고 건너뛴다(2026-08-20 운영 실측).
+    확실한 증거는 같은 실행에서 이 날짜보다 뒤 날짜의 데이터를 이미 본
+    것이고(호출부의 later_rows_seen — KRX는 순차 발행이라 뒤 날짜가 나왔는데
+    이 날짜가 비면 휴장이다), 이 함수는 그 증거가 없을 때의 시각 폴백이다.
+    `다음날 06:00` 기준은 2026-08-21 운영에서 깨졌다 — 정상 거래일(08-20)
+    발행이 06:04 이후였는데 06:00을 넘겼다는 이유로 빈 응답이 휴장으로
+    저장·고착되어 달력이 전일을 휴장으로 오판했고 장중 내내 세션이 서지
+    못했다. 폴백은 다음날 저녁까지 미룬다.
     """
 
     return at >= datetime.combine(
-        queried + timedelta(days=1), time(6, 0), tzinfo=KST
+        queried + timedelta(days=1), time(18, 0), tzinfo=KST
     )
 
 
@@ -185,7 +188,11 @@ def collect(
     ]
     krx_snapshots: list[Any] = []
     krx_calls = 0
+    # market_dates는 최신 → 과거 순이다. 더 최신 날짜의 데이터를 이미 봤다면
+    # 그보다 앞 날짜의 빈 응답은 미발행이 아니라 휴장이다.
+    later_rows_seen = False
     for market_date in market_dates:
+        date_has_rows = False
         for market in adapters.KRX_MARKET_PATHS:
             source_key = f"{market}:{market_date.isoformat()}"
             path = output_dir / f"KRX_STOCK_DAILY.{_slug(source_key)}.json"
@@ -193,9 +200,12 @@ def collect(
                 stored = parsers.load_collected_snapshot(
                     json.loads(path.read_text(encoding="utf-8"))
                 )
-                if parsers.parse_krx_stock_daily(stored) or _empty_daily_trustworthy(
-                    market_date, at=stored.metadata.collected_at
-                ):
+                if parsers.parse_krx_stock_daily(stored):
+                    date_has_rows = True
+                    krx_snapshots.append(stored)
+                    continue
+                if later_rows_seen:
+                    # 뒤 날짜 데이터가 확인된 빈 파일은 휴장 확정이라 유지한다.
                     krx_snapshots.append(stored)
                     continue
                 # 미발행 시점에 저장된 빈 응답 잔해다. 지우고 다시 받는다.
@@ -211,14 +221,24 @@ def collect(
                 collected_at=collected_at,
             )
             krx_calls += 1
-            if not parsers.parse_krx_stock_daily(snapshot) and not (
-                _empty_daily_trustworthy(market_date, at=collected_at)
-            ):
-                # 휴장인지 미발행인지 모르는 빈 응답은 저장도, 달력 증거도
-                # 남기지 않는다. 다음 재시도가 다시 확인한다.
+            if parsers.parse_krx_stock_daily(snapshot):
+                date_has_rows = True
+                _store(snapshot, output_dir=output_dir)
+                krx_snapshots.append(snapshot)
                 continue
-            _store(snapshot, output_dir=output_dir)
-            krx_snapshots.append(snapshot)
+            if later_rows_seen:
+                # 뒤 날짜 데이터가 이미 나온 상태의 빈 응답은 휴장 확정이다.
+                _store(snapshot, output_dir=output_dir)
+                krx_snapshots.append(snapshot)
+                continue
+            if _empty_daily_trustworthy(market_date, at=collected_at):
+                # 시각 폴백만으로 믿은 휴장은 이 실행의 달력 증거로만 쓰고
+                # 저장하지 않는다. 발행이 늦어진 것이면 다음 재시도가 다시
+                # 확인한다 — 저장하면 오판이 파일로 고착된다(2026-08-21 운영).
+                krx_snapshots.append(snapshot)
+            # 휴장인지 미발행인지 모르는 빈 응답은 저장도, 달력 증거도
+            # 남기지 않는다. 다음 재시도가 다시 확인한다.
+        later_rows_seen = later_rows_seen or date_has_rows
 
     calendar = parsers.derive_trading_calendar(
         krx_snapshots,
